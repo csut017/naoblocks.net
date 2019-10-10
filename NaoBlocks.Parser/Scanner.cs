@@ -10,7 +10,6 @@ namespace NaoBlocks.Parser
         private readonly TextReader _reader;
         private readonly IDictionary<char, TokenType> _chars = new Dictionary<char, TokenType>
         {
-            { '\n', TokenType.Newline },
             {',', TokenType.Comma },
             {'(', TokenType.OpenBracket },
             {')', TokenType.CloseBracket },
@@ -26,6 +25,7 @@ namespace NaoBlocks.Parser
         private bool _hasChar;
         private int _lineNumber;
         private int _linePosition;
+        private int _lastTokenStart;
 
         public Scanner(TextReader reader)
         {
@@ -34,15 +34,23 @@ namespace NaoBlocks.Parser
 
         public Token Read()
         {
+            this._lastTokenStart = this._linePosition - (this._hasChar ? 1 : 0);
             var inputChar = this.ReadNextCharacter();
 
             if (inputChar < 0)
             {
-                return new Token(TokenType.EOF, "");
+                return this.MakeToken(TokenType.EOF, "");
             }
 
             var charToCheck = (char)inputChar;
-            if (this._chars.TryGetValue(charToCheck, out TokenType tokenType)) return new Token(tokenType, charToCheck.ToString());
+            if (this._chars.TryGetValue(charToCheck, out TokenType tokenType)) return this.MakeToken(tokenType, charToCheck.ToString());
+            if (charToCheck == '\n')
+            {
+                var token = this.MakeToken(TokenType.Newline, "\n");
+                this._linePosition = 0;
+                this._lineNumber++;
+                return token;
+            };
             if (char.IsWhiteSpace(charToCheck)) return this.GenerateWhitespaceToken();
             if (char.IsLetter(charToCheck))
             {
@@ -55,7 +63,12 @@ namespace NaoBlocks.Parser
             if (charToCheck == '\'') return this.GenerateText();
             if (charToCheck == '[') return this.GenerateSourceID();
 
-            return new Token(TokenType.Illegal, charToCheck.ToString());
+            return this.MakeToken(TokenType.Illegal, charToCheck.ToString());
+        }
+
+        private Token MakeToken(TokenType type, string value)
+        {
+            return new Token(type, value, this._lineNumber, this._lastTokenStart);
         }
 
         private int ReadNextCharacter()
@@ -97,7 +110,7 @@ namespace NaoBlocks.Parser
                 }
             }
 
-            return new Token(TokenType.Whitespace, builder.ToString());
+            return this.MakeToken(TokenType.Whitespace, builder.ToString());
         }
 
         private Token GenerateNumber(char firstChar)
@@ -135,7 +148,7 @@ namespace NaoBlocks.Parser
                 }
             }
 
-            return new Token(isLegal ? TokenType.Number : TokenType.Illegal, builder.ToString());
+            return this.MakeToken(isLegal ? TokenType.Number : TokenType.Illegal, builder.ToString());
         }
 
         private Token GenerateText()
@@ -172,9 +185,9 @@ namespace NaoBlocks.Parser
                 }
             }
 
-            if (isLegal) return new Token(TokenType.Text, builder.ToString());
+            if (isLegal) return this.MakeToken(TokenType.Text, builder.ToString());
             builder.Insert(0, '\'');
-            return new Token(TokenType.Illegal, builder.ToString());
+            return this.MakeToken(TokenType.Illegal, builder.ToString());
         }
 
         private Token GenerateSourceID()
@@ -198,9 +211,9 @@ namespace NaoBlocks.Parser
                 }
             }
 
-            if (isLegal) return new Token(TokenType.SourceID, builder.ToString());
+            if (isLegal) return this.MakeToken(TokenType.SourceID, builder.ToString());
             builder.Insert(0, '[');
-            return new Token(TokenType.Illegal, builder.ToString());
+            return this.MakeToken(TokenType.Illegal, builder.ToString());
         }
 
         private Token GenerateItem(TokenType tokenType, bool checkIfConstant)
@@ -208,14 +221,14 @@ namespace NaoBlocks.Parser
             var value = this.ReadIdentifier();
             if (checkIfConstant)
             {
-                if (this._constants.TryGetValue(value, out TokenType constantType)) return new Token(constantType, value);
+                if (this._constants.TryGetValue(value, out TokenType constantType)) return this.MakeToken(constantType, value);
                 if (value.ToUpperInvariant() == value)
                 {
-                    return new Token(TokenType.Constant, value);
+                    return this.MakeToken(TokenType.Constant, value);
                 }
             }
 
-            return new Token(tokenType, value);
+            return this.MakeToken(tokenType, value);
         }
 
         private string ReadIdentifier()

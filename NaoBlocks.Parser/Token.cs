@@ -12,6 +12,13 @@ namespace NaoBlocks.Parser
             this.Value = value;
         }
 
+        public Token(TokenType type, string value, int lineNumber, int linePosition)
+            : this(type, value)
+        {
+            this.LineNumber = lineNumber;
+            this.LinePosition = linePosition;
+        }
+
         public TokenType Type { get; set; }
 
         public string Value { get; set; }

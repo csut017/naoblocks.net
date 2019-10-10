@@ -52,6 +52,7 @@ namespace NaoBlocks.Parser.Tests
         [InlineData("say('hello')", TokenType.Identifier, TokenType.OpenBracket, TokenType.Text, TokenType.CloseBracket, TokenType.EOF)]
         [InlineData("say(@hello)", TokenType.Identifier, TokenType.OpenBracket, TokenType.Variable, TokenType.CloseBracket, TokenType.EOF)]
         [InlineData("say(round(1))", TokenType.Identifier, TokenType.OpenBracket, TokenType.Identifier, TokenType.OpenBracket, TokenType.Number, TokenType.CloseBracket, TokenType.CloseBracket, TokenType.EOF)]
+        [InlineData("say('hello')\nrest()", TokenType.Identifier, TokenType.OpenBracket, TokenType.Text, TokenType.CloseBracket, TokenType.Newline, TokenType.Identifier, TokenType.OpenBracket, TokenType.CloseBracket, TokenType.EOF)]
         public void ReadTokenTypeSequenceTheory(string input, params TokenType[] expected)
         {
             var reader = new StringReader(input);
@@ -62,6 +63,46 @@ namespace NaoBlocks.Parser.Tests
             {
                 token = scanner.Read();
                 actual.Add(token.Type);
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("say('hello')", 0, 3, 4, 11, 12)]
+        [InlineData("say(@hello)", 0, 3, 4, 10, 11)]
+        [InlineData("say(round(1))", 0, 3, 4, 9, 10, 11, 12, 13)]
+        [InlineData("say('hello')\nrest()", 0, 3, 4, 11, 12, 0, 4, 5, 6)]
+        public void ReadLinePositionTheory(string input, params int[] expected)
+        {
+            var reader = new StringReader(input);
+            var scanner = new Scanner(reader);
+            var token = new Token(TokenType.Illegal, "");
+            var actual = new List<int>();
+            while (token.Type != TokenType.EOF)
+            {
+                token = scanner.Read();
+                actual.Add(token.LinePosition);
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("say('hello')", 0, 0, 0, 0, 0)]
+        [InlineData("say(@hello)", 0, 0, 0, 0, 0)]
+        [InlineData("say(round(1))", 0, 0, 0, 0, 0, 0, 0, 0)]
+        [InlineData("say('hello')\nrest()", 0, 0, 0, 0, 0, 1, 1, 1, 1)]
+        public void ReadLineNumberTheory(string input, params int[] expected)
+        {
+            var reader = new StringReader(input);
+            var scanner = new Scanner(reader);
+            var token = new Token(TokenType.Illegal, "");
+            var actual = new List<int>();
+            while (token.Type != TokenType.EOF)
+            {
+                token = scanner.Read();
+                actual.Add(token.LineNumber);
             }
 
             Assert.Equal(expected, actual);
