@@ -1,0 +1,7 @@
+.vs/**/*.*
+NaoBlocks.Parser/bin/**/*.*
+NaoBlocks.Parser/obj/**/*.*
+NaoBlocks.Parser.Tests/bin/**/*.*
+NaoBlocks.Parser.Tests/obj/**/*.*
+NaoBlocks.Web/bin/**/*.*
+NaoBlocks.Web/obj/**/*.*
