@@ -34,7 +34,7 @@ namespace NaoBlocks.Parser
 
         public Token Read()
         {
-            var inputChar = this.read();
+            var inputChar = this.ReadNextCharacter();
 
             if (inputChar < 0)
             {
@@ -43,22 +43,22 @@ namespace NaoBlocks.Parser
 
             var charToCheck = (char)inputChar;
             if (this._chars.TryGetValue(charToCheck, out TokenType tokenType)) return new Token(tokenType, charToCheck.ToString());
-            if (char.IsWhiteSpace(charToCheck)) return this.generateWhitespaceToken();
+            if (char.IsWhiteSpace(charToCheck)) return this.GenerateWhitespaceToken();
             if (char.IsLetter(charToCheck))
             {
-                this.unread();
-                return this.generateItem(TokenType.Identifier, true);
+                this.Unread();
+                return this.GenerateItem(TokenType.Identifier, true);
             }
-            if (char.IsDigit(charToCheck) || (charToCheck == '-')) return this.generateNumber(charToCheck);
-            if (charToCheck == '@') return this.generateItem(TokenType.Variable, false);
-            if (charToCheck == '#') return this.generateItem(TokenType.Colour, false);
-            if (charToCheck == '\'') return this.generateText();
-            if (charToCheck == '[') return this.generateSourceID();
+            if (char.IsDigit(charToCheck) || (charToCheck == '-')) return this.GenerateNumber(charToCheck);
+            if (charToCheck == '@') return this.GenerateItem(TokenType.Variable, false);
+            if (charToCheck == '#') return this.GenerateItem(TokenType.Colour, false);
+            if (charToCheck == '\'') return this.GenerateText();
+            if (charToCheck == '[') return this.GenerateSourceID();
 
             return new Token(TokenType.Illegal, charToCheck.ToString());
         }
 
-        private int read()
+        private int ReadNextCharacter()
         {
             if (this._hasChar)
             {
@@ -71,18 +71,18 @@ namespace NaoBlocks.Parser
             return this._lastChar;
         }
 
-        private void unread()
+        private void Unread()
         {
             this._hasChar = true;
         }
 
-        private Token generateWhitespaceToken()
+        private Token GenerateWhitespaceToken()
         {
             var builder = new StringBuilder();
             builder.Append((char)this._lastChar);
             while (true)
             {
-                var nextChar = this.read();
+                var nextChar = this.ReadNextCharacter();
                 if (nextChar < 0) break;
 
                 var charToCheck = (char)nextChar;
@@ -92,7 +92,7 @@ namespace NaoBlocks.Parser
                 }
                 else
                 {
-                    this.unread();
+                    this.Unread();
                     break;
                 }
             }
@@ -100,7 +100,7 @@ namespace NaoBlocks.Parser
             return new Token(TokenType.Whitespace, builder.ToString());
         }
 
-        private Token generateNumber(char firstChar)
+        private Token GenerateNumber(char firstChar)
         {
             var builder = new StringBuilder();
             builder.Append(firstChar);
@@ -108,7 +108,7 @@ namespace NaoBlocks.Parser
             var isLegal = true;
             while (true)
             {
-                var nextChar = this.read();
+                var nextChar = this.ReadNextCharacter();
                 if (nextChar < 0) break;
 
                 var charToCheck = (char)nextChar;
@@ -130,7 +130,7 @@ namespace NaoBlocks.Parser
                 }
                 else
                 {
-                    this.unread();
+                    this.Unread();
                     break;
                 }
             }
@@ -138,13 +138,13 @@ namespace NaoBlocks.Parser
             return new Token(isLegal ? TokenType.Number : TokenType.Illegal, builder.ToString());
         }
 
-        private Token generateText()
+        private Token GenerateText()
         {
             var builder = new StringBuilder();
             var isLegal = false;
             while (true)
             {
-                var nextChar = this.read();
+                var nextChar = this.ReadNextCharacter();
                 if (nextChar < 0) break;
 
                 var charToCheck = (char)nextChar;
@@ -155,7 +155,7 @@ namespace NaoBlocks.Parser
                 }
                 else if (charToCheck == '\\')
                 {
-                    var quoteChar = (char)this.read();
+                    var quoteChar = (char)this.ReadNextCharacter();
                     if (quoteChar == '\'')
                     {
                         builder.Append('\'');
@@ -163,7 +163,7 @@ namespace NaoBlocks.Parser
                     else
                     {
                         builder.Append('\\');
-                        this.unread();
+                        this.Unread();
                     }
                 }
                 else
@@ -177,13 +177,13 @@ namespace NaoBlocks.Parser
             return new Token(TokenType.Illegal, builder.ToString());
         }
 
-        private Token generateSourceID()
+        private Token GenerateSourceID()
         {
             var builder = new StringBuilder();
             var isLegal = false;
             while (true)
             {
-                var nextChar = this.read();
+                var nextChar = this.ReadNextCharacter();
                 if (nextChar < 0) break;
 
                 var charToCheck = (char)nextChar;
@@ -203,9 +203,9 @@ namespace NaoBlocks.Parser
             return new Token(TokenType.Illegal, builder.ToString());
         }
 
-        private Token generateItem(TokenType tokenType, bool checkIfConstant)
+        private Token GenerateItem(TokenType tokenType, bool checkIfConstant)
         {
-            var value = this.readIdentifier();
+            var value = this.ReadIdentifier();
             if (checkIfConstant)
             {
                 if (this._constants.TryGetValue(value, out TokenType constantType)) return new Token(constantType, value);
@@ -218,12 +218,12 @@ namespace NaoBlocks.Parser
             return new Token(tokenType, value);
         }
 
-        private string readIdentifier()
+        private string ReadIdentifier()
         {
             var builder = new StringBuilder();
             while (true)
             {
-                var nextChar = this.read();
+                var nextChar = this.ReadNextCharacter();
                 if (nextChar < 0) break;
 
                 var charToCheck = (char)nextChar;
@@ -233,7 +233,7 @@ namespace NaoBlocks.Parser
                 }
                 else
                 {
-                    this.unread();
+                    this.Unread();
                     break;
                 }
             }
