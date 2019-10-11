@@ -33,7 +33,7 @@ namespace NaoBlocks.Parser.Tests
 			"reset()\nstart{\n  say('abc')\n  rest()\n}",
 			"Function:reset\nFunction:start{Function:say(Constant:abc),Function:rest}")]
         [InlineData("say(round(1))", "Function:say(Function:round(Constant:1))")]
-
+        [InlineData("say(@test)", "Function:say(Variable:test)")]
         public void TestParsingTheory(string input, string expected)
         {
             var parser = Parser.New(input);

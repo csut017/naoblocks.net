@@ -5,7 +5,6 @@
         Invalid,
         Function,
         Argument,
-        Value,
         Constant,
         Variable,
         Compound

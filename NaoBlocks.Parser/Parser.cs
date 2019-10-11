@@ -28,6 +28,7 @@ namespace NaoBlocks.Parser
                     { TokenType.Identifier, this.parseFunctionAsArg },
                     { TokenType.Number, this.parseConstant },
                     { TokenType.Text, this.parseConstant },
+                    { TokenType.Variable, this.parseVariable },
                 };
         }
 
@@ -198,6 +199,12 @@ namespace NaoBlocks.Parser
         {
             var token = this.scanNextToken();
             return new ParseOperationResult(new AstNode(AstNodeType.Constant, token), true);
+        }
+
+        private ParseOperationResult parseVariable(ParseResult result)
+        {
+            var token = this.scanNextToken();
+            return new ParseOperationResult(new AstNode(AstNodeType.Variable, token), true);
         }
 
         private void clearToNewLine()
