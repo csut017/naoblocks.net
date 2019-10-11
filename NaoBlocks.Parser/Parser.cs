@@ -12,9 +12,7 @@ namespace NaoBlocks.Parser
         {
             { "if", new CompoundFunction { Name = "if", Clauses = new HashSet<string>(new[] { "elseif", "else" }) } }
         };
-        private readonly IDictionary<TokenType, Func<ParseResult, ParseOperationResult>> parseFunctions = new Dictionary<TokenType, Func<ParseResult, ParseOperationResult>>
-        {
-        };
+        private readonly IDictionary<TokenType, Func<ParseResult, ParseOperationResult>> parseFunctions;
         private Token lastSourceID;
         private Token lastToken;
         private bool hasCached;
@@ -22,6 +20,15 @@ namespace NaoBlocks.Parser
         public Parser(Scanner scanner)
         {
             this.scanner = scanner;
+            parseFunctions = new Dictionary<TokenType, Func<ParseResult, ParseOperationResult>>
+                {
+                    { TokenType.Boolean, this.parseConstant },
+                    { TokenType.Colour, this.parseConstant },
+                    { TokenType.Constant, this.parseConstant },
+                    { TokenType.Identifier, this.parseFunctionAsArg },
+                    { TokenType.Number, this.parseConstant },
+                    { TokenType.Text, this.parseConstant },
+                };
         }
 
         public static Parser New(string codeToParse)
@@ -77,7 +84,7 @@ namespace NaoBlocks.Parser
             this.unscan();
             while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
             {
-                parseResult= this.parseFunction(result, false);
+                parseResult = this.parseFunction(result, false);
                 compound.Children.Add(parseResult.Node);
                 if (parseResult.IsValid) return new ParseOperationResult(compound);
 
@@ -148,7 +155,8 @@ namespace NaoBlocks.Parser
                     }
 
                 }
-            }else
+            }
+            else
             {
                 this.unscan();
             }
@@ -179,6 +187,17 @@ namespace NaoBlocks.Parser
             var child = parseFunction(result);
             if (!child.IsValid) return new ParseOperationResult(null);
             return new ParseOperationResult(child.Node, true);
+        }
+
+        private ParseOperationResult parseFunctionAsArg(ParseResult result)
+        {
+            return this.parseFunction(result, true);
+        }
+
+        private ParseOperationResult parseConstant(ParseResult result)
+        {
+            var token = this.scanNextToken();
+            return new ParseOperationResult(new AstNode(AstNodeType.Constant, token), true);
         }
 
         private void clearToNewLine()
