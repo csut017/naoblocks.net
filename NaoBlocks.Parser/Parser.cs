@@ -10,7 +10,10 @@ namespace NaoBlocks.Parser
         private readonly Scanner scanner;
         private readonly IDictionary<string, CompoundFunction> compoundFunctions = new Dictionary<string, CompoundFunction>
         {
-            { "if", new CompoundFunction { Name = "if", Clauses = new[] { "elseif", "else" } } }
+            { "if", new CompoundFunction { Name = "if", Clauses = new HashSet<string>(new[] { "elseif", "else" }) } }
+        };
+        private readonly IDictionary<TokenType, Func<ParseResult, ParseOperationResult>> parseFunctions = new Dictionary<TokenType, Func<ParseResult, ParseOperationResult>>
+        {
         };
         private Token lastSourceID;
         private Token lastToken;
@@ -43,62 +46,139 @@ namespace NaoBlocks.Parser
                 if (tok.Type != TokenType.Newline)
                 {
                     this.unscan();
-                    var node = this.parseItem(result);
-                    if (node != null) result.Nodes.Add(node);
+                    var res = this.parseItem(result);
+                    if (res.Node != null) result.Nodes.Add(res.Node);
                 }
             }
 
             return result;
         }
 
-        private AstNode parseItem(ParseResult result)
+        private ParseOperationResult parseItem(ParseResult result)
         {
             var token = this.scanNextToken();
             if (token.Type != TokenType.Identifier)
             {
                 result.Errors.Add(new ParseError("Unexpected token", token));
-                return new AstNode(AstNodeType.Invalid, token);
+                return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
             }
 
             this.unscan();
-            var node = this.parseFunction(result, false, out bool isValid);
-            if (node.Type == AstNodeType.Invalid) return node;
-            if (!this.compoundFunctions.TryGetValue(node.Token.Value, out CompoundFunction function)) return node;
+            var parseResult = this.parseFunction(result, false);
+            if (!parseResult.IsValid) return new ParseOperationResult(parseResult.Node);
+            if (!this.compoundFunctions.TryGetValue(parseResult.Node.Token.Value, out CompoundFunction function))
+            {
+                return new ParseOperationResult(parseResult.Node, true);
+            }
 
-            //    compound := p.makeNode(p.makeToken(GENERATED, function.Name), NODE_COMPOUND)
-            //	compound.Children = append(compound.Children, node)
+            var compound = new AstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
+            compound.Children.Add(parseResult.Node);
+            token = this.scanNextToken();
+            this.unscan();
+            while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
+            {
+                parseResult= this.parseFunction(result, false);
+                compound.Children.Add(parseResult.Node);
+                if (parseResult.IsValid) return new ParseOperationResult(compound);
 
-            //    tok := p.scanNextToken()
-            //    p.unscan()
-            //	for tok.Type == IDENTIFIER && function.Following[tok.Value] {
-            //		node, err := p.parseItem()
-            //        compound.Children = append(compound.Children, node)
-            //		if err != nil {
-            //        return compound, err
+                token = this.scanNextToken();
+                this.unscan();
+            }
 
-            //        }
-            //    tok = p.scanNextToken()
-            //    p.unscan()
-
-            return node;
+            return new ParseOperationResult(compound, true);
         }
 
-        private AstNode parseFunction(ParseResult result, bool isArg, out bool isValid)
+        private ParseOperationResult parseFunction(ParseResult result, bool isArg)
         {
             var token = this.scanNextToken();
-            isValid = false;
 
             if (token.Type != TokenType.Identifier)
             {
                 this.clearToNewLine();
                 result.Errors.Add(new ParseError("Unexpected token", token));
-                return new AstNode(AstNodeType.Invalid, token);
+                return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
             }
 
             var node = new AstNode(AstNodeType.Function, token);
             token = this.scanNextToken();
-            isValid = true;
-            return node;
+            if (!((token.Type == TokenType.OpenBracket) || (token.Type == TokenType.OpenBrace)))
+            {
+                this.clearToNewLine();
+                result.Errors.Add(new ParseError("Unexpected token", token));
+                return new ParseOperationResult(node);
+            }
+
+            if (token.Type == TokenType.OpenBracket)
+            {
+                token = this.scanNextToken();
+                while (token.Type != TokenType.CloseBracket)
+                {
+                    this.unscan();
+                    var argument = this.parseFunctionArg(result);
+                    if (!argument.IsValid) return new ParseOperationResult(node);
+                    if (argument.Node != null) node.Arguments.Add(argument.Node);
+
+                    token = this.scanNextToken();
+                    if (token.Type == TokenType.Comma) token = this.scanNextToken();
+                }
+
+                token = this.scanNextToken();
+            }
+
+            if (token.Type == TokenType.OpenBrace)
+            {
+                token = this.scanNextToken();
+                if (token.Type != TokenType.Newline)
+                {
+                    this.clearToNewLine();
+                    result.Errors.Add(new ParseError("Expected end of line", token));
+                    return new ParseOperationResult(node);
+                }
+
+                token = this.scanNextToken();
+                while (token.Type != TokenType.CloseBrace)
+                {
+                    if (token.Type != TokenType.Newline)
+                    {
+                        this.unscan();
+                        var child = this.parseItem(result);
+                        if (!child.IsValid) return new ParseOperationResult(node);
+                        node.Children.Add(child.Node);
+                        token = this.scanNextToken();
+                    }
+
+                }
+            }else
+            {
+                this.unscan();
+            }
+
+            if (!isArg)
+            {
+                token = this.scanNextToken();
+                if (!((token.Type == TokenType.Newline) || (token.Type == TokenType.EOF)))
+                {
+                    result.Errors.Add(new ParseError("Expected end of line or file", token));
+                    return new ParseOperationResult(node);
+                }
+            }
+
+            return new ParseOperationResult(node, true);
+        }
+
+        private ParseOperationResult parseFunctionArg(ParseResult result)
+        {
+            var token = this.scanNextToken();
+            if (!this.parseFunctions.TryGetValue(token.Type, out Func<ParseResult, ParseOperationResult> parseFunction))
+            {
+                result.Errors.Add(new ParseError("Unable to parse function arg " + token.Type.ToString(), token));
+                return new ParseOperationResult(null);
+            }
+
+            this.unscan();
+            var child = parseFunction(result);
+            if (!child.IsValid) return new ParseOperationResult(null);
+            return new ParseOperationResult(child.Node, true);
         }
 
         private void clearToNewLine()
@@ -149,11 +229,24 @@ namespace NaoBlocks.Parser
             this.hasCached = true;
         }
 
+        private class ParseOperationResult
+        {
+            public ParseOperationResult(AstNode node, bool isValid = false)
+            {
+                this.Node = node;
+                this.IsValid = isValid;
+            }
+
+            public AstNode Node { get; private set; }
+
+            public bool IsValid { get; private set; }
+        }
+
         private struct CompoundFunction
         {
             public string Name { get; set; }
 
-            public string[] Clauses { get; set; }
+            public HashSet<string> Clauses { get; set; }
         }
     }
 }

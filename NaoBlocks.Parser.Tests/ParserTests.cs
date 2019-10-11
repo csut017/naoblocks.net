@@ -23,6 +23,7 @@ namespace NaoBlocks.Parser.Tests
         [Theory]
         [InlineData("reset()", "Function:reset")]
         [InlineData("[123]rest()", "Function:rest")]
+        [InlineData("[123]say([456]'Hello')", "Function:say(Constant:Hello)")]
         public void TestParsingTheory(string input, string expected)
         {
             var parser = Parser.New(input);
