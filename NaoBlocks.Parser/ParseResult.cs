@@ -6,13 +6,14 @@ namespace NaoBlocks.Parser
 {
     public class ParseResult
     {
-        public ICollection<ParseError> Errors { get; private set; }
-
         public ParseResult()
         {
             this.Errors = new List<ParseError>();
+            this.Nodes = new List<AstNode>();
         }
 
-        public AstNode AST { get; set; }
+        public ICollection<ParseError> Errors { get; private set; }
+
+        public ICollection<AstNode> Nodes { get; private set; }
     }
 }
