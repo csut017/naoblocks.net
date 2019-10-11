@@ -34,12 +34,24 @@ namespace NaoBlocks.Parser.Tests
 			"Function:reset\nFunction:start{Function:say(Constant:abc),Function:rest}")]
         [InlineData("say(round(1))", "Function:say(Function:round(Constant:1))")]
         [InlineData("say(@test)", "Function:say(Variable:test)")]
-        public void TestParsingTheory(string input, string expected)
+        public void TestBasicParsingTheory(string input, string expected)
         {
             var parser = Parser.New(input);
             var output = parser.Parse();
             Assert.Empty(output.Errors);
             Assert.Equal(expected, string.Join("\n", output.Nodes.Select(n => n.ToString())));
+        }
+
+        [Theory]
+        [InlineData("reset()", "Function:reset[:IDENTIFIER]")]
+        [InlineData("[123]rest()", "[[123]Function:rest[:IDENTIFIER]")]
+        public void TestFullParsingTheory(string input, string expected)
+        {
+            var parser = Parser.New(input);
+            var output = parser.Parse();
+            Assert.Empty(output.Errors);
+            var options = new AstNode.DisplayOptions { IncludeSourceIDs = true, IncludeTokenTypes = true };
+            Assert.Equal(expected, string.Join("\n", output.Nodes.Select(n => n.ToString(options))));
         }
     }
 }

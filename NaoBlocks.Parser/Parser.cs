@@ -13,7 +13,7 @@ namespace NaoBlocks.Parser
             { "if", new CompoundFunction { Name = "if", Clauses = new HashSet<string>(new[] { "elseif", "else" }) } }
         };
         private readonly IDictionary<TokenType, Func<ParseResult, ParseOperationResult>> parseFunctions;
-        private Token lastSourceID;
+        private Token lastSourceId;
         private Token lastToken;
         private bool hasCached;
 
@@ -68,7 +68,7 @@ namespace NaoBlocks.Parser
             if (token.Type != TokenType.Identifier)
             {
                 result.Errors.Add(new ParseError("Unexpected token", token));
-                return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
+                return new ParseOperationResult(this.MakeAstNode(AstNodeType.Invalid, token));
             }
 
             this.UnscanToken();
@@ -79,7 +79,7 @@ namespace NaoBlocks.Parser
                 return new ParseOperationResult(parseResult.Node, true);
             }
 
-            var compound = new AstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
+            var compound = this.MakeAstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
             compound.Children.Add(parseResult.Node);
             token = this.ScanNextToken();
             this.UnscanToken();
@@ -104,10 +104,10 @@ namespace NaoBlocks.Parser
             {
                 this.ClearToNewLine();
                 result.Errors.Add(new ParseError("Unexpected token", token));
-                return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
+                return new ParseOperationResult(this.MakeAstNode(AstNodeType.Invalid, token));
             }
 
-            var node = new AstNode(AstNodeType.Function, token);
+            var node = this.MakeAstNode(AstNodeType.Function, token);
             token = this.ScanNextToken();
             if (!((token.Type == TokenType.OpenBracket) || (token.Type == TokenType.OpenBrace)))
             {
@@ -198,13 +198,13 @@ namespace NaoBlocks.Parser
         private ParseOperationResult ParseConstant(ParseResult result)
         {
             var token = this.ScanNextToken();
-            return new ParseOperationResult(new AstNode(AstNodeType.Constant, token), true);
+            return new ParseOperationResult(this.MakeAstNode(AstNodeType.Constant, token), true);
         }
 
         private ParseOperationResult ParseVariable(ParseResult result)
         {
             var token = this.ScanNextToken();
-            return new ParseOperationResult(new AstNode(AstNodeType.Variable, token), true);
+            return new ParseOperationResult(this.MakeAstNode(AstNodeType.Variable, token), true);
         }
 
         private void ClearToNewLine()
@@ -225,7 +225,7 @@ namespace NaoBlocks.Parser
             {
                 if (token.Type == TokenType.SourceID)
                 {
-                    this.lastSourceID = token;
+                    this.lastSourceId = token;
                 }
                 else if (token.Type != TokenType.Whitespace)
                 {
@@ -253,6 +253,13 @@ namespace NaoBlocks.Parser
         private void UnscanToken()
         {
             this.hasCached = true;
+        }
+
+        private AstNode MakeAstNode(AstNodeType type, Token token)
+        {
+            var node = new AstNode(type, token, this.lastSourceId?.Value);
+            this.lastSourceId = null;
+            return node;
         }
 
         private class ParseOperationResult

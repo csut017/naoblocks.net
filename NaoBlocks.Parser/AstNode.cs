@@ -7,10 +7,11 @@ namespace NaoBlocks.Parser
 {
     public class AstNode
     {
-        public AstNode(AstNodeType type, Token token)
+        public AstNode(AstNodeType type, Token token, string sourceId)
         {
             this.Type = type;
             this.Token = token;
+            this.SourceId = sourceId;
             this.Arguments = new List<AstNode>();
             this.Children = new List<AstNode>();
         }
@@ -25,24 +26,47 @@ namespace NaoBlocks.Parser
 
         public IList<AstNode> Children { get; private set; }
 
-        public override string ToString()
+        public string ToString(DisplayOptions options)
         {
-            var output = this.Type.ToString() + ":" + this.Token.Value;
+            var output = new StringBuilder();
+            if (options.IncludeSourceIDs && !string.IsNullOrEmpty(this.SourceId))
+            {
+                output.Append("[[" + this.SourceId + "]");
+            }
+
+            output.Append(this.Type.ToString() + ":" + this.Token.Value);
+            if (options.IncludeTokenTypes)
+            {
+                output.Append("[:" + this.Token.Type.ToString().ToUpperInvariant() + "]");
+            }
+
             if (this.Arguments.Any())
             {
-                output += "("
-                    + string.Join(",", this.Arguments.Select(arg => arg.ToString()))
-                    + ")";
+                output.Append("(" + string.Join(",", this.Arguments.Select(arg => arg.ToString(options))) + ")");
             }
 
             if (this.Children.Any())
             {
-                output += "{"
-                    + string.Join(",", this.Children.Select(arg => arg.ToString()))
-                    + "}";
+                output.Append("{" + string.Join(",", this.Children.Select(arg => arg.ToString(options))) + "}");
             }
 
-            return output;
+            return output.ToString();
+        }
+
+        public override string ToString()
+        {
+            return this.ToString(new DisplayOptions
+                {
+                    IncludeSourceIDs = false,
+                    IncludeTokenTypes = false
+                });
+        }
+
+        public struct DisplayOptions
+        {
+            public bool IncludeSourceIDs { get; set; }
+
+            public bool IncludeTokenTypes { get; set; }
         }
     }
 }
