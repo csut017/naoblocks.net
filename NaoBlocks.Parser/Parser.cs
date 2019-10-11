@@ -26,6 +26,7 @@ namespace NaoBlocks.Parser
                     { TokenType.Colour, this.ParseConstant },
                     { TokenType.Constant, this.ParseConstant },
                     { TokenType.Identifier, this.ParseFunction },
+                    { TokenType.OpenBracket, this.ParseBracket },
                     { TokenType.Number, this.ParseConstant },
                     { TokenType.Text, this.ParseConstant },
                     { TokenType.Variable, this.ParseVariable },
@@ -152,9 +153,9 @@ namespace NaoBlocks.Parser
                         var child = this.ParseItem(result);
                         if (!child.IsValid) return new ParseOperationResult(node);
                         node.Children.Add(child.Node);
-                        token = this.ScanNextToken();
                     }
 
+                    token = this.ScanNextToken();
                 }
             }
             else
@@ -193,6 +194,28 @@ namespace NaoBlocks.Parser
         private ParseOperationResult ParseFunction(ParseResult result)
         {
             return this.ParseFunctionItem(result, true);
+        }
+
+        private ParseOperationResult ParseBracket(ParseResult result)
+        {
+            var token = this.ScanNextToken();
+            if (token.Type != TokenType.OpenBracket)
+            {
+                result.Errors.Add(new ParseError("Expected opening bracket", token));
+                return new ParseOperationResult(null);
+            }
+
+            var argResult = this.ParseFunctionArgument(result);
+            if (!argResult.IsValid) return argResult;
+
+            token = this.ScanNextToken();
+            if (token.Type != TokenType.CloseBracket)
+            {
+                result.Errors.Add(new ParseError("Expected closing bracket", token));
+                return new ParseOperationResult(null);
+            }
+
+            return argResult;
         }
 
         private ParseOperationResult ParseConstant(ParseResult result)

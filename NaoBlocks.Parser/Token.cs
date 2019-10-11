@@ -26,5 +26,10 @@ namespace NaoBlocks.Parser
         public int LineNumber { get; set; }
 
         public int LinePosition { get; set; }
+
+        public override string ToString()
+        {
+            return "{" + this.Value + ":" + this.Type.ToString() + "}";
+        }
     }
 }
