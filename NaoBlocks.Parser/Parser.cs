@@ -22,13 +22,13 @@ namespace NaoBlocks.Parser
             this.scanner = scanner;
             parseFunctions = new Dictionary<TokenType, Func<ParseResult, ParseOperationResult>>
                 {
-                    { TokenType.Boolean, this.parseConstant },
-                    { TokenType.Colour, this.parseConstant },
-                    { TokenType.Constant, this.parseConstant },
-                    { TokenType.Identifier, this.parseFunctionAsArg },
-                    { TokenType.Number, this.parseConstant },
-                    { TokenType.Text, this.parseConstant },
-                    { TokenType.Variable, this.parseVariable },
+                    { TokenType.Boolean, this.ParseConstant },
+                    { TokenType.Colour, this.ParseConstant },
+                    { TokenType.Constant, this.ParseConstant },
+                    { TokenType.Identifier, this.ParseFunction },
+                    { TokenType.Number, this.ParseConstant },
+                    { TokenType.Text, this.ParseConstant },
+                    { TokenType.Variable, this.ParseVariable },
                 };
         }
 
@@ -42,19 +42,19 @@ namespace NaoBlocks.Parser
         public ParseResult Parse()
         {
             var result = new ParseResult();
-            var tok = this.scanNextToken();
+            var tok = this.ScanNextToken();
             if (tok.Type == TokenType.EOF)
             {
                 result.Errors.Add(new ParseError("Nothing to parse", tok));
                 return result;
             }
 
-            for (; tok.Type != TokenType.EOF; tok = this.scanNextToken())
+            for (; tok.Type != TokenType.EOF; tok = this.ScanNextToken())
             {
                 if (tok.Type != TokenType.Newline)
                 {
-                    this.unscan();
-                    var res = this.parseItem(result);
+                    this.UnscanToken();
+                    var res = this.ParseItem(result);
                     if (res.Node != null) result.Nodes.Add(res.Node);
                 }
             }
@@ -62,17 +62,17 @@ namespace NaoBlocks.Parser
             return result;
         }
 
-        private ParseOperationResult parseItem(ParseResult result)
+        private ParseOperationResult ParseItem(ParseResult result)
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
             if (token.Type != TokenType.Identifier)
             {
                 result.Errors.Add(new ParseError("Unexpected token", token));
                 return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
             }
 
-            this.unscan();
-            var parseResult = this.parseFunction(result, false);
+            this.UnscanToken();
+            var parseResult = this.ParseFunctionItem(result, false);
             if (!parseResult.IsValid) return new ParseOperationResult(parseResult.Node);
             if (!this.compoundFunctions.TryGetValue(parseResult.Node.Token.Value, out CompoundFunction function))
             {
@@ -81,90 +81,90 @@ namespace NaoBlocks.Parser
 
             var compound = new AstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
             compound.Children.Add(parseResult.Node);
-            token = this.scanNextToken();
-            this.unscan();
+            token = this.ScanNextToken();
+            this.UnscanToken();
             while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
             {
-                parseResult = this.parseFunction(result, false);
+                parseResult = this.ParseFunctionItem(result, false);
                 compound.Children.Add(parseResult.Node);
                 if (parseResult.IsValid) return new ParseOperationResult(compound);
 
-                token = this.scanNextToken();
-                this.unscan();
+                token = this.ScanNextToken();
+                this.UnscanToken();
             }
 
             return new ParseOperationResult(compound, true);
         }
 
-        private ParseOperationResult parseFunction(ParseResult result, bool isArg)
+        private ParseOperationResult ParseFunctionItem(ParseResult result, bool isArg)
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
 
             if (token.Type != TokenType.Identifier)
             {
-                this.clearToNewLine();
+                this.ClearToNewLine();
                 result.Errors.Add(new ParseError("Unexpected token", token));
                 return new ParseOperationResult(new AstNode(AstNodeType.Invalid, token));
             }
 
             var node = new AstNode(AstNodeType.Function, token);
-            token = this.scanNextToken();
+            token = this.ScanNextToken();
             if (!((token.Type == TokenType.OpenBracket) || (token.Type == TokenType.OpenBrace)))
             {
-                this.clearToNewLine();
+                this.ClearToNewLine();
                 result.Errors.Add(new ParseError("Unexpected token", token));
                 return new ParseOperationResult(node);
             }
 
             if (token.Type == TokenType.OpenBracket)
             {
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
                 while (token.Type != TokenType.CloseBracket)
                 {
-                    this.unscan();
-                    var argument = this.parseFunctionArg(result);
+                    this.UnscanToken();
+                    var argument = this.ParseFunctionArgument(result);
                     if (!argument.IsValid) return new ParseOperationResult(node);
                     if (argument.Node != null) node.Arguments.Add(argument.Node);
 
-                    token = this.scanNextToken();
-                    if (token.Type == TokenType.Comma) token = this.scanNextToken();
+                    token = this.ScanNextToken();
+                    if (token.Type == TokenType.Comma) token = this.ScanNextToken();
                 }
 
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
             }
 
             if (token.Type == TokenType.OpenBrace)
             {
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
                 if (token.Type != TokenType.Newline)
                 {
-                    this.clearToNewLine();
+                    this.ClearToNewLine();
                     result.Errors.Add(new ParseError("Expected end of line", token));
                     return new ParseOperationResult(node);
                 }
 
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
                 while (token.Type != TokenType.CloseBrace)
                 {
                     if (token.Type != TokenType.Newline)
                     {
-                        this.unscan();
-                        var child = this.parseItem(result);
+                        this.UnscanToken();
+                        var child = this.ParseItem(result);
                         if (!child.IsValid) return new ParseOperationResult(node);
                         node.Children.Add(child.Node);
-                        token = this.scanNextToken();
+                        token = this.ScanNextToken();
                     }
 
                 }
             }
             else
             {
-                this.unscan();
+                this.UnscanToken();
             }
 
             if (!isArg)
             {
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
                 if (!((token.Type == TokenType.Newline) || (token.Type == TokenType.EOF)))
                 {
                     result.Errors.Add(new ParseError("Expected end of line or file", token));
@@ -175,52 +175,52 @@ namespace NaoBlocks.Parser
             return new ParseOperationResult(node, true);
         }
 
-        private ParseOperationResult parseFunctionArg(ParseResult result)
+        private ParseOperationResult ParseFunctionArgument(ParseResult result)
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
             if (!this.parseFunctions.TryGetValue(token.Type, out Func<ParseResult, ParseOperationResult> parseFunction))
             {
                 result.Errors.Add(new ParseError("Unable to parse function arg " + token.Type.ToString(), token));
                 return new ParseOperationResult(null);
             }
 
-            this.unscan();
+            this.UnscanToken();
             var child = parseFunction(result);
             if (!child.IsValid) return new ParseOperationResult(null);
             return new ParseOperationResult(child.Node, true);
         }
 
-        private ParseOperationResult parseFunctionAsArg(ParseResult result)
+        private ParseOperationResult ParseFunction(ParseResult result)
         {
-            return this.parseFunction(result, true);
+            return this.ParseFunctionItem(result, true);
         }
 
-        private ParseOperationResult parseConstant(ParseResult result)
+        private ParseOperationResult ParseConstant(ParseResult result)
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
             return new ParseOperationResult(new AstNode(AstNodeType.Constant, token), true);
         }
 
-        private ParseOperationResult parseVariable(ParseResult result)
+        private ParseOperationResult ParseVariable(ParseResult result)
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
             return new ParseOperationResult(new AstNode(AstNodeType.Variable, token), true);
         }
 
-        private void clearToNewLine()
+        private void ClearToNewLine()
         {
-            var token = this.scanNextToken();
+            var token = this.ScanNextToken();
             while ((token.Type != TokenType.EOF) && (token.Type != TokenType.Newline))
             {
-                token = this.scanNextToken();
+                token = this.ScanNextToken();
             }
 
-            this.unscan();
+            this.UnscanToken();
         }
 
-        private Token scanNextToken()
+        private Token ScanNextToken()
         {
-            var token = this.scan();
+            var token = this.ScanToken();
             while (true)
             {
                 if (token.Type == TokenType.SourceID)
@@ -232,13 +232,13 @@ namespace NaoBlocks.Parser
                     break;
                 }
 
-                token = this.scan();
+                token = this.ScanToken();
             }
 
             return token;
         }
 
-        private Token scan()
+        private Token ScanToken()
         {
             if (this.hasCached)
             {
@@ -250,7 +250,7 @@ namespace NaoBlocks.Parser
             return this.lastToken;
         }
 
-        private void unscan()
+        private void UnscanToken()
         {
             this.hasCached = true;
         }
