@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NaoBlocks.Web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class StudentsController : ControllerBase
     {

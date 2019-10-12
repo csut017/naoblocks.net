@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NaoBlocks.Parser
 {
-    public class Scanner
+    public class CodeScanner
     {
         private readonly TextReader _reader;
         private readonly IDictionary<char, TokenType> _chars = new Dictionary<char, TokenType>
@@ -27,12 +28,17 @@ namespace NaoBlocks.Parser
         private int _linePosition;
         private int _lastTokenStart;
 
-        public Scanner(TextReader reader)
+        public CodeScanner(TextReader reader)
         {
             this._reader = reader;
         }
 
-        public Token Read()
+        public Task<Token> ReadAsync()
+        {
+            return Task.FromResult(this.Read());
+        }
+
+        private Token Read()
         {
             this._lastTokenStart = this._linePosition - (this._hasChar ? 1 : 0);
             var inputChar = this.ReadNextCharacter();

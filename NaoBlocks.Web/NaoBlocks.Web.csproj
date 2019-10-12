@@ -15,4 +15,12 @@
     <PackageReference Include="RavenDB.Embedded" Version="4.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Commands\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NaoBlocks.Parser\NaoBlocks.Parser.csproj" />
+  </ItemGroup>
+
 </Project>

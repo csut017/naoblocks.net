@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Parser.Tests
 {
-    public class ParserTests
+    public class CodeParserTests
     {
         [Fact]
-        public void TestParseHandlesEmptyInput()
+        public async Task TestParseHandlesEmptyInputAsync()
         {
-            var parser = Parser.New(string.Empty);
-            var output = parser.Parse();
+            var parser = CodeParser.New(string.Empty);
+            var output = await parser.ParseAsync();
             var expected = new[]
             {
                 "Nothing to parse"
@@ -34,10 +35,10 @@ namespace NaoBlocks.Parser.Tests
 			"Function:reset\nFunction:start{Function:say(Constant:abc),Function:rest}")]
         [InlineData("say(round(1))", "Function:say(Function:round(Constant:1))")]
         [InlineData("say(@test)", "Function:say(Variable:test)")]
-        public void TestBasicParsingTheory(string input, string expected)
+        public async Task TestBasicParsingTheoryAsync(string input, string expected)
         {
-            var parser = Parser.New(input);
-            var output = parser.Parse();
+            var parser = CodeParser.New(input);
+            var output = await parser.ParseAsync();
             Assert.Empty(output.Errors);
             Assert.Equal(expected, string.Join("\n", output.Nodes.Select(n => n.ToString())));
         }
@@ -85,10 +86,10 @@ namespace NaoBlocks.Parser.Tests
 				"Function:wait[:IDENTIFIER](Constant:1[:NUMBER])},"+
 				"Function:elseif[:IDENTIFIER](Constant:FALSE[:BOOLEAN]){"+
 				"Function:say[:IDENTIFIER](Constant:hello[:TEXT])}}")]
-        public void TestFullParsingTheory(string input, string expected)
+        public async Task TestFullParsingTheoryAsync(string input, string expected)
         {
-            var parser = Parser.New(input);
-            var output = parser.Parse();
+            var parser = CodeParser.New(input);
+            var output = await parser.ParseAsync();
             Assert.Empty(output.Errors);
             var options = new AstNode.DisplayOptions { IncludeSourceIDs = true, IncludeTokenTypes = true };
             Assert.Equal(expected, string.Join("\n", output.Nodes.Select(n => n.ToString(options))));

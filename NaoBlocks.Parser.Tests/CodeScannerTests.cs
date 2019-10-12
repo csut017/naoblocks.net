@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Parser.Tests
 {
-    public class ScannerTests
+    public class CodeScannerTests
     {
         [Theory]
         [InlineData("", TokenType.EOF, "")]
@@ -39,11 +40,11 @@ namespace NaoBlocks.Parser.Tests
         [InlineData("'Test", TokenType.Illegal, "'Test")]
         [InlineData("[abCD+-\\'12(){}]", TokenType.SourceID, "abCD+-\\'12(){}")]
         [InlineData("[abCD+-\\'12(){}", TokenType.Illegal, "[abCD+-\\'12(){}")]
-        public void ReadTokenTheory(string input, TokenType expectedType, string expectedValue)
+        public async Task ReadTokenTheoryAsync(string input, TokenType expectedType, string expectedValue)
         {
             var reader = new StringReader(input);
-            var scanner = new Scanner(reader);
-            var token = scanner.Read();
+            var scanner = new CodeScanner(reader);
+            var token = await scanner.ReadAsync();
             var expected = new Token(expectedType, expectedValue);
             Assert.Equal(expected, token, new TokenComparer());
         }
@@ -53,15 +54,15 @@ namespace NaoBlocks.Parser.Tests
         [InlineData("say(@hello)", TokenType.Identifier, TokenType.OpenBracket, TokenType.Variable, TokenType.CloseBracket, TokenType.EOF)]
         [InlineData("say(round(1))", TokenType.Identifier, TokenType.OpenBracket, TokenType.Identifier, TokenType.OpenBracket, TokenType.Number, TokenType.CloseBracket, TokenType.CloseBracket, TokenType.EOF)]
         [InlineData("say('hello')\nrest()", TokenType.Identifier, TokenType.OpenBracket, TokenType.Text, TokenType.CloseBracket, TokenType.Newline, TokenType.Identifier, TokenType.OpenBracket, TokenType.CloseBracket, TokenType.EOF)]
-        public void ReadTokenTypeSequenceTheory(string input, params TokenType[] expected)
+        public async Task ReadTokenTypeSequenceTheoryAsync(string input, params TokenType[] expected)
         {
             var reader = new StringReader(input);
-            var scanner = new Scanner(reader);
+            var scanner = new CodeScanner(reader);
             var token = new Token(TokenType.Illegal, "");
             var actual = new List<TokenType>();
             while (token.Type != TokenType.EOF)
             {
-                token = scanner.Read();
+                token = await scanner.ReadAsync();
                 actual.Add(token.Type);
             }
 
@@ -73,15 +74,15 @@ namespace NaoBlocks.Parser.Tests
         [InlineData("say(@hello)", 0, 3, 4, 10, 11)]
         [InlineData("say(round(1))", 0, 3, 4, 9, 10, 11, 12, 13)]
         [InlineData("say('hello')\nrest()", 0, 3, 4, 11, 12, 0, 4, 5, 6)]
-        public void ReadLinePositionTheory(string input, params int[] expected)
+        public async Task ReadLinePositionTheoryAsync(string input, params int[] expected)
         {
             var reader = new StringReader(input);
-            var scanner = new Scanner(reader);
+            var scanner = new CodeScanner(reader);
             var token = new Token(TokenType.Illegal, "");
             var actual = new List<int>();
             while (token.Type != TokenType.EOF)
             {
-                token = scanner.Read();
+                token = await scanner.ReadAsync();
                 actual.Add(token.LinePosition);
             }
 
@@ -93,15 +94,15 @@ namespace NaoBlocks.Parser.Tests
         [InlineData("say(@hello)", 0, 0, 0, 0, 0)]
         [InlineData("say(round(1))", 0, 0, 0, 0, 0, 0, 0, 0)]
         [InlineData("say('hello')\nrest()", 0, 0, 0, 0, 0, 1, 1, 1, 1)]
-        public void ReadLineNumberTheory(string input, params int[] expected)
+        public async Task ReadLineNumberTheoryAsync(string input, params int[] expected)
         {
             var reader = new StringReader(input);
-            var scanner = new Scanner(reader);
+            var scanner = new CodeScanner(reader);
             var token = new Token(TokenType.Illegal, "");
             var actual = new List<int>();
             while (token.Type != TokenType.EOF)
             {
-                token = scanner.Read();
+                token = await scanner.ReadAsync();
                 actual.Add(token.LineNumber);
             }
 
