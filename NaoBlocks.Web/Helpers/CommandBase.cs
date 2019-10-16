@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Helpers
             return result;
         }
 
-        public abstract Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result);
+        protected abstract Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result);
 
         public virtual Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
         {

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Dtos
 {
-    public class CodeCompileRequest
+    public class RobotCode
     {
-        public string Code { get; set; }
+        public string Program { get; set; }
     }
 }
