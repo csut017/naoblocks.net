@@ -7,3 +7,5 @@ NaoBlocks.Web/bin/**/*.*
 NaoBlocks.Web/obj/**/*.*
 NaoBlocks.Web.Tests/bin/**/*.*
 NaoBlocks.Web.Tests/obj/**/*.*
+**/coverage.cobertura.xml
+coverage/**/*.*
