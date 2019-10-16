@@ -9,14 +9,10 @@
             this.LinePosition = token.LinePosition;
         }
 
-        public ParseError()
-        {
-        }
-
-        public string Message { get; set; }
-
         public int LineNumber { get; set; }
 
         public int LinePosition { get; set; }
+
+        public string Message { get; set; }
     }
 }

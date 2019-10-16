@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Parser
 {
     public class CodeParser
     {
-        private readonly CodeScanner scanner;
         private readonly IDictionary<string, CompoundFunction> compoundFunctions = new Dictionary<string, CompoundFunction>
         {
             { "if", new CompoundFunction { Name = "if", Clauses = new HashSet<string>(new[] { "elseif", "else" }) } }
         };
+
         private readonly IDictionary<TokenType, Func<ParseResult, Task<ParseOperationResult>>> parseFunctions;
+        private readonly CodeScanner scanner;
+        private bool hasCached;
         private Token lastSourceId;
         private Token lastToken;
-        private bool hasCached;
 
         public CodeParser(CodeScanner scanner)
         {
@@ -64,57 +64,76 @@ namespace NaoBlocks.Parser
             return result;
         }
 
-        private async Task<ParseOperationResult> ParseItemAsync(ParseResult result)
+        private async Task ClearToNewLineAsync()
         {
             var token = await this.ScanNextTokenAsync();
-            if (token.Type != TokenType.Identifier)
+            while ((token.Type != TokenType.EOF) && (token.Type != TokenType.Newline))
             {
-                result.Errors.Add(new ParseError("Unexpected token", token));
-                return new ParseOperationResult(this.MakeAstNode(AstNodeType.Invalid, token));
-            }
-
-            this.UnscanToken();
-            var parseResult = await this.ParseFunctionItemAsync(result, false);
-            if (!parseResult.IsValid) return new ParseOperationResult(parseResult.Node);
-            if (!this.compoundFunctions.TryGetValue(parseResult.Node.Token.Value, out CompoundFunction function))
-            {
-                return new ParseOperationResult(parseResult.Node, true);
-            }
-
-            var compound = this.MakeAstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
-            compound.Children.Add(parseResult.Node);
-            token = await this.ScanNextTokenAsync();
-            this.UnscanToken();
-            while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
-            {
-                parseResult = await this.ParseFunctionItemAsync(result, false);
-                compound.Children.Add(parseResult.Node);
-                if (parseResult.IsValid) return new ParseOperationResult(compound);
-
                 token = await this.ScanNextTokenAsync();
-                this.UnscanToken();
             }
 
-            return new ParseOperationResult(compound, true);
+            this.UnscanToken();
+        }
+
+        private AstNode MakeAstNode(AstNodeType type, Token token)
+        {
+            var node = new AstNode(type, token, this.lastSourceId?.Value);
+            this.lastSourceId = null;
+            return node;
+        }
+
+        private async Task<ParseOperationResult> ParseBracketAsync(ParseResult result)
+        {
+            await this.ScanNextTokenAsync();
+            var argResult = await this.ParseFunctionArgumentAsync(result);
+            if (!argResult.IsValid) return argResult;
+
+            var token = await this.ScanNextTokenAsync();
+            if (token.Type != TokenType.CloseBracket)
+            {
+                result.Errors.Add(new ParseError("Expected closing bracket, got " + token.ToString(), token));
+                return new ParseOperationResult(null);
+            }
+
+            return argResult;
+        }
+
+        private async Task<ParseOperationResult> ParseConstantAsync(ParseResult result)
+        {
+            var token = await this.ScanNextTokenAsync();
+            return new ParseOperationResult(this.MakeAstNode(AstNodeType.Constant, token), true);
+        }
+
+        private async Task<ParseOperationResult> ParseFunctionArgumentAsync(ParseResult result)
+        {
+            var token = await this.ScanNextTokenAsync();
+            if (!this.parseFunctions.TryGetValue(token.Type, out Func<ParseResult, Task<ParseOperationResult>> parseFunction))
+            {
+                result.Errors.Add(new ParseError("Unable to parse function arg " + token.ToString(), token));
+                await this.ClearToNewLineAsync();
+                return new ParseOperationResult(null);
+            }
+
+            this.UnscanToken();
+            var child = await parseFunction(result);
+            if (!child.IsValid) return new ParseOperationResult(null);
+            return new ParseOperationResult(child.Node, true);
+        }
+
+        private async Task<ParseOperationResult> ParseFunctionAsync(ParseResult result)
+        {
+            return await this.ParseFunctionItemAsync(result, true);
         }
 
         private async Task<ParseOperationResult> ParseFunctionItemAsync(ParseResult result, bool isArg)
         {
             var token = await this.ScanNextTokenAsync();
-
-            if (token.Type != TokenType.Identifier)
-            {
-                await this.ClearToNewLine();
-                result.Errors.Add(new ParseError("Unexpected token", token));
-                return new ParseOperationResult(this.MakeAstNode(AstNodeType.Invalid, token));
-            }
-
             var node = this.MakeAstNode(AstNodeType.Function, token);
             token = await this.ScanNextTokenAsync();
             if (!((token.Type == TokenType.OpenBracket) || (token.Type == TokenType.OpenBrace)))
             {
-                await this.ClearToNewLine();
-                result.Errors.Add(new ParseError("Unexpected token", token));
+                await this.ClearToNewLineAsync();
+                result.Errors.Add(new ParseError("Unexpected token: " + token.ToString(), token));
                 return new ParseOperationResult(node);
             }
 
@@ -140,8 +159,8 @@ namespace NaoBlocks.Parser
                 token = await this.ScanNextTokenAsync();
                 if (token.Type != TokenType.Newline)
                 {
-                    await this.ClearToNewLine();
-                    result.Errors.Add(new ParseError("Expected end of line", token));
+                    await this.ClearToNewLineAsync();
+                    result.Errors.Add(new ParseError("Expected end of line, got " + token.ToString(), token));
                     return new ParseOperationResult(node);
                 }
 
@@ -169,7 +188,8 @@ namespace NaoBlocks.Parser
                 token = await this.ScanNextTokenAsync();
                 if (!((token.Type == TokenType.Newline) || (token.Type == TokenType.EOF)))
                 {
-                    result.Errors.Add(new ParseError("Expected end of line or file", token));
+                    result.Errors.Add(new ParseError("Expected end of line or file, got " + token.ToString(), token));
+                    await this.ClearToNewLineAsync();
                     return new ParseOperationResult(node);
                 }
             }
@@ -177,69 +197,44 @@ namespace NaoBlocks.Parser
             return new ParseOperationResult(node, true);
         }
 
-        private async Task<ParseOperationResult> ParseFunctionArgumentAsync(ParseResult result)
+        private async Task<ParseOperationResult> ParseItemAsync(ParseResult result)
         {
             var token = await this.ScanNextTokenAsync();
-            if (!this.parseFunctions.TryGetValue(token.Type, out Func<ParseResult, Task<ParseOperationResult>> parseFunction))
+            if (token.Type != TokenType.Identifier)
             {
-                result.Errors.Add(new ParseError("Unable to parse function arg " + token.Type.ToString(), token));
-                return new ParseOperationResult(null);
+                result.Errors.Add(new ParseError("Unexpected token: " + token.ToString(), token));
+                return new ParseOperationResult(this.MakeAstNode(AstNodeType.Invalid, token));
             }
 
             this.UnscanToken();
-            var child = await parseFunction(result);
-            if (!child.IsValid) return new ParseOperationResult(null);
-            return new ParseOperationResult(child.Node, true);
-        }
-
-        private async Task<ParseOperationResult> ParseFunctionAsync(ParseResult result)
-        {
-            return await this.ParseFunctionItemAsync(result, true);
-        }
-
-        private async Task<ParseOperationResult> ParseBracketAsync(ParseResult result)
-        {
-            var token = await this.ScanNextTokenAsync();
-            if (token.Type != TokenType.OpenBracket)
+            var parseResult = await this.ParseFunctionItemAsync(result, false);
+            if (!parseResult.IsValid) return new ParseOperationResult(parseResult.Node);
+            if (!this.compoundFunctions.TryGetValue(parseResult.Node.Token.Value, out CompoundFunction function))
             {
-                result.Errors.Add(new ParseError("Expected opening bracket", token));
-                return new ParseOperationResult(null);
+                return new ParseOperationResult(parseResult.Node, true);
             }
 
-            var argResult = await this.ParseFunctionArgumentAsync(result);
-            if (!argResult.IsValid) return argResult;
-
+            var compound = this.MakeAstNode(AstNodeType.Compound, new Token(TokenType.Generated, function.Name));
+            compound.Children.Add(parseResult.Node);
             token = await this.ScanNextTokenAsync();
-            if (token.Type != TokenType.CloseBracket)
+            this.UnscanToken();
+            while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
             {
-                result.Errors.Add(new ParseError("Expected closing bracket", token));
-                return new ParseOperationResult(null);
+                parseResult = await this.ParseFunctionItemAsync(result, false);
+                compound.Children.Add(parseResult.Node);
+                if (!parseResult.IsValid) return new ParseOperationResult(compound);
+
+                token = await this.ScanNextTokenAsync();
+                this.UnscanToken();
             }
 
-            return argResult;
-        }
-
-        private async Task<ParseOperationResult> ParseConstantAsync(ParseResult result)
-        {
-            var token = await this.ScanNextTokenAsync();
-            return new ParseOperationResult(this.MakeAstNode(AstNodeType.Constant, token), true);
+            return new ParseOperationResult(compound, true);
         }
 
         private async Task<ParseOperationResult> ParseVariableAsync(ParseResult result)
         {
             var token = await this.ScanNextTokenAsync();
             return new ParseOperationResult(this.MakeAstNode(AstNodeType.Variable, token), true);
-        }
-
-        private async Task ClearToNewLine()
-        {
-            var token = await this.ScanNextTokenAsync();
-            while ((token.Type != TokenType.EOF) && (token.Type != TokenType.Newline))
-            {
-                token = await this.ScanNextTokenAsync();
-            }
-
-            this.UnscanToken();
         }
 
         private async Task<Token> ScanNextTokenAsync()
@@ -279,11 +274,10 @@ namespace NaoBlocks.Parser
             this.hasCached = true;
         }
 
-        private AstNode MakeAstNode(AstNodeType type, Token token)
+        private struct CompoundFunction
         {
-            var node = new AstNode(type, token, this.lastSourceId?.Value);
-            this.lastSourceId = null;
-            return node;
+            public HashSet<string> Clauses { get; set; }
+            public string Name { get; set; }
         }
 
         private class ParseOperationResult
@@ -294,16 +288,8 @@ namespace NaoBlocks.Parser
                 this.IsValid = isValid;
             }
 
-            public AstNode Node { get; private set; }
-
             public bool IsValid { get; private set; }
-        }
-
-        private struct CompoundFunction
-        {
-            public string Name { get; set; }
-
-            public HashSet<string> Clauses { get; set; }
+            public AstNode Node { get; private set; }
         }
     }
 }
