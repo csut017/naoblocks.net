@@ -22,7 +22,7 @@ namespace NaoBlocks.Core.Commands
                 errors.Add("Student name is required");
             }
 
-            if (await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
+            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
                 errors.Add($"Person with name {this.Name} already exists");
             }

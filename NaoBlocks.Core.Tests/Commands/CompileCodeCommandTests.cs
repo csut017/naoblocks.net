@@ -7,7 +7,7 @@ namespace NaoBlocks.Web.Tests.Commands
     public class CompileCodeCommandTests
     {
         [Fact]
-        public async Task CompileCodeCommandCompilesCode()
+        public async Task CompilesCode()
         {
             var command = new CompileCodeCommand { Code = "rest()" };
             var result = await command.ApplyAsync(null);
@@ -17,7 +17,7 @@ namespace NaoBlocks.Web.Tests.Commands
         }
 
         [Fact]
-        public async Task CompileCodeCommandFailsValidationWithNoCode()
+        public async Task FailsValidationWithNoCode()
         {
             var command = new CompileCodeCommand { Code = string.Empty };
             var result = await command.ValidateAsync(null);
@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Tests.Commands
         }
 
         [Fact]
-        public async Task CompileCodeCommandValidatesWithCode()
+        public async Task ValidatesWithCode()
         {
             var command = new CompileCodeCommand { Code = "rest()" };
             var result = await command.ValidateAsync(null);
