@@ -12,7 +12,7 @@ namespace NaoBlocks.Web.Tests.Commands
             var command = new CompileCodeCommand { Code = "rest()" };
             var result = await command.ApplyAsync(null);
             Assert.True(result.WasSuccessful);
-            Assert.Empty(command.Output.Errors);
+            Assert.Null(command.Output.Errors);
             Assert.NotEmpty(command.Output.Nodes);
         }
 

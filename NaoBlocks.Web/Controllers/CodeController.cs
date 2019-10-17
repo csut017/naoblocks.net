@@ -59,7 +59,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             await this.commandManager.CommitAsync();
-            var errorCount = command.Output.Errors.Count();
+            var errorCount = command.Output?.Errors?.Count() ?? 0;
             this._logger.LogInformation("Code compiled with " + errorCount.ToString(CultureInfo.CurrentCulture) + " error(s)");
             return new ExecutionResult<RobotCodeCompilation>
             {

@@ -280,7 +280,7 @@ namespace NaoBlocks.Parser
             public string Name { get; set; }
         }
 
-        private class ParseOperationResult
+        private struct ParseOperationResult
         {
             public ParseOperationResult(AstNode node, bool isValid = false)
             {

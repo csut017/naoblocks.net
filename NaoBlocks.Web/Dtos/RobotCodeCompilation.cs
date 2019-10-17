@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -12,8 +11,11 @@ namespace NaoBlocks.Web.Dtos
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
 
-            this.Errors = result.Errors;
-            this.Nodes = result.Nodes;
+            if (result.Errors.Any()) this.Errors = result.Errors;
+            if (result.Nodes.Any())
+            {
+                this.Nodes = result.Nodes.Select(node => node.Clean());
+            }
         }
 
         public IEnumerable<ParseError> Errors { get; private set; }

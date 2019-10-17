@@ -25,7 +25,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Null(response.Value.ValidationErrors);
             Assert.Null(response.Value.ExecutionErrors);
-            Assert.Empty(response.Value.Output.Errors);
+            Assert.Null(response.Value.Output.Errors);
             Assert.NotEmpty(response.Value.Output.Nodes);
         }
 
