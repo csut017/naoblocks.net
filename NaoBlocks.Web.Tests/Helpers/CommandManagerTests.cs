@@ -3,6 +3,7 @@ using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,6 +21,17 @@ namespace NaoBlocks.Web.Tests.Helpers
             var manager = new CommandManager(storeMock.Object, sessionMock.Object);
             var result = await manager.ApplyAsync(command);
             Assert.True(command.ApplyCalled);
+        }
+
+        [Fact]
+        public async Task CommitCallsCommitOnSession()
+        {
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var storeMock = new Mock<IDocumentStore>();
+            storeMock.Setup(s => s.OpenAsyncSession()).Returns(sessionMock.Object);
+            var manager = new CommandManager(storeMock.Object, sessionMock.Object);
+            await manager.CommitAsync();
+            sessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
