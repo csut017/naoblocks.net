@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Web.Models
+﻿namespace NaoBlocks.Core.Models
 {
     public class User
     {

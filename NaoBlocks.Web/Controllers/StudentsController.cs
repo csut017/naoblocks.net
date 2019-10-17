@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Web.Commands;
-using NaoBlocks.Web.Helpers;
+using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
@@ -33,14 +33,14 @@ namespace NaoBlocks.Web.Controllers
             if (pageSize > 100) pageSize = 100;
 
             this._logger.LogDebug($"Retrieving students: page {pageNum} with size {pageSize}");
-            var students = await this.session.Query<Models.User>()
+            var students = await this.session.Query<User>()
                 .Statistics(out QueryStatistics stats)
-                .Where(s => s.Role == Models.UserRole.Student)
+                .Where(s => s.Role == UserRole.Student)
                 .OrderBy(s => s.Name)
                 .Skip(pageNum * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-            var count = students.Count;
+            var count = students.Count();
             this._logger.LogDebug($"Retrieved {count} students");
             var result = new Dtos.ListResult<Dtos.Student>
             {
@@ -63,7 +63,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new student '{student.Name}'");
-            var command = new AddStudentComment
+            var command = new AddStudentCommand
             {
                 Name = student.Name
             };

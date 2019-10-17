@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace NaoBlocks.Web.Helpers
+﻿namespace NaoBlocks.Core.Commands
 {
     public class CommandResult
     {
@@ -13,13 +8,13 @@ namespace NaoBlocks.Web.Helpers
             this.Error = error;
         }
 
+        public string Error { get; set; }
+
+        public int Number { get; private set; }
+
         public bool WasSuccessful
         {
             get { return string.IsNullOrEmpty(this.Error); }
         }
-
-        public int Number { get; private set; }
-
-        public string Error { get; set; }
     }
 }

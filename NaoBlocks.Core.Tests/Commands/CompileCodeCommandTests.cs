@@ -1,4 +1,4 @@
-﻿using NaoBlocks.Web.Commands;
+﻿using NaoBlocks.Core.Commands;
 using System.Threading.Tasks;
 using Xunit;
 

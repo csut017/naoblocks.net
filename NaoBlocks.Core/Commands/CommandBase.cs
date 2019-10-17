@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Helpers
+namespace NaoBlocks.Core.Commands
 {
     public abstract class CommandBase
     {

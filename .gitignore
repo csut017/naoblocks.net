@@ -1,4 +1,8 @@
 .vs/**/*.*
+NaoBlocks.Core/bin/**/*.*
+NaoBlocks.Core/obj/**/*.*
+NaoBlocks.Core.Tests/bin/**/*.*
+NaoBlocks.Core.Tests/obj/**/*.*
 NaoBlocks.Parser/bin/**/*.*
 NaoBlocks.Parser/obj/**/*.*
 NaoBlocks.Parser.Tests/bin/**/*.*

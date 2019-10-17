@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Helpers
+namespace NaoBlocks.Core.Commands
 {
     public class CommandManager : ICommandManager
     {

@@ -16,10 +16,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
-    <PackageReference Include="RavenDB.Embedded" Version="4.2.3" />
+    <PackageReference Include="RavenDB.Embedded" Version="4.2.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NaoBlocks.Core\NaoBlocks.Core.csproj" />
     <ProjectReference Include="..\NaoBlocks.Parser\NaoBlocks.Parser.csproj" />
   </ItemGroup>
 

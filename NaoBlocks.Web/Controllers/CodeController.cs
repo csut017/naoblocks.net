@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Web.Commands;
+using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Dtos;
-using NaoBlocks.Web.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
 

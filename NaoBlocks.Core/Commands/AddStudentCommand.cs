@@ -1,5 +1,4 @@
-﻿using NaoBlocks.Web.Helpers;
-using NaoBlocks.Web.Models;
+﻿using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -7,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Commands
+namespace NaoBlocks.Core.Commands
 {
-    public class AddStudentComment
+    public class AddStudentCommand
         : CommandBase
     {
         public string Name { get; set; }
@@ -23,7 +22,7 @@ namespace NaoBlocks.Web.Commands
                 errors.Add("Student name is required");
             }
 
-            if (await session.Query<User>().AnyAsync(s => s.Name == this.Name))
+            if (await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
                 errors.Add($"Person with name {this.Name} already exists");
             }
@@ -39,7 +38,7 @@ namespace NaoBlocks.Web.Commands
                 Name = this.Name,
                 Role = UserRole.Student
             };
-            await session.StoreAsync(user);
+            await session.StoreAsync(user).ConfigureAwait(false);
         }
     }
 }

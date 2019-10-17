@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
-using NaoBlocks.Web.Helpers;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -45,10 +46,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult<Dtos.RobotCodeCompilation>>>(response);
+            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult<RobotCodeCompilation>>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult<Dtos.RobotCodeCompilation>>(objectResult.Value);
+            var innerResponse = Assert.IsType<Dtos.ExecutionResult<RobotCodeCompilation>>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);
@@ -67,9 +68,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult<Dtos.RobotCodeCompilation>>>(response);
+            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult<RobotCodeCompilation>>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult<Dtos.RobotCodeCompilation>>(badRequest.Value);
+            var innerResponse = Assert.IsType<Dtos.ExecutionResult<RobotCodeCompilation>>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);

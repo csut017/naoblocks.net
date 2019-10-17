@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Parser.Tests", "N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Parser", "NaoBlocks.Parser\NaoBlocks.Parser.csproj", "{5E66EFAB-A7DA-4EA2-BC4C-D279C7EA6501}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Web.Tests", "NaoBlocks.Web.Tests\NaoBlocks.Web.Tests.csproj", "{5F933248-3D9F-42B2-93F0-F641F8093BA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Web.Tests", "NaoBlocks.Web.Tests\NaoBlocks.Web.Tests.csproj", "{5F933248-3D9F-42B2-93F0-F641F8093BA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Core", "NaoBlocks.Core\NaoBlocks.Core.csproj", "{107B7AFA-CD61-4E3C-B68B-F0C4F6C1EBB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Core.Tests", "NaoBlocks.Core.Tests\NaoBlocks.Core.Tests.csproj", "{0F80FF88-FE15-418C-B39A-5C6FA7EE8694}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{5F933248-3D9F-42B2-93F0-F641F8093BA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F933248-3D9F-42B2-93F0-F641F8093BA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F933248-3D9F-42B2-93F0-F641F8093BA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{107B7AFA-CD61-4E3C-B68B-F0C4F6C1EBB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{107B7AFA-CD61-4E3C-B68B-F0C4F6C1EBB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{107B7AFA-CD61-4E3C-B68B-F0C4F6C1EBB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{107B7AFA-CD61-4E3C-B68B-F0C4F6C1EBB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F80FF88-FE15-418C-B39A-5C6FA7EE8694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F80FF88-FE15-418C-B39A-5C6FA7EE8694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F80FF88-FE15-418C-B39A-5C6FA7EE8694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F80FF88-FE15-418C-B39A-5C6FA7EE8694}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

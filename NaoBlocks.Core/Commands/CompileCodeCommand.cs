@@ -1,14 +1,14 @@
-﻿using NaoBlocks.Parser;
-using NaoBlocks.Web.Helpers;
+﻿using NaoBlocks.Core.Models;
+using NaoBlocks.Parser;
 using Raven.Client.Documents.Session;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Commands
+namespace NaoBlocks.Core.Commands
 {
     public class CompileCodeCommand
-        : OutputCommandBase<Dtos.RobotCodeCompilation>
+        : OutputCommandBase<RobotCodeCompilation>
     {
         public string Code { get; set; }
 
@@ -26,8 +26,8 @@ namespace NaoBlocks.Web.Commands
         protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
         {
             var parser = CodeParser.New(this.Code);
-            var parseResult = await parser.ParseAsync();
-            this.Output = new Dtos.RobotCodeCompilation(parseResult);
+            var parseResult = await parser.ParseAsync().ConfigureAwait(false);
+            this.Output = new RobotCodeCompilation(parseResult);
         }
     }
 }

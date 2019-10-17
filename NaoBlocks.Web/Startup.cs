@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NaoBlocks.Core.Commands;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Embedded;
