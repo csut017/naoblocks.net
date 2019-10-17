@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using NaoBlocks.Web.Commands;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -60,11 +59,8 @@ namespace NaoBlocks.Web.Controllers
 
             await this.commandManager.CommitAsync();
             var errorCount = command.Output?.Errors?.Count() ?? 0;
-            this._logger.LogInformation("Code compiled with " + errorCount.ToString(CultureInfo.CurrentCulture) + " error(s)");
-            return new ExecutionResult<RobotCodeCompilation>
-            {
-                Output = command.Output
-            };
+            this._logger.LogInformation($"Code compiled with {errorCount} error(s)");
+            return ExecutionResult.New(command.Output);
         }
     }
 }

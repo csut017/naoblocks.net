@@ -1,7 +1,6 @@
 ﻿using NaoBlocks.Parser;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents.Session;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,13 +12,6 @@ namespace NaoBlocks.Web.Commands
     {
         public string Code { get; set; }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
-        {
-            var parser = CodeParser.New(this.Code);
-            var parseResult = await parser.ParseAsync();
-            this.Output = new Dtos.RobotCodeCompilation(parseResult);
-        }
-
         public override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
         {
             var errors = new List<string>();
@@ -29,6 +21,13 @@ namespace NaoBlocks.Web.Commands
             }
 
             return Task.FromResult(errors.AsEnumerable());
+        }
+
+        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        {
+            var parser = CodeParser.New(this.Code);
+            var parseResult = await parser.ParseAsync();
+            this.Output = new Dtos.RobotCodeCompilation(parseResult);
         }
     }
 }

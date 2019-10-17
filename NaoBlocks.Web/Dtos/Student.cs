@@ -1,6 +1,6 @@
 ﻿namespace NaoBlocks.Web.Dtos
 {
-    public class User
+    public class Student
     {
         public string Name { get; set; }
     }

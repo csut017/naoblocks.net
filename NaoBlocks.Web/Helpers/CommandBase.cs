@@ -29,16 +29,21 @@ namespace NaoBlocks.Web.Helpers
             return result;
         }
 
-        protected abstract Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result);
-
-        public virtual Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public virtual Task<bool> CheckCanRollbackAsync(IAsyncDocumentSession session)
         {
-            return Task.FromResult(new List<string>().AsEnumerable());
+            return Task.FromResult(false);
         }
 
         public virtual Task<CommandResult> RollBackAsync(IAsyncDocumentSession session)
         {
             return Task.FromResult(new CommandResult(this.Number, "Command does not allow rolling back"));
         }
+
+        public virtual Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        {
+            return Task.FromResult(new List<string>().AsEnumerable());
+        }
+
+        protected abstract Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result);
     }
 }
