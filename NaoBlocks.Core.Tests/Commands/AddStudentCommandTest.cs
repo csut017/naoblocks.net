@@ -1,7 +1,9 @@
 ﻿using Moq;
 using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -9,6 +11,22 @@ namespace NaoBlocks.Core.Tests.Commands
 {
     public class AddStudentCommandTest
     {
+        [Fact]
+        public async Task ApplyRequiresSession()
+        {
+            var command = new AddStudentCommand();
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
+        }
+
+        [Fact]
+        public async Task ApplyStoresUser()
+        {
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var command = new AddStudentCommand { Name = "Bob" };
+            var result = await command.ApplyAsync(sessionMock.Object);
+            sessionMock.Verify(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         [Fact]
         public async Task ValidateRequiresName()
         {

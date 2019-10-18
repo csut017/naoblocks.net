@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
 using System.Threading.Tasks;
@@ -35,10 +34,8 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new Mock<ILogger<CodeController>>();
-            var manager = new FakeCommandManager
-            {
-                ApplyCommand = c => Task.FromResult(new CommandResult(1, "Something failed"))
-            };
+            var manager = new FakeCommandManager()
+                .SetupApplyError("Something failed");
             var controller = new CodeController(loggerMock.Object, manager);
             var request = new Dtos.RobotCode { Program = "test" };
 

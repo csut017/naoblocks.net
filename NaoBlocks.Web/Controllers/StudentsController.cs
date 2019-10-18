@@ -70,7 +70,7 @@ namespace NaoBlocks.Web.Controllers
             var errors = await this.commandManager.ValidateAsync(command);
             if (errors.Any())
             {
-                return this.BadRequest(new Dtos.ExecutionResult<Dtos.Student>
+                return this.BadRequest(new Dtos.ExecutionResult
                 {
                     ValidationErrors = errors
                 });
@@ -80,7 +80,7 @@ namespace NaoBlocks.Web.Controllers
             if (!result.WasSuccessful)
             {
                 this._logger.LogInformation("Code compilation failed: " + result.Error);
-                return this.StatusCode(StatusCodes.Status500InternalServerError, new Dtos.ExecutionResult<Dtos.Student>
+                return this.StatusCode(StatusCodes.Status500InternalServerError, new Dtos.ExecutionResult
                 {
                     ExecutionErrors = new[] { result.Error }
                 });
