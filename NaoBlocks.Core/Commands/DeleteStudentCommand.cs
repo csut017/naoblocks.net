@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class AddStudentCommand
+    public class DeleteStudentCommand
         : CommandBase
     {
+        private User student;
         public string Name { get; set; }
 
         public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
@@ -22,23 +23,23 @@ namespace NaoBlocks.Core.Commands
                 errors.Add("Student name is required");
             }
 
-            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == UserRole.Student).ConfigureAwait(false))
+            if (!errors.Any())
             {
-                errors.Add($"Person with name {this.Name} already exists");
+                this.student = await session.Query<User>()
+                                            .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == UserRole.Student)
+                                            .ConfigureAwait(false);
+                if (student == null) errors.Add($"Student {this.Name} does not exist");
             }
 
             return errors.AsEnumerable();
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var user = new User
-            {
-                Name = this.Name,
-                Role = UserRole.Student
-            };
-            await session.StoreAsync(user).ConfigureAwait(false);
+
+            session.Delete(this.student);
+            return Task.CompletedTask;
         }
     }
 }
