@@ -13,6 +13,8 @@ namespace NaoBlocks.Core.Commands
     {
         public string Name { get; set; }
 
+        public string Password { get; set; }
+
         public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -22,9 +24,14 @@ namespace NaoBlocks.Core.Commands
                 errors.Add("Student name is required");
             }
 
+            if (this.Password == null)
+            {
+                errors.Add("Password is required");
+            }
+
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == UserRole.Student).ConfigureAwait(false))
             {
-                errors.Add($"Person with name {this.Name} already exists");
+                errors.Add($"Student with name {this.Name} already exists");
             }
 
             return errors.AsEnumerable();
@@ -36,7 +43,8 @@ namespace NaoBlocks.Core.Commands
             var user = new User
             {
                 Name = this.Name,
-                Role = UserRole.Student
+                Role = UserRole.Student,
+                Password = Models.Password.New(this.Password)
             };
             await session.StoreAsync(user).ConfigureAwait(false);
         }

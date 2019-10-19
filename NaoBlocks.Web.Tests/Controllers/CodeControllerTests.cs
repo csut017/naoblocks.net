@@ -11,6 +11,22 @@ namespace NaoBlocks.Web.Tests.Controllers
     public class CodeControllerTests
     {
         [Fact]
+        public async Task CompileChecksForInput()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<CodeController>>();
+            var manager = new FakeCommandManager();
+            var controller = new CodeController(loggerMock.Object, manager);
+
+            // Act
+            var response = await controller.Compile(null);
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult<RobotCodeCompilation>>>(response);
+            Assert.IsType<BadRequestObjectResult>(actual.Result);
+        }
+
+        [Fact]
         public async Task CompileCompilesCode()
         {
             // Arrange
