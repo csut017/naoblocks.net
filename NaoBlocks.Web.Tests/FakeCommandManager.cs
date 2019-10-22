@@ -22,12 +22,17 @@ namespace NaoBlocks.Web.Tests
         }
 
         public int CountOfApplyCalled { get; private set; }
+
         public int CountOfValidateCalled { get; private set; }
+
+        public CommandBase LastCommand { get; private set; }
+
         public IAsyncDocumentSession Session { get; set; }
 
         public async Task<CommandResult> ApplyAsync(CommandBase command)
         {
             this.CountOfApplyCalled++;
+            this.LastCommand = command;
             var result = await this.applyCommand(command);
             return result;
         }
@@ -78,6 +83,7 @@ namespace NaoBlocks.Web.Tests
         public async Task<IEnumerable<string>> ValidateAsync(CommandBase command)
         {
             this.CountOfValidateCalled++;
+            this.LastCommand = command;
             return await this.validateCommand(command);
         }
     }

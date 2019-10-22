@@ -31,7 +31,8 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Deleting student '{id}'");
             var command = new DeleteUserCommand
             {
-                Name = id
+                Name = id,
+                Role = UserRole.Student
             };
             return await this.commandManager.ExecuteForHttp(command);
         }
@@ -95,7 +96,9 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Adding new student '{student.Name}'");
             var command = new AddUserCommand
             {
-                Name = student.Name
+                Name = student.Name,
+                Password = student.Password,
+                Role = UserRole.Student
             };
             return await this.commandManager.ExecuteForHttp(command);
         }

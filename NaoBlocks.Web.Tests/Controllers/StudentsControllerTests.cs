@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
 using Raven.Client.Documents.Session;
 using System.Threading.Tasks;
@@ -10,6 +12,25 @@ namespace NaoBlocks.Web.Tests.Controllers
 {
     public class StudentsControllerTests
     {
+        [Fact]
+        public async Task DeleteStudentCallsCorrectCommand()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            await controller.DeleteStudent("Bob");
+
+            // Assert
+            var command = Assert.IsType<DeleteUserCommand>(manager.LastCommand);
+            Assert.Equal("Bob", command.Name);
+            Assert.Equal(UserRole.Student, command.Role);
+        }
+
         [Fact]
         public async Task DeleteStudentChecksForInput()
         {
@@ -111,6 +132,27 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Null(response.Value.ExecutionErrors);
             Assert.Equal(1, manager.CountOfApplyCalled);
             Assert.Equal(1, manager.CountOfValidateCalled);
+        }
+
+        [Fact]
+        public async Task PostCallsCorrectCommand()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Dtos.Student { Name = "Bob", Password = "password" };
+
+            // Act
+            await controller.Post(request);
+
+            // Assert
+            var command = Assert.IsType<AddUserCommand>(manager.LastCommand);
+            Assert.Equal("Bob", command.Name);
+            Assert.Equal("password", command.Password);
+            Assert.Equal(UserRole.Student, command.Role);
         }
 
         [Fact]
