@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class AddStudentCommand
+    public class AddUserCommand
         : CommandBase
     {
         public string Name { get; set; }
 
         public string Password { get; set; }
+
+        public UserRole Role { get; set; }
 
         public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
         {
@@ -21,7 +23,7 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<string>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add("Student name is required");
+                errors.Add($"{this.Role} name is required");
             }
 
             if (this.Password == null)
@@ -29,9 +31,9 @@ namespace NaoBlocks.Core.Commands
                 errors.Add("Password is required");
             }
 
-            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == UserRole.Student).ConfigureAwait(false))
+            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == this.Role).ConfigureAwait(false))
             {
-                errors.Add($"Student with name {this.Name} already exists");
+                errors.Add($"{this.Role} with name {this.Name} already exists");
             }
 
             return errors.AsEnumerable();
@@ -43,7 +45,7 @@ namespace NaoBlocks.Core.Commands
             var user = new User
             {
                 Name = this.Name,
-                Role = UserRole.Student,
+                Role = this.Role,
                 Password = Models.Password.New(this.Password)
             };
             await session.StoreAsync(user).ConfigureAwait(false);

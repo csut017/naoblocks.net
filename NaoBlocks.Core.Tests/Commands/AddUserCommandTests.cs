@@ -9,13 +9,13 @@ using Xunit;
 
 namespace NaoBlocks.Core.Tests.Commands
 {
-    public class AddStudentCommandTest
+    public class AddUserCommandTests
     {
         [Fact]
         public async Task ApplyEncryptsPassword()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddStudentCommand { Name = "Bob", Password = "Hello" };
+            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
             var result = await command.ApplyAsync(sessionMock.Object);
             sessionMock.Verify(s => s.StoreAsync(It.Is<User>(u => !string.IsNullOrWhiteSpace(u.Password.Hash)), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -23,7 +23,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new AddStudentCommand();
+            var command = new AddUserCommand();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -31,7 +31,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ApplyStoresUser()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddStudentCommand { Name = "Bob", Password = string.Empty };
+            var command = new AddUserCommand { Name = "Bob", Password = string.Empty };
             var result = await command.ApplyAsync(sessionMock.Object);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -40,7 +40,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresName()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddStudentCommand { Password = string.Empty };
+            var command = new AddUserCommand { Password = string.Empty };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -50,10 +50,23 @@ namespace NaoBlocks.Core.Tests.Commands
         }
 
         [Fact]
+        public async Task ValidateRequiresNameForTeacher()
+        {
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var command = new AddUserCommand { Password = string.Empty, Role = UserRole.Teacher };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new[]
+            {
+                "Teacher name is required"
+            };
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public async Task ValidateRequiresPassword()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddStudentCommand { Name = "Bob" };
+            var command = new AddUserCommand { Name = "Bob" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -65,7 +78,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new AddStudentCommand();
+            var command = new AddUserCommand();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
     }

@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class DeleteStudentCommand
+    public class DeleteUserCommand
         : CommandBase
     {
-        private User student;
+        private User person;
+
         public string Name { get; set; }
+
+        public UserRole Role { get; set; }
 
         public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
         {
@@ -20,15 +23,15 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<string>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add("Student name is required");
+                errors.Add($"{this.Role} name is required");
             }
 
             if (!errors.Any())
             {
-                this.student = await session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == UserRole.Student)
+                this.person = await session.Query<User>()
+                                            .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
                                             .ConfigureAwait(false);
-                if (student == null) errors.Add($"Student {this.Name} does not exist");
+                if (person == null) errors.Add($"{this.Role} {this.Name} does not exist");
             }
 
             return errors.AsEnumerable();
@@ -38,7 +41,7 @@ namespace NaoBlocks.Core.Commands
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
-            session.Delete(this.student);
+            session.Delete(this.person);
             return Task.CompletedTask;
         }
     }

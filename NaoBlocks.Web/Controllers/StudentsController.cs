@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.ExecutionResult>> DeleteStudent(string id)
         {
             this._logger.LogInformation($"Deleting student '{id}'");
-            var command = new DeleteStudentCommand
+            var command = new DeleteUserCommand
             {
                 Name = id
             };
@@ -93,7 +93,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new student '{student.Name}'");
-            var command = new AddStudentCommand
+            var command = new AddUserCommand
             {
                 Name = student.Name
             };
