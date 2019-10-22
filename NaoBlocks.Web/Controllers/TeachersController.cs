@@ -12,13 +12,13 @@ namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class StudentsController : ControllerBase
+    public class TeachersController : ControllerBase
     {
-        private readonly ILogger<StudentsController> _logger;
+        private readonly ILogger<TeachersController> _logger;
         private readonly ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public StudentsController(ILogger<StudentsController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public TeachersController(ILogger<TeachersController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -28,77 +28,77 @@ namespace NaoBlocks.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
         {
-            this._logger.LogInformation($"Deleting student '{id}'");
+            this._logger.LogInformation($"Deleting teacher '{id}'");
             var command = new DeleteUserCommand
             {
                 Name = id,
-                Role = UserRole.Student
+                Role = UserRole.Teacher
             };
             return await this.commandManager.ExecuteForHttp(command);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.Student>> GetStudent(string id)
+        public async Task<ActionResult<Dtos.Teacher>> GetTeacher(string id)
         {
-            this._logger.LogDebug($"Retrieving student: id {id}");
-            var student = await this.session.Query<User>()
-                                            .Where(u => u.Name == id && u.Role == UserRole.Student)
+            this._logger.LogDebug($"Retrieving teacher: id {id}");
+            var teacher = await this.session.Query<User>()
+                                            .Where(u => u.Name == id && u.Role == UserRole.Teacher)
                                             .FirstOrDefaultAsync();
-            if (student == null)
+            if (teacher == null)
             {
                 return NotFound();
             }
 
-            this._logger.LogDebug("Retrieved student");
-            return new Dtos.Student
+            this._logger.LogDebug("Retrieved teacher");
+            return new Dtos.Teacher
             {
-                Name = student.Name
+                Name = teacher.Name
             };
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.Student>> GetStudents(int? page, int? size)
+        public async Task<Dtos.ListResult<Dtos.Teacher>> GetTeachers(int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
             if (pageSize > 100) pageSize = 100;
 
-            this._logger.LogDebug($"Retrieving students: page {pageNum} with size {pageSize}");
-            var students = await this.session.Query<User>()
+            this._logger.LogDebug($"Retrieving teachers: page {pageNum} with size {pageSize}");
+            var teachers = await this.session.Query<User>()
                                              .Statistics(out QueryStatistics stats)
-                                             .Where(s => s.Role == UserRole.Student)
+                                             .Where(s => s.Role == UserRole.Teacher)
                                              .OrderBy(s => s.Name)
                                              .Skip(pageNum * pageSize)
                                              .Take(pageSize)
                                              .ToListAsync();
-            var count = students.Count;
-            this._logger.LogDebug($"Retrieved {count} students");
-            var result = new Dtos.ListResult<Dtos.Student>
+            var count = teachers.Count;
+            this._logger.LogDebug($"Retrieved {count} teachers");
+            var result = new Dtos.ListResult<Dtos.Teacher>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
-                Items = students.Select(s => new Dtos.Student { Name = s.Name })
+                Items = teachers.Select(s => new Dtos.Teacher { Name = s.Name })
             };
             return result;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Post(Dtos.Student student)
+        public async Task<ActionResult<Dtos.ExecutionResult>> Post(Dtos.Teacher teacher)
         {
-            if (student == null)
+            if (teacher == null)
             {
                 return this.BadRequest(new
                 {
-                    Error = "Missing student details"
+                    Error = "Missing teacher details"
                 });
             }
 
-            this._logger.LogInformation($"Adding new student '{student.Name}'");
+            this._logger.LogInformation($"Adding new teacher '{teacher.Name}'");
             var command = new AddUserCommand
             {
-                Name = student.Name,
-                Password = student.Password,
-                Role = UserRole.Student
+                Name = teacher.Name,
+                Password = teacher.Password,
+                Role = UserRole.Teacher
             };
             return await this.commandManager.ExecuteForHttp(command);
         }

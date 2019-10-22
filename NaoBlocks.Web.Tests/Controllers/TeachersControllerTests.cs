@@ -10,17 +10,17 @@ using Xunit;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
-    public class StudentsControllerTests
+    public class TeachersControllerTests
     {
         [Fact]
-        public async Task DeleteStudentCallsCorrectCommand()
+        public async Task DeleteCallsCorrectCommand()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             await controller.Delete("Bob");
@@ -28,17 +28,17 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             var command = Assert.IsType<DeleteUserCommand>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
-            Assert.Equal(UserRole.Student, command.Role);
+            Assert.Equal(UserRole.Teacher, command.Role);
         }
 
         [Fact]
-        public async Task DeleteStudentChecksForInput()
+        public async Task DeleteChecksForInput()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Delete(null);
@@ -49,15 +49,15 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteStudentFailsExecution()
+        public async Task DeleteFailsExecution()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupApplyError("Something failed");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Delete("Bob");
@@ -72,15 +72,15 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteStudentFailsValidation()
+        public async Task DeleteFailsValidation()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Delete("Bob");
@@ -94,14 +94,14 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteStudentRemovesStudent()
+        public async Task DeleteRemovesTeacher()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Delete("Bob");
@@ -114,15 +114,15 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostAddsStudent()
+        public async Task PostAddsTeacher()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob" };
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Dtos.Teacher { Name = "Bob" };
 
             // Act
             var response = await controller.Post(request);
@@ -138,12 +138,12 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PostCallsCorrectCommand()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob", Password = "password" };
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Dtos.Teacher { Name = "Bob", Password = "password" };
 
             // Act
             await controller.Post(request);
@@ -152,17 +152,17 @@ namespace NaoBlocks.Web.Tests.Controllers
             var command = Assert.IsType<AddUserCommand>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal("password", command.Password);
-            Assert.Equal(UserRole.Student, command.Role);
+            Assert.Equal(UserRole.Teacher, command.Role);
         }
 
         [Fact]
         public async Task PostChecksForInput()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Post(null);
@@ -176,13 +176,13 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PostFailsExecution()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupApplyError("Something failed");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob" };
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Dtos.Teacher { Name = "Bob" };
 
             // Act
             var response = await controller.Post(request);
@@ -200,13 +200,13 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PostFailsValidation()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var loggerMock = new Mock<ILogger<TeachersController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student();
+            var controller = new TeachersController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Dtos.Teacher();
 
             // Act
             var response = await controller.Post(request);
