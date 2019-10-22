@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NaoBlocks.Web.Tests.Commands
+namespace NaoBlocks.Core.Tests.Commands
 {
     public class CompileCodeCommandTests
     {

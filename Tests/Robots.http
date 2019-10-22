@@ -1,0 +1,36 @@
+GET https://localhost:5001/api/v1/robots HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+###
+
+GET https://localhost:5001/api/v1/robots/r2d2 HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+###
+
+POST https://localhost:5001/api/v1/robots HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+###
+
+POST https://localhost:5001/api/v1/robots HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+{
+}
+###
+
+POST https://localhost:5001/api/v1/robots HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+{
+  "machineName": "r2d2",
+  "friendlyName": "Bob"
+}
+###
+
+DELETE  https://localhost:5001/api/v1/robots/r2d2 HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+###
+

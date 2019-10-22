@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NaoBlocks.Web.Tests.Helpers
+namespace NaoBlocks.Core.Tests.Commands
 {
     public class CommandManagerTests
     {
