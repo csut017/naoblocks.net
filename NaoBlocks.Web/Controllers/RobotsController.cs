@@ -40,9 +40,8 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.Robot>> GetRobot(string id)
         {
             this._logger.LogDebug($"Retrieving robot: id {id}");
-            var robot = await this.session.Query<Robot>()
-                                            .Where(u => u.MachineName == id)
-                                            .FirstOrDefaultAsync();
+            var queryable = this.session.Query<Robot>();
+            var robot = await queryable.FirstOrDefaultAsync(u => u.MachineName == id);
             if (robot == null)
             {
                 return NotFound();

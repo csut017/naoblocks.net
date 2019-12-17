@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -109,6 +111,51 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Null(response.Value.ExecutionErrors);
             Assert.Equal(1, manager.CountOfApplyCalled);
             Assert.Equal(1, manager.CountOfValidateCalled);
+        }
+
+        [Fact]
+        public async Task GetRobotReturns404()
+        {
+            // Arrange
+            var data = new Robot[0];
+            var queryable = data.AsRavenQueryable();
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(() => queryable);
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.GetRobot("BobTheBot");
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Dtos.Robot>>(response);
+            var objectResult = Assert.IsType<NotFoundResult>(actual.Result);
+            Assert.Null(actual.Value);
+        }
+
+        [Fact]
+        public async Task GetRobotReturnsRobot()
+        {
+            // Arrange
+            var data = new[]
+            {
+                new Robot { FriendlyName = "Bob", MachineName = "BobTheBot" }
+            };
+            var queryable = data.AsRavenQueryable();
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(() => queryable);
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.GetRobot("BobTheBot");
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Dtos.Robot>>(response);
+            Assert.Equal(data[0].MachineName, actual.Value.MachineName);
+            Assert.Equal(data[0].FriendlyName, actual.Value.FriendlyName);
         }
 
         [Fact]
