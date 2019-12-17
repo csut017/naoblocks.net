@@ -1,6 +1,6 @@
-# Projects
+# Main Projects
 
-This page lists the projects in NaoBlocks.Net and their functionality.
+This page lists the projects that make up NaoBlocks.Net and their functionality.
 
 ## NaoBlocks.Core
 
@@ -25,3 +25,13 @@ A web front-end for NaoBlocks.Net.
 ### NaoBlocks.Web.Tests
 
 Unit tests for NaoBlocks.Web.
+
+# Supplementary Projects
+
+These are additional projects that provide missing functionality for NaoBlocks.Net.
+
+## RavenDB.Mocks
+
+A framework to allow mocking RavenDB interfaces.
+
+***Note:*** *This functionality is currently a bit limited. These limitations are due to the way RavenDB (and LINQ in general) works.*
