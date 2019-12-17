@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NaoBlocks.Core\NaoBlocks.Core.csproj" />
+    <ProjectReference Include="..\RavenDB.Mocks\RavenDB.Mocks.csproj" />
   </ItemGroup>
 
 </Project>

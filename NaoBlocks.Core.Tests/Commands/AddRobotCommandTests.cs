@@ -2,7 +2,9 @@
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -25,6 +27,26 @@ namespace NaoBlocks.Core.Tests.Commands
             var command = new AddRobotCommand { MachineName = "testing-robot" };
             var result = await command.ApplyAsync(sessionMock.Object);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<Robot>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ValidateChecksForExistingRobot()
+        {
+            var data = new[]
+            {
+                new Robot { MachineName = "Old" }
+            }.AsRavenQueryable();
+            data.Operations.Any = s => true;
+
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
+            var command = new AddRobotCommand { MachineName = "Old" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new[]
+            {
+                "Robot with name Old already exists"
+            };
+            Assert.Equal(expected, result);
         }
 
         [Fact]
