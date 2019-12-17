@@ -29,7 +29,8 @@ namespace NaoBlocks.Web
 
             app.UseHttpsRedirection();
             app.UseRouting();
-            //app.UseAuthorization();
+            app.UseWebSockets();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
