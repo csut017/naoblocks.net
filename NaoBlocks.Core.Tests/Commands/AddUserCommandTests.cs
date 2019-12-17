@@ -2,6 +2,7 @@
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,31 @@ namespace NaoBlocks.Core.Tests.Commands
             var command = new AddUserCommand { Name = "Bob", Password = string.Empty };
             var result = await command.ApplyAsync(sessionMock.Object);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ValidateChecksForExistingUser()
+        {
+            var data = new[]
+            {
+                new User { Name = "Old" }
+            }.AsRavenQueryable();
+            data.Operations.Any = s => true;
+
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
+            var command = new AddUserCommand
+            {
+                Name = "Old",
+                Password = "testing",
+                Role = UserRole.Teacher
+            };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new[]
+            {
+                "Teacher with name Old already exists"
+            };
+            Assert.Equal(expected, result);
         }
 
         [Fact]

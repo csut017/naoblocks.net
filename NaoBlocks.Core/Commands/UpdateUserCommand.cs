@@ -34,7 +34,7 @@ namespace NaoBlocks.Core.Commands
         protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            if (string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
+            if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
             return Task.CompletedTask;
         }
     }

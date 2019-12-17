@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,12 +32,10 @@ namespace RavenDB.Mocks
             this._source = source;
         }
 
+        public DocumentConventions Conventions => throw new NotImplementedException();
         public string IndexName => throw new NotImplementedException();
 
         public bool IsDistinct => throw new NotImplementedException();
-
-        public DocumentConventions Conventions => throw new NotImplementedException();
-
         public IAsyncDocumentQuery<TItem> Not => throw new NotImplementedException();
 
         public IAsyncDocumentQuery<TItem> AddOrder(string fieldName, bool descending = false, OrderingType ordering = OrderingType.String)
@@ -169,7 +166,8 @@ namespace RavenDB.Mocks
 
         public Task<TItem> FirstOrDefaultAsync(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var value = this._operations.FirstOrDefault(this._source);
+            return Task.FromResult(value);
         }
 
         public IAsyncDocumentQuery<TItem> Fuzzy(decimal fuzzy)

@@ -2,6 +2,7 @@
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -24,6 +25,40 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             var command = new DeleteRobotCommand();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
+        }
+
+        [Fact]
+        public async Task ValidateHandlesExistingRobot()
+        {
+            var data = new[]
+            {
+                new Robot { MachineName = "Old" }
+            }.AsRavenQueryable();
+
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
+
+            var command = new DeleteRobotCommand { MachineName = "Bob" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new string[0];
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task ValidateHandlesMissingRobot()
+        {
+            var data = new Robot[0].AsRavenQueryable();
+
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
+
+            var command = new DeleteRobotCommand { MachineName = "Bob" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new[]
+            {
+                "Robot Bob does not exist"
+            };
+            Assert.Equal(expected, result);
         }
 
         [Fact]
