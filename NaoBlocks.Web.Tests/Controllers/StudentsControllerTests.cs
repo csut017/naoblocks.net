@@ -5,8 +5,11 @@ using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System.Threading.Tasks;
 using Xunit;
+
+using Data = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -44,7 +47,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -63,10 +66,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete("Bob");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
         }
@@ -86,9 +89,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete("Bob");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }
@@ -114,6 +117,50 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetStudentReturns404()
+        {
+            // Arrange
+            var data = new User[0];
+            var queryable = data.AsRavenQueryable();
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(() => queryable);
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.GetStudent("John");
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.Student>>(response);
+            var objectResult = Assert.IsType<NotFoundResult>(actual.Result);
+            Assert.Null(actual.Value);
+        }
+
+        [Fact]
+        public async Task GetStudentReturnsStudent()
+        {
+            // Arrange
+            var data = new[]
+            {
+                new User { Name = "John" }
+            };
+            var queryable = data.AsRavenQueryable();
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(() => queryable);
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.GetStudent("John");
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.Student>>(response);
+            Assert.Equal(data[0].Name, actual.Value.Name);
+        }
+
+        [Fact]
         public async Task PostAddsStudent()
         {
             // Arrange
@@ -122,7 +169,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob" };
+            var request = new Data.Student { Name = "Bob" };
 
             // Act
             var response = await controller.Post(request);
@@ -143,7 +190,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob", Password = "password" };
+            var request = new Data.Student { Name = "Bob", Password = "password" };
 
             // Act
             await controller.Post(request);
@@ -168,7 +215,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -182,16 +229,16 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupApplyError("Something failed");
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student { Name = "Bob" };
+            var request = new Data.Student { Name = "Bob" };
 
             // Act
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
         }
@@ -206,15 +253,15 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Student();
+            var request = new Data.Student();
 
             // Act
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }

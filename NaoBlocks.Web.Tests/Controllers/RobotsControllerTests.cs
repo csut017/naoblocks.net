@@ -9,6 +9,8 @@ using RavenDB.Mocks;
 using System.Threading.Tasks;
 using Xunit;
 
+using Data = NaoBlocks.Web.Dtos;
+
 namespace NaoBlocks.Web.Tests.Controllers
 {
     public class RobotsControllerTests
@@ -44,7 +46,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -63,10 +65,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete("Bob");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
         }
@@ -86,9 +88,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Delete("Bob");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }
@@ -129,7 +131,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.GetRobot("BobTheBot");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.Robot>>(response);
+            var actual = Assert.IsType<ActionResult<Data.Robot>>(response);
             var objectResult = Assert.IsType<NotFoundResult>(actual.Result);
             Assert.Null(actual.Value);
         }
@@ -153,7 +155,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.GetRobot("BobTheBot");
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.Robot>>(response);
+            var actual = Assert.IsType<ActionResult<Data.Robot>>(response);
             Assert.Equal(data[0].MachineName, actual.Value.MachineName);
             Assert.Equal(data[0].FriendlyName, actual.Value.FriendlyName);
         }
@@ -167,7 +169,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Robot { MachineName = "Bob" };
+            var request = new Data.Robot { MachineName = "Bob" };
 
             // Act
             var response = await controller.Post(request);
@@ -188,7 +190,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Robot { MachineName = "r2d2", FriendlyName = "Bob" };
+            var request = new Data.Robot { MachineName = "r2d2", FriendlyName = "Bob" };
 
             // Act
             await controller.Post(request);
@@ -212,7 +214,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -226,16 +228,16 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupApplyError("Something failed");
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Robot { MachineName = "Bob" };
+            var request = new Data.Robot { MachineName = "Bob" };
 
             // Act
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
         }
@@ -250,15 +252,15 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
-            var request = new Dtos.Robot();
+            var request = new Data.Robot();
 
             // Act
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Dtos.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Dtos.ExecutionResult>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }

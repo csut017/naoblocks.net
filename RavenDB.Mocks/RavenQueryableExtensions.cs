@@ -1,5 +1,4 @@
-﻿using Raven.Client.Documents.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace RavenDB.Mocks

@@ -42,8 +42,7 @@ namespace NaoBlocks.Web.Controllers
         {
             this._logger.LogDebug($"Retrieving teacher: id {id}");
             var teacher = await this.session.Query<User>()
-                                            .Where(u => u.Name == id && u.Role == UserRole.Teacher)
-                                            .FirstOrDefaultAsync();
+                                            .FirstOrDefaultAsync(u => u.Name == id && u.Role == UserRole.Teacher);
             if (teacher == null)
             {
                 return NotFound();

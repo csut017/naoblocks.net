@@ -6,16 +6,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace RavenDB.Mocks
 {
     public class FakeRavenQueryable<TItem>
         : IRavenQueryable<TItem>
     {
-        private readonly IQueryable<TItem> _source;
-        private readonly IQueryProvider _provider;
         private readonly DocumentOperations<TItem> _operations = new DocumentOperations<TItem>();
+        private readonly IQueryProvider _provider;
+        private readonly IQueryable<TItem> _source;
 
         public FakeRavenQueryable(IQueryable<TItem> source)
         {
@@ -23,12 +22,9 @@ namespace RavenDB.Mocks
             this._provider = new FakeRavenQueryProvider<TItem>(this._operations, source);
         }
 
-        public DocumentOperations<TItem> Operations => this._operations;
-
         public Type ElementType => throw new NotImplementedException();
-
         public Expression Expression => this._source.Expression;
-
+        public DocumentOperations<TItem> Operations => this._operations;
         public IQueryProvider Provider => this._provider;
 
         public IRavenQueryable<TItem> Customize(Action<IDocumentQueryCustomization> action)
@@ -37,6 +33,11 @@ namespace RavenDB.Mocks
         }
 
         public IEnumerator<TItem> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
         }
@@ -63,12 +64,8 @@ namespace RavenDB.Mocks
 
         public IRavenQueryable<TItem> Statistics(out QueryStatistics stats)
         {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
+            this._operations.Statistics(this._source, out stats);
+            return this;
         }
     }
 }
