@@ -72,18 +72,17 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
-        //[HttpGet("whoami")]
-        //public async Task<ActionResult<Dtos.User>> WhoAmI()
-        //{
-        //    this.logger.LogInformation("Retrieving current user");
-        //    var user = await this.LoadUser(this.session).ConfigureAwait(false);
-        //    if (user == null) return this.NotFound();
-        //    return new Dtos.User
-        //    {
-        //        Name = user.Name,
-        //        Login = user.Login,
-        //        Type = user.Type.ToString()
-        //    };
-        //}
+        [HttpGet("whoami")]
+        public async Task<ActionResult<Dtos.User>> WhoAmI()
+        {
+            this.logger.LogInformation("Retrieving current user");
+            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            if (user == null) return this.NotFound();
+            return new Dtos.User
+            {
+                Name = user.Name,
+                Role = user.Role
+            };
+        }
     }
 }

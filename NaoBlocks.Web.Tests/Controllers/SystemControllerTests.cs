@@ -104,14 +104,14 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task InitialiseFailsValidation()
+        public async Task InitialiseFailsIfAUserExists()
         {
             // Arrange
             var loggerMock = new Mock<ILogger<SystemController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
-            var users = new User[0];
+            var users = new[] { new User() };
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
             var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
@@ -129,14 +129,14 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task InitialiseIfAUserExists()
+        public async Task InitialiseFailsValidation()
         {
             // Arrange
             var loggerMock = new Mock<ILogger<SystemController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
-            var users = new[] { new User() };
+            var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
             var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
@@ -168,6 +168,46 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<ActionResult<object>>(result);
+        }
+
+        [Fact]
+        public async Task WhoAmIFailsIfUserNotSet()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<SystemController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupValidateErrors("Oops");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.WhoAmI();
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.User>>(response);
+            Assert.IsType<NotFoundResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task WhoAmIReturnsCurrentUser()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<SystemController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupValidateErrors("Oops");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
+
+            // Act
+            var response = await controller.WhoAmI();
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.User>>(response);
+            var user = Assert.IsType<Data.User>(actual.Value);
+            Assert.Equal("Bob", user.Name);
         }
     }
 }
