@@ -49,10 +49,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved teacher");
-            return new Dtos.Teacher
-            {
-                Name = teacher.Name
-            };
+            return Dtos.Teacher.FromModel(teacher);
         }
 
         [HttpGet]
@@ -76,7 +73,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
-                Items = teachers.Select(s => new Dtos.Teacher { Name = s.Name })
+                Items = teachers.Select(Dtos.Teacher.FromModel)
             };
             return result;
         }
@@ -99,12 +96,7 @@ namespace NaoBlocks.Web.Controllers
                 Password = teacher.Password,
                 Role = UserRole.Teacher
             };
-            return await this.commandManager.ExecuteForHttp(
-                command,
-                u => u == null ? null : new Dtos.Teacher
-                {
-                    Name = u.Name
-                });
+            return await this.commandManager.ExecuteForHttp(command, Dtos.Teacher.FromModel);
         }
     }
 }

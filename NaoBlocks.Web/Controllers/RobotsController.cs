@@ -48,11 +48,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved robot");
-            return new Dtos.Robot
-            {
-                MachineName = robot.MachineName,
-                FriendlyName = robot.FriendlyName
-            };
+            return Dtos.Robot.FromModel(robot);
         }
 
         [HttpGet]
@@ -75,11 +71,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
-                Items = robots.Select(s => new Dtos.Robot
-                {
-                    MachineName = s.MachineName,
-                    FriendlyName = s.FriendlyName
-                })
+                Items = robots.Select(Dtos.Robot.FromModel)
             };
             return result;
         }
@@ -101,13 +93,7 @@ namespace NaoBlocks.Web.Controllers
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName
             };
-            return await this.commandManager.ExecuteForHttp(
-                command,
-                r => r == null ? null : new Dtos.Robot
-                {
-                    FriendlyName = r.FriendlyName,
-                    MachineName = r.MachineName
-                });
+            return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
         }
     }
 }
