@@ -85,7 +85,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Post(Dtos.Robot robot)
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)
         {
             if (robot == null)
             {
@@ -101,7 +101,13 @@ namespace NaoBlocks.Web.Controllers
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName
             };
-            return await this.commandManager.ExecuteForHttp(command);
+            return await this.commandManager.ExecuteForHttp(
+                command,
+                r => r == null ? null : new Dtos.Robot
+                {
+                    FriendlyName = r.FriendlyName,
+                    MachineName = r.MachineName
+                });
         }
     }
 }

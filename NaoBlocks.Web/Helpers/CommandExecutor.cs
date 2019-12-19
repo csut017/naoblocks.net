@@ -37,5 +37,37 @@ namespace NaoBlocks.Web.Helpers
             await commandManager.CommitAsync();
             return new Dtos.ExecutionResult();
         }
+
+        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, OutputCommandBase<TIn> command, Func<TIn, TOut> mapper)
+        {
+            if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (mapper == null) throw new ArgumentNullException(nameof(mapper));
+
+            var errors = await commandManager.ValidateAsync(command);
+            if (errors.Any())
+            {
+                return new BadRequestObjectResult(new Dtos.ExecutionResult<TOut>
+                {
+                    ValidationErrors = errors
+                });
+            }
+
+            var result = await commandManager.ApplyAsync(command);
+            if (!result.WasSuccessful)
+            {
+                return new ObjectResult(new Dtos.ExecutionResult<TOut>
+                {
+                    ExecutionErrors = new[] { result.Error }
+                })
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+
+            await commandManager.CommitAsync();
+            var output = mapper(command.Output);
+            return Dtos.ExecutionResult.New(output);
+        }
     }
 }

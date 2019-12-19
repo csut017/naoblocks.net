@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class AddUserCommand
-        : CommandBase
+        : OutputCommandBase<User>
     {
         public string Name { get; set; }
 
@@ -50,6 +50,7 @@ namespace NaoBlocks.Core.Commands
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(user).ConfigureAwait(false);
+            this.Output = user;
         }
     }
 }

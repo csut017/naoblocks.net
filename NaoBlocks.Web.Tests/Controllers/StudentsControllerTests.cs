@@ -215,7 +215,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<Data.Student>>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -235,10 +235,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<Data.Student>>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<Data.Student>>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
         }
@@ -259,9 +259,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<Data.Student>>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<Data.Student>>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }

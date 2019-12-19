@@ -22,16 +22,10 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplySetsWhenAdded()
         {
-            Robot newRobot = null;
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            sessionMock.Setup(s => s.StoreAsync(It.IsAny<Robot>(), It.IsAny<CancellationToken>()))
-                .Callback<object, CancellationToken>((r, c) =>
-               {
-                   newRobot = r as Robot;
-               });
             var command = new AddRobotCommand { MachineName = "testing-robot", WhenExecuted = new DateTime(2019, 1, 1) };
-            var result = await command.ApplyAsync(sessionMock.Object);
-            Assert.Equal(command.WhenExecuted, newRobot.WhenAdded);
+            await command.ApplyAsync(sessionMock.Object);
+            Assert.Equal(command.WhenExecuted, command.Output.WhenAdded);
         }
 
         [Fact]

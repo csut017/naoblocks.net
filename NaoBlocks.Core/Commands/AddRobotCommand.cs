@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class AddRobotCommand
-        : CommandBase
+        : OutputCommandBase<Robot>
     {
         public string FriendlyName { get; set; }
 
@@ -42,6 +42,7 @@ namespace NaoBlocks.Core.Commands
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);
+            this.Output = robot;
         }
     }
 }

@@ -82,7 +82,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Post(Dtos.Teacher teacher)
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Teacher>>> Post(Dtos.Teacher teacher)
         {
             if (teacher == null)
             {
@@ -99,7 +99,12 @@ namespace NaoBlocks.Web.Controllers
                 Password = teacher.Password,
                 Role = UserRole.Teacher
             };
-            return await this.commandManager.ExecuteForHttp(command);
+            return await this.commandManager.ExecuteForHttp(
+                command,
+                u => u == null ? null : new Dtos.Teacher
+                {
+                    Name = u.Name
+                });
         }
     }
 }

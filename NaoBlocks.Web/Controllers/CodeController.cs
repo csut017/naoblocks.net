@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Dtos;
-using System.Linq;
+using NaoBlocks.Web.Helpers;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Controllers
@@ -38,29 +37,9 @@ namespace NaoBlocks.Web.Controllers
             {
                 Code = codeToCompile.Program
             };
-            var errors = await this.commandManager.ValidateAsync(command);
-            if (errors.Any())
-            {
-                return this.BadRequest(new ExecutionResult<RobotCodeCompilation>
-                {
-                    ValidationErrors = errors
-                });
-            }
-
-            var result = await this.commandManager.ApplyAsync(command);
-            if (!result.WasSuccessful)
-            {
-                this._logger.LogInformation("Code compilation failed: " + result.Error);
-                return this.StatusCode(StatusCodes.Status500InternalServerError, new ExecutionResult<RobotCodeCompilation>
-                {
-                    ExecutionErrors = new[] { result.Error }
-                });
-            }
-
-            await this.commandManager.CommitAsync();
-            var errorCount = command.Output?.Errors?.Count() ?? 0;
-            this._logger.LogInformation($"Code compiled with {errorCount} error(s)");
-            return ExecutionResult.New(command.Output);
+            return await this.commandManager.ExecuteForHttp(
+                command,
+                c => c);
         }
     }
 }
