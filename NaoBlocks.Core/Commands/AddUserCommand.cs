@@ -46,7 +46,8 @@ namespace NaoBlocks.Core.Commands
             {
                 Name = this.Name,
                 Role = this.Role,
-                Password = Models.Password.New(this.Password)
+                Password = Models.Password.New(this.Password),
+                WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(user).ConfigureAwait(false);
         }

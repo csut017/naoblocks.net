@@ -29,6 +29,21 @@ namespace NaoBlocks.Core.Tests.Commands
         }
 
         [Fact]
+        public async Task ApplySetsWhenAdded()
+        {
+            User newUser = null;
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+                .Callback<object, CancellationToken>((u, c) =>
+                {
+                    newUser = u as User;
+                });
+            var command = new AddUserCommand { Name = "Bob", Password = "Hello", WhenExecuted = new DateTime(2019, 1, 1) };
+            var result = await command.ApplyAsync(sessionMock.Object);
+            Assert.Equal(command.WhenExecuted, newUser.WhenAdded);
+        }
+
+        [Fact]
         public async Task ApplyStoresUser()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();

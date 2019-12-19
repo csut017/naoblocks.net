@@ -12,6 +12,7 @@ namespace NaoBlocks.Core.Commands
         : CommandBase
     {
         public string FriendlyName { get; set; }
+
         public string MachineName { get; set; }
 
         public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
@@ -37,7 +38,8 @@ namespace NaoBlocks.Core.Commands
             var robot = new Robot
             {
                 MachineName = this.MachineName,
-                FriendlyName = this.FriendlyName
+                FriendlyName = this.FriendlyName,
+                WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);
         }

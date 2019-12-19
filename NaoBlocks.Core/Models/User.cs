@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Core.Models
+﻿using System;
+
+namespace NaoBlocks.Core.Models
 {
     public class User
     {
@@ -9,5 +11,7 @@
         public Password Password { get; set; }
 
         public UserRole Role { get; set; }
+
+        public DateTime WhenAdded { get; set; }
     }
 }

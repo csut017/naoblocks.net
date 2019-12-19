@@ -20,10 +20,10 @@ namespace NaoBlocks.Core.Commands
         public async Task<CommandResult> ApplyAsync(CommandBase command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
-            var result = await command.ApplyAsync(this.session);
+            var result = await command.ApplyAsync(this.session).ConfigureAwait(false);
             var log = new CommandLog
             {
-                WhenApplied = DateTime.Now,
+                WhenApplied = command.WhenExecuted,
                 Command = command,
                 Result = result,
                 Type = command.GetType().Name
@@ -33,8 +33,8 @@ namespace NaoBlocks.Core.Commands
             // Always store the command log - use a seperate session to ensure it is saved
             using (var logSession = this.store.OpenAsyncSession())
             {
-                await logSession.StoreAsync(log);
-                await logSession.SaveChangesAsync();
+                await logSession.StoreAsync(log).ConfigureAwait(false);
+                await logSession.SaveChangesAsync().ConfigureAwait(false);
             }
 
             return result;
@@ -42,7 +42,7 @@ namespace NaoBlocks.Core.Commands
 
         public async Task CommitAsync()
         {
-            await this.session.SaveChangesAsync();
+            await this.session.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public Task<IEnumerable<string>> ValidateAsync(CommandBase command)

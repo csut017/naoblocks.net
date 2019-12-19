@@ -15,6 +15,9 @@ namespace NaoBlocks.Core.Commands
 
         public int Number { get; set; }
 
+        [JsonIgnore]
+        public DateTime WhenExecuted { get; set; } = DateTime.UtcNow;
+
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method needs to handle any failures.")]
         public async Task<CommandResult> ApplyAsync(IAsyncDocumentSession session)
         {
