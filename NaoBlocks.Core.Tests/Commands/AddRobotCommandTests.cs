@@ -34,6 +34,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new AddRobotCommand { MachineName = "testing-robot" };
             var result = await command.ApplyAsync(sessionMock.Object);
+            Assert.True(result.WasSuccessful);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<Robot>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 

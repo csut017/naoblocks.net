@@ -17,6 +17,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new DeleteRobotCommand { MachineName = "Bob" };
             var result = await command.ApplyAsync(sessionMock.Object);
+            Assert.True(result.WasSuccessful);
             sessionMock.Verify(s => s.Delete(It.IsAny<Robot>()), Times.Once);
         }
 

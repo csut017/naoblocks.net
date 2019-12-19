@@ -34,6 +34,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new AddUserCommand { Name = "Bob", Password = string.Empty };
             var result = await command.ApplyAsync(sessionMock.Object);
+            Assert.True(result.WasSuccessful);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
