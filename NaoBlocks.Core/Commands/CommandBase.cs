@@ -30,6 +30,10 @@ namespace NaoBlocks.Core.Commands
             {
                 throw;
             }
+            catch (InvalidCallOrderException)
+            {
+                throw;
+            }
             catch (Exception error)
             {
                 result.Error = "Unexpected error: " + error.Message;

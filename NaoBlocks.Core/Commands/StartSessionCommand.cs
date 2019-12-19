@@ -62,6 +62,7 @@ namespace NaoBlocks.Core.Commands
         protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
+            if (string.IsNullOrEmpty(this.UserId)) throw new InvalidCallOrderException("ValidateAsync must be called first");
             var newSession = new Session
             {
                 Role = this.Role,

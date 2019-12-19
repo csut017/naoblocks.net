@@ -51,7 +51,7 @@ namespace NaoBlocks.Core.Models
         [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Comparer for parent class.")]
         public class Comparer : IEqualityComparer<Password>
         {
-            public bool Equals(Password x, Password y)
+            public bool Equals(Password? x, Password? y)
             {
                 if ((x == null) || (y == null)) return (x == null) && (y == null);
                 return (x.Hash == y.Hash) && (x.Salt == y.Salt);
