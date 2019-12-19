@@ -2,13 +2,14 @@
 
 namespace NaoBlocks.Web.Dtos
 {
-    public class Student
+    public class Student : User
     {
-        public string Name { get; set; }
+        public Student()
+        {
+            this.Role = Data.UserRole.Student;
+        }
 
-        public string Password { get; set; }
-
-        public static Student FromModel(Data.User value)
+        public static Student? FromModel(Data.User? value)
         {
             return value == null ? null : new Student
             {
