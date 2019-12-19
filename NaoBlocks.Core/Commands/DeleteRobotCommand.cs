@@ -11,11 +11,11 @@ namespace NaoBlocks.Core.Commands
     public class DeleteRobotCommand
         : CommandBase
     {
-        private Robot robot;
+        private Robot? robot;
 
-        public string MachineName { get; set; }
+        public string? MachineName { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<string>();
@@ -35,7 +35,7 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 

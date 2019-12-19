@@ -10,9 +10,9 @@ namespace NaoBlocks.Core.Commands
     public class CompileCodeCommand
         : OutputCommandBase<RobotCodeCompilation>
     {
-        public string Code { get; set; }
+        public string? Code { get; set; }
 
-        public override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
         {
             var errors = new List<string>();
             if (string.IsNullOrWhiteSpace(this.Code))
@@ -23,9 +23,9 @@ namespace NaoBlocks.Core.Commands
             return Task.FromResult(errors.AsEnumerable());
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
-            var parser = CodeParser.New(this.Code);
+            var parser = CodeParser.New(this.Code ?? string.Empty);
             var parseResult = await parser.ParseAsync().ConfigureAwait(false);
             this.Output = new RobotCodeCompilation(parseResult);
         }

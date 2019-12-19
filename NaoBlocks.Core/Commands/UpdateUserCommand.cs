@@ -11,15 +11,15 @@ namespace NaoBlocks.Core.Commands
     public class UpdateUserCommand
         : CommandBase
     {
-        private User person;
+        private User? person;
 
-        public string CurrentName { get; set; }
+        public string? CurrentName { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public UserRole Role { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<string>();
@@ -31,9 +31,10 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
+            if (this.person == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
             return Task.CompletedTask;
         }

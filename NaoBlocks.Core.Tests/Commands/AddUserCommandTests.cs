@@ -13,15 +13,6 @@ namespace NaoBlocks.Core.Tests.Commands
     public class AddUserCommandTests
     {
         [Fact]
-        public async Task ApplyEncryptsPassword()
-        {
-            var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
-            var result = await command.ApplyAsync(sessionMock.Object);
-            sessionMock.Verify(s => s.StoreAsync(It.Is<User>(u => !string.IsNullOrWhiteSpace(u.Password.Hash)), It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Fact]
         public async Task ApplyRequiresSession()
         {
             var command = new AddUserCommand();
@@ -68,6 +59,31 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Teacher with name Old already exists"
             };
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task ValidateHashesPassword()
+        {
+            var data = new User[0].AsRavenQueryable();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
+
+            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            Assert.NotEqual(Password.Empty, command.HashedPassword, new Password.Comparer());
+        }
+
+        [Fact]
+        public async Task ValidatePassesAllChecks()
+        {
+            var data = new User[0].AsRavenQueryable();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
+
+            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new string[0];
             Assert.Equal(expected, result);
         }
 

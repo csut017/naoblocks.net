@@ -59,6 +59,19 @@ namespace NaoBlocks.Core.Tests.Commands
         }
 
         [Fact]
+        public async Task ValidatePassesAllChecks()
+        {
+            var data = new Robot[0].AsRavenQueryable();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
+
+            var command = new AddRobotCommand { MachineName = "Old", FriendlyName = "Old Robot" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new string[0];
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public async Task ValidateRequiresName()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
@@ -76,6 +89,19 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             var command = new AddRobotCommand();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
+        }
+
+        [Fact]
+        public async Task ValidateSetsMissingFriendlyName()
+        {
+            var data = new Robot[0].AsRavenQueryable();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
+
+            var command = new AddRobotCommand { MachineName = "Old" };
+            var result = await command.ValidateAsync(sessionMock.Object);
+            var expected = new string[0];
+            Assert.Equal(command.MachineName, command.FriendlyName);
         }
     }
 }

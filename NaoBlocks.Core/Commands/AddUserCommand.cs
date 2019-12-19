@@ -11,15 +11,18 @@ namespace NaoBlocks.Core.Commands
     public class AddUserCommand
         : OutputCommandBase<User>
     {
-        public string Name { get; set; }
+        public Password HashedPassword { get; set; } = Models.Password.Empty;
 
-        public string Password { get; set; }
+        public string? Name { get; set; }
+
+        public string? Password { get; set; }
 
         public UserRole Role { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
+
             var errors = new List<string>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
@@ -30,6 +33,11 @@ namespace NaoBlocks.Core.Commands
             {
                 errors.Add("Password is required");
             }
+            else
+            {
+                this.HashedPassword = Models.Password.New(this.Password);
+                this.Password = null;
+            }
 
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == this.Role).ConfigureAwait(false))
             {
@@ -39,14 +47,14 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var user = new User
             {
-                Name = this.Name,
+                Name = this.Name ?? "<Unknown>",
                 Role = this.Role,
-                Password = Models.Password.New(this.Password),
+                Password = this.HashedPassword,
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(user).ConfigureAwait(false);

@@ -17,7 +17,7 @@ namespace NaoBlocks.Core.Commands
             this.session = session;
         }
 
-        public async Task<CommandResult> ApplyAsync(CommandBase command)
+        public async Task<CommandResult> ApplyAsync(CommandBase? command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             var result = await command.ApplyAsync(this.session).ConfigureAwait(false);
@@ -45,7 +45,7 @@ namespace NaoBlocks.Core.Commands
             await this.session.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Task<IEnumerable<string>> ValidateAsync(CommandBase command)
+        public Task<IEnumerable<string>> ValidateAsync(CommandBase? command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             return command.ValidateAsync(this.session);

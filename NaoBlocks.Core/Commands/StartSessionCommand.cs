@@ -13,16 +13,16 @@ namespace NaoBlocks.Core.Commands
         : OutputCommandBase<Session>
     {
         [JsonIgnore]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonIgnore]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
-        public UserRole Role { get; set; }
+        public UserRole Role { get; set; } = UserRole.Student;
 
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession session)
+        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<string>();
@@ -59,13 +59,13 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var newSession = new Session
             {
                 Role = this.Role,
-                UserId = this.UserId,
+                UserId = this.UserId ?? "<Unknown>",
                 WhenAdded = this.WhenExecuted,
                 WhenExpires = this.WhenExecuted.AddDays(1)
             };
