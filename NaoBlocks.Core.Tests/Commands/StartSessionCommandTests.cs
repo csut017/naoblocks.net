@@ -20,29 +20,52 @@ namespace NaoBlocks.Core.Tests.Commands
         }
 
         [Fact]
-        public async Task ApplySetsWhenAdded()
+        public async Task ApplySetsWhenAddedAndWhenExpires()
         {
+            var sessions = new Session[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new StartSessionCommand { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 1) };
+            sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
             await command.ApplyAsync(sessionMock.Object);
             Assert.Equal(command.WhenExecuted, command.Output?.WhenAdded);
+            Assert.Equal(new DateTime(2019, 1, 2), command.Output?.WhenExpires);
         }
 
         [Fact]
         public async Task ApplyStoresSession()
         {
-            var data = new[]{
-                new User
-                {
-                    Password = Password.New("Hello")
-                }
+            var users = new[]{
+                new User { Password = Password.New("Hello") }
             }.AsRavenQueryable();
+            var sessions = new Session[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users);
+            sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
             var command = new StartSessionCommand { UserId = "users/1" };
             await command.ValidateAsync(sessionMock.Object);
             var result = await command.ApplyAsync(sessionMock.Object);
+            Assert.True(result.WasSuccessful);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<Session>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ApplyUpdatesExistingSession()
+        {
+            var users = new[]{
+                new User { Password = Password.New("Hello") }
+            }.AsRavenQueryable();
+            var sessions = new[]
+            {
+                new Session { WhenExpires = new DateTime(2019, 1, 2)}
+            };
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users);
+            sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
+            var command = new StartSessionCommand { UserId = "users/1", WhenExecuted = new DateTime(2019, 1, 2, 1, 0, 0) };
+            await command.ValidateAsync(sessionMock.Object);
+            var result = await command.ApplyAsync(sessionMock.Object);
+            sessionMock.Verify(s => s.StoreAsync(It.IsAny<Session>(), It.IsAny<CancellationToken>()), Times.Never);
+            Assert.Equal(new DateTime(2019, 1, 3, 1, 0, 0), sessions[0].WhenExpires);
         }
 
         [Fact]

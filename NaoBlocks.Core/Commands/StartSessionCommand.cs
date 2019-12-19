@@ -63,16 +63,30 @@ namespace NaoBlocks.Core.Commands
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (string.IsNullOrEmpty(this.UserId)) throw new InvalidCallOrderException("ValidateAsync must be called first");
-            var newSession = new Session
+
+            var now = this.WhenExecuted;
+            var userId = this.UserId ?? "<Unknown>";
+            var existing = await session.Query<Session>()
+                .FirstOrDefaultAsync(us => us.UserId == userId && us.WhenExpires > now)
+                .ConfigureAwait(false);
+            if (existing == null)
             {
-                Role = this.Role,
-                UserId = this.UserId ?? "<Unknown>",
-                WhenAdded = this.WhenExecuted,
-                WhenExpires = this.WhenExecuted.AddDays(1)
-            };
-            newSession.GenerateNewKey();
-            await session.StoreAsync(newSession).ConfigureAwait(false);
-            this.Output = newSession;
+                var newSession = new Session
+                {
+                    Role = this.Role,
+                    UserId = userId,
+                    WhenAdded = now,
+                    WhenExpires = now.AddDays(1)
+                };
+                newSession.GenerateNewKey();
+                await session.StoreAsync(newSession).ConfigureAwait(false);
+                this.Output = newSession;
+            }
+            else
+            {
+                existing.WhenExpires = now.AddDays(1);
+                this.Output = existing;
+            }
         }
     }
 }
