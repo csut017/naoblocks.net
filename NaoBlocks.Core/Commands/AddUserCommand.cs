@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class AddUserCommand
-        : OutputCommandBase<User>
+        : CommandBase<User>
     {
         public Password HashedPassword { get; set; } = Models.Password.Empty;
 

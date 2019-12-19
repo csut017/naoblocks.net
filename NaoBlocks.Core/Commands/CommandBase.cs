@@ -59,4 +59,12 @@ namespace NaoBlocks.Core.Commands
 
         protected abstract Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result);
     }
+
+    public abstract class CommandBase<TOuput>
+        : CommandBase
+        where TOuput : class
+    {
+        [JsonIgnore]
+        public TOuput? Output { get; protected set; }
+    }
 }

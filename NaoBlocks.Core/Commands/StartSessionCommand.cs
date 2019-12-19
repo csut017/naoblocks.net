@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class StartSessionCommand
-        : OutputCommandBase<Session>
+        : CommandBase<Session>
     {
         [JsonIgnore]
         public string? Name { get; set; }

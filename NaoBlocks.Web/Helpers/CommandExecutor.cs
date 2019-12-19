@@ -38,7 +38,7 @@ namespace NaoBlocks.Web.Helpers
             return new Dtos.ExecutionResult();
         }
 
-        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, OutputCommandBase<TIn> command, Func<TIn, TOut> mapper)
+        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn, TOut> mapper)
             where TIn : class
         {
             if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));

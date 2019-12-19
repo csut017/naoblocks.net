@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class AddRobotCommand
-        : OutputCommandBase<Robot>
+        : CommandBase<Robot>
     {
         public string? FriendlyName { get; set; }
 

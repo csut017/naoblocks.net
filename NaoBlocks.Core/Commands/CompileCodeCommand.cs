@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class CompileCodeCommand
-        : OutputCommandBase<RobotCodeCompilation>
+        : CommandBase<RobotCodeCompilation>
     {
         public string? Code { get; set; }
 
