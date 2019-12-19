@@ -13,3 +13,5 @@ NaoBlocks.Web.Tests/bin/**/*.*
 NaoBlocks.Web.Tests/obj/**/*.*
 **/coverage.cobertura.xml
 coverage/**/*.*
+RavenDB.Mocks/bin/**/*.*
+RavenDB.Mocks/obj/**/*.*

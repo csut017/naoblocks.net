@@ -1,8 +1,0 @@
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\bin\Debug\netcoreapp3.1\RavenDB.Mocks.deps.json
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\bin\Debug\netcoreapp3.1\RavenDB.Mocks.dll
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\obj\Debug\netcoreapp3.1\RavenDB.Mocks.csprojAssemblyReference.cache
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\obj\Debug\netcoreapp3.1\RavenDB.Mocks.AssemblyInfoInputs.cache
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\obj\Debug\netcoreapp3.1\RavenDB.Mocks.AssemblyInfo.cs
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\bin\Debug\netcoreapp3.1\RavenDB.Mocks.pdb
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\obj\Debug\netcoreapp3.1\RavenDB.Mocks.dll
-D:\repos\NaoBlocks.Net\RavenDB.Mocks\obj\Debug\netcoreapp3.1\RavenDB.Mocks.pdb
