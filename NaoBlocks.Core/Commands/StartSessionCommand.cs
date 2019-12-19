@@ -78,7 +78,6 @@ namespace NaoBlocks.Core.Commands
                     WhenAdded = now,
                     WhenExpires = now.AddDays(1)
                 };
-                newSession.GenerateNewKey();
                 await session.StoreAsync(newSession).ConfigureAwait(false);
                 this.Output = newSession;
             }
