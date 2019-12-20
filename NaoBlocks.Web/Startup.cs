@@ -11,6 +11,7 @@ using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Embedded;
+using System;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
@@ -37,7 +38,9 @@ namespace NaoBlocks.Web
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseWebSockets();
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -70,6 +73,8 @@ namespace NaoBlocks.Web
                     .GetService<IDocumentStore>()
                     .OpenAsyncSession();
             });
+
+            if (appSettings.JwtSecret == null) throw new ApplicationException("Cannot initialise application - missing JWT secret in settings");
             var key = Encoding.ASCII.GetBytes(appSettings.JwtSecret);
             services.AddAuthentication(x =>
             {
