@@ -1,0 +1,30 @@
+<div class="login-wrapper">
+    <form class="login" (ngSubmit)="onSubmit()">
+        <section class="title">
+            <h3 class="welcome">Welcome to</h3>
+            NaoBlocks
+        </section>
+        <div class="login-group">
+            <clr-input-container>
+                <label>Username</label>
+                <input type="text" name="username" clrInput [(ngModel)]="username"/>
+            </clr-input-container>
+            <clr-password-container>
+                <label>Password</label>
+                <input type="password" name="password" clrPassword [(ngModel)]="password"/>
+            </clr-password-container>
+            <clr-select-container>
+                <label>Role</label>
+                <select clrSelect name="type" [(ngModel)]="userrole">
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Administrator">Administrator</option>
+                </select>
+            </clr-select-container>
+            <div class="error active" *ngIf="loginError">
+                {{loginError}}
+            </div>
+            <button type="submit" class="btn btn-primary">Next</button>
+        </div>
+    </form>
+</div>
