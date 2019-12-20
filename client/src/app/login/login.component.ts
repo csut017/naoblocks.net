@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthenticationService } from '../services/authentication.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,13 +15,25 @@ export class LoginComponent implements OnInit {
 
   loginError: string;
 
-  constructor() { }
+  constructor(private authenticationService: AuthenticationService,
+    private router: Router) { }
 
   ngOnInit() {
   }
 
   onSubmit() {
-    console.log('Logging in');
+    if (this.username && this.password) {
+      console.log('Logging in');
+      this.authenticationService.login(this.username, this.password, this.userrole)
+        .subscribe(data => {
+          if (data.successful) {
+            this.loginError = null;
+            this.router.navigateByUrl(this.userrole.toLowerCase());
+          } else {
+            this.loginError = data.msg;
+          }
+        });
+    }
   }
 
 }
