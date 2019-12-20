@@ -36,7 +36,15 @@ namespace NaoBlocks.Web
             }
 
             app.UseHttpsRedirection();
+
+            var options = new DefaultFilesOptions();
+            options.DefaultFileNames.Clear();
+            options.DefaultFileNames.Add("index.html");
+            app.UseDefaultFiles(options);
+
+            app.UseStaticFiles();
             app.UseRouting();
+            app.UseCors();
             app.UseWebSockets();
             app.UseAuthentication();
             app.UseAuthorization();
@@ -44,6 +52,7 @@ namespace NaoBlocks.Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
         }
 
@@ -59,6 +68,8 @@ namespace NaoBlocks.Web
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
             var appSettings = appSettingsSection.Get<AppSettings>();
+
+            services.AddHealthChecks();
 
             EmbeddedServer.Instance.StartServer(new ServerOptions
             {
