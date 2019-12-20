@@ -45,7 +45,7 @@ namespace NaoBlocks.Web.Controllers
             return new Dtos.User
             {
                 Name = user.Name,
-                Role = user.Role
+                Role = user.Role.ToString()
             };
         }
 
@@ -107,7 +107,7 @@ namespace NaoBlocks.Web.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, command.Output?.UserId ?? string.Empty),
-                    new Claim(ClaimTypes.Role, (command.Output?.User?.Role ?? UserRole.Student).ToString()),
+                    new Claim(ClaimTypes.Role, (command.Output?.Role ?? UserRole.Student).ToString()),
                     new Claim("SessionId", command.Output?.Id ?? string.Empty)
                 }),
                 Expires = expiry,

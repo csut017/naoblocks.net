@@ -81,7 +81,7 @@ namespace NaoBlocks.Web.Controllers
             return new Dtos.User
             {
                 Name = user.Name,
-                Role = user.Role
+                Role = user.Role.ToString()
             };
         }
     }

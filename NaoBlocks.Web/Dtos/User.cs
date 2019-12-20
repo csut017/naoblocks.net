@@ -1,6 +1,4 @@
-﻿using Data = NaoBlocks.Core.Models;
-
-namespace NaoBlocks.Web.Dtos
+﻿namespace NaoBlocks.Web.Dtos
 {
     public class User
     {
@@ -8,6 +6,6 @@ namespace NaoBlocks.Web.Dtos
 
         public string? Password { get; set; }
 
-        public Data.UserRole Role { get; set; }
+        public string? Role { get; set; }
     }
 }
