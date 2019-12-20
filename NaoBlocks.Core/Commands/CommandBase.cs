@@ -65,6 +65,6 @@ namespace NaoBlocks.Core.Commands
         where TOuput : class
     {
         [JsonIgnore]
-        public TOuput? Output { get; protected set; }
+        public TOuput? Output { get; set; }
     }
 }

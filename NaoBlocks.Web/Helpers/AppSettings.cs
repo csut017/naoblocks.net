@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NaoBlocks.Web.Helpers
 {
     public class AppSettings
     {
-        public string JwtSecret { get; set; }
+        public string? DatabaseName { get; set; }
 
-        public string[] DatabaseUrls { get; set; }
+        [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Configuration settings")]
+        public string[] DatabaseUrls { get; set; } = Array.Empty<string>();
 
-        public string DatabaseName { get; set; }
+        public string? JwtSecret { get; set; }
     }
 }

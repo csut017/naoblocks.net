@@ -1,12 +1,19 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Embedded;
+using System.Security.Claims;
+using System.Security.Principal;
+using System.Text;
 
 namespace NaoBlocks.Web
 {
@@ -48,7 +55,6 @@ namespace NaoBlocks.Web
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-
             var appSettings = appSettingsSection.Get<AppSettings>();
 
             EmbeddedServer.Instance.StartServer(new ServerOptions
@@ -64,7 +70,37 @@ namespace NaoBlocks.Web
                     .GetService<IDocumentStore>()
                     .OpenAsyncSession();
             });
-            services.AddScoped(typeof(ICommandManager), typeof(CommandManager));
+            var key = Encoding.ASCII.GetBytes(appSettings.JwtSecret);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    RequireExpirationTime = true,
+                    ValidateLifetime = true
+                };
+            });
+            services.AddAuthorization(opts =>
+            {
+                opts.AddPolicy("TeacherOnly", policy => policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
+                opts.AddPolicy("AdministratorOnly", policy => policy.RequireRole(UserRole.Administrator.ToString()));
+            });
+
+            services.AddHttpContextAccessor();
+            services.AddTransient<IPrincipal>(s =>
+                s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
+
+            services.AddScoped<ICommandManager, CommandManager>();
         }
     }
 }
