@@ -21,4 +21,8 @@
     <ProjectReference Include="..\NaoBlocks.Parser\NaoBlocks.Parser.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

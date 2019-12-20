@@ -15,3 +15,11 @@ NaoBlocks.Web.Tests/obj/**/*.*
 coverage/**/*.*
 RavenDB.Mocks/bin/**/*.*
 RavenDB.Mocks/obj/**/*.*
+
+/client/dist
+/client/tmp
+/client/out-tsc
+/client/node_modules
+/client/.sass-cache
+/client/connect.lock
+/client/npm-debug.log
