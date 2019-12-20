@@ -20,7 +20,7 @@
     "NaoBlocks.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/v1/students",
+      "launchUrl": "api/v1/version",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

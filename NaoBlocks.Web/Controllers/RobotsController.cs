@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
@@ -12,6 +13,7 @@ namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize]
     public class RobotsController : ControllerBase
     {
         private readonly ILogger<RobotsController> _logger;

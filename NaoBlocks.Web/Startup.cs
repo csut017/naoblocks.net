@@ -92,8 +92,8 @@ namespace NaoBlocks.Web
             });
             services.AddAuthorization(opts =>
             {
-                opts.AddPolicy("TeacherOnly", policy => policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
-                opts.AddPolicy("AdministratorOnly", policy => policy.RequireRole(UserRole.Administrator.ToString()));
+                opts.AddPolicy("Teacher", policy => policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
+                opts.AddPolicy("Administrator", policy => policy.RequireRole(UserRole.Administrator.ToString()));
             });
 
             services.AddHttpContextAccessor();

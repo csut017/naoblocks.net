@@ -13,7 +13,7 @@ namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    [Authorize(Policy = "DeviceOnly")]
+    [Authorize(Policy = "Teacher")]
     public class TeachersController : ControllerBase
     {
         private readonly ILogger<TeachersController> _logger;
