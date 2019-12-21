@@ -6,7 +6,7 @@ import { catchError, shareReplay, tap, share } from 'rxjs/operators';
 import { ErrorHandlerService } from './error-handler.service';
 
 interface login {
-  successful: bool,
+  successful: boolean,
   msg: string,
   output?: loginToken
 }
