@@ -20,12 +20,13 @@
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
     "@clr/angular": "^2.3.4",
+    "@clr/icons": "2.3.4",
+    "@clr/ui": "2.3.4",
+    "@webcomponents/custom-elements": "^1.0.0",
+    "blockly": "git://github.com/google/blockly.git#3.20191014.4",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
-    "zone.js": "~0.9.1",
-    "@clr/ui": "2.3.4",
-    "@clr/icons": "2.3.4",
-    "@webcomponents/custom-elements": "^1.0.0"
+    "zone.js": "~0.9.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.21",
