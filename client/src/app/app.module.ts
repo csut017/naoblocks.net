@@ -11,6 +11,7 @@ import { LoginComponent } from './login/login.component';
 import { StudentHomeComponent } from './student-home/student-home.component';
 import { TeacherHomeComponent } from './teacher-home/teacher-home.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
+import { AuthenticationInterceptor } from './authentication-interceptor';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,11 @@ import { AdminHomeComponent } from './admin-home/admin-home.component';
     FormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [{
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthenticationInterceptor,
+    multi: true,
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
