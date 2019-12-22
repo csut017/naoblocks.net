@@ -37,7 +37,9 @@
               "node_modules/@clr/icons/clr-icons.min.js",
               "node_modules/blockly/blockly_compressed.js",
               "node_modules/blockly/blocks_compressed.js",
-              "node_modules/blockly/msg/js/en.js"
+              "node_modules/blockly/msg/js/en.js",
+              "src/assets/blockly/NaoLang.js",
+              "src/assets/blockly/NaoLang.blocks.js"
             ]
           },
           "configurations": {

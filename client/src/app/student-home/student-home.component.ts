@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Toolbox } from './toolbox';
 
 declare var Blockly: any;
 
@@ -14,8 +15,14 @@ export class StudentHomeComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    let xml = new Toolbox()
+        .includeConditionals()
+        .includeLoops()
+        .includeVariables()
+        .build();
+
     this.workspace = Blockly.inject('blocklyDiv', {
-      toolbox: document.getElementById('toolbox'),
+      toolbox: xml,
       scrollbars: false
     });
   }
