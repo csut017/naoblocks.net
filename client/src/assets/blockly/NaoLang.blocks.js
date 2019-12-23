@@ -437,8 +437,9 @@ Blockly.NaoLang.Actions.forEach(function (action) {
         "tooltip": "Performs a " + action[0] + ' action'
     });
 });
+console.groupCollapsed('[NaoLang] Defining blocks');
 blocks.forEach(function (block) {
-    console.log('Defining ' + block.type);
+    console.log('[NaoLang] Defining ' + block.type);
     Blockly.Blocks[block.type] = {
         init: function () {
             this.jsonInit(block);
@@ -449,3 +450,4 @@ blocks.forEach(function (block) {
         }
     };
 });
+console.groupEnd();
