@@ -18,6 +18,43 @@ namespace NaoBlocks.Web.Tests.Controllers
     public class SessionControllerTests
     {
         [Fact]
+        public async Task DeleteExecutesCommand()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<SessionController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
+            Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
+
+            // Act
+            var response = await controller.Delete();
+
+            // Assert
+            var command = Assert.IsType<FinishSessionCommand>(manager.LastCommand);
+            Assert.Equal("users/1", command.UserId);
+        }
+
+        [Fact]
+        public async Task DeleteFailsIfUserNotSet()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<SessionController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
+
+            // Act
+            var response = await controller.Delete();
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            Assert.IsType<NotFoundResult>(actual.Result);
+        }
+
+        [Fact]
         public async Task GetFailsIfUserNotSet()
         {
             // Arrange

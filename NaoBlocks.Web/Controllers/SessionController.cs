@@ -35,6 +35,15 @@ namespace NaoBlocks.Web.Controllers
             this.jwtSecret = (appSettings?.Value ?? new AppSettings()).JwtSecret ?? "<Unknown Secret Key>";
         }
 
+        public async Task<ActionResult<Dtos.ExecutionResult>> Delete()
+        {
+            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            if (user == null) return NotFound();
+
+            var command = new FinishSessionCommand { UserId = user.Id };
+            return await this.commandManager.ExecuteForHttp(command);
+        }
+
         [HttpGet]
         public async Task<ActionResult<Dtos.User>> Get()
         {
