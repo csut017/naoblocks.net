@@ -187,6 +187,36 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Null(innerResponse.ExecutionErrors);
         }
 
+        [Fact]
+        public async Task PostReturnsCorrectData()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<SessionController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupApply(cmd =>
+                {
+                    ((StartSessionCommand)cmd).Output = new Session
+                    {
+                        Role = UserRole.Teacher,
+                        WhenExpires = DateTime.UtcNow.AddDays(1)
+                    };
+                    return Task.FromResult(new CommandResult(1));
+                });
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
+            var request = new Data.Student { Name = "Bob", Password = "password" };
+
+            // Act
+            var result = await controller.Post(request);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<Data.ExecutionResult<Data.Session>>>(result);
+            var execResult = Assert.IsType<Data.ExecutionResult<Data.Session>>(actionResult.Value);
+            Assert.False(string.IsNullOrEmpty(execResult.Output.Token));
+            Assert.Equal(UserRole.Teacher.ToString(), execResult.Output.Role);
+        }
+
         private static Mock<IOptions<AppSettings>> InitialiseOptions()
         {
             var optsMock = new Mock<IOptions<AppSettings>>();

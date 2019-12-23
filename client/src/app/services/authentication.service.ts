@@ -12,20 +12,31 @@ interface login {
 }
 
 interface loginToken {
+  role: string,
   token: string
+}
+
+export enum UserRole {
+  Unknown = 0,
+  Student,
+  Teacher,
+  Administrator
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthenticationService {
-  private keyName: string = 'authToken';
+  private tokenKeyName: string = 'authToken';
+  private roleKeyName: string = 'roleName';
 
   constructor(private http: HttpClient,
     private errorhandler: ErrorHandlerService) {
-      this.token = sessionStorage.getItem(this.keyName) || '';
-     }
+    this.token = sessionStorage.getItem(this.tokenKeyName) || '';
+    this.role = UserRole[sessionStorage.getItem(this.roleKeyName) || 'Unknown'];
+  }
 
+  role: UserRole;
   token: string = '';
 
   login(username: string, password: string, role: string): Observable<login> {
@@ -40,9 +51,12 @@ export class AuthenticationService {
       tap(data => {
         if (data.successful && data.output) {
           this.token = data.output.token;
-          sessionStorage.setItem(this.keyName, this.token);
+          this.role = UserRole[data.output.role];
+          sessionStorage.setItem(this.tokenKeyName, this.token);
+          sessionStorage.setItem(this.roleKeyName, UserRole[this.role]);
         } else {
           this.token = '';
+          this.role = UserRole.Unknown;
         }
         this.log('Login complete')
       })
@@ -52,18 +66,24 @@ export class AuthenticationService {
   logout(): Observable<any> {
     const url = `${environment.apiURL}v1/session`;
     return this.http.delete(url)
-    .pipe(
-      catchError(this.handleError('logout')),
-      tap(_ => {
-        this.token = '';
-        sessionStorage.removeItem(this.keyName);
-        this.log('Logout complete')
-      })
-    );
+      .pipe(
+        catchError(this.handleError('logout')),
+        tap(_ => {
+          this.token = '';
+          this.role = UserRole.Unknown;
+          sessionStorage.removeItem(this.tokenKeyName);
+          sessionStorage.removeItem(this.roleKeyName);
+          this.log('Logout complete')
+        })
+      );
   }
 
   isValid(): boolean {
     return !!this.token;
+  }
+
+  canAccess(role: UserRole): boolean {
+    return this.role >= role;
   }
 
   private log(message: string) {

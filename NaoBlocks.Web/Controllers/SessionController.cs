@@ -128,7 +128,8 @@ namespace NaoBlocks.Web.Controllers
             return Dtos.ExecutionResult.New(new Dtos.Session
             {
                 Token = tokenHandler.WriteToken(token),
-                Expires = expiry
+                Expires = expiry,
+                Role = (command?.Output?.Role.ToString() ?? "Unknown")
             });
         }
     }
