@@ -36,7 +36,7 @@ export class AuthenticationService {
       'role': role
     }).pipe(
       share(),
-      catchError(this.handleError()),
+      catchError(this.handleError('login')),
       tap(data => {
         if (data.successful && data.output) {
           this.token = data.output.token;
@@ -53,6 +53,7 @@ export class AuthenticationService {
     const url = `${environment.apiURL}v1/session`;
     return this.http.delete(url)
     .pipe(
+      catchError(this.handleError('logout')),
       tap(_ => {
         this.token = '';
         sessionStorage.removeItem(this.keyName);
@@ -69,10 +70,10 @@ export class AuthenticationService {
     console.log(`AuthenticationService: ${message}`);
   }
 
-  private handleError() {
+  private handleError(operation: string) {
     return (error: any): Observable<login> => {
       const msg = this.errorhandler.formatError(error);
-      this.log(`login failed: ${msg}`);
+      this.log(`${operation} failed: ${msg}`);
       return of({
         successful: false,
         msg: msg
