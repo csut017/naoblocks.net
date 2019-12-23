@@ -13,6 +13,7 @@ import { TeacherHomeComponent } from './teacher-home/teacher-home.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
 import { AuthenticationInterceptor } from './authentication-interceptor';
 import { AboutComponent } from './about/about.component';
+import { ChangeRoleComponent } from './change-role/change-role.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { AboutComponent } from './about/about.component';
     StudentHomeComponent,
     TeacherHomeComponent,
     AdminHomeComponent,
-    AboutComponent
+    AboutComponent,
+    ChangeRoleComponent
   ],
   imports: [
     BrowserModule,

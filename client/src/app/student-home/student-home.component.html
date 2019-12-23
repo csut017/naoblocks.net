@@ -1,3 +1,18 @@
+<div class="alert alert-app-level alert-danger" role="alert" *ngIf="!hasAccess">
+    <div class="alert-items">
+        <div class="alert-item static">
+            <div class="alert-icon-wrapper">
+                <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+            </div>
+            <div class="alert-text">
+                You do not have access to this role
+            </div>
+            <div class="alert-actions">
+                <button class="btn alert-action" (click)="changeRole()">Change Role</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="main-container">
     <header class="header-4">
         <div class="branding">
@@ -20,6 +35,8 @@
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
                     <a href="javascript://" clrDropdownItem>Preferences</a>
+                    <a href="javascript://" clrDropdownItem (click)="changeRole()">Change Role</a>
+                    <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="logout()">Log out</a>
@@ -33,4 +50,5 @@
         </div>
     </div>
     <app-about></app-about>
+    <app-change-role [role]="'Student'"></app-change-role>
 </div>

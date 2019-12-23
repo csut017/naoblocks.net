@@ -78,6 +78,10 @@ export class AuthenticationService {
       );
   }
 
+  isCurrentRole(role: UserRole): boolean {
+    return this.role == role;
+  }
+
   isValid(): boolean {
     return !!this.token;
   }

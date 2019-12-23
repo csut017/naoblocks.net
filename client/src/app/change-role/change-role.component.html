@@ -1,7 +1,11 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
-    <h3 class="modal-title">About NaoBlocks</h3>
+    <h3 class="modal-title">Change Role</h3>
     <div class="modal-body">
-        <p>This is the new version of NaoBlocks.</p>
+        <div *ngFor="let role of roles">
+            <button class="btn btn-block" *ngIf="canAccess(role)" (click)="changeRole(role)" [disabled]="isCurrent(role)">
+                {{format(role)}}
+            </button>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="opened = false">

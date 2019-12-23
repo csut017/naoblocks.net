@@ -12,7 +12,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'student', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'teacher', component: TeacherHomeComponent, canActivate: [AuthenticationGuardService] },
-  { path: 'admin', component: AdminHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'administrator', component: AdminHomeComponent, canActivate: [AuthenticationGuardService] },
 ];
 
 @NgModule({

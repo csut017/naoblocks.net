@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Toolbox } from './toolbox';
 import { AboutComponent } from '../about/about.component';
-import { AuthenticationService } from '../services/authentication.service';
+import { AuthenticationService, UserRole } from '../services/authentication.service';
 import { Router } from '@angular/router';
+import { ChangeRoleComponent } from '../change-role/change-role.component';
+import { HomeBase } from '../home-base';
 
 declare var Blockly: any;
 
@@ -11,18 +13,19 @@ declare var Blockly: any;
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss']
 })
-export class StudentHomeComponent implements OnInit {
-
-  @ViewChild(AboutComponent, { static: false }) about: AboutComponent;
+export class StudentHomeComponent extends HomeBase implements OnInit {
 
   aboutOpened: boolean;
   workspace: any;
 
-  constructor(private authenticationService: AuthenticationService,
-    private router: Router) {
+  constructor(authenticationService: AuthenticationService,
+    router: Router) {
+    super(authenticationService, router);
   }
 
   ngOnInit() {
+    this.checkAccess(UserRole.Student);
+
     let xml = new Toolbox()
       .includeConditionals()
       .includeLoops()
@@ -33,12 +36,5 @@ export class StudentHomeComponent implements OnInit {
       toolbox: xml,
       scrollbars: false
     });
-  }
-
-  logout(): void {
-    this.authenticationService.logout()
-      .subscribe(_ => {
-        this.router.navigateByUrl('/');
-      });
   }
 }
