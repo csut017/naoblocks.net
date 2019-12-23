@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ErrorHandler } from '@angular/core';
 import { Observable, of } from 'rxjs'
 import { environment } from '../../environments/environment'
 import { HttpClient } from '@angular/common/http';
 import { catchError, shareReplay, tap, share } from 'rxjs/operators';
 import { ErrorHandlerService } from './error-handler.service';
+import { ClientService } from './client.service';
 
 interface login {
   successful: boolean,
@@ -26,12 +27,13 @@ export enum UserRole {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticationService {
+export class AuthenticationService extends ClientService {
   private tokenKeyName: string = 'authToken';
   private roleKeyName: string = 'roleName';
 
   constructor(private http: HttpClient,
-    private errorhandler: ErrorHandlerService) {
+    errorHandler: ErrorHandlerService) {
+    super('AuthenticationService', errorHandler);
     this.token = sessionStorage.getItem(this.tokenKeyName) || '';
     this.role = UserRole[sessionStorage.getItem(this.roleKeyName) || 'Unknown'];
   }
@@ -41,13 +43,14 @@ export class AuthenticationService {
 
   login(username: string, password: string, role: string): Observable<login> {
     const url = `${environment.apiURL}v1/session`;
+    this.log('Logging in');
     return this.http.post<login>(url, {
       'name': username,
       'password': password,
       'role': role
     }).pipe(
       share(),
-      catchError(this.handleError('login')),
+      catchError(this.handleError('login', this.generateErrorResult)),
       tap(data => {
         if (data.successful && data.output) {
           this.token = data.output.token;
@@ -63,11 +66,19 @@ export class AuthenticationService {
     );
   }
 
+  private generateErrorResult(msg: string): login {
+    return {
+      successful: false,
+      msg: msg
+    };
+  }
+
   logout(): Observable<any> {
     const url = `${environment.apiURL}v1/session`;
+    this.log('Logging out');
     return this.http.delete(url)
       .pipe(
-        catchError(this.handleError('logout')),
+        catchError(this.handleError('logout', this.generateErrorResult)),
         tap(_ => {
           this.token = '';
           this.role = UserRole.Unknown;
@@ -88,20 +99,5 @@ export class AuthenticationService {
 
   canAccess(role: UserRole): boolean {
     return this.role >= role;
-  }
-
-  private log(message: string) {
-    console.log(`AuthenticationService: ${message}`);
-  }
-
-  private handleError(operation: string) {
-    return (error: any): Observable<login> => {
-      const msg = this.errorhandler.formatError(error);
-      this.log(`${operation} failed: ${msg}`);
-      return of({
-        successful: false,
-        msg: msg
-      });
-    };
   }
 }

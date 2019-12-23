@@ -1,1 +1,17 @@
-<p>students-list works!</p>
+<div *ngIf="isLoading">
+    <div class="progress loop"><progress></progress></div>
+    <p class="p1" style="text-align: center;">Loading, please wait...</p>
+</div>
+<div *ngIf="!isLoading">
+    <clr-datagrid>
+        <clr-dg-column>Name</clr-dg-column>
+        <clr-dg-column>When Added</clr-dg-column>
+
+        <clr-dg-row *ngFor="let student of students.items">
+            <clr-dg-cell>{{student.name}}</clr-dg-cell>
+            <clr-dg-cell>{{student.whenAdded | date}}</clr-dg-cell>
+        </clr-dg-row>
+
+        <clr-dg-footer>{{students.count}} students</clr-dg-footer>
+    </clr-datagrid>
+</div>
