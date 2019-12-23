@@ -40,14 +40,15 @@
     </header>
     <div class="content-container">
         <div class="content-area">
-            ...
+            <app-students-list *ngIf="currentView=='students'"></app-students-list>
+            <app-robots-list *ngIf="currentView=='robots'"></app-robots-list>
         </div>
         <nav class="sidenav">
             <section class="sidenav-content">
-                <a href="..." class="nav-link active">
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='students'" (click)="changeView('students')">
                     Students
                 </a>
-                <a href="..." class="nav-link">
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='robots'" (click)="changeView('robots')">
                     Robots
                 </a>
             </section>

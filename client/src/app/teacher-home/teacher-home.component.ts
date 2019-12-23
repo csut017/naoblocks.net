@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 })
 export class TeacherHomeComponent extends HomeBase implements OnInit {
 
+  currentView: string = 'students';
+
   constructor(authenticationService: AuthenticationService,
     router: Router) {
     super(authenticationService, router);
@@ -17,6 +19,10 @@ export class TeacherHomeComponent extends HomeBase implements OnInit {
 
   ngOnInit() {
     this.checkAccess(UserRole.Teacher);
+  }
+
+  changeView(newView: string): void {
+    this.currentView = newView;
   }
 
 }

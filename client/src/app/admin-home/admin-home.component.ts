@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 })
 export class AdminHomeComponent extends HomeBase implements OnInit {
 
+  currentView: string = 'logs';
+
   constructor(authenticationService: AuthenticationService,
     router: Router) {
     super(authenticationService, router);
@@ -17,6 +19,10 @@ export class AdminHomeComponent extends HomeBase implements OnInit {
 
   ngOnInit() {
     this.checkAccess(UserRole.Administrator);
+  }
+
+  changeView(newView: string): void {
+    this.currentView = newView;
   }
 
 }

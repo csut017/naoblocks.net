@@ -14,6 +14,11 @@ import { AdminHomeComponent } from './admin-home/admin-home.component';
 import { AuthenticationInterceptor } from './authentication-interceptor';
 import { AboutComponent } from './about/about.component';
 import { ChangeRoleComponent } from './change-role/change-role.component';
+import { StudentsListComponent } from './students-list/students-list.component';
+import { RobotsListComponent } from './robots-list/robots-list.component';
+import { SettingsEditorComponent } from './settings-editor/settings-editor.component';
+import { UsersListComponent } from './users-list/users-list.component';
+import { LogsListComponent } from './logs-list/logs-list.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +28,12 @@ import { ChangeRoleComponent } from './change-role/change-role.component';
     TeacherHomeComponent,
     AdminHomeComponent,
     AboutComponent,
-    ChangeRoleComponent
+    ChangeRoleComponent,
+    StudentsListComponent,
+    RobotsListComponent,
+    SettingsEditorComponent,
+    UsersListComponent,
+    LogsListComponent
   ],
   imports: [
     BrowserModule,
