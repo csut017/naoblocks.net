@@ -12,6 +12,7 @@ import { StudentHomeComponent } from './student-home/student-home.component';
 import { TeacherHomeComponent } from './teacher-home/teacher-home.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
 import { AuthenticationInterceptor } from './authentication-interceptor';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { AuthenticationInterceptor } from './authentication-interceptor';
     LoginComponent,
     StudentHomeComponent,
     TeacherHomeComponent,
-    AdminHomeComponent
+    AdminHomeComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,

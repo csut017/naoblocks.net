@@ -49,9 +49,16 @@ export class AuthenticationService {
     );
   }
 
-  logout() {
-    this.token = '';
-    sessionStorage.removeItem(this.keyName);
+  logout(): Observable<any> {
+    const url = `${environment.apiURL}v1/session`;
+    return this.http.delete(url)
+    .pipe(
+      tap(_ => {
+        this.token = '';
+        sessionStorage.removeItem(this.keyName);
+        this.log('Logout complete')
+      })
+    );
   }
 
   isValid(): boolean {

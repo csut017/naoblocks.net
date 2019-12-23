@@ -1,0 +1,11 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+    <h3 class="modal-title">NaoBlocks</h3>
+    <div class="modal-body">
+        <p>This is the new version of NaoBlocks.</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="opened = false">
+            Close
+        </button>
+    </div>
+</clr-modal>
