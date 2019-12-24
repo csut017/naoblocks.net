@@ -6,7 +6,8 @@ import { ResultSet } from '../data/result-set';
 import { Student } from '../data/student';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
+import { ExecutionResult } from '../data/execution-result';
 
 @Injectable({
   providedIn: 'root'
@@ -26,5 +27,25 @@ export class StudentService extends ClientService {
         tap(_ => this.log('Fetched students')),
         catchError(this.handleError('list', msg => new ResultSet<Student>(msg)))
       );
+  }
+
+  save(student: Student): Observable<ExecutionResult<Student>> {
+    if (student.isNew) {
+      const url = `${environment.apiURL}v1/students`;
+      this.log('Adding new student');
+      return this.http.post<any>(url, student)
+        .pipe(
+          tap(_ => this.log('Added new student')),
+          catchError(this.handleError('saveNew', msg => new ExecutionResult<Student>(msg)))
+        );
+    } else {
+      const url = `${environment.apiURL}v1/students/${student.name}`;
+      this.log('Updating student');
+      return this.http.put<any>(url, student)
+        .pipe(
+          tap(_ => this.log('Updated student')),
+          catchError(this.handleError('saveExisting', msg => new ExecutionResult<Student>(msg)))
+        );
+    }
   }
 }

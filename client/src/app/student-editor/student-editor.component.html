@@ -5,8 +5,28 @@
         <clr-control-helper>The name of the student, must be unique.</clr-control-helper>
         <clr-control-error>Student name is missing</clr-control-error>
     </clr-input-container>
+    <clr-input-container *ngIf="student.isNew">
+        <label class="clr-col-12 clr-col-md-2">Password:</label>
+        <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="student.password" name="password" required />
+        <clr-control-helper>The password for a new student.</clr-control-helper>
+        <clr-control-error>Student password is missing</clr-control-error>
+    </clr-input-container>
     <div class="btn-group" style="margin-top: 1em;" class="clr-col-12 clr-offset-md-2 clr-col-md-10">
         <button class="btn btn-primary" (click)="doSave()">Save</button>
         <button class="btn" (click)="doCancel()">Cancel</button>
+    </div>
+    <div class="clr-col-12 clr-offset-md-2 clr-col-md-10" *ngIf="errors">
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static" *ngFor="let error of errors">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{error}}
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 </form>

@@ -11,7 +11,9 @@ import { StudentService } from '../services/student.service';
 export class StudentsListComponent implements OnInit {
 
   isLoading: boolean = false;
+  isInList: boolean = true;
   isInEditor: boolean = false;
+  isNew: boolean = false;
   selected: Student[] = [];
   students: ResultSet<Student> = new ResultSet<Student>();
   currentStudent: Student;
@@ -24,7 +26,9 @@ export class StudentsListComponent implements OnInit {
 
   doAddNew() {
     this.isInEditor = true;
-    this.currentStudent = new Student();
+    this.isInList = false;
+    this.isNew = true;
+    this.currentStudent = new Student(true);
   }
 
   doDelete() {
@@ -33,6 +37,8 @@ export class StudentsListComponent implements OnInit {
 
   doEdit() {
     this.isInEditor = true;
+    this.isInList = false;
+    this.isNew = false;
     this.currentStudent = this.selected[0];
   }
 
@@ -46,7 +52,10 @@ export class StudentsListComponent implements OnInit {
 
   onClosed(saved: boolean) {
     this.isInEditor = false;
-    if (saved) this.loadList();
+    this.isInList = true;
+    if (saved && this.isNew) {
+      this.students.items.push(this.currentStudent);
+    }
   }
 
   private loadList(): void {

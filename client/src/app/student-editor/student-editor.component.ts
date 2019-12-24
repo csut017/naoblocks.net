@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Student } from '../data/student';
+import { StudentService } from '../services/student.service';
 
 @Component({
   selector: 'app-student-editor',
@@ -10,14 +11,23 @@ export class StudentEditorComponent implements OnInit {
 
   @Input() student: Student;
   @Output() closed = new EventEmitter<boolean>();
+  errors: string[];
 
-  constructor() { }
+  constructor(private studentService: StudentService) { }
 
   ngOnInit() {
   }
 
   doSave() {
-    this.closed.emit(true);
+    this.studentService.save(this.student)
+      .subscribe(result => {
+        if (result.successful) {
+          this.student.whenAdded = result.output.whenAdded;
+          this.closed.emit(true);
+        } else {
+          this.errors = result.allErrors();
+        }
+      });
   }
 
   doCancel() {
