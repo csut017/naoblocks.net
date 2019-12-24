@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Web.Dtos
+﻿using System;
+
+namespace NaoBlocks.Web.Dtos
 {
     public class User
     {
@@ -7,5 +9,7 @@
         public string? Password { get; set; }
 
         public string? Role { get; set; }
+
+        public DateTime? WhenAdded { get; set; }
     }
 }

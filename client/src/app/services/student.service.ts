@@ -18,8 +18,8 @@ export class StudentService extends ClientService {
     super('StudentService', errorHandler);
   }
 
-  list(page: number = 0): Observable<ResultSet<Student>> {
-    const url = `${environment.apiURL}v1/students?page=${page}&size=20`;
+  list(page: number = 0, size: number = 20): Observable<ResultSet<Student>> {
+    const url = `${environment.apiURL}v1/students?page=${page}&size=${size}`;
     this.log('Listing students');
     return this.http.get<any>(url)
       .pipe(

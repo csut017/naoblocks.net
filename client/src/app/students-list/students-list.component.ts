@@ -11,7 +11,8 @@ import { StudentService } from '../services/student.service';
 export class StudentsListComponent implements OnInit {
 
   isLoading: boolean;
-  students: ResultSet<Student>;
+  selected: Student[] = [];
+  students: ResultSet<Student> = new ResultSet<Student>();
 
   constructor(private studentService: StudentService) { }
 

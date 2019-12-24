@@ -8,7 +8,8 @@ namespace NaoBlocks.Web.Dtos
         {
             return value == null ? null : new Student
             {
-                Name = value.Name
+                Name = value.Name,
+                WhenAdded = value.WhenAdded
             };
         }
     }
