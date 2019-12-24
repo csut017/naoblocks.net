@@ -10,14 +10,43 @@ import { StudentService } from '../services/student.service';
 })
 export class StudentsListComponent implements OnInit {
 
-  isLoading: boolean;
+  isLoading: boolean = false;
+  isInEditor: boolean = false;
   selected: Student[] = [];
   students: ResultSet<Student> = new ResultSet<Student>();
+  currentStudent: Student;
 
   constructor(private studentService: StudentService) { }
 
   ngOnInit() {
     this.loadList();
+  }
+
+  doAddNew() {
+    this.isInEditor = true;
+    this.currentStudent = new Student();
+  }
+
+  doDelete() {
+
+  }
+
+  doEdit() {
+    this.isInEditor = true;
+    this.currentStudent = this.selected[0];
+  }
+
+  doExportDetails() {
+
+  }
+
+  doExportLogs() {
+
+  }
+
+  onClosed(saved: boolean) {
+    this.isInEditor = false;
+    if (saved) this.loadList();
   }
 
   private loadList(): void {

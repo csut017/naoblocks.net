@@ -19,6 +19,7 @@ import { RobotsListComponent } from './robots-list/robots-list.component';
 import { SettingsEditorComponent } from './settings-editor/settings-editor.component';
 import { UsersListComponent } from './users-list/users-list.component';
 import { LogsListComponent } from './logs-list/logs-list.component';
+import { StudentEditorComponent } from './student-editor/student-editor.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { LogsListComponent } from './logs-list/logs-list.component';
     RobotsListComponent,
     SettingsEditorComponent,
     UsersListComponent,
-    LogsListComponent
+    LogsListComponent,
+    StudentEditorComponent
   ],
   imports: [
     BrowserModule,

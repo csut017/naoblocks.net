@@ -1,0 +1,12 @@
+<form clrForm>
+    <clr-input-container>
+        <label class="clr-col-12 clr-col-md-2">Name:</label>
+        <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="student.name" name="name" required />
+        <clr-control-helper>The name of the student, must be unique.</clr-control-helper>
+        <clr-control-error>Student name is missing</clr-control-error>
+    </clr-input-container>
+    <div class="btn-group" style="margin-top: 1em;" class="clr-col-12 clr-offset-md-2 clr-col-md-10">
+        <button class="btn btn-primary" (click)="doSave()">Save</button>
+        <button class="btn" (click)="doCancel()">Cancel</button>
+    </div>
+</form>
