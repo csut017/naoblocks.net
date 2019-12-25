@@ -20,6 +20,7 @@ import { SettingsEditorComponent } from './settings-editor/settings-editor.compo
 import { UsersListComponent } from './users-list/users-list.component';
 import { LogsListComponent } from './logs-list/logs-list.component';
 import { StudentEditorComponent } from './student-editor/student-editor.component';
+import { RobotEditorComponent } from './robot-editor/robot-editor.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { StudentEditorComponent } from './student-editor/student-editor.componen
     SettingsEditorComponent,
     UsersListComponent,
     LogsListComponent,
-    StudentEditorComponent
+    StudentEditorComponent,
+    RobotEditorComponent
   ],
   imports: [
     BrowserModule,

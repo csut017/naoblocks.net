@@ -1,0 +1,32 @@
+<form clrForm>
+    <clr-input-container>
+        <label class="clr-col-12 clr-col-md-2">Machine Name:</label>
+        <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="robot.machineName" name="machineName" required />
+        <clr-control-helper>The machine name of the robot (name assigned by the OS), must be unique.</clr-control-helper>
+        <clr-control-error>Machine name is missing</clr-control-error>
+    </clr-input-container>
+    <clr-input-container>
+        <label class="clr-col-12 clr-col-md-2">Friendly Name:</label>
+        <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="robot.friendlyName" name="friendlyName" required />
+        <clr-control-helper>The human understandable name of the robot, should be unique.</clr-control-helper>
+        <clr-control-error>Friendly name is missing</clr-control-error>
+    </clr-input-container>
+    <div class="btn-group" style="margin-top: 1em;" class="clr-col-12 clr-offset-md-2 clr-col-md-10">
+        <button class="btn btn-primary" (click)="doSave()">Save</button>
+        <button class="btn" (click)="doCancel()">Cancel</button>
+    </div>
+    <div class="clr-col-12 clr-offset-md-2 clr-col-md-10" *ngIf="errors">
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static" *ngFor="let error of errors">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{error}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
