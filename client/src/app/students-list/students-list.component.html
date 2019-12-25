@@ -44,6 +44,38 @@
 
         <clr-dg-placeholder>We couldn't find any students</clr-dg-placeholder>
     </clr-datagrid>
+
+    <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                </div>
+                <span class="alert-text">
+                    {{message}}
+                </span>
+            </div>
+        </div>
+        <button type="button" class="close" aria-label="Close" (click)="errorMessage=undefined">
+            <clr-icon aria-hidden="true" shape="close"></clr-icon>
+        </button>        
+    </div>
+
+    <div class="alert alert-success" role="alert" *ngIf="message">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <clr-icon class="alert-icon" shape="check-circle"></clr-icon>
+                </div>
+                <span class="alert-text">
+                    {{message}}
+                </span>
+            </div>
+        </div>
+        <button type="button" class="close" aria-label="Close" (click)="message=undefined">
+            <clr-icon aria-hidden="true" shape="close"></clr-icon>
+        </button>        
+    </div>
 </div>
 <div *ngIf="isInEditor">
     <app-student-editor [student]="currentStudent" (closed)="onClosed($event)"></app-student-editor>

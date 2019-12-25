@@ -265,5 +265,124 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }
+
+        [Fact]
+        public async Task PutStudentCallsCorrectCommand()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            await controller.Put("Bob", new Data.Student { Name = "Bill" });
+
+            // Assert
+            var command = Assert.IsType<UpdateUserCommand>(manager.LastCommand);
+            Assert.Equal("Bob", command.CurrentName);
+            Assert.Equal("Bill", command.Name);
+            Assert.Equal(UserRole.Student, command.Role);
+        }
+
+        [Fact]
+        public async Task PutStudentChecksForId()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put(null, new Data.Student());
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            Assert.IsType<BadRequestObjectResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task PutStudentChecksForInput()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Id", null);
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            Assert.IsType<BadRequestObjectResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task PutStudentFailsExecution()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupApplyError("Something failed");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Student { Name = "Bill" });
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var objectResult = Assert.IsType<ObjectResult>(actual.Result);
+            Assert.Equal(500, objectResult.StatusCode);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
+            Assert.Null(innerResponse.ValidationErrors);
+            Assert.NotEmpty(innerResponse.ExecutionErrors);
+        }
+
+        [Fact]
+        public async Task PutStudentFailsValidation()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupValidateErrors("Oops");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Student { Name = "Bill" });
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
+            Assert.NotEmpty(innerResponse.ValidationErrors);
+            Assert.Null(innerResponse.ExecutionErrors);
+        }
+
+        [Fact]
+        public async Task PutStudentUpdatesStudent()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<StudentsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Student { Name = "Bill" });
+
+            // Assert
+            Assert.Null(response.Value.ValidationErrors);
+            Assert.Null(response.Value.ExecutionErrors);
+            Assert.Equal(1, manager.CountOfApplyCalled);
+            Assert.Equal(1, manager.CountOfValidateCalled);
+        }
     }
 }

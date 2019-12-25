@@ -24,7 +24,7 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<string>();
             this.person = await session.Query<User>()
-                                        .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
+                                        .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
                                         .ConfigureAwait(false);
             if (this.person == null) errors.Add($"{this.Role} {this.Name} does not exist");
 

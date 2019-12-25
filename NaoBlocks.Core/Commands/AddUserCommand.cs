@@ -39,7 +39,7 @@ namespace NaoBlocks.Core.Commands
                 this.Password = null;
             }
 
-            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name && s.Role == this.Role).ConfigureAwait(false))
+            if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
                 errors.Add($"{this.Role} with name {this.Name} already exists");
             }

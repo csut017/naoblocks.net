@@ -22,7 +22,11 @@ export class StudentEditorComponent implements OnInit {
     this.studentService.save(this.student)
       .subscribe(result => {
         if (result.successful) {
-          this.student.whenAdded = result.output.whenAdded;
+          if (result.output) {
+            this.student.whenAdded = result.output.whenAdded;
+          }
+          this.student.isNew = false;
+          this.student.password = undefined;
           this.closed.emit(true);
         } else {
           this.errors = result.allErrors();

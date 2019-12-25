@@ -4,7 +4,8 @@ export class ExecutionResult<T> {
     executionErrors: string[];
     output: T;
 
-    constructor(error?: string) {
+    constructor(data?: T, error?: string) {
+        this.output = data;
         if (error) {
             this.executionErrors = [error];
         }

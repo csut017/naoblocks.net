@@ -100,5 +100,26 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.Student.FromModel);
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Student? student)
+        {
+            if ((student == null) || string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student details"
+                });
+            }
+
+            this._logger.LogInformation($"Updating student '{id}'");
+            var command = new UpdateUserCommand
+            {
+                CurrentName = id,
+                Name = student.Name,
+                Role = UserRole.Student
+            };
+            return await this.commandManager.ExecuteForHttp(command);
+        }
     }
 }
