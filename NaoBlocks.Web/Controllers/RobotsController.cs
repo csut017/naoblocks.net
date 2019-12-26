@@ -97,5 +97,26 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Robot? robot)
+        {
+            if ((robot == null) || string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot details"
+                });
+            }
+
+            this._logger.LogInformation($"Updating robot '{id}'");
+            var command = new UpdateRobotCommand
+            {
+                CurrentMachineName = id,
+                MachineName = robot.MachineName,
+                FriendlyName = robot.FriendlyName
+            };
+            return await this.commandManager.ExecuteForHttp(command);
+        }
     }
 }

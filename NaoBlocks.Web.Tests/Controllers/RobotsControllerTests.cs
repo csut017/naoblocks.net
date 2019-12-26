@@ -264,5 +264,124 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
         }
+
+        [Fact]
+        public async Task PutRobotCallsCorrectCommand()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            await controller.Put("Bob", new Data.Robot { MachineName = "Bill", FriendlyName = "Bill the Bot" });
+
+            // Assert
+            var command = Assert.IsType<UpdateRobotCommand>(manager.LastCommand);
+            Assert.Equal("Bob", command.CurrentMachineName);
+            Assert.Equal("Bill", command.MachineName);
+            Assert.Equal("Bill the Bot", command.FriendlyName);
+        }
+
+        [Fact]
+        public async Task PutRobotChecksForId()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put(null, new Data.Robot());
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            Assert.IsType<BadRequestObjectResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task PutRobotChecksForInput()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Id", null);
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            Assert.IsType<BadRequestObjectResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task PutRobotFailsExecution()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupApplyError("Something failed");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Robot { MachineName = "Bill" });
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var objectResult = Assert.IsType<ObjectResult>(actual.Result);
+            Assert.Equal(500, objectResult.StatusCode);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(objectResult.Value);
+            Assert.Null(innerResponse.ValidationErrors);
+            Assert.NotEmpty(innerResponse.ExecutionErrors);
+        }
+
+        [Fact]
+        public async Task PutRobotFailsValidation()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing()
+                .SetupValidateErrors("Oops");
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Robot { MachineName = "Bill" });
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult>>(response);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
+            var innerResponse = Assert.IsType<Data.ExecutionResult>(badRequest.Value);
+            Assert.NotEmpty(innerResponse.ValidationErrors);
+            Assert.Null(innerResponse.ExecutionErrors);
+        }
+
+        [Fact]
+        public async Task PutRobotUpdatesRobot()
+        {
+            // Arrange
+            var loggerMock = new Mock<ILogger<RobotsController>>();
+            var manager = new FakeCommandManager()
+                .SetupDoNothing();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
+
+            // Act
+            var response = await controller.Put("Bob", new Data.Robot { MachineName = "Bill" });
+
+            // Assert
+            Assert.Null(response.Value.ValidationErrors);
+            Assert.Null(response.Value.ExecutionErrors);
+            Assert.Equal(1, manager.CountOfApplyCalled);
+            Assert.Equal(1, manager.CountOfValidateCalled);
+        }
     }
 }

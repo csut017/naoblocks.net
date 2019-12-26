@@ -61,7 +61,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
 
-            var command = new UpdateUserCommand { Name = "Bob", Role = UserRole.Teacher };
+            var command = new UpdateUserCommand { CurrentName = "Bob", Role = UserRole.Teacher };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
