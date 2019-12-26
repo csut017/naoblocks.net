@@ -57,9 +57,12 @@ namespace NaoBlocks.Web.Controllers
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
+            var now = this.CurrentTimeFunc();
             var session = await this.session.Query<Session>()
-                .FirstOrDefaultAsync(s => s.UserId == user.Id);
-            var remaining = session.WhenExpires.Subtract(this.CurrentTimeFunc()).TotalMinutes;
+                .FirstOrDefaultAsync(s => s.UserId == user.Id && s.WhenExpires > now);
+            var remaining = session != null
+                ? session.WhenExpires.Subtract(now).TotalMinutes
+                : -1;
             return new Dtos.UserSession
             {
                 Name = user.Name,
