@@ -29,15 +29,11 @@ namespace NaoBlocks.Core.Commands
             if (!errors.Any())
             {
                 this.Session = await session.Query<Session>()
-                    .FirstOrDefaultAsync(u => u.Id == this.UserId)
+                    .FirstOrDefaultAsync(u => u.UserId == this.UserId && u.WhenExpires > this.WhenExecuted)
                     .ConfigureAwait(false);
                 if (this.Session == null)
                 {
-                    errors.Add("User does not have a session");
-                }
-                else if (this.Session.WhenExpires < this.WhenExecuted)
-                {
-                    errors.Add("Session has already expired");
+                    errors.Add("User does not have a current session");
                 }
             }
 
@@ -49,8 +45,7 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.Session == null) throw new InvalidCallOrderException("ValidateAsync must be called first");
 
-            var now = this.WhenExecuted;
-            this.Session.WhenExpires = now.AddDays(1);
+            this.Session.WhenExpires = this.WhenExecuted.AddDays(1);
             this.Output = this.Session;
             return Task.CompletedTask;
         }
