@@ -36,6 +36,12 @@ namespace NaoBlocks.Web.Controllers
             this.jwtSecret = (appSettings?.Value ?? new AppSettings()).JwtSecret ?? "<Unknown Secret Key>";
         }
 
+        public Func<DateTime> CurrentTimeFunc
+        {
+            get;
+            set;
+        } = () => DateTime.UtcNow;
+
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
@@ -53,7 +59,7 @@ namespace NaoBlocks.Web.Controllers
 
             var session = await this.session.Query<Session>()
                 .FirstOrDefaultAsync(s => s.UserId == user.Id);
-            var remaining = DateTime.UtcNow.Subtract(session.WhenExpires).TotalMinutes;
+            var remaining = session.WhenExpires.Subtract(this.CurrentTimeFunc()).TotalMinutes;
             return new Dtos.UserSession
             {
                 Name = user.Name,

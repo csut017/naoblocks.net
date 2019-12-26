@@ -7,6 +7,7 @@ using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents.Session;
+using RavenDB.Mocks;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -69,7 +70,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Get();
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.User>>(response);
+            var actual = Assert.IsType<ActionResult<Data.UserSession>>(response);
             Assert.IsType<NotFoundResult>(actual.Result);
         }
 
@@ -77,21 +78,28 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task GetReturnsCurrentUser()
         {
             // Arrange
+            var sessions = new[]
+            {
+                new Session { WhenExpires = new DateTime(2019, 1, 2)}
+            };
             var loggerMock = new Mock<ILogger<SessionController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
+            sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
             var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
+            controller.CurrentTimeFunc = () => new DateTime(2019, 1, 1);
             Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
 
             // Act
             var response = await controller.Get();
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.User>>(response);
-            var user = Assert.IsType<Data.User>(actual.Value);
+            var actual = Assert.IsType<ActionResult<Data.UserSession>>(response);
+            var user = Assert.IsType<Data.UserSession>(actual.Value);
             Assert.Equal("Bob", user.Name);
+            Assert.Equal(1440, user.TimeRemaining);
         }
 
         [Fact]
