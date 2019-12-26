@@ -41,12 +41,11 @@ export class HeartbeatComponent implements OnInit, OnDestroy {
     clearInterval(this.interval);
     this.heartbeatService.check()
       .subscribe(heartbeat => {
-        if (heartbeat.error === 'Unauthorized') {
-          this.doLogout();
-        }
+        if (heartbeat.error === 'Unauthorized') this.doLogout();
 
         this.start();
         if (heartbeat.timeRemaining > 5) return;
+        if (heartbeat.timeRemaining < 0) this.doLogout();
         this.opened = true;
       })
     this.countDown = timeoutPeriod;
