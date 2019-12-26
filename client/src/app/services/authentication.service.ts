@@ -2,7 +2,7 @@ import { Injectable, ErrorHandler } from '@angular/core';
 import { Observable, of } from 'rxjs'
 import { environment } from '../../environments/environment'
 import { HttpClient } from '@angular/common/http';
-import { catchError, shareReplay, tap, share } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { ErrorHandlerService } from './error-handler.service';
 import { ClientService } from './client.service';
 
@@ -49,7 +49,6 @@ export class AuthenticationService extends ClientService {
       'password': password,
       'role': role
     }).pipe(
-      share(),
       catchError(this.handleError('login', this.generateErrorResult)),
       tap(data => {
         if (data.successful && data.output) {
@@ -63,6 +62,16 @@ export class AuthenticationService extends ClientService {
         }
         this.log('Login complete')
       })
+    );
+  }
+
+  renew(): Observable<login> {
+    const url = `${environment.apiURL}v1/session`;
+    this.log('Renewing session');
+    return this.http.put<login>(url, {
+    }).pipe(
+      catchError(this.handleError('renew', this.generateErrorResult)),
+      tap(_ => this.log('Session renewed'))
     );
   }
 

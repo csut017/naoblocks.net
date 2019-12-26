@@ -1,0 +1,27 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+    <div class="modal-body">
+        <div>
+            <clr-icon shape="key" class="has-alert" size="48"></clr-icon>
+            Your session is expiring soon.
+        </div>
+        <div class="alert alert-danger" role="alert" *ngIf="error">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{error}}
+                    </span>
+                </div>
+            </div>
+        </div>    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="doRenew()">
+            Renew
+        </button>
+        <button type="button" class="btn btn-primary" (click)="doLogout()">
+            Logout
+        </button>
+    </div>
+</clr-modal>

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -45,16 +46,19 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Dtos.User>> Get()
+        public async Task<ActionResult<Dtos.UserSession>> Get()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
-            // TODO: Should add expiry time here
-            return new Dtos.User
+            var session = await this.session.Query<Session>()
+                .FirstOrDefaultAsync(s => s.UserId == user.Id);
+            var remaining = DateTime.UtcNow.Subtract(session.WhenExpires).TotalMinutes;
+            return new Dtos.UserSession
             {
                 Name = user.Name,
-                Role = user.Role.ToString()
+                Role = user.Role.ToString(),
+                TimeRemaining = Convert.ToInt32(remaining)
             };
         }
 
@@ -78,6 +82,16 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this.ApplyCommand(command).ConfigureAwait(false);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<Dtos.ExecutionResult>> Put(Session value)
+        {
+            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            if (user == null) return NotFound();
+
+            var command = new RenewSessionCommand { UserId = user.Id };
+            return await this.commandManager.ExecuteForHttp(command);
         }
 
         private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(CommandBase<Session> command)
