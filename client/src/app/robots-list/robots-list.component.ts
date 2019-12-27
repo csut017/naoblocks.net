@@ -39,9 +39,13 @@ export class RobotsListComponent implements OnInit {
       .subscribe(results => {
         let successful = results.filter(r => r.successful).map(r => r.output);
         let failed = results.filter(r => !r.successful);
-        this.message = `Deleted ${successful.length} robots`;
+        if (successful.length !== 0) {
+          this.message = `Deleted ${successful.length} robots`;
+        } else {
+          this.message = undefined;
+        }
         if (failed.length !== 0) {
-          this.errorMessage = `Failed to delete ${successful.length} robots`;
+          this.errorMessage = `Failed to delete ${failed.length} robots`;
         } else {
           this.errorMessage = undefined;
         }
@@ -75,6 +79,7 @@ export class RobotsListComponent implements OnInit {
       if (this.isNew) {
         this.robots.items.push(this.currentRobot);
         this.message = `Added robot '${this.currentRobot.friendlyName}'`;
+        this.currentRobot.id = this.currentRobot.machineName;
       } else {
         this.message = `Updated robot '${this.currentRobot.friendlyName}'`;
       }

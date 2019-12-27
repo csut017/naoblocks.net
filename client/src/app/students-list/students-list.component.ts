@@ -41,7 +41,7 @@ export class StudentsListComponent implements OnInit {
         let failed = results.filter(r => !r.successful);
         this.message = `Deleted ${successful.length} students`;
         if (failed.length !== 0) {
-          this.errorMessage = `Failed to delete ${successful.length} students`;
+          this.errorMessage = `Failed to delete ${failed.length} students`;
         } else {
           this.errorMessage = undefined;
         }
@@ -75,6 +75,7 @@ export class StudentsListComponent implements OnInit {
       if (this.isNew) {
         this.students.items.push(this.currentStudent);
         this.message = `Added student '${this.currentStudent.name}'`;
+        this.currentStudent.id = this.currentStudent.name;
       } else {
         this.message = `Updated student '${this.currentStudent.name}'`;
       }
