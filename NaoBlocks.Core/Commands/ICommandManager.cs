@@ -9,6 +9,6 @@ namespace NaoBlocks.Core.Commands
 
         Task CommitAsync();
 
-        Task<IEnumerable<string>> ValidateAsync(CommandBase? command);
+        Task<IEnumerable<CommandError>> ValidateAsync(CommandBase? command);
     }
 }

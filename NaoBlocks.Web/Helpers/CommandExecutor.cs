@@ -27,7 +27,7 @@ namespace NaoBlocks.Web.Helpers
             {
                 return new ObjectResult(new Dtos.ExecutionResult
                 {
-                    ExecutionErrors = new[] { result.Error }
+                    ExecutionErrors = result.ToErrors() ?? Array.Empty<CommandError>()
                 })
                 {
                     StatusCode = StatusCodes.Status500InternalServerError
@@ -38,7 +38,7 @@ namespace NaoBlocks.Web.Helpers
             return new Dtos.ExecutionResult();
         }
 
-        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn, TOut> mapper)
+        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn?, TOut> mapper)
             where TIn : class
         {
             if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));
@@ -54,12 +54,12 @@ namespace NaoBlocks.Web.Helpers
                 });
             }
 
-            var result = await commandManager.ApplyAsync(command);
-            if (!result.WasSuccessful)
+            var rawResult = (await commandManager.ApplyAsync(command));
+            if (!rawResult.WasSuccessful)
             {
                 return new ObjectResult(new Dtos.ExecutionResult<TOut>
                 {
-                    ExecutionErrors = new[] { result.Error }
+                    ExecutionErrors = rawResult.ToErrors() ?? Array.Empty<CommandError>()
                 })
                 {
                     StatusCode = StatusCodes.Status500InternalServerError
@@ -67,7 +67,8 @@ namespace NaoBlocks.Web.Helpers
             }
 
             await commandManager.CommitAsync();
-            var output = mapper(command.Output);
+            var result = rawResult.As<TIn>();
+            var output = mapper(result.Output);
             return Dtos.ExecutionResult.New(output);
         }
     }

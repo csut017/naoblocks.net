@@ -17,13 +17,13 @@ namespace NaoBlocks.Core.Commands
 
         public UserRole Role { get; set; } = UserRole.Student;
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add($"{this.Role} name is required");
+                errors.Add(this.Error($"{this.Role} name is required"));
             }
 
             if (!errors.Any())
@@ -31,18 +31,18 @@ namespace NaoBlocks.Core.Commands
                 this.person = await session.Query<User>()
                                             .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
                                             .ConfigureAwait(false);
-                if (person == null) errors.Add($"{this.Role} {this.Name} does not exist");
+                if (person == null) errors.Add(this.Error($"{this.Role} {this.Name} does not exist"));
             }
 
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
             session.Delete(this.person);
-            return Task.CompletedTask;
+            return Task.FromResult(CommandResult.New(this.Number));
         }
     }
 }

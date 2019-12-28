@@ -94,7 +94,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Put(Session value)
+        public async Task<ActionResult<Dtos.ExecutionResult>> Put()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
@@ -103,44 +103,45 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(CommandBase<Session> command)
+        private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(CommandBase command)
         {
             var errors = await commandManager.ValidateAsync(command).ConfigureAwait(false);
             if (errors.Any())
             {
                 foreach (var error in errors)
                 {
-                    this._logger.LogInformation(error);
+                    this._logger.LogInformation(error.Error);
                 }
 
                 return new BadRequestObjectResult(new Dtos.ExecutionResult<Dtos.Session>
                 {
-                    ValidationErrors = new[] { "Unable to validate session details" }
+                    ValidationErrors = new[] { new CommandError(0, "Unable to validate session details") }
                 });
             }
 
-            var result = await commandManager.ApplyAsync(command).ConfigureAwait(false);
-            if (!result.WasSuccessful)
+            var rawResult = (await commandManager.ApplyAsync(command).ConfigureAwait(false));
+            if (!rawResult.WasSuccessful)
             {
                 return new ObjectResult(new Dtos.ExecutionResult<Dtos.Session>
                 {
-                    ExecutionErrors = new[] { result.Error ?? string.Empty }
+                    ExecutionErrors = rawResult.ToErrors()
                 })
                 {
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
 
+            var result = rawResult.As<Session>();
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(this.jwtSecret);
-            var expiry = command.Output?.WhenExpires ?? DateTime.UtcNow;
+            var expiry = result.Output?.WhenExpires ?? DateTime.UtcNow;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, command.Output?.UserId ?? string.Empty),
-                    new Claim(ClaimTypes.Role, (command.Output?.Role ?? UserRole.Student).ToString()),
-                    new Claim("SessionId", command.Output?.Id ?? string.Empty)
+                    new Claim(ClaimTypes.Name, result.Output?.UserId ?? string.Empty),
+                    new Claim(ClaimTypes.Role, (result.Output?.Role ?? UserRole.Student).ToString()),
+                    new Claim("SessionId", result.Output?.Id ?? string.Empty)
                 }),
                 Expires = expiry,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -152,7 +153,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Token = tokenHandler.WriteToken(token),
                 Expires = expiry,
-                Role = (command?.Output?.Role.ToString() ?? "Unknown")
+                Role = (result.Output?.Role.ToString() ?? "Unknown")
             });
         }
     }

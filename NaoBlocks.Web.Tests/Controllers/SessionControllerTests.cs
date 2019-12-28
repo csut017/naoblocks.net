@@ -30,7 +30,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
 
             // Act
-            var response = await controller.Delete();
+            await controller.Delete();
 
             // Assert
             var command = Assert.IsType<FinishSessionCommand>(manager.LastCommand);
@@ -88,8 +88,10 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
-            var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
-            controller.CurrentTimeFunc = () => new DateTime(2019, 1, 1);
+            var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object)
+            {
+                CurrentTimeFunc = () => new DateTime(2019, 1, 1)
+            };
             Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
 
             // Act
@@ -109,14 +111,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var loggerMock = new Mock<ILogger<SessionController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
-                .SetupApply(cmd =>
+                .SetupApply(cmd => Task.FromResult(CommandResult.New(0, new Session
                 {
-                    ((StartSessionCommand)cmd).Output = new Session
-                    {
-                        WhenExpires = DateTime.UtcNow.AddDays(1)
-                    };
-                    return Task.FromResult(new CommandResult(1));
-                });
+                    WhenExpires = DateTime.UtcNow.AddDays(1)
+                })));
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
             var request = new Data.Student { Name = "Bob", Password = "password" };
@@ -202,15 +200,11 @@ namespace NaoBlocks.Web.Tests.Controllers
             var loggerMock = new Mock<ILogger<SessionController>>();
             var manager = new FakeCommandManager()
                 .SetupDoNothing()
-                .SetupApply(cmd =>
+                .SetupApply(cmd => Task.FromResult(CommandResult.New(0, new Session
                 {
-                    ((StartSessionCommand)cmd).Output = new Session
-                    {
-                        Role = UserRole.Teacher,
-                        WhenExpires = DateTime.UtcNow.AddDays(1)
-                    };
-                    return Task.FromResult(new CommandResult(1));
-                });
+                    Role = UserRole.Teacher,
+                    WhenExpires = DateTime.UtcNow.AddDays(1)
+                })));
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new SessionController(loggerMock.Object, manager, sessionMock.Object, InitialiseOptions().Object);
             var request = new Data.Student { Name = "Bob", Password = "password" };

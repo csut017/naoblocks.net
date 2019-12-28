@@ -18,25 +18,25 @@ namespace NaoBlocks.Core.Commands
         public string? FriendlyName { get; set; }
         public string? MachineName { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             this.robot = await session.Query<Robot>()
                                         .FirstOrDefaultAsync(u => u.MachineName == this.CurrentMachineName)
                                         .ConfigureAwait(false);
-            if (this.robot == null) errors.Add($"Robot {this.CurrentMachineName} does not exist");
+            if (this.robot == null) errors.Add(this.Error($"Robot {this.CurrentMachineName} does not exist"));
 
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.robot == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.MachineName) && (this.MachineName != this.robot.MachineName)) this.robot.MachineName = this.MachineName;
             if (!string.IsNullOrEmpty(this.FriendlyName) && (this.FriendlyName != this.robot.FriendlyName)) this.robot.FriendlyName = this.FriendlyName;
-            return Task.CompletedTask;
+            return Task.FromResult(CommandResult.New(this.Number));
         }
     }
 }

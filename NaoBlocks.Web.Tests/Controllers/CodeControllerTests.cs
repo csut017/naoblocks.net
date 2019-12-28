@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Controllers;
+using Raven.Client.Documents.Session;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,13 +19,14 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<CodeController>>();
             var manager = new FakeCommandManager();
-            var controller = new CodeController(loggerMock.Object, manager);
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new CodeController(loggerMock.Object, manager, sessionMock.Object);
 
             // Act
             var response = await controller.Compile(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<RobotCodeCompilation>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -34,8 +36,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<CodeController>>();
             var manager = new FakeCommandManager();
-            var controller = new CodeController(loggerMock.Object, manager);
-            var request = new Data.RobotCode { Program = "rest()" };
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new CodeController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Data.CodeProgram { Code = "rest()" };
 
             // Act
             var response = await controller.Compile(request);
@@ -54,17 +57,18 @@ namespace NaoBlocks.Web.Tests.Controllers
             var loggerMock = new Mock<ILogger<CodeController>>();
             var manager = new FakeCommandManager()
                 .SetupApplyError("Something failed");
-            var controller = new CodeController(loggerMock.Object, manager);
-            var request = new Data.RobotCode { Program = "test" };
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new CodeController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Data.CodeProgram { Code = "test" };
 
             // Act
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<RobotCodeCompilation>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Data.ExecutionResult<RobotCodeCompilation>>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledProgram>>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);
@@ -76,16 +80,17 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<CodeController>>();
             var manager = new FakeCommandManager();
-            var controller = new CodeController(loggerMock.Object, manager);
-            var request = new Data.RobotCode();
+            var sessionMock = new Mock<IAsyncDocumentSession>();
+            var controller = new CodeController(loggerMock.Object, manager, sessionMock.Object);
+            var request = new Data.CodeProgram();
 
             // Act
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<RobotCodeCompilation>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Data.ExecutionResult<RobotCodeCompilation>>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledProgram>>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);

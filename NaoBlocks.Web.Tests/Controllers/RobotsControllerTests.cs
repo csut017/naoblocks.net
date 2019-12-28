@@ -166,7 +166,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<RobotsController>>();
             var manager = new FakeCommandManager()
-                .SetupDoNothing();
+                .SetupDoNothing(new Robot());
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
             var request = new Data.Robot { MachineName = "Bob" };
@@ -187,7 +187,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<RobotsController>>();
             var manager = new FakeCommandManager()
-                .SetupDoNothing();
+                .SetupDoNothing(new Robot());
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new RobotsController(loggerMock.Object, manager, sessionMock.Object);
             var request = new Data.Robot { MachineName = "r2d2", FriendlyName = "Bob" };

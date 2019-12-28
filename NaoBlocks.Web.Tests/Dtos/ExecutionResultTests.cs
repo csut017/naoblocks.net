@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Web.Dtos;
+﻿using NaoBlocks.Core.Commands;
+using NaoBlocks.Web.Dtos;
 using Xunit;
 
 namespace NaoBlocks.Web.Tests.Dtos
@@ -10,7 +11,7 @@ namespace NaoBlocks.Web.Tests.Dtos
         {
             var result = new ExecutionResult
             {
-                ExecutionErrors = new[] { "Error" }
+                ExecutionErrors = new[] { new CommandError(0, "Error") }
             };
             Assert.False(result.Successful);
         }
@@ -20,7 +21,7 @@ namespace NaoBlocks.Web.Tests.Dtos
         {
             var result = new ExecutionResult
             {
-                ValidationErrors = new[] { "Error" }
+                ValidationErrors = new[] { new CommandError(0, "Error") }
             };
             Assert.False(result.Successful);
         }

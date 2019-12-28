@@ -4,6 +4,7 @@ using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
 using RavenDB.Mocks;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -24,8 +25,8 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new AddUserCommand { Name = "Bob", Password = "Hello", WhenExecuted = new DateTime(2019, 1, 1) };
-            await command.ApplyAsync(sessionMock.Object);
-            Assert.Equal(command.WhenExecuted, command.Output.WhenAdded);
+            var result = (await command.ApplyAsync(sessionMock.Object)).As<User>();
+            Assert.Equal(command.WhenExecuted, result.Output?.WhenAdded);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Teacher with name Old already exists"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -85,7 +86,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -98,7 +99,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Student name is required"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -111,7 +112,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Teacher name is required"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -124,7 +125,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Password is required"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]

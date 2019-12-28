@@ -28,7 +28,7 @@ namespace NaoBlocks.Core.Commands
                 Result = result,
                 Type = command.GetType().Name
             };
-            if (log.Type.EndsWith("Command", StringComparison.InvariantCulture)) log.Type = log.Type.Substring(0, log.Type.Length - 7);
+            if (log.Type.EndsWith("Command", StringComparison.InvariantCulture)) log.Type = log.Type[0..^7];
 
             // Always store the command log - use a seperate session to ensure it is saved
             using (var logSession = this.store.OpenAsyncSession())
@@ -45,7 +45,7 @@ namespace NaoBlocks.Core.Commands
             await this.session.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Task<IEnumerable<string>> ValidateAsync(CommandBase? command)
+        public Task<IEnumerable<CommandError>> ValidateAsync(CommandBase? command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             return command.ValidateAsync(this.session);

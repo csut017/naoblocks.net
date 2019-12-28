@@ -59,10 +59,10 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             public bool ThrowException { get; set; }
 
-            protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+            protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession session)
             {
                 if (this.ThrowException) throw new Exception("Failing!");
-                return Task.CompletedTask;
+                return Task.FromResult(new CommandResult(this.Number));
             }
         }
     }

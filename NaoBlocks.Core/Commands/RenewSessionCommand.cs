@@ -17,13 +17,13 @@ namespace NaoBlocks.Core.Commands
 
         public string? UserId { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.UserId))
             {
-                errors.Add($"User ID is required");
+                errors.Add(this.Error($"User ID is required"));
             }
 
             if (!errors.Any())
@@ -33,21 +33,21 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (this.Session == null)
                 {
-                    errors.Add("User does not have a current session");
+                    errors.Add(this.Error("User does not have a current session"));
                 }
             }
 
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.Session == null) throw new InvalidCallOrderException("ValidateAsync must be called first");
 
             this.Session.WhenExpires = this.WhenExecuted.AddDays(1);
-            this.Output = this.Session;
-            return Task.CompletedTask;
+            CommandResult result = this.Result(this.Session);
+            return Task.FromResult(result);
         }
     }
 }

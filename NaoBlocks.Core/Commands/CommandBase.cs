@@ -21,10 +21,9 @@ namespace NaoBlocks.Core.Commands
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This method needs to handle any failures.")]
         public async Task<CommandResult> ApplyAsync(IAsyncDocumentSession? session)
         {
-            var result = new CommandResult(this.Number);
             try
             {
-                await this.DoApplyAsync(session, result).ConfigureAwait(false);
+                return await this.DoApplyAsync(session).ConfigureAwait(false);
             }
             catch (ArgumentNullException)
             {
@@ -36,10 +35,8 @@ namespace NaoBlocks.Core.Commands
             }
             catch (Exception error)
             {
-                result.Error = "Unexpected error: " + error.Message;
+                return new CommandResult(this.Number, $"Unexpected error: {error.Message}");
             }
-
-            return result;
         }
 
         public virtual Task<bool> CheckCanRollbackAsync(IAsyncDocumentSession? session)
@@ -52,19 +49,31 @@ namespace NaoBlocks.Core.Commands
             return Task.FromResult(new CommandResult(this.Number, "Command does not allow rolling back"));
         }
 
-        public virtual Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public virtual Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
-            return Task.FromResult(new List<string>().AsEnumerable());
+            return Task.FromResult(new List<CommandError>().AsEnumerable());
         }
 
-        protected abstract Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result);
+        protected abstract Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session);
+
+        protected CommandError Error(string error)
+        {
+            return new CommandError(this.Number, error);
+        }
+
+        protected virtual CommandResult Result()
+        {
+            return new CommandResult(this.Number);
+        }
     }
 
-    public abstract class CommandBase<TOuput>
+    public abstract class CommandBase<T>
         : CommandBase
-        where TOuput : class
+        where T : class
     {
-        [JsonIgnore]
-        public TOuput? Output { get; set; }
+        protected CommandResult<T> Result(T value)
+        {
+            return new CommandResult<T>(this.Number, value);
+        }
     }
 }

@@ -9,23 +9,23 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class FinishSessionCommand
-        : CommandBase<Session>
+        : CommandBase
     {
         public string? UserId { get; set; }
 
-        public override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.UserId))
             {
-                errors.Add($"User ID is required");
+                errors.Add(this.Error($"User ID is required"));
             }
 
             return Task.FromResult(errors.AsEnumerable());
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override async Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
@@ -34,12 +34,13 @@ namespace NaoBlocks.Core.Commands
             var existing = await session.Query<Session>()
                 .FirstOrDefaultAsync(us => us.UserId == userId && us.WhenExpires > now)
                 .ConfigureAwait(false);
-            this.Output = null;
             if (existing != null)
             {
                 existing.WhenExpires = now.AddMinutes(-1);
-                this.Output = existing;
+                return CommandResult.New(this.Number, existing);
             }
+
+            return CommandResult.New(this.Number);
         }
     }
 }

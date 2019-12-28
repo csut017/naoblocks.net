@@ -37,7 +37,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateAsyncCallsCommandsMethod()
         {
-            var commandResult = new string[] { }.AsEnumerable();
+            var commandResult = new CommandError[] { }.AsEnumerable();
             var commandMock = new Mock<CommandBase>();
             commandMock.Setup(x => x.ValidateAsync(It.IsNotNull<IAsyncDocumentSession>()))
                 .Returns(Task.FromResult(commandResult));
@@ -53,10 +53,10 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             public bool ApplyCalled { get; set; }
 
-            protected override Task DoApplyAsync(IAsyncDocumentSession session, CommandResult result)
+            protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession session)
             {
                 this.ApplyCalled = true;
-                return Task.CompletedTask;
+                return Task.FromResult(new CommandResult(0));
             }
         }
     }

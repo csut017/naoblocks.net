@@ -4,6 +4,7 @@ using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
 using RavenDB.Mocks;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,8 +19,8 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new FinishSessionCommand { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
-            await command.ApplyAsync(sessionMock.Object);
-            Assert.Null(command.Output);
+            var result = (await command.ApplyAsync(sessionMock.Object));
+            Assert.Null(result as CommandResult<Session>);
         }
 
         [Fact]
@@ -39,8 +40,8 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var command = new FinishSessionCommand { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
-            await command.ApplyAsync(sessionMock.Object);
-            Assert.Equal(new DateTime(2019, 1, 1, 23, 59, 0), command.Output?.WhenExpires);
+            var result = (await command.ApplyAsync(sessionMock.Object)).As<Session>();
+            Assert.Equal(new DateTime(2019, 1, 1, 23, 59, 0), result.Output?.WhenExpires);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "User ID is required"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
     }
 }

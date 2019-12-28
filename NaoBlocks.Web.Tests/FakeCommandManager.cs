@@ -13,7 +13,7 @@ namespace NaoBlocks.Web.Tests
     {
         private Func<CommandBase, Task<CommandResult>> applyCommand;
 
-        private Func<CommandBase, Task<IEnumerable<string>>> validateCommand;
+        private Func<CommandBase, Task<IEnumerable<CommandError>>> validateCommand;
 
         public FakeCommandManager()
         {
@@ -64,11 +64,19 @@ namespace NaoBlocks.Web.Tests
         public FakeCommandManager SetupDoNothing()
         {
             this.applyCommand = c => Task.FromResult(new CommandResult(1));
-            this.validateCommand = c => Task.FromResult(new string[0].AsEnumerable());
+            this.validateCommand = c => Task.FromResult(new CommandError[0].AsEnumerable());
             return this;
         }
 
-        public FakeCommandManager SetupValidate(Func<CommandBase, Task<IEnumerable<string>>> command)
+        public FakeCommandManager SetupDoNothing<TValue>(TValue value)
+            where TValue : class
+        {
+            this.applyCommand = c => Task.FromResult(CommandResult.New(1, value));
+            this.validateCommand = c => Task.FromResult(new CommandError[0].AsEnumerable());
+            return this;
+        }
+
+        public FakeCommandManager SetupValidate(Func<CommandBase, Task<IEnumerable<CommandError>>> command)
         {
             this.validateCommand = command;
             return this;
@@ -76,11 +84,11 @@ namespace NaoBlocks.Web.Tests
 
         public FakeCommandManager SetupValidateErrors(params string[] errors)
         {
-            this.validateCommand = c => Task.FromResult(errors.AsEnumerable());
+            this.validateCommand = c => Task.FromResult(errors.Select(e => new CommandError(0, e)).AsEnumerable());
             return this;
         }
 
-        public async Task<IEnumerable<string>> ValidateAsync(CommandBase command)
+        public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
         {
             this.CountOfValidateCalled++;
             this.LastCommand = command;

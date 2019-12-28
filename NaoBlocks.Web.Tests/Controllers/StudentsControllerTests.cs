@@ -166,7 +166,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<StudentsController>>();
             var manager = new FakeCommandManager()
-                .SetupDoNothing();
+                .SetupDoNothing(new User());
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
             var request = new Data.Student { Name = "Bob" };
@@ -187,7 +187,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var loggerMock = new Mock<ILogger<StudentsController>>();
             var manager = new FakeCommandManager()
-                .SetupDoNothing();
+                .SetupDoNothing(new User());
             var sessionMock = new Mock<IAsyncDocumentSession>();
             var controller = new StudentsController(loggerMock.Object, manager, sessionMock.Object);
             var request = new Data.Student { Name = "Bob", Password = "password" };

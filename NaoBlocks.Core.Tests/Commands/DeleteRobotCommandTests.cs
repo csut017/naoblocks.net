@@ -4,6 +4,7 @@ using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
 using RavenDB.Mocks;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -42,7 +43,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var command = new DeleteRobotCommand { MachineName = "Bob" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -59,7 +60,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Robot Bob does not exist"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -72,7 +73,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Machine name is required for robot"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]

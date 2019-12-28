@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using NaoBlocks.Core.Commands;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NaoBlocks.Web.Dtos
 {
     public class ExecutionResult
     {
-        public IEnumerable<string> ExecutionErrors { get; set; }
+        public IEnumerable<CommandError> ExecutionErrors { get; set; }
 
         public bool Successful
         {
@@ -17,7 +18,7 @@ namespace NaoBlocks.Web.Dtos
             }
         }
 
-        public IEnumerable<string> ValidationErrors { get; set; }
+        public IEnumerable<CommandError> ValidationErrors { get; set; }
 
         public static ExecutionResult<TOutput> New<TOutput>(TOutput value)
         {

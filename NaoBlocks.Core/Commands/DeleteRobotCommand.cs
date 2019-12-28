@@ -15,13 +15,13 @@ namespace NaoBlocks.Core.Commands
 
         public string? MachineName { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
             {
-                errors.Add($"Machine name is required for robot");
+                errors.Add(this.Error($"Machine name is required for robot"));
             }
 
             if (!errors.Any())
@@ -29,18 +29,18 @@ namespace NaoBlocks.Core.Commands
                 this.robot = await session.Query<Robot>()
                                             .FirstOrDefaultAsync(u => u.MachineName == this.MachineName)
                                             .ConfigureAwait(false);
-                if (this.robot == null) errors.Add($"Robot {this.MachineName} does not exist");
+                if (this.robot == null) errors.Add(this.Error($"Robot {this.MachineName} does not exist"));
             }
 
             return errors.AsEnumerable();
         }
 
-        protected override Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
             session.Delete(this.robot);
-            return Task.CompletedTask;
+            return Task.FromResult(CommandResult.New(this.Number));
         }
     }
 }

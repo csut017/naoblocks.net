@@ -4,6 +4,7 @@ using NaoBlocks.Core.Models;
 using Raven.Client.Documents.Session;
 using RavenDB.Mocks;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -50,7 +51,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var command = new UpdateUserCommand { Name = "Bob", Role = UserRole.Teacher };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
@@ -67,7 +68,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "Teacher Bob does not exist"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]

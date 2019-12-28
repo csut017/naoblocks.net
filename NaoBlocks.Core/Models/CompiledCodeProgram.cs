@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace NaoBlocks.Core.Models
 {
-    public class RobotCodeCompilation
+    public class CompiledProgram
     {
-        public RobotCodeCompilation(ParseResult result)
+        public CompiledProgram(ParseResult result)
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
 
@@ -18,8 +18,10 @@ namespace NaoBlocks.Core.Models
             }
         }
 
-        public IEnumerable<ParseError> Errors { get; private set; }
+        public IEnumerable<ParseError>? Errors { get; private set; }
 
-        public IEnumerable<AstNode> Nodes { get; private set; }
+        public IEnumerable<AstNode>? Nodes { get; private set; }
+
+        public string? ProgramId { get; set; }
     }
 }

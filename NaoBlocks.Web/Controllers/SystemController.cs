@@ -45,7 +45,9 @@ namespace NaoBlocks.Web.Controllers
             {
                 return new BadRequestObjectResult(new Dtos.ExecutionResult
                 {
-                    ValidationErrors = new[] { "System already initialised" }
+                    ValidationErrors = new[] {
+                        new CommandError(0, "System already initialised")
+                    }
                 }); ;
             }
 

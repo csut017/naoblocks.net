@@ -22,18 +22,18 @@ namespace NaoBlocks.Core.Commands
 
         public string? UserId { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add($"User name is required");
+                errors.Add(this.Error($"User name is required"));
             }
 
             if (this.Password == null)
             {
-                errors.Add("Password is required");
+                errors.Add(this.Error("Password is required"));
             }
 
             if (!errors.Any())
@@ -43,11 +43,11 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (user == null)
                 {
-                    errors.Add("Unknown or invalid user");
+                    errors.Add(this.Error("Unknown or invalid user"));
                 }
                 else if ((user.Password != null) && !user.Password.Verify(this.Password))
                 {
-                    errors.Add("Unknown or invalid user");
+                    errors.Add(this.Error("Unknown or invalid user"));
                 }
                 else
                 {
@@ -59,7 +59,7 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override async Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (string.IsNullOrEmpty(this.UserId)) throw new InvalidCallOrderException("ValidateAsync must be called first");
@@ -79,13 +79,11 @@ namespace NaoBlocks.Core.Commands
                     WhenExpires = now.AddDays(1)
                 };
                 await session.StoreAsync(newSession).ConfigureAwait(false);
-                this.Output = newSession;
+                return this.Result(newSession);
             }
-            else
-            {
-                existing.WhenExpires = now.AddDays(1);
-                this.Output = existing;
-            }
+
+            existing.WhenExpires = now.AddDays(1);
+            return this.Result(existing);
         }
     }
 }

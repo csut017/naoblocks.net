@@ -19,19 +19,19 @@ namespace NaoBlocks.Core.Commands
 
         public UserRole Role { get; set; }
 
-        public async override Task<IEnumerable<string>> ValidateAsync(IAsyncDocumentSession? session)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
-            var errors = new List<string>();
+            var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add($"{this.Role} name is required");
+                errors.Add(this.Error($"{this.Role} name is required"));
             }
 
             if (this.Password == null)
             {
-                errors.Add("Password is required");
+                errors.Add(this.Error("Password is required"));
             }
             else
             {
@@ -41,13 +41,13 @@ namespace NaoBlocks.Core.Commands
 
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
-                errors.Add($"{this.Role} with name {this.Name} already exists");
+                errors.Add(this.Error($"{this.Role} with name {this.Name} already exists"));
             }
 
             return errors.AsEnumerable();
         }
 
-        protected override async Task DoApplyAsync(IAsyncDocumentSession? session, CommandResult? result)
+        protected override async Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var user = new User
@@ -58,7 +58,7 @@ namespace NaoBlocks.Core.Commands
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(user).ConfigureAwait(false);
-            this.Output = user;
+            return this.Result(user);
         }
     }
 }

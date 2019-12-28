@@ -1,4 +1,6 @@
 ﻿using NaoBlocks.Core.Commands;
+using NaoBlocks.Core.Models;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,10 +12,10 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task CompilesCode()
         {
             var command = new CompileCodeCommand { Code = "rest()" };
-            var result = await command.ApplyAsync(null);
+            var result = (await command.ApplyAsync(null)).As<CompiledProgram>();
             Assert.True(result.WasSuccessful);
-            Assert.Null(command.Output.Errors);
-            Assert.NotEmpty(command.Output.Nodes);
+            Assert.Null(result.Output?.Errors);
+            Assert.NotEmpty(result.Output?.Nodes);
         }
 
         [Fact]
@@ -25,7 +27,7 @@ namespace NaoBlocks.Core.Tests.Commands
             {
                 "No code to compile"
             };
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, result.Select(r => r.Error));
         }
 
         [Fact]
