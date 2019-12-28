@@ -8,6 +8,8 @@ namespace NaoBlocks.Web.Communications
     {
         public long ClientId { get; set; }
 
+        public long? ConversationId { get; set; }
+
         public ClientMessageType Type { get; set; } = ClientMessageType.Unknown;
 
         public IDictionary<string, string> Values { get; } = new Dictionary<string, string>();

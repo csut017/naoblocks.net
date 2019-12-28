@@ -5,5 +5,6 @@
         Unknown,
         Register,
         StartProgram,
+        ErrorResponse,
     }
 }

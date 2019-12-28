@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
+using NaoBlocks.Web.Messages;
 using Raven.Client.Documents;
 using Raven.Embedded;
 using System;
@@ -128,6 +129,7 @@ namespace NaoBlocks.Web
             services.AddScoped<ICommandManager, CommandManager>();
             var hub = new Communications.Hub();
             services.AddSingleton<Communications.IHub>(hub);
+            services.AddTransient<IMessageProcessor, MessageProcessor>();
         }
     }
 }
