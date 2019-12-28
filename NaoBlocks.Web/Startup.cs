@@ -126,6 +126,8 @@ namespace NaoBlocks.Web
                 s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
 
             services.AddScoped<ICommandManager, CommandManager>();
+            var hub = new Communications.Hub();
+            services.AddSingleton<Communications.IHub>(hub);
         }
     }
 }
