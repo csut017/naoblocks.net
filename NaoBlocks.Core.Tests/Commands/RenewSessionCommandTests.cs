@@ -32,28 +32,6 @@ namespace NaoBlocks.Core.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateChecksExpiryDate()
-        {
-            var data = new[]{
-                new Session { WhenExpires = new DateTime(2019, 1, 1) }
-            }.AsRavenQueryable();
-
-            var sessionMock = new Mock<IAsyncDocumentSession>();
-            sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(data);
-            var command = new RenewSessionCommand
-            {
-                UserId = "testing",
-                WhenExecuted = new DateTime(2019, 1, 2)
-            };
-            var result = await command.ValidateAsync(sessionMock.Object);
-            var expected = new[]
-            {
-                "Session has already expired"
-            };
-            Assert.Equal(expected, result);
-        }
-
-        [Fact]
         public async Task ValidateChecksForUser()
         {
             var data = new Session[0].AsRavenQueryable();
@@ -67,7 +45,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
-                "User does not have a session"
+                "User does not have a current session"
             };
             Assert.Equal(expected, result);
         }
