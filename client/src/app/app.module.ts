@@ -22,6 +22,7 @@ import { LogsListComponent } from './logs-list/logs-list.component';
 import { StudentEditorComponent } from './student-editor/student-editor.component';
 import { RobotEditorComponent } from './robot-editor/robot-editor.component';
 import { HeartbeatComponent } from './heartbeat/heartbeat.component';
+import { SaveProgramComponent } from './save-program/save-program.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { HeartbeatComponent } from './heartbeat/heartbeat.component';
     LogsListComponent,
     StudentEditorComponent,
     RobotEditorComponent,
-    HeartbeatComponent
+    HeartbeatComponent,
+    SaveProgramComponent
   ],
   imports: [
     BrowserModule,

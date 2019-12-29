@@ -1,0 +1,40 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Save Program</h3>
+    <div class="modal-body">
+        <form clrForm>
+            <div style="height: 100px;">
+                <clr-tree [clrLazy]="true">
+                    <clr-tree-node *ngFor="let directory of directories" [(clrExpanded)]="directory.expanded"
+                        [clrLoading]="isLoading">
+                        <clr-icon shape="user"></clr-icon>
+                        {{directory.name}}
+                        <ng-template clrIfExpanded (clrIfExpandedChange)="$event ? loadFiles(directory) : null">
+                            <clr-tree-node *ngFor="let file of directory.files">
+                                <button (click)="selectFile(directory.name, file.name)" class="clr-treenode-link">
+                                    <clr-icon shape="file"></clr-icon>
+                                    {{file.name}}
+                                </button>
+                            </clr-tree-node>
+                        </ng-template>
+                    </clr-tree-node>
+                </clr-tree>
+            </div>
+            <clr-input-container>
+                <label>Program Name:</label>
+                <input clrInput type="text" [(ngModel)]="programName" name="programName" />
+            </clr-input-container>
+            <clr-toggle-wrapper class="clr-offset-sm-2" style="margin-top: 1em;">
+                <input type="checkbox" clrToggle value="true" name="saveToServer" [(ngModel)]="saveToServer" />
+                <label>Save to Server</label>
+            </clr-toggle-wrapper>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="opened = false">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="doSave()">
+            Save
+        </button>
+    </div>
+</clr-modal>

@@ -1,11 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Toolbox } from './toolbox';
-import { AboutComponent } from '../about/about.component';
 import { AuthenticationService, UserRole } from '../services/authentication.service';
 import { Router } from '@angular/router';
-import { ChangeRoleComponent } from '../change-role/change-role.component';
 import { HomeBase } from '../home-base';
 import { ProgramService } from '../services/program.service';
+import { SaveProgramComponent } from '../save-program/save-program.component';
+import { User } from '../data/user';
+import { Student } from '../data/student';
 
 declare var Blockly: any;
 
@@ -37,6 +38,9 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   isValid: boolean = true;
   canStop: boolean = false;
   requireEvents: boolean = false;
+  currentUser: User;
+
+  @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
@@ -46,6 +50,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   ngOnInit() {
     this.checkAccess(UserRole.Student);
+    this.authenticationService.getCurrentUser()
+      .subscribe(u => this.currentUser = u);
 
     let xml = new Toolbox()
       .includeConditionals()
@@ -105,7 +111,9 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   doSave(): void {
-    alert('TODO');
+    let student = new Student();
+    student.name = this.currentUser.name;
+    this.saveProgram.show(student);
   }
 
   private validateBlocks(): string {

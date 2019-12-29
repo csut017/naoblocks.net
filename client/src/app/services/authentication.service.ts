@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, tap } from 'rxjs/operators';
 import { ErrorHandlerService } from './error-handler.service';
 import { ClientService } from './client.service';
+import { User } from '../data/user';
 
 interface login {
   successful: boolean,
@@ -72,6 +73,15 @@ export class AuthenticationService extends ClientService {
     }).pipe(
       catchError(this.handleError('renew', this.generateErrorResult)),
       tap(_ => this.log('Session renewed'))
+    );
+  }
+
+  getCurrentUser(): Observable<User> {
+    const url = `${environment.apiURL}v1/session`;
+    this.log('Retrieving current user');
+    return this.http.get<User>(url).pipe(
+      catchError(this.handleError('login', _ => null)),
+      tap(_ => this.log('Current user retrieved'))
     );
   }
 

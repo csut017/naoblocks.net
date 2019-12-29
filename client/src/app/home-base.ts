@@ -12,9 +12,8 @@ export class HomeBase {
 
     hasAccess: boolean;
 
-    constructor(private authenticationService: AuthenticationService,
-        private router: Router) {
-
+    constructor(protected authenticationService: AuthenticationService,
+        protected router: Router) {
     }
 
     checkAccess(role: UserRole) {

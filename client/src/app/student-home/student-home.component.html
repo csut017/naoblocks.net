@@ -69,6 +69,8 @@
         </div>
     </div>
     <app-about></app-about>
+    <app-change-role [role]="'Student'"></app-change-role>
+    <app-save-program></app-save-program>
     <clr-modal [(clrModalOpen)]="sendingToRobot" [clrModalStaticBackdrop]="false" [clrModalClosable]="false"
         [clrModalSize]="'xl'">
         <h3 class="modal-title">Starting Program</h3>
@@ -102,5 +104,4 @@
             </button>
         </div>
     </clr-modal>
-    <app-change-role [role]="'Student'"></app-change-role>
 </div>
