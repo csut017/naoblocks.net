@@ -123,26 +123,5 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.CodeProgram.FromModel);
         }
-
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.CodeProgram? program, string? user)
-        //{
-        //    if ((program == null) || string.IsNullOrEmpty(id))
-        //    {
-        //        return this.BadRequest(new
-        //        {
-        //            Error = "Missing program details"
-        //        });
-        //    }
-
-        //    this._logger.LogInformation($"Updating program '{id}'");
-        //    var command = new UpdateProgramCommand
-        //    {
-        //        CurrentMachineName = id,
-        //        MachineName = program.MachineName,
-        //        FriendlyName = program.FriendlyName
-        //    };
-        //    return await this.commandManager.ExecuteForHttp(command);
-        //}
     }
 }

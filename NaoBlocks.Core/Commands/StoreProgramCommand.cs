@@ -45,7 +45,7 @@ namespace NaoBlocks.Core.Commands
                         errors.Add(this.Error($"User does not exist"));
                     }
                 }
-            } 
+            }
             else
             {
                 this.UserId = this.User.Id;
@@ -59,13 +59,29 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.User == null) throw new InvalidCallOrderException();
 
-            var program = new CodeProgram
+            var addProgram = true;
+            CodeProgram? program = null;
+            if (!string.IsNullOrEmpty(this.Name))
             {
-                Name = this.Name,
-                Code = this.Code ?? string.Empty,
-                WhenAdded = this.WhenExecuted
-            };
-            this.User.Programs.Add(program);
+                program = this.User.Programs
+                    .FirstOrDefault(p => p.Name == this.Name);
+                if (program != null)
+                {
+                    program.Code = this.Code ?? string.Empty;
+                    addProgram = false;
+                }
+            }
+
+            if (addProgram)
+            {
+                program = new CodeProgram
+                {
+                    Name = this.Name,
+                    Code = this.Code ?? string.Empty,
+                    WhenAdded = this.WhenExecuted
+                };
+                this.User.Programs.Add(program);
+            }
             CommandResult result = this.Result(program);
             return Task.FromResult(result);
         }
