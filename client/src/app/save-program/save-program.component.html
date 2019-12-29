@@ -2,7 +2,7 @@
     <h3 class="modal-title">Save Program</h3>
     <div class="modal-body">
         <form clrForm>
-            <div style="height: 100px;">
+            <div style="height: 150px; overflow: auto;">
                 <clr-tree [clrLazy]="true">
                     <clr-tree-node *ngFor="let directory of directories" [(clrExpanded)]="directory.expanded"
                         [clrLoading]="isLoading">
@@ -28,12 +28,24 @@
                 <label>Save to Server</label>
             </clr-toggle-wrapper>
         </form>
+        <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{errorMessage}}
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn" (click)="opened = false">
             Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="doSave()">
+        <button type="button" class="btn btn-primary" (click)="doSave()" [disabled]="!canSave">
             Save
         </button>
     </div>

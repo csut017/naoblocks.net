@@ -34,7 +34,7 @@ export class ProgramService extends ClientService {
       );
   }
 
-  list(userName:string, page: number = 0, size: number = 20): Observable<ResultSet<ProgramFile>> {
+  list(userName: string, page: number = 0, size: number = 20): Observable<ResultSet<ProgramFile>> {
     const url = `${environment.apiURL}v1/programs?page=${page}&size=${size}&user=${userName}`;
     this.log('Listing programs');
     return this.http.get<ResultSet<ProgramFile>>(url)
@@ -43,6 +43,20 @@ export class ProgramService extends ClientService {
           this.log('Fetched programs');
         }),
         catchError(this.handleError('list', msg => new ResultSet<ProgramFile>(msg)))
+      );
+  }
+
+  save(name: string, code: string): Observable<ExecutionResult<ProgramFile>> {
+    const url = `${environment.apiURL}v1/programs`;
+    this.log('Storing program');
+    let request = {
+      name: name,
+      code: code
+    };
+    return this.http.post<any>(url, request)
+      .pipe(
+        tap(_ => this.log('Stored program')),
+        catchError(this.handleError('save', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
       );
   }
 }

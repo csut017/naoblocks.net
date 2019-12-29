@@ -22,6 +22,6 @@ namespace NaoBlocks.Core.Models
 
         public IEnumerable<AstNode>? Nodes { get; private set; }
 
-        public string? ProgramId { get; set; }
+        public long? ProgramId { get; set; }
     }
 }

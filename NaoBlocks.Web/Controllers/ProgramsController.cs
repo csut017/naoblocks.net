@@ -119,7 +119,8 @@ namespace NaoBlocks.Web.Controllers
             {
                 Name = program.Name,
                 Code = program.Code,
-                User = currentUser
+                User = currentUser,
+                RequireName = true
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.CodeProgram.FromModel);
         }

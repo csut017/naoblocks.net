@@ -8,6 +8,7 @@ namespace NaoBlocks.Core.Models
         public string? Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
+        public long NextProgramNumber { get; set; }
 
         public Password Password { get; set; } = Password.Empty;
 

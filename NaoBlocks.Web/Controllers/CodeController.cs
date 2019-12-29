@@ -65,7 +65,7 @@ namespace NaoBlocks.Web.Controllers
                     var results = r.ToArray();
                     var output = results[0].As<CompiledProgram>().Output;
                     var store = results[1].As<CodeProgram>().Output;
-                    output.ProgramId = store.Id;
+                    if (output != null) output.ProgramId = store?.Number;
                     return output;
                 });
         }

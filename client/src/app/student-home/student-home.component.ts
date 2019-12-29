@@ -4,9 +4,10 @@ import { AuthenticationService, UserRole } from '../services/authentication.serv
 import { Router } from '@angular/router';
 import { HomeBase } from '../home-base';
 import { ProgramService } from '../services/program.service';
-import { SaveProgramComponent } from '../save-program/save-program.component';
+import { SaveProgramComponent, SaveDetails } from '../save-program/save-program.component';
 import { User } from '../data/user';
 import { Student } from '../data/student';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 declare var Blockly: any;
 
@@ -44,7 +45,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
-    private programService: ProgramService) {
+    private programService: ProgramService,
+    private errorHandler: ErrorHandlerService) {
     super(authenticationService, router);
   }
 
@@ -114,6 +116,19 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     let student = new Student();
     student.name = this.currentUser.name;
     this.saveProgram.show(student);
+  }
+
+  onSave(details: SaveDetails): void {
+    let code = this.generateCode();
+    this.programService.save(details.name, code)
+      .subscribe(result => {
+        if (result.successful) {
+          this.saveProgram.close();
+        } else {
+          let error = this.errorHandler.formatError(result);
+          this.saveProgram.showError(error);
+        }
+      });
   }
 
   private validateBlocks(): string {

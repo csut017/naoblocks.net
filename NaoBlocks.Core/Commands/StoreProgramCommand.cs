@@ -16,6 +16,8 @@ namespace NaoBlocks.Core.Commands
 
         public string? Name { get; set; }
 
+        public bool RequireName { get; set; } = false;
+
         [JsonIgnore]
         public User? User { get; set; }
 
@@ -28,6 +30,11 @@ namespace NaoBlocks.Core.Commands
             if (string.IsNullOrWhiteSpace(this.Code))
             {
                 errors.Add(this.Error($"Code is required for storing a program"));
+            }
+
+            if (this.RequireName && string.IsNullOrWhiteSpace(this.Name))
+            {
+                errors.Add(this.Error($"Name is required for storing a program"));
             }
 
             if (this.User == null)
@@ -78,7 +85,8 @@ namespace NaoBlocks.Core.Commands
                 {
                     Name = this.Name,
                     Code = this.Code ?? string.Empty,
-                    WhenAdded = this.WhenExecuted
+                    WhenAdded = this.WhenExecuted,
+                    Number = this.User.NextProgramNumber++
                 };
                 this.User.Programs.Add(program);
             }
