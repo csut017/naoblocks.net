@@ -23,6 +23,7 @@ import { StudentEditorComponent } from './student-editor/student-editor.componen
 import { RobotEditorComponent } from './robot-editor/robot-editor.component';
 import { HeartbeatComponent } from './heartbeat/heartbeat.component';
 import { SaveProgramComponent } from './save-program/save-program.component';
+import { LoadProgramComponent } from './load-program/load-program.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { SaveProgramComponent } from './save-program/save-program.component';
     StudentEditorComponent,
     RobotEditorComponent,
     HeartbeatComponent,
-    SaveProgramComponent
+    SaveProgramComponent,
+    LoadProgramComponent
   ],
   imports: [
     BrowserModule,

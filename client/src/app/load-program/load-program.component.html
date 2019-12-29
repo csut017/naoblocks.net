@@ -1,0 +1,44 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Load Program</h3>
+    <div class="modal-body">
+        <form clrForm>
+            <div style="height: 150px; overflow: auto;">
+                <clr-tree [clrLazy]="true">
+                    <clr-tree-node *ngFor="let directory of directories" [(clrExpanded)]="directory.expanded"
+                        [clrLoading]="isLoading">
+                        <clr-icon shape="user"></clr-icon>
+                        {{directory.name}}
+                        <ng-template clrIfExpanded (clrIfExpandedChange)="$event ? loadFiles(directory) : null">
+                            <clr-tree-node *ngFor="let file of directory.files" [class.active]="file.active">
+                                <button (click)="selectFile(directory.name, file)" class="clr-treenode-link">
+                                    <clr-icon shape="file"></clr-icon>
+                                    {{file.name}}
+                                </button>
+                            </clr-tree-node>
+                        </ng-template>
+                    </clr-tree-node>
+                </clr-tree>
+            </div>
+        </form>
+        <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{errorMessage}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="opened = false">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="doLoad()" [disabled]="!canLoad">
+            Load
+        </button>
+    </div>
+</clr-modal>

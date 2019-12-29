@@ -9,6 +9,7 @@ import { User } from '../data/user';
 import { Student } from '../data/student';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { saveAs } from 'file-saver';
+import { LoadProgramComponent } from '../load-program/load-program.component';
 
 declare var Blockly: any;
 
@@ -31,7 +32,6 @@ class executionStatusStep {
 })
 export class StudentHomeComponent extends HomeBase implements OnInit {
 
-  aboutOpened: boolean;
   workspace: any;
   sendingToRobot: boolean = false;
   steps: executionStatusStep[];
@@ -42,6 +42,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   requireEvents: boolean = false;
   currentUser: User;
 
+  @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
 
   constructor(authenticationService: AuthenticationService,
@@ -110,6 +111,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   doLoad(): void {
+    let student = new Student();
+    student.name = this.currentUser.name;
+    this.loadProgram.show(student);
+  }
+
+  onLoad(code: string) {
     alert('TODO');
   }
 
