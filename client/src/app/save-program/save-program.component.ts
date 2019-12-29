@@ -6,10 +6,12 @@ import { ProgramService } from '../services/program.service';
 export class SaveDetails {
   user: string;
   name: string;
+  toServer: boolean;
 
-  constructor(user: string, name: string) {
+  constructor(user: string, name: string, toServer: boolean) {
     this.user = user;
     this.name = name;
+    this.toServer = toServer;
   }
 }
 
@@ -18,7 +20,7 @@ export class SaveDetails {
   templateUrl: './save-program.component.html',
   styleUrls: ['./save-program.component.scss']
 })
-export class SaveProgramComponent implements OnChanges {
+export class SaveProgramComponent {
 
   opened: boolean;
   programName: string;
@@ -34,7 +36,7 @@ export class SaveProgramComponent implements OnChanges {
 
   constructor(private programService: ProgramService) { }
 
-  ngOnChanges(_: SimpleChanges): void {
+  onBlur() {
     this.canSave = !!this.programName;
   }
 
@@ -59,7 +61,7 @@ export class SaveProgramComponent implements OnChanges {
   }
 
   doSave(): void {
-    this.save.emit(new SaveDetails(this.directory, this.programName));
+    this.save.emit(new SaveDetails(this.directory, this.programName, this.saveToServer));
   }
 
   showError(msg: string): void {

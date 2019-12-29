@@ -21,7 +21,7 @@
             </div>
             <clr-input-container>
                 <label>Program Name:</label>
-                <input clrInput type="text" [(ngModel)]="programName" name="programName" />
+                <input clrInput type="text" [(ngModel)]="programName" name="programName" (blur)="onBlur()" />
             </clr-input-container>
             <clr-toggle-wrapper class="clr-offset-sm-2" style="margin-top: 1em;">
                 <input type="checkbox" clrToggle value="true" name="saveToServer" [(ngModel)]="saveToServer" />

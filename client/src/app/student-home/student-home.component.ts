@@ -8,6 +8,7 @@ import { SaveProgramComponent, SaveDetails } from '../save-program/save-program.
 import { User } from '../data/user';
 import { Student } from '../data/student';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { saveAs } from 'file-saver';
 
 declare var Blockly: any;
 
@@ -87,19 +88,19 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       return;
     }
 
-    let code = this.generateCode();
+    let code = this.generateCode(true);
     this.programService.compile(code)
       .subscribe(result => {
         if (!result.successful) {
           this.failStep(0, 'Unable to compile code');
           return;
-        } 
+        }
 
         if (result.output.errors) {
           this.failStep(0, 'There are errors in the code');
           return;
         }
-        
+
         this.completeStep(0);
       });
   }
@@ -119,46 +120,53 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onSave(details: SaveDetails): void {
-    let code = this.generateCode();
-    this.programService.save(details.name, code)
-      .subscribe(result => {
-        if (result.successful) {
-          this.saveProgram.close();
-        } else {
-          let error = this.errorHandler.formatError(result);
-          this.saveProgram.showError(error);
-        }
-      });
+    let code = this.generateCode(false);
+    if (details.toServer) {
+      this.programService.save(details.name, code)
+        .subscribe(result => {
+          if (result.successful) {
+            this.saveProgram.close();
+          } else {
+            let error = this.errorHandler.formatError(result);
+            this.saveProgram.showError(error);
+          }
+        });
+    } else {
+      var blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, details.name + '.txt');
+      this.saveProgram.close();
+    }
   }
 
   private validateBlocks(): string {
     var blocks = this.workspace.getTopBlocks();
     if (!blocks.length) {
-        return 'There are no blocks in the current program!';
+      return 'There are no blocks in the current program!';
     }
 
     if (!this.requireEvents) {
-        if (blocks.length > 1) {
-            return 'All blocks must be joined!';
-        }
+      if (blocks.length > 1) {
+        return 'All blocks must be joined!';
+      }
     } else {
-        if (!this.isValid) {
-            return 'Program is not valid!';
-        }
+      if (!this.isValid) {
+        return 'Program is not valid!';
+      }
     }
   }
 
-  private generateCode(): string {
+  private generateCode(forRobot: boolean): string {
     console.groupCollapsed('Generating code');
     try {
-        Blockly.NaoLang.addStart = !this.requireEvents;
-        let generated = Blockly.NaoLang.workspaceToCode(this.workspace);
-        console.log(generated);
-        return generated;
+      Blockly.NaoLang.addStart = !this.requireEvents;
+      Blockly.NaoLang.includeId = forRobot;
+      let generated = Blockly.NaoLang.workspaceToCode(this.workspace);
+      console.log(generated);
+      return generated;
     } finally {
-        console.groupEnd();
+      console.groupEnd();
     }
-}
+  }
 
   private initialiseStartingUI() {
     this.steps = [
