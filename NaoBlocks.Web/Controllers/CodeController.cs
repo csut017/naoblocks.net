@@ -42,7 +42,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Code = codeToCompile.Code
             };
-            if (!codeToCompile.Store)
+            if (!codeToCompile.Store.GetValueOrDefault(false))
             {
                 return await this.commandManager.ExecuteForHttp(
                     compileCommand,
