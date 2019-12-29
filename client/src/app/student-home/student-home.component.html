@@ -41,11 +41,11 @@
     </header>
     <div class="content-container">
         <clr-vertical-nav [clrVerticalNavCollapsible]="true">
-            <a clrVerticalNavLink href="javascript://" (click)="doPlay()">
+            <a clrVerticalNavLink href="javascript://" (click)="doPlay()" [class.disabled]="isExecuting">
                 <clr-icon clrVerticalNavIcon shape="play" class="is-solid"></clr-icon>
                 Play
             </a>
-            <a clrVerticalNavLink href="javascript://" (click)="doStop()">
+            <a clrVerticalNavLink href="javascript://" (click)="doStop()" [class.disabled]="!isExecuting">
                 <clr-icon clrVerticalNavIcon shape="stop" class="is-solid"></clr-icon>
                 Stop
             </a>

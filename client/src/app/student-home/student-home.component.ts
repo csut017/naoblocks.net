@@ -5,6 +5,7 @@ import { AuthenticationService, UserRole } from '../services/authentication.serv
 import { Router } from '@angular/router';
 import { ChangeRoleComponent } from '../change-role/change-role.component';
 import { HomeBase } from '../home-base';
+import { ProgramService } from '../services/program.service';
 
 declare var Blockly: any;
 
@@ -33,10 +34,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   steps: executionStatusStep[];
   startMessage: string;
   isExecuting: boolean = false;
+  isValid: boolean = true;
   canStop: boolean = false;
+  requireEvents: boolean = false;
 
   constructor(authenticationService: AuthenticationService,
-    router: Router) {
+    router: Router,
+    private programService: ProgramService) {
     super(authenticationService, router);
   }
 
@@ -69,8 +73,27 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   doPlay(): void {
     this.initialiseStartingUI();
-    this.completeStep(0);
-    this.failStep(1, 'Testing');
+    let validationResult = this.validateBlocks();
+    if (!!validationResult) {
+      this.failStep(0, validationResult);
+      return;
+    }
+
+    let code = this.generateCode();
+    this.programService.compile(code)
+      .subscribe(result => {
+        if (!result.successful) {
+          this.failStep(0, 'Unable to compile code');
+          return;
+        } 
+
+        if (result.output.errors) {
+          this.failStep(0, 'There are errors in the code');
+          return;
+        }
+        
+        this.completeStep(0);
+      });
   }
 
   doStop(): void {
@@ -84,6 +107,35 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   doSave(): void {
     alert('TODO');
   }
+
+  private validateBlocks(): string {
+    var blocks = this.workspace.getTopBlocks();
+    if (!blocks.length) {
+        return 'There are no blocks in the current program!';
+    }
+
+    if (!this.requireEvents) {
+        if (blocks.length > 1) {
+            return 'All blocks must be joined!';
+        }
+    } else {
+        if (!this.isValid) {
+            return 'Program is not valid!';
+        }
+    }
+  }
+
+  private generateCode(): string {
+    console.groupCollapsed('Generating code');
+    try {
+        Blockly.NaoLang.addStart = !this.requireEvents;
+        let generated = Blockly.NaoLang.workspaceToCode(this.workspace);
+        console.log(generated);
+        return generated;
+    } finally {
+        console.groupEnd();
+    }
+}
 
   private initialiseStartingUI() {
     this.steps = [
