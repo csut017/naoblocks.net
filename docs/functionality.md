@@ -48,7 +48,7 @@ This page lists all the blocks that are available and their current stage of tes
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| `[number]` | `[number]` | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| `[number]` | `[number]` | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | `[number]` `{operation}` `[number]` | | :grey_question: Unknown | :grey_question: Unknown | 
 | `[number]` `{odd/even}` | | :grey_question: Unknown | :grey_question: Unknown | 
 | Round `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
@@ -58,7 +58,7 @@ This page lists all the blocks that are available and their current stage of tes
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| "`[text]`" | '`[text]`' | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| "`[text]`" | '`[text]`' | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | append `[text]` to `[text]` | | :grey_question: Unknown | :grey_question: Unknown | 
 | length of `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
 
@@ -66,7 +66,7 @@ This page lists all the blocks that are available and their current stage of tes
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| `[colour]` | #`[colour]` | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| `[colour]` | #`[colour]` | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | Random colour | | :grey_question: Unknown | :grey_question: Unknown | 
 
 ## Variables Blocks
