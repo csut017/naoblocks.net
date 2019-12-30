@@ -20,7 +20,7 @@ This page lists all the blocks that are available and their current stage of tes
 | Move to `{position}` and say `[text]` | position(`[text]`, `[text]`) | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | Do `{wave}` | wave() | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | Do `{wave}` and `[text]` | wave(`[text]`) | :heavy_check_mark: Working | :heavy_check_mark: Working | 
-| Look `{direction}` | look('`{left|right,ahead}`') | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| Look `{direction}` | look('`{left,right,ahead}`') | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | `{Open/close}` `{side}` hand(s) | changeHand('`{open,close}`','`{left,right,both}`') | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | Point `{side}` arm `{direction}` | point('`{left,right}`','`{up,down,out,ahead}`'}) | :heavy_check_mark: Working | :heavy_check_mark: Working | 
 | Turn `[number]` degrees | turn(`[number]`) | :heavy_check_mark: Working | :heavy_check_mark: Working | 
@@ -30,49 +30,49 @@ This page lists all the blocks that are available and their current stage of tes
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| if `<condition>` do `<action>` | | | | 
-| `<value>` `{equality}` `<value>` | | | | 
-| `<value>` `{logic condition}` `<value>` | | | | 
-|  not `<value>` | | | | 
- | `{true/false}` | | | | 
+| if `<condition>` do `<action>` | | :grey_question: Unknown | :grey_question: Unknown | 
+| `<value>` `{equality}` `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+| `<value>` `{logic condition}` `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+|  not `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+ | `{true/false}` | | :grey_question: Unknown | :grey_question: Unknown | 
 
 ## Loops Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| Repeat `[number]` time do `<action>` | | | | 
-| Repeat `{while}` `<condition>` do `<action>` | | | | 
-| Repeat `{until}` `<condition>` do `<action>` | | | | 
+| Repeat `[number]` time do `<action>` | | :heavy_check_mark: Working | :x: Test failing | 
+| Repeat `{while}` `<condition>` do `<action>` | | :heavy_check_mark: Working | :x: Broken | 
+| Repeat `{until}` `<condition>` do `<action>` | | :heavy_check_mark: Working | :x: Broken | 
 
 ## Maths Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| `[number]` | | | | 
-| `[number]` `{operation}` `[number]` | | | | 
-| `[number]` `{odd/even}` | | | | 
-| Round `<value>` | | | | 
-| Random integer from `[number]` to `[number]` | | | | 
+| `[number]` | `[number]` | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| `[number]` `{operation}` `[number]` | | :grey_question: Unknown | :grey_question: Unknown | 
+| `[number]` `{odd/even}` | | :grey_question: Unknown | :grey_question: Unknown | 
+| Round `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+| Random integer from `[number]` to `[number]` | | :grey_question: Unknown | :grey_question: Unknown | 
 
 ## Text Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| "`[text]`" | | | | 
-| append `[text]` to `[text]` | | | | 
-| length of `<value>` | | | | 
+| "`[text]`" | '`[text]`' | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| append `[text]` to `[text]` | | :grey_question: Unknown | :grey_question: Unknown | 
+| length of `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
 
 ## Colour Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| `[colour]` | | | | 
-| Random colour | | | | 
+| `[colour]` | #`[colour]` | | :heavy_check_mark: Working | :heavy_check_mark: Working | 
+| Random colour | | :grey_question: Unknown | :grey_question: Unknown | 
 
 ## Variables Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
-| Set `{variable}` to `<value>' | | | | 
-| Change `{variable}` by `<value>` | | | | 
-| `{variable}` | | | | 
+| Set `{variable}` to `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+| Change `{variable}` by `<value>` | | :grey_question: Unknown | :grey_question: Unknown | 
+| `{variable}` | | :grey_question: Unknown | :grey_question: Unknown | 
