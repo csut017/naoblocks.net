@@ -1,8 +1,9 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { ProgramDirectory } from '../data/program-directory';
 import { ProgramService } from '../services/program.service';
 import { Student } from '../data/student';
 import { ProgramFile } from '../data/program-file';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-load-program',
@@ -22,7 +23,8 @@ export class LoadProgramComponent {
 
   @Output() load = new EventEmitter<string>();
 
-  constructor(private programService: ProgramService) { }
+  constructor(private programService: ProgramService,
+    private errorHandler: ErrorHandlerService) { }
 
   onBlur() {
     this.canLoad = !!this.currentProgram;
@@ -48,7 +50,14 @@ export class LoadProgramComponent {
   }
 
   doLoad(): void {
-    this.load.emit();
+    this.programService.get(this.directory, this.currentProgram.name)
+      .subscribe(program => {
+        if (program.successful) {
+          this.load.emit(program.output.code);
+        } else {
+          this.showError(this.errorHandler.formatError(program));
+        }
+      });
   }
 
   showError(msg: string): void {

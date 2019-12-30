@@ -5,7 +5,7 @@ import { ErrorHandlerService } from './error-handler.service';
 import { Observable } from 'rxjs';
 import { ExecutionResult } from '../data/execution-result';
 import { environment } from 'src/environments/environment';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { Compilation } from '../data/compilation';
 import { ResultSet } from '../data/result-set';
 import { ProgramFile } from '../data/program-file';
@@ -31,6 +31,19 @@ export class ProgramService extends ClientService {
       .pipe(
         tap(_ => this.log('Code compiled')),
         catchError(this.handleError('compile', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
+      );
+  }
+
+  get(userName: string, id: string): Observable<ExecutionResult<ProgramFile>> {
+    const url = `${environment.apiURL}v1/programs/${id}?user=${userName}`;
+    this.log(`Retrieving program ${id}`);
+    return this.http.get<ProgramFile>(url)
+      .pipe(
+        tap(data => {
+          this.log(`Retrieved program ${id}`)
+        }),
+        map(data => new ExecutionResult<ProgramFile>(data)),
+        catchError(this.handleError('list', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
       );
   }
 

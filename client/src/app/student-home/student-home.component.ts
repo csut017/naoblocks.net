@@ -10,8 +10,10 @@ import { Student } from '../data/student';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { saveAs } from 'file-saver';
 import { LoadProgramComponent } from '../load-program/load-program.component';
+import { AstConverterService } from '../services/ast-converter.service';
 
 declare var Blockly: any;
+declare var xmlGenerator: any;
 
 class executionStatusStep {
   image: string = 'circle';
@@ -48,7 +50,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   constructor(authenticationService: AuthenticationService,
     router: Router,
     private programService: ProgramService,
-    private errorHandler: ErrorHandlerService) {
+    private errorHandler: ErrorHandlerService,
+    private astConverter: AstConverterService) {
     super(authenticationService, router);
   }
 
@@ -117,7 +120,44 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onLoad(code: string) {
-    alert('TODO');
+    this.programService.compile(code, false)
+      .subscribe(result => {
+        if (result.successful) {
+          console.groupCollapsed('Converting to XML');
+          try {
+            let xml = this.astConverter.convert(result.output.nodes, this.requireEvents);
+            this.loadIntoWorkspace(xml);
+            console.log(xml);
+            this.loadProgram.close();
+          } catch(error) {
+            console.error(error);
+            this.loadProgram.showError('Something went wrong loading the blocks');
+          } finally {
+            console.groupEnd();
+          }
+        } else {
+          let error = this.errorHandler.formatError(result);
+          this.loadProgram.showError(error);
+        }
+      });
+  }
+
+  loadIntoWorkspace(xml: HTMLElement): void {
+    console.log('Loading workspace');
+    try {
+      this.workspace.clear();
+      Blockly.Xml.domToWorkspace(xml, this.workspace);
+    } catch (err) {
+      console.log('Load failed!');
+      console.error(err);
+    }
+    console.groupEnd();
+
+    var topBlocks = this.workspace.getTopBlocks();
+    if (topBlocks) {
+      var centreBlock = topBlocks[0];
+      this.workspace.centerOnBlock(centreBlock.id);
+    }
   }
 
   doSave(): void {

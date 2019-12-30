@@ -8,6 +8,9 @@ export class ExecutionResult<T> {
         this.output = data;
         if (error) {
             this.executionErrors = [error];
+            this.successful = false;
+        } else {
+            this.successful = true;
         }
     }
 

@@ -16,6 +16,7 @@ using System;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace NaoBlocks.Web
 {
@@ -72,6 +73,7 @@ namespace NaoBlocks.Web
             services.AddControllers()
                 .AddJsonOptions(opts =>
                 {
+                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                     opts.JsonSerializerOptions.IgnoreNullValues = true;
                 });
 
