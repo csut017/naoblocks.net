@@ -205,6 +205,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   private generateCode(forRobot: boolean): string {
     console.groupCollapsed('Generating code');
     try {
+      var xml = Blockly.Xml.workspaceToDom(this.workspace);
+      console.log(Blockly.Xml.domToText(xml));
       Blockly.NaoLang.addStart = !this.requireEvents;
       Blockly.NaoLang.includeId = forRobot;
       let generated = Blockly.NaoLang.workspaceToCode(this.workspace);
