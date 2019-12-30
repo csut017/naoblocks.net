@@ -13,7 +13,7 @@ export class AstConverterService {
     'equal': new BlockDefinition('logic_compare', [this.generateField('OP', 'EQ'), this.generateValue('A'), this.generateValue('B')]),
     'if': new FunctionBlockDefinition(this.generateIfBlock),
     'lessThan': new BlockDefinition('logic_compare', [this.generateField('OP', 'LT'), this.generateValue('A'), this.generateValue('B')]),
-    'look': new BlockDefinition('robot_look'),
+    'look': new BlockDefinition('robot_look', [this.generateField('DIR', this.toUpper)]),
     'loop': new BlockDefinition('controls_repeat_ext', this.generateValue('TIMES'), 'DO'),
     'not': new BlockDefinition('logic_negate', this.generateValue('BOOL')),
     'notEqual': new BlockDefinition('logic_compare', [this.generateField('OP', 'NEQ'), this.generateValue('A'), this.generateValue('B')]),
