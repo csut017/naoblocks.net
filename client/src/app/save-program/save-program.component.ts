@@ -50,6 +50,7 @@ export class SaveProgramComponent {
 
   show(...students: Student[]): void {
     this.opened = true;
+    this.errorMessage = undefined;
     if (this.isInitialised) return;
 
     for (let student of students) {
