@@ -5,7 +5,7 @@ This page lists all the blocks that are available and their current stage of tes
 ## Robot Actions Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | Change Chest To `[colour]` | changeLEDColour(CHEST, `[colour]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Change `{eye}` eye(s) to `[colour]` | changeLEDColour(`{BOTH_EYES,LEFT_EYE,RIGHT_EYE}`, `[colour]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Rest | rest() | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
@@ -15,7 +15,7 @@ This page lists all the blocks that are available and their current stage of tes
 ## Robot Movements Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | Move to `{position}` | position(`[text]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Move to `{position}` and say `[text]` | position(`[text]`, `[text]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Do `{wave}` | wave() | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
@@ -31,14 +31,14 @@ This page lists all the blocks that are available and their current stage of tes
 ## Robot Dances Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | Gangnam (Music `{on/off}`) | dance('gangnam', `{TRUE,FALSE}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Tai Chi (Music `{on/off}`) | dance('tai chi', `{TRUE,FALSE}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Logic Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | if `<condition>` do `<action>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `<value>` `{equality}` `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `<value>` `{logic condition}` `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
@@ -48,15 +48,15 @@ This page lists all the blocks that are available and their current stage of tes
 ## Loops Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
-| Repeat `[number]` time do `<action>` | loop(`[number]`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](images/working.png) | ![Tests Failing](images/failing.png) | ![Unknown](images/unknown.png)
+|-|-|:-:|:-:|:-:|
+| Repeat `[number]` time do `<action>` | loop(`[number]`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Repeat `{while}` `<condition>` do `<action>` | while(`<condition>`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](images/working.png) | ![Functionality Broken](images/broken.png) | ![Unknown](images/unknown.png)
 | Repeat `{until}` `<condition>` do `<action>` | while(not(`<condition>`)){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](images/working.png) | ![Functionality Broken](images/broken.png) | ![Unknown](images/unknown.png)
 
 ## Maths Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | `[number]` | `[number]` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | `[number]` `{operation}` `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `[number]` `{even}` | isEven(`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
@@ -71,7 +71,7 @@ This page lists all the blocks that are available and their current stage of tes
 ## Text Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | "`[text]`" | '`[text]`' | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | append `[text]` to `[text]` | append('`[text]`','`[text]`') | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | length of `<value>` | len('`[text]`') | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
@@ -79,14 +79,14 @@ This page lists all the blocks that are available and their current stage of tes
 ## Colour Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | `[colour]` | #`[colour]` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Random colour | randomColour() | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Variables Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
-|-|-|-|-|-
+|-|-|:-:|:-:|:-:|
 | Set `{variable}` to `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | Change `{variable}` by `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `{variable}` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)

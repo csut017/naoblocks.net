@@ -167,14 +167,14 @@ describe('AstConverterService', () => {
     expect(xmlText).toBe(expected);
   });
 
-  // it("convert loop(3){\nsay('Hello')\n}", () => {
-  //   const service: AstConverterService = TestBed.get(AstConverterService);
-  //   const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Number","value":"3","lineNumber":2,"linePosition":7},"type":"Constant"}],"children":[{"arguments":[{"token":{"type":"Text","value":"Hello","lineNumber":3,"linePosition":10},"type":"Constant"}],"token":{"type":"Identifier","value":"say","lineNumber":3,"linePosition":6},"type":"Function"}],"token":{"type":"Identifier","value":"loop","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":6,"linePosition":0},"type":"Function"}]');
-  //   const xml = service.convert(json, false);
-  //   const xmlText = new XMLSerializer().serializeToString(xml);
-  //   const expected = 'student-home.component.ts:209 <xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_repeat_ext"><value name="TIMES"><block type="math_number"><field name="NUM">3</field></block><block type="math_number"><field name="NUM">3</field></block></value><statement name="DO"><block type="robot_say"><value name="TEXT"><block type="text"><field name="TEXT">abc</field></block><block type="text"><field name="TEXT">Hello</field></block></value></block></statement></block></xml>';
-  //   expect(xmlText).toBe(expected);
-  // });
+  it("convert loop(3){\nsay('Hello')\n}", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Number","value":"3","lineNumber":2,"linePosition":7},"type":"Constant"}],"children":[{"arguments":[{"token":{"type":"Text","value":"Hello","lineNumber":3,"linePosition":10},"type":"Constant"}],"token":{"type":"Identifier","value":"say","lineNumber":3,"linePosition":6},"type":"Function"}],"token":{"type":"Identifier","value":"loop","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":6,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_repeat_ext"><value name="TIMES"><block type="math_number"><field name="NUM">3</field></block></value><statement name="DO"><block type="robot_say"><value name="TEXT"><block type="text"><field name="TEXT">Hello</field></block></value></block></statement></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
 
   // it("convert while(TRUE){\nsay((len('abc')))\n}", () => {
   //   const service: AstConverterService = TestBed.get(AstConverterService);
