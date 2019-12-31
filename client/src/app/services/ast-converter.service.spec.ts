@@ -104,6 +104,24 @@ describe('AstConverterService', () => {
     expect(xmlText).toBe(expected);
   });
 
+  it("convert wipe_forehead()", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"token":{"type":"Identifier","value":"wipe_forehead","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_action"><field name="ACTION">wipe_forehead</field></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert wipe_forehead('abc')", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Text","value":"abc","lineNumber":2,"linePosition":16},"type":"Constant"}],"token":{"type":"Identifier","value":"wipe_forehead","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_action_and_say"><field name="ACTION">wipe_forehead</field><value name="TEXT"><block type="text"><field name="TEXT">abc</field></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
   it("convert look('left')", () => {
     const service: AstConverterService = TestBed.get(AstConverterService);
     const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Text","value":"left","lineNumber":2,"linePosition":7},"type":"Constant"}],"token":{"type":"Identifier","value":"look","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
@@ -146,6 +164,69 @@ describe('AstConverterService', () => {
     const xml = service.convert(json, false);
     const xmlText = new XMLSerializer().serializeToString(xml);
     const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_walk"><value name="X"><block type="math_number"><field name="NUM">1</field></block></value><value name="Y"><block type="math_number"><field name="NUM">0</field></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  // it("convert loop(3){\nsay('Hello')\n}", () => {
+  //   const service: AstConverterService = TestBed.get(AstConverterService);
+  //   const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Number","value":"3","lineNumber":2,"linePosition":7},"type":"Constant"}],"children":[{"arguments":[{"token":{"type":"Text","value":"Hello","lineNumber":3,"linePosition":10},"type":"Constant"}],"token":{"type":"Identifier","value":"say","lineNumber":3,"linePosition":6},"type":"Function"}],"token":{"type":"Identifier","value":"loop","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":6,"linePosition":0},"type":"Function"}]');
+  //   const xml = service.convert(json, false);
+  //   const xmlText = new XMLSerializer().serializeToString(xml);
+  //   const expected = 'student-home.component.ts:209 <xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_repeat_ext"><value name="TIMES"><block type="math_number"><field name="NUM">3</field></block><block type="math_number"><field name="NUM">3</field></block></value><statement name="DO"><block type="robot_say"><value name="TEXT"><block type="text"><field name="TEXT">abc</field></block><block type="text"><field name="TEXT">Hello</field></block></value></block></statement></block></xml>';
+  //   expect(xmlText).toBe(expected);
+  // });
+
+  // it("convert while(TRUE){\nsay((len('abc')))\n}", () => {
+  //   const service: AstConverterService = TestBed.get(AstConverterService);
+  //   const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Boolean","value":"TRUE","lineNumber":2,"linePosition":8},"type":"Constant"}],"children":[{"arguments":[{"arguments":[{"token":{"type":"Text","value":"abc","lineNumber":3,"linePosition":15},"type":"Constant"}],"token":{"type":"Identifier","value":"len","lineNumber":3,"linePosition":11},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":3,"linePosition":6},"type":"Function"}],"token":{"type":"Identifier","value":"while","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":6,"linePosition":0},"type":"Function"}]');
+  //   const xml = service.convert(json, false);
+  //   const xmlText = new XMLSerializer().serializeToString(xml);
+  //   const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_whileUntil"><field name="MODE">WHILE</field><value name="BOOL"><block type="logic_boolean"><field name="BOOL">TRUE</field></block></value><statement name="DO"><block type="robot_say"><value name="TEXT"><block type="text"><field name="TEXT">abc</field></block><block type="text_length"><value name="VALUE"><block type="text"><field name="TEXT">abc</field></block></value></block></value></block></statement></block></xml>';
+  //   expect(xmlText).toBe(expected);
+  // });
+
+  // it("convert while(not(isEven(0))){\nposition('Stand')\n}", () => {
+  //   const service: AstConverterService = TestBed.get(AstConverterService);
+  //   const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"arguments":[{"token":{"type":"Number","value":"0","lineNumber":2,"linePosition":19},"type":"Constant"}],"token":{"type":"Identifier","value":"isEven","lineNumber":2,"linePosition":12},"type":"Function"}],"token":{"type":"Identifier","value":"not","lineNumber":2,"linePosition":8},"type":"Function"}],"children":[{"arguments":[{"token":{"type":"Text","value":"Stand","lineNumber":3,"linePosition":15},"type":"Constant"}],"token":{"type":"Identifier","value":"position","lineNumber":3,"linePosition":6},"type":"Function"}],"token":{"type":"Identifier","value":"while","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":6,"linePosition":0},"type":"Function"}]');
+  //   const xml = service.convert(json, false);
+  //   const xmlText = new XMLSerializer().serializeToString(xml);
+  //   const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_whileUntil"><field name="MODE">UNTIL</field><value name="BOOL"><block type="math_number_property"><mutation divisor_input="false"/><field name="PROPERTY">EVEN</field><value name="NUMBER_TO_CHECK"><block type="math_number"><field name="NUM">0</field></block></value></block></value><statement name="DO"><block type="robot_posture"><field name="POSTURE">Stand</field></block></statement></block></xml>';
+  //   expect(xmlText).toBe(expected);
+  // });
+
+  it("convert changeLEDColour(CHEST, (randomColour()))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Constant","value":"CHEST","lineNumber":2,"linePosition":18},"type":"Constant"},{"token":{"type":"Identifier","value":"randomColour","lineNumber":2,"linePosition":26},"type":"Function"}],"token":{"type":"Identifier","value":"changeLEDColour","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_change_chest"><value name="COLOUR"><block type="colour_random"></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert say((len('abc')))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Text","value":"abc","lineNumber":2,"linePosition":11},"type":"Constant"}],"token":{"type":"Identifier","value":"len","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="text_length"><value name="VALUE"><block type="text"><field name="TEXT">abc</field></block></value></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert say((append('Hello','world')))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Text","value":"Hello","lineNumber":2,"linePosition":14},"type":"Constant"},{"token":{"type":"Text","value":"world","lineNumber":2,"linePosition":22},"type":"Constant"}],"token":{"type":"Identifier","value":"append","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="text_concat"><value name="VAR"><block type="text"><field name="TEXT">Hello</field></block></value><value name="TEXT"><block type="text"><field name="TEXT">world</field></block></value></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert say((round(3.1)))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Number","value":"3.1","lineNumber":2,"linePosition":13},"type":"Constant"}],"token":{"type":"Identifier","value":"round","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="math_round"><field name="OP">ROUND</field><value name="NUM"><block type="math_number"><field name="NUM">3.1</field></block></value></block></value></block></xml>';
     expect(xmlText).toBe(expected);
   });
 });

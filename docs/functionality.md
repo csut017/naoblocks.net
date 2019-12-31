@@ -53,7 +53,7 @@ This page lists all the blocks that are available and their current stage of tes
 | `[number]` | `[number]` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | `[number]` `{operation}` `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `[number]` `{odd/even}` | | ![Working](images/working.png) | ![Functionality Broken](images/broken.png) | ![Unknown](images/unknown.png)
-| Round `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| Round `<value>` | round(`<value>`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Random integer from `[number]` to `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 
 ## Text Blocks
@@ -61,15 +61,15 @@ This page lists all the blocks that are available and their current stage of tes
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
 | "`[text]`" | '`[text]`' | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
-| append `[text]` to `[text]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
-| length of `<value>` | | ![Working](images/working.png) | ![Functionality Broken](images/broken.png) | ![Unknown](images/unknown.png)
+| append `[text]` to `[text]` | append('`[text]`','`[text]`') | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| length of `<value>` | len('`[text]`') | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Colour Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|-|-|-
 | `[colour]` | #`[colour]` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
-| Random colour | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| Random colour | randomColour() | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Variables Blocks
 

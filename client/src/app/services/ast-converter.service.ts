@@ -6,12 +6,14 @@ import { RoboLangAstNode } from '../data/ast-node';
 })
 export class AstConverterService {
   private xmlBlocks: { [id: string]: IBlockDefinition } = {
+    'append': new BlockDefinition('text_concat', [this.generateValue('VAR'), this.generateValue('TEXT')]),
     'and': new BlockDefinition('logic_operation', [this.generateField('OP', 'AND'), this.generateValue('A'), this.generateValue('B')]),
     'changeHand': new BlockDefinition('robot_hand', [this.generateField('ACTION'), this.generateField('HAND', this.toUpper)]),
     'changeLEDColour': new FunctionBlockDefinition(this.generateLedBlockDefinition()),
     'dance': new FunctionBlockDefinition(this.generateDanceBlock),
     'equal': new BlockDefinition('logic_compare', [this.generateField('OP', 'EQ'), this.generateValue('A'), this.generateValue('B')]),
     'if': new FunctionBlockDefinition(this.generateIfBlock),
+    'len': new BlockDefinition('text_length', this.generateValue('VALUE')),
     'lessThan': new BlockDefinition('logic_compare', [this.generateField('OP', 'LT'), this.generateValue('A'), this.generateValue('B')]),
     'look': new BlockDefinition('robot_look', [this.generateField('DIR', this.toUpper)]),
     'loop': new BlockDefinition('controls_repeat_ext', this.generateValue('TIMES'), 'DO'),
@@ -30,6 +32,7 @@ export class AstConverterService {
     'walk': new BlockDefinition('robot_walk', [this.generateValue('X'), this.generateValue('Y')]),
     'wait': new BlockDefinition('robot_wait', this.generateValue('TIME')),
     'wave': new FunctionBlockDefinition(this.generateActionDefinition('wave')),
+    'while': new BlockDefinition('controls_repeat_ext', this.generateValue('TIMES'), 'DO'),
     'wipe_forehead': new FunctionBlockDefinition(this.generateActionDefinition('wipe_forehead'))
   };
 
