@@ -10,9 +10,12 @@ export class AstConverterService {
     'and': new BlockDefinition('logic_operation', [this.generateField('OP', 'AND'), this.generateValue('A'), this.generateValue('B')]),
     'changeHand': new BlockDefinition('robot_hand', [this.generateField('ACTION'), this.generateField('HAND', this.toUpper)]),
     'changeLEDColour': new FunctionBlockDefinition(this.generateLedBlockDefinition()),
-    'dance': new FunctionBlockDefinition(this.generateDanceBlock),
+    'dance': new FunctionBlockDefinition(this.generateDanceBlock()),
     'equal': new BlockDefinition('logic_compare', [this.generateField('OP', 'EQ'), this.generateValue('A'), this.generateValue('B')]),
     'if': new FunctionBlockDefinition(this.generateIfBlock),
+    'isEven': new BlockDefinition('math_number_property', [this.generateValue('NUMBER_TO_CHECK'), this.generateField('PROPERTY', 'EVEN')]),
+    'isOdd': new BlockDefinition('math_number_property', [this.generateValue('NUMBER_TO_CHECK'), this.generateField('PROPERTY', 'ODD')]),
+    'isPrime': new BlockDefinition('math_number_property', [this.generateValue('NUMBER_TO_CHECK'), this.generateField('PROPERTY', 'PRIME')]),
     'len': new BlockDefinition('text_length', this.generateValue('VALUE')),
     'lessThan': new BlockDefinition('logic_compare', [this.generateField('OP', 'LT'), this.generateValue('A'), this.generateValue('B')]),
     'look': new BlockDefinition('robot_look', [this.generateField('DIR', this.toUpper)]),
@@ -66,11 +69,14 @@ export class AstConverterService {
     return xml;
   }
 
-  private generateDanceBlock(elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
-    var dfn = new BlockDefinition(
-      'robot_' + elem.arguments[0].token.value,
-      this.generateField('MUSIC', elem.arguments[1].token.value));
-    dfn.populate(node, elem, environ);
+  private generateDanceBlock(): nodeGenerator {
+    const that = this;
+    return function(elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
+      var dfn = new BlockDefinition(
+        'robot_' + elem.arguments[0].token.value,
+        that.generateField('MUSIC', elem.arguments[1].token.value));
+      dfn.populate(node, elem, environ);
+    }
   }
 
   private generateIfBlock(elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {

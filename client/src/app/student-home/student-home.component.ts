@@ -64,6 +64,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .includeConditionals()
       .includeLoops()
       .includeVariables()
+      .includeDances()
+      .includeSensors()
       .build();
 
     this.workspace = Blockly.inject('blocklyDiv', {

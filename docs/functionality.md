@@ -28,6 +28,13 @@ This page lists all the blocks that are available and their current stage of tes
 | Turn `[number]` degrees | turn(`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Walk forward `[number]` s, sideways `[number]`s | walk(`[number]`,`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
+## Robot Dances Blocks
+
+| Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
+|-|-|-|-|-
+| Gangnam (Music `{on/off}`) | dance('gangnam', `{TRUE,FALSE}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| Tai Chi (Music `{on/off}`) | dance('tai chi', `{TRUE,FALSE}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+
 ## Logic Blocks
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
@@ -52,7 +59,12 @@ This page lists all the blocks that are available and their current stage of tes
 |-|-|-|-|-
 | `[number]` | `[number]` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | `[number]` `{operation}` `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
-| `[number]` `{odd/even}` | | ![Working](images/working.png) | ![Functionality Broken](images/broken.png) | ![Unknown](images/unknown.png)
+| `[number]` `{even}` | isEven(`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| `[number]` `{odd}` | isOdd(`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| `[number]` `{prime}` | isPrime(`[number]`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| `[number]` `{whole}` | isWhole(`[number]`) | ![Working](images/working.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| `[number]` `{positive}` | isPositive(`[number]`) | ![Working](images/working.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| `[number]` `{negative}` | isNegative(`[number]`) | ![Working](images/working.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | Round `<value>` | round(`<value>`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 | Random integer from `[number]` to `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 

@@ -229,4 +229,49 @@ describe('AstConverterService', () => {
     const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="math_round"><field name="OP">ROUND</field><value name="NUM"><block type="math_number"><field name="NUM">3.1</field></block></value></block></value></block></xml>';
     expect(xmlText).toBe(expected);
   });
+
+  it("convert say((isEven(0)))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Number","value":"0","lineNumber":2,"linePosition":14},"type":"Constant"}],"token":{"type":"Identifier","value":"isEven","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="math_number_property"><value name="NUMBER_TO_CHECK"><block type="math_number"><field name="NUM">0</field></block></value><field name="PROPERTY">EVEN</field></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert say((isOdd(0)))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Number","value":"0","lineNumber":2,"linePosition":14},"type":"Constant"}],"token":{"type":"Identifier","value":"isOdd","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="math_number_property"><value name="NUMBER_TO_CHECK"><block type="math_number"><field name="NUM">0</field></block></value><field name="PROPERTY">ODD</field></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert say((isPrime(0)))", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"arguments":[{"token":{"type":"Number","value":"0","lineNumber":2,"linePosition":14},"type":"Constant"}],"token":{"type":"Identifier","value":"isPrime","lineNumber":2,"linePosition":7},"type":"Function"}],"token":{"type":"Identifier","value":"say","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_say"><value name="TEXT"><block type="math_number_property"><value name="NUMBER_TO_CHECK"><block type="math_number"><field name="NUM">0</field></block></value><field name="PROPERTY">PRIME</field></block></value></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert dance('gangnam', TRUE)", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Text","value":"gangnam","lineNumber":2,"linePosition":8},"type":"Constant"},{"token":{"type":"Boolean","value":"TRUE","lineNumber":2,"linePosition":19},"type":"Constant"}],"token":{"type":"Identifier","value":"dance","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_gangnam"><field name="MUSIC">TRUE</field></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
+
+  it("convert dance('taichi', FALSE)", () => {
+    const service: AstConverterService = TestBed.get(AstConverterService);
+    const json = JSON.parse('[{"token":{"type":"Identifier","value":"reset","lineNumber":0,"linePosition":0},"type":"Function"},{"children":[{"arguments":[{"token":{"type":"Text","value":"taichi","lineNumber":2,"linePosition":8},"type":"Constant"},{"token":{"type":"Boolean","value":"FALSE","lineNumber":2,"linePosition":18},"type":"Constant"}],"token":{"type":"Identifier","value":"dance","lineNumber":2,"linePosition":2},"type":"Function"}],"token":{"type":"Identifier","value":"start","lineNumber":1,"linePosition":0},"type":"Function"},{"token":{"type":"Identifier","value":"go","lineNumber":4,"linePosition":0},"type":"Function"}]');
+    const xml = service.convert(json, false);
+    const xmlText = new XMLSerializer().serializeToString(xml);
+    const expected = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="robot_taichi"><field name="MUSIC">FALSE</field></block></xml>';
+    expect(xmlText).toBe(expected);
+  });
 });
