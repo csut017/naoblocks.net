@@ -26,6 +26,7 @@ export class AstConverterService {
     'point': new BlockDefinition('robot_point', [this.generateField('ARM', this.toUpper), this.generateField('DIR', this.toUpper)]),
     'position': new FunctionBlockDefinition(this.generatePositionBlockDefinition()),
     'randomColour': new BlockDefinition('colour_random'),
+    'randomInt': new BlockDefinition('math_random_int', [this.generateValue('FROM'), this.generateValue('TO')]),
     'readSensor': new FunctionBlockDefinition(this.generateSensorBlockDefinition()),
     'rest': new BlockDefinition('robot_rest'),
     'round': new BlockDefinition('math_round', [this.generateField('OP', 'ROUND'), this.generateValue('NUM')]),
@@ -183,7 +184,6 @@ export class AstConverterService {
         var arg = elem.arguments[loop].token,
           argValue = arg.value;
         if (arg.type == 'Variable') {
-          argValue = argValue.substring(1);
           var variableDefn = environ.getOrAddVariable(argValue);
           child.setAttribute('id', variableDefn.id);
         } else {
@@ -252,7 +252,7 @@ export class AstConverterService {
     shadow.appendChild(field);
 
     field.setAttribute('name', 'VAR');
-    var varName = arg.token.value.substring(1),
+    var varName = arg.token.value,
       variableDefn = environ.getOrAddVariable(varName);
     field.setAttribute('id', variableDefn.id);
     field.appendChild(document.createTextNode(varName));

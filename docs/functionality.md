@@ -39,11 +39,20 @@ This page lists all the blocks that are available and their current stage of tes
 
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|:-:|:-:|:-:|
+| `{sensor}` head touched | readSensor(`{HEAD_FRONT,HEAD_MIDDLE,HEAD_REAR}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| battery charge | readSensor(BATTERY) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| distance to `{sonar}` front | readSensor(`{SONAR_LEFT,SONAR_RIGHT}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+| `{dir}` gyroscope | readSensor(`{GYROSCOPE_X,GYROSCOPE_Y,GYROSCOPE_Z}`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
+
+## Logic Blocks
+
+| Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
+|-|-|:-:|:-:|:-:|
 | if `<condition>` do `<action>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `<value>` `{equality}` `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `<value>` `{logic condition}` `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 |  not `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
- | `{true/false}` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+ | `{true/false}` | `{TRUE,FALSE}` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Loops Blocks
 
@@ -66,7 +75,7 @@ This page lists all the blocks that are available and their current stage of tes
 | `[number]` `{positive}` | isPositive(`[number]`) | ![Working](images/working.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | `[number]` `{negative}` | isNegative(`[number]`) | ![Working](images/working.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | Round `<value>` | round(`<value>`) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
-| Random integer from `[number]` to `[number]` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| Random integer from `[number]` to `[number]` | randomInt(`[number]`, `[number]`)) | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
 
 ## Text Blocks
 
@@ -89,4 +98,4 @@ This page lists all the blocks that are available and their current stage of tes
 |-|-|:-:|:-:|:-:|
 | Set `{variable}` to `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
 | Change `{variable}` by `<value>` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
-| `{variable}` | | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png) | ![Unknown](images/unknown.png)
+| `{variable}` | @`{variable}` | ![Working](images/working.png) | ![Working](images/working.png) | ![Unknown](images/unknown.png)
