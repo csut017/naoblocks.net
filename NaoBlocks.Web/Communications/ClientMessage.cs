@@ -6,8 +6,6 @@ namespace NaoBlocks.Web.Communications
 {
     public class ClientMessage
     {
-        public long ClientId { get; set; }
-
         public long? ConversationId { get; set; }
 
         public ClientMessageType Type { get; set; } = ClientMessageType.Unknown;

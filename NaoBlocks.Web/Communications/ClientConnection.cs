@@ -1,7 +1,11 @@
-﻿using System;
+﻿using NaoBlocks.Web.Communications.Messages;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +13,15 @@ namespace NaoBlocks.Web.Communications
 {
     public class ClientConnection : IDisposable
     {
+        private readonly IMessageProcessor _messageProcessor;
         private readonly ConcurrentQueue<ClientMessage> _queue = new ConcurrentQueue<ClientMessage>();
         private readonly WebSocket _socket;
 
-        public ClientConnection(WebSocket socket)
+        public ClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
         {
             this._socket = socket;
+            this.Type = type;
+            this._messageProcessor = messageProcessor;
         }
 
         public event EventHandler<EventArgs>? Closed;
@@ -23,7 +30,7 @@ namespace NaoBlocks.Web.Communications
 
         public long Id { get; set; }
 
-        public ClientConnectionType Type { get; set; } = ClientConnectionType.Unknown;
+        public ClientConnectionType Type { get; private set; }
 
         public void Dispose()
         {
@@ -46,6 +53,13 @@ namespace NaoBlocks.Web.Communications
                     var (response, message) = await this.ReceiveFullMessageAsync(cancelToken);
                     if (response.MessageType == WebSocketMessageType.Close)
                         break;
+
+                    if (message != null)
+                    {
+                        var json = Encoding.UTF8.GetString(message.ToArray());
+                        var msg = JsonConvert.DeserializeObject<ClientMessage>(json);
+                        await this._messageProcessor.ProcessAsync(this, msg);
+                    }
                 }
                 await this._socket.CloseAsync(WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None);
                 this.Closed?.Invoke(this, EventArgs.Empty);

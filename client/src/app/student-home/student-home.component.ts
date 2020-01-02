@@ -11,6 +11,8 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 import { saveAs } from 'file-saver';
 import { LoadProgramComponent } from '../load-program/load-program.component';
 import { AstConverterService } from '../services/ast-converter.service';
+import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
+import { Observable } from 'rxjs';
 
 declare var Blockly: any;
 declare var xmlGenerator: any;
@@ -43,6 +45,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   canStop: boolean = false;
   requireEvents: boolean = false;
   currentUser: User;
+  currentStartStep: number;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -51,7 +54,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     router: Router,
     private programService: ProgramService,
     private errorHandler: ErrorHandlerService,
-    private astConverter: AstConverterService) {
+    private astConverter: AstConverterService,
+    private connection: ConnectionService) {
     super(authenticationService, router);
   }
 
@@ -101,14 +105,25 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           this.failStep(0, 'Unable to compile code');
           return;
         }
-
+        
         if (result.output.errors) {
           this.failStep(0, 'There are errors in the code');
           return;
         }
 
+        this.currentStartStep = 1;
         this.completeStep(0);
+        this.connection.start().subscribe(this.processServerMessage);
       });
+  }
+  processServerMessage(msg: ClientMessage) {
+    switch (msg.type) {
+      case ClientMessageType.Closed:
+        if (this.currentStartStep) {
+          this.failStep(this.currentStartStep, 'Connection to server lost');
+        }
+        break;
+    }
   }
 
   doStop(): void {

@@ -10,8 +10,20 @@ export abstract class ClientService {
   constructor(private serviceName: string,
     protected errorhandler: ErrorHandlerService) { }
 
-  protected log(message: string) {
-    console.log(`[${this.serviceName}] ${message}`);
+  protected log(message: string, data?: any) {
+    const msg = `[${this.serviceName}] ${message}`;
+    console.log(msg);
+  }
+
+  protected logData(message: string, data: any) {
+    const msg = `[${this.serviceName}] ${message}`;
+    console.groupCollapsed(msg);
+    console.log(data);
+    console.groupEnd();
+  }
+
+  protected error(message: string) {
+    console.error(`[${this.serviceName}] ${message}`);
   }
 
   protected handleError<T>(operation: string, generator: (msg: string) => T) {

@@ -1,7 +1,6 @@
-﻿using NaoBlocks.Web.Communications;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Messages
+namespace NaoBlocks.Web.Communications.Messages
 {
     public interface IMessageProcessor
     {

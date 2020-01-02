@@ -3,8 +3,9 @@
     public enum ClientMessageType
     {
         Unknown,
-        Register,
-        StartProgram,
-        ErrorResponse,
+        Authenticate = 1,
+        Authenticated = 2,
+        StartProgram = 100,
+        Error = 1000,
     }
 }
