@@ -47,6 +47,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   currentUser: User;
   currentStartStep: number;
   errorMessage: string;
+  onResize: any;
+  isSidebarOpen: boolean = true;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -73,10 +75,40 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .includeSensors()
       .build();
 
+    let blocklyArea = document.getElementById('blocklyArea');
+    let blocklyDiv = document.getElementById('blocklyDiv');
     this.workspace = Blockly.inject('blocklyDiv', {
-      toolbox: xml,
-      scrollbars: false
+      toolbox: xml
     });
+    const workspace = this.workspace;
+    this.onResize = function () {
+      let element: any = blocklyArea;
+      var x = 0;
+      var y = 0;
+      do {
+        x += element.offsetLeft;
+        y += element.offsetTop;
+        element = element.offsetParent;
+      } while (element);
+      blocklyDiv.style.left = x + 'px';
+      blocklyDiv.style.top = y + 'px';
+      blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
+      blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
+      Blockly.svgResize(workspace);
+    };
+    window.addEventListener('resize', _ => this.onResize(), false);
+    this.onResize();
+  }
+
+  get sidebarCollapsed(): boolean {
+    return !this.isSidebarOpen;
+  }
+
+  set sidebarCollapsed(value: boolean) {
+    this.isSidebarOpen = !value;
+
+    if (!this.onResize) return;
+    setInterval(() => this.onResize(), 0);
   }
 
   doCancelSend(): void {

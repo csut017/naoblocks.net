@@ -40,7 +40,7 @@
         </div>
     </header>
     <div class="content-container">
-        <clr-vertical-nav [clrVerticalNavCollapsible]="true">
+        <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="sidebarCollapsed">
             <a clrVerticalNavLink href="javascript://" (click)="doPlay()" [class.disabled]="isExecuting">
                 <clr-icon clrVerticalNavIcon shape="play" class="is-solid"></clr-icon>
                 Play
@@ -80,7 +80,8 @@
                     <clr-icon aria-hidden="true" shape="close"></clr-icon>
                 </button>
             </div>
-            <div id="blocklyDiv" style="width: 100%; height: 100%"></div>
+            <div id="blocklyArea" style="height: 100%; width: 100%;"></div>
+            <div id="blocklyDiv" style="position: absolute;"></div>
         </div>
     </div>
     <app-about></app-about>
