@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Communications.Messages
@@ -9,15 +11,21 @@ namespace NaoBlocks.Web.Communications.Messages
     public class MessageProcessor : IMessageProcessor
     {
         private readonly IHub _hub;
+        private readonly ILogger<MessageProcessor> _logger;
         private readonly IDictionary<ClientMessageType, TypeProcessor> _processors;
 
-        public MessageProcessor(IHub hub)
+        public MessageProcessor(IHub hub, ILogger<MessageProcessor> logger)
         {
             this._processors = new Dictionary<ClientMessageType, TypeProcessor>
             {
-                {  ClientMessageType.Authenticate, this.Authenticate }
+                {  ClientMessageType.Authenticate, this.Authenticate },
+                { ClientMessageType.RequestRobot, this.AllocateRobot },
+                { ClientMessageType.TransferProgram, this.TransferRobot },
+                { ClientMessageType.StartProgram, this.StartProgram },
+                { ClientMessageType.StopProgram, this.StopProgram },
             };
             this._hub = hub;
+            this._logger = logger;
         }
 
         private delegate Task TypeProcessor(ClientConnection client, ClientMessage message);
@@ -31,15 +39,18 @@ namespace NaoBlocks.Web.Communications.Messages
             {
                 try
                 {
+                    this._logger.LogInformation($"Processing message type {message.Type}");
                     await processor(client, message);
                 }
                 catch (Exception err)
                 {
+                    this._logger.LogWarning($"An error occurred while processing {message.Type}: {err.Message}");
                     client.SendMessage(GenerateErrorResponse(message, $"Unable to process message: {err.Message}"));
                 }
             }
             else
             {
+                this._logger.LogWarning($"Unable to find processor for message type {message.Type}");
                 client.SendMessage(GenerateErrorResponse(message, $"Unable to find processor for {message.Type}"));
             }
         }
@@ -65,6 +76,13 @@ namespace NaoBlocks.Web.Communications.Messages
             return response;
         }
 
+        private Task AllocateRobot(ClientConnection client, ClientMessage message)
+        {
+            Thread.Sleep(1000);
+            client.SendMessage(GenerateResponse(message, ClientMessageType.RobotAllocated));
+            return Task.CompletedTask;
+        }
+
         private Task Authenticate(ClientConnection client, ClientMessage message)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -77,6 +95,26 @@ namespace NaoBlocks.Web.Communications.Messages
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is missing"));
             }
+            return Task.CompletedTask;
+        }
+
+        private Task StartProgram(ClientConnection client, ClientMessage message)
+        {
+            Thread.Sleep(1000);
+            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStarted));
+            return Task.CompletedTask;
+        }
+
+        private Task StopProgram(ClientConnection client, ClientMessage message)
+        {
+            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
+            return Task.CompletedTask;
+        }
+
+        private Task TransferRobot(ClientConnection client, ClientMessage message)
+        {
+            Thread.Sleep(1000);
+            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramTransferred));
             return Task.CompletedTask;
         }
     }

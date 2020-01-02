@@ -35,6 +35,7 @@ namespace NaoBlocks.Web.Controllers
 
             if (isSocketRequest)
             {
+                this._logger.LogInformation($"Accepting web socket request");
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 using (var client = new ClientConnection(webSocket, ClientConnectionType.User, this._messageProcessor))
                 {

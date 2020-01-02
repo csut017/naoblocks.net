@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Text;
 
@@ -20,7 +21,16 @@ namespace NaoBlocks.Web.Communications
 
         public byte[] ToArray()
         {
-            var json = JsonConvert.SerializeObject(this, Formatting.None);
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
+                Formatting = Formatting.None,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var json = JsonConvert.SerializeObject(this, settings);
             return Encoding.UTF8.GetBytes(json);
         }
     }

@@ -46,6 +46,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   requireEvents: boolean = false;
   currentUser: User;
   currentStartStep: number;
+  errorMessage: string;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -105,7 +106,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           this.failStep(0, 'Unable to compile code');
           return;
         }
-        
+
         if (result.output.errors) {
           this.failStep(0, 'There are errors in the code');
           return;
@@ -113,7 +114,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
         this.currentStartStep = 1;
         this.completeStep(0);
-        this.connection.start().subscribe(this.processServerMessage);
+        this.connection.start().subscribe(msg => this.processServerMessage(msg));
       });
   }
   processServerMessage(msg: ClientMessage) {
@@ -121,13 +122,47 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       case ClientMessageType.Closed:
         if (this.currentStartStep) {
           this.failStep(this.currentStartStep, 'Connection to server lost');
+        } else if (this.isExecuting) {
+          this.errorMessage = 'Connection to the server has been lost';
+          this.isExecuting = false;
         }
+        break;
+
+      case ClientMessageType.Error:
+        if (this.currentStartStep) {
+          let errMsg = msg.values['error'] || 'Unknown';
+          this.failStep(this.currentStartStep, `Server error: ${errMsg}`);
+        }
+        break;
+
+      case ClientMessageType.Authenticated:
+        this.connection.send(new ClientMessage(ClientMessageType.RequestRobot));
+        break;
+
+      case ClientMessageType.RobotAllocated:
+        this.currentStartStep = this.completeStep(this.currentStartStep);
+        this.connection.send(new ClientMessage(ClientMessageType.TransferProgram));
+        break;
+
+      case ClientMessageType.ProgramTransferred:
+        this.currentStartStep = this.completeStep(this.currentStartStep);
+        this.connection.send(new ClientMessage(ClientMessageType.StartProgram));
+        break;
+
+      case ClientMessageType.ProgramStarted:
+        this.sendingToRobot = false;
+        this.isExecuting = true;
+        this.currentStartStep = undefined;
+        break;
+
+      case ClientMessageType.ProgramStopped:
+        this.isExecuting = false;
         break;
     }
   }
 
   doStop(): void {
-    alert('TODO');
+    this.connection.send(new ClientMessage(ClientMessageType.StopProgram));
   }
 
   doLoad(): void {
@@ -146,7 +181,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
             this.loadIntoWorkspace(xml);
             console.log(xml);
             this.loadProgram.close();
-          } catch(error) {
+          } catch (error) {
             console.error(error);
             this.loadProgram.showError('Something went wrong loading the blocks');
           } finally {
@@ -246,13 +281,14 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.sendingToRobot = true;
   }
 
-  private completeStep(step: number) {
-    if (step >= this.steps.length) return;
+  private completeStep(step: number): number {
+    if (step >= this.steps.length) return step;
     this.steps[step].isCurrent = false;
     this.steps[step].image = 'success-standard';
 
-    if (++step >= this.steps.length) return;
+    if (++step >= this.steps.length) return step;
     this.steps[step].isCurrent = true;
+    return step;
   }
 
   private failStep(step: number, reason: string) {
