@@ -63,6 +63,19 @@ class Communications(object):
         if req.status_code != 200:
             print '[Comms] Login failed [' + str(req.status_code) + ']!'
             print '[Comms] -> ' + req.text
+
+            start_address = 'https://' + address + '/api/v1/robots/register'
+            print '[Comms] Registering robot %s (%s)' % (hostname, start_address)
+            start_json = json.dumps({'machineName': hostname})
+            try:
+                req = requests.post(start_address, data=start_json, timeout=10, verify=verify, headers=headers)
+                req.raise_for_status()
+                print '[Comms] -> robot registered'
+            except Exception as e:
+                print '[Comms] registration failed: ' + str(http_err)
+                return False
+
+
             return False
 
         token = requests.utils.dict_from_cookiejar(req.cookies)[
