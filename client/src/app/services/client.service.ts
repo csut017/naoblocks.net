@@ -29,10 +29,16 @@ export abstract class ClientService {
   protected handleError<T>(operation: string, generator: (msg: string) => T) {
     return (error: any): Observable<T> => {
       let msg = '';
-      if (error.status === 401) {
-        msg = 'Unauthorized';
-      } else {
-        msg = this.errorhandler.formatError(error);
+      switch (error.status) {
+        case 401:
+          msg = 'Unauthorized';
+          break;
+        case 0:
+          msg = 'Connection lost';
+          break;
+        default:
+          msg = this.errorhandler.formatError(error);
+          break;
       }
       this.log(`${operation} failed: ${msg}`);
       return of(generator(msg));

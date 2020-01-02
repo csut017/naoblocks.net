@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+<clr-modal [(clrModalOpen)]="opened && !connectionLost" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
     <div class="modal-body">
         <div>
             <clr-icon shape="key" class="has-alert" size="48"></clr-icon>
@@ -24,5 +24,13 @@
         <button type="button" class="btn btn-primary" (click)="doLogout()">
             Logout
         </button>
+    </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="opened && connectionLost" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+    <div class="modal-body">
+        <div>
+            <clr-icon shape="network-globe" class="has-badge" size="48"></clr-icon>
+            The connection to the server has been lost!
+        </div>
     </div>
 </clr-modal>

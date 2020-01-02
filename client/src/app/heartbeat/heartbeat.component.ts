@@ -15,6 +15,7 @@ export class HeartbeatComponent implements OnInit, OnDestroy {
   interval: any;
   countDown: number = timeoutPeriod;
   opened: boolean = false;
+  connectionLost: boolean = false;
   error: string;
 
   constructor(private heartbeatService: HeartbeatService,
@@ -44,9 +45,13 @@ export class HeartbeatComponent implements OnInit, OnDestroy {
         if (heartbeat.error === 'Unauthorized') this.doLogout();
 
         this.start();
-        if (heartbeat.timeRemaining > 5) return;
+        if (heartbeat.timeRemaining > 5) {
+          this.opened = false;
+          return;
+        }
         if (heartbeat.timeRemaining < 0) this.doLogout();
         this.opened = true;
+        this.connectionLost = heartbeat.error === 'Connection lost';
       })
     this.countDown = timeoutPeriod;
   }
