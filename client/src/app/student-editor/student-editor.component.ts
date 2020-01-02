@@ -12,6 +12,7 @@ export class StudentEditorComponent implements OnInit {
   @Input() student: Student;
   @Output() closed = new EventEmitter<boolean>();
   errors: string[];
+  showPassword: boolean = false;
 
   constructor(private studentService: StudentService) { }
 
@@ -19,6 +20,7 @@ export class StudentEditorComponent implements OnInit {
   }
 
   doSave() {
+    if (!this.student.isNew && !this.showPassword) this.student.password = undefined;
     this.studentService.save(this.student)
       .subscribe(result => {
         if (result.successful) {

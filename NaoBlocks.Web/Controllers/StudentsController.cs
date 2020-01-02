@@ -117,6 +117,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 CurrentName = id,
                 Name = student.Name,
+                Password = student.Password,
                 Role = UserRole.Student
             };
             return await this.commandManager.ExecuteForHttp(command);

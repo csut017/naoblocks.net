@@ -15,7 +15,11 @@ namespace NaoBlocks.Core.Commands
 
         public string? CurrentName { get; set; }
 
+        public Password? HashedPassword { get; set; }
+
         public string? Name { get; set; }
+
+        public string? Password { get; set; }
 
         public UserRole Role { get; set; }
 
@@ -28,6 +32,12 @@ namespace NaoBlocks.Core.Commands
                                         .ConfigureAwait(false);
             if (this.person == null) errors.Add(this.Error($"{this.Role} {this.CurrentName} does not exist"));
 
+            if (this.Password != null)
+            {
+                this.HashedPassword = Models.Password.New(this.Password);
+                this.Password = null;
+            }
+
             return errors.AsEnumerable();
         }
 
@@ -36,6 +46,7 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.person == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
+            if (this.HashedPassword != null) this.person.Password = this.HashedPassword;
             return Task.FromResult(CommandResult.New(this.Number));
         }
     }

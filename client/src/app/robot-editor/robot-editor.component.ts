@@ -12,6 +12,7 @@ export class RobotEditorComponent implements OnInit {
   @Input() robot: Robot;
   @Output() closed = new EventEmitter<boolean>();
   errors: string[];
+  showPassword: boolean = false;
 
   constructor(private robotService: RobotService) { }
 
@@ -19,6 +20,11 @@ export class RobotEditorComponent implements OnInit {
   }
 
   doSave() {
+    if (!this.robot.isNew && !this.showPassword) {
+      this.robot.password = undefined;
+    } else {
+      this.robot.password = this.robot.password || '';
+    }
     this.robotService.save(this.robot)
       .subscribe(result => {
         if (result.successful) {

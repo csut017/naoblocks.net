@@ -16,7 +16,10 @@ namespace NaoBlocks.Core.Commands
         public string? CurrentMachineName { get; set; }
 
         public string? FriendlyName { get; set; }
+        public Password? HashedPassword { get; set; }
         public string? MachineName { get; set; }
+
+        public string? Password { get; set; }
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
@@ -27,6 +30,12 @@ namespace NaoBlocks.Core.Commands
                                         .ConfigureAwait(false);
             if (this.robot == null) errors.Add(this.Error($"Robot {this.CurrentMachineName} does not exist"));
 
+            if (this.Password != null)
+            {
+                this.HashedPassword = Models.Password.New(this.Password);
+                this.Password = null;
+            }
+
             return errors.AsEnumerable();
         }
 
@@ -36,6 +45,12 @@ namespace NaoBlocks.Core.Commands
             if (this.robot == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.MachineName) && (this.MachineName != this.robot.MachineName)) this.robot.MachineName = this.MachineName;
             if (!string.IsNullOrEmpty(this.FriendlyName) && (this.FriendlyName != this.robot.FriendlyName)) this.robot.FriendlyName = this.FriendlyName;
+            if (this.HashedPassword != null)
+            {
+                this.robot.Password = this.HashedPassword;
+                this.robot.IsInitialised = true;
+            }
+
             return Task.FromResult(CommandResult.New(this.Number));
         }
     }

@@ -72,7 +72,7 @@ class Communications(object):
                 req.raise_for_status()
                 print '[Comms] -> robot registered'
             except Exception as e:
-                print '[Comms] registration failed: ' + str(http_err)
+                print '[Comms] registration failed: ' + str(e)
                 return False
 
 

@@ -116,6 +116,7 @@ namespace NaoBlocks.Web.Controllers
                 CurrentMachineName = id,
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName,
+                Password = robot.Password
             };
             return await this.commandManager.ExecuteForHttp(command);
         }
