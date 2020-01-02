@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Communications.Messages;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,18 +27,23 @@ namespace NaoBlocks.Web.Controllers
             this._messageProcessor = messageProcessor;
         }
 
-        [HttpGet("user")]
+        [HttpGet("{type}")]
         [AllowAnonymous]
-        public async Task StartUser()
+        public async Task Start(string type)
         {
             var context = ControllerContext.HttpContext;
-            var isSocketRequest = context.WebSockets.IsWebSocketRequest;
+            if (!Enum.TryParse<ClientConnectionType>(type, true, out ClientConnectionType clientType))
+            {
+                context.Response.StatusCode = 404;
+                return;
+            }
 
+            var isSocketRequest = context.WebSockets.IsWebSocketRequest;
             if (isSocketRequest)
             {
-                this._logger.LogInformation($"Accepting web socket request");
+                this._logger.LogInformation($"Accepting web socket request from {context.Connection.RemoteIpAddress}");
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                using (var client = new ClientConnection(webSocket, ClientConnectionType.User, this._messageProcessor))
+                using (var client = new ClientConnection(webSocket, clientType, this._messageProcessor))
                 {
                     this._hub.AddClient(client);
                     await client.StartAsync(CancellationToken.None);
