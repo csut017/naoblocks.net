@@ -12,10 +12,8 @@ import { saveAs } from 'file-saver';
 import { LoadProgramComponent } from '../load-program/load-program.component';
 import { AstConverterService } from '../services/ast-converter.service';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
-import { Observable } from 'rxjs';
 
 declare var Blockly: any;
-declare var xmlGenerator: any;
 
 class executionStatusStep {
   image: string = 'circle';
@@ -67,6 +65,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
 
+    this.initialiseWorkspace();
+  }
+
+  private initialiseWorkspace(isReadonly: boolean = false) {
     let xml = new Toolbox()
       .includeConditionals()
       .includeLoops()
@@ -75,11 +77,23 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .includeSensors()
       .build();
 
+    let currentBlocks: any;
+    if (!!this.workspace) {
+      currentBlocks = Blockly.Xml.workspaceToDom(this.workspace);      
+      this.workspace.dispose();
+    }
+
     let blocklyArea = document.getElementById('blocklyArea');
     let blocklyDiv = document.getElementById('blocklyDiv');
     this.workspace = Blockly.inject('blocklyDiv', {
+      readOnly: isReadonly,
       toolbox: xml
     });
+    if (!!currentBlocks) {
+      Blockly.Xml.domToWorkspace(currentBlocks, this.workspace);
+    }
+
+    // Initialise the resizing
     const workspace = this.workspace;
     this.onResize = function () {
       let element: any = blocklyArea;
@@ -149,6 +163,14 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         this.connection.start().subscribe(msg => this.processServerMessage(msg));
       });
   }
+
+  changeExecuting(newValue: boolean): void {
+    if (newValue == this.isExecuting) return;
+
+    this.isExecuting = newValue;
+    this.initialiseWorkspace(this.isExecuting);
+  }
+
   processServerMessage(msg: ClientMessage) {
     switch (msg.type) {
       case ClientMessageType.Closed:
@@ -156,7 +178,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           this.failStep(this.currentStartStep, 'Connection to server lost');
         } else if (this.isExecuting) {
           this.errorMessage = 'Connection to the server has been lost';
-          this.isExecuting = false;
+          this.changeExecuting(false);
         }
         break;
 
@@ -183,12 +205,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
       case ClientMessageType.ProgramStarted:
         this.sendingToRobot = false;
-        this.isExecuting = true;
+        this.changeExecuting(true);
         this.currentStartStep = undefined;
         break;
 
       case ClientMessageType.ProgramStopped:
-        this.isExecuting = false;
+        this.changeExecuting(false);
         break;
     }
   }
