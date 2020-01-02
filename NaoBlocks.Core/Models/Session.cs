@@ -6,7 +6,9 @@ namespace NaoBlocks.Core.Models
     {
         public string? Id { get; set; }
 
-        public UserRole Role { get; set; }
+        public bool IsRobot { get; set; }
+
+        public UserRole? Role { get; set; }
 
         public string? UserId { get; set; }
 

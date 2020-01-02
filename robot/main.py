@@ -100,6 +100,8 @@ def main():
     parser.add_argument(
         '--test', help='Test mode: will not attempt to connect to the robot', action='store_true')
     parser.add_argument(
+        '--ignoreSSL', help='Ignores any SSL errors - only recommended for test environments', action='store_true')
+    parser.add_argument(
         '--reconnect', help='The number of reconnect attempts to make if a connection is lost', default=10)
     args = parser.parse_args()
 
@@ -123,10 +125,14 @@ def main():
             print '[Main] !!NaoQI not installed!!'
             return
 
+    verifySSL = not args.ignoreSSL
+    if not verifySSL:
+        print '[Main] WARNING: ignoring SSL errors'
+
     connected = False
     if not args.server is None:
         print '[Main] Connecting to ' + server
-        comms.start(server, pwd)
+        comms.start(server, pwd, verifySSL)
         connected = True
 
     if not connected:
@@ -138,7 +144,7 @@ def main():
                     server = row[0]
                     pwd = row[1]
                     print '[Main] Connecting to ' + server
-                    if comms.start(server, pwd):
+                    if comms.start(server, pwd, verifySSL):
                         connected = True
 
     if not connected:

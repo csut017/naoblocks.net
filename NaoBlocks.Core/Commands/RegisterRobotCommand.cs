@@ -8,16 +8,10 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class AddRobotCommand
+    public class RegisterRobotCommand
         : CommandBase<Robot>
     {
-        public string? FriendlyName { get; set; }
-
-        public Password HashedPassword { get; set; } = Models.Password.Empty;
-
         public string? MachineName { get; set; }
-
-        public string? Password { get; set; }
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
@@ -28,18 +22,10 @@ namespace NaoBlocks.Core.Commands
                 errors.Add(this.Error($"Machine name is required for a robot"));
             }
 
-            if (string.IsNullOrWhiteSpace(this.FriendlyName))
-            {
-                this.FriendlyName = this.MachineName;
-            }
-
             if (!errors.Any() && await session.Query<Robot>().AnyAsync(s => s.MachineName == this.MachineName).ConfigureAwait(false))
             {
                 errors.Add(this.Error($"Robot with name {this.MachineName} already exists"));
             }
-
-            this.HashedPassword = Models.Password.New(this.Password ?? string.Empty);
-            this.Password = null;
 
             return errors.AsEnumerable();
         }
@@ -51,9 +37,8 @@ namespace NaoBlocks.Core.Commands
             var robot = new Robot
             {
                 MachineName = this.MachineName ?? "<Unknown>",
-                FriendlyName = this.FriendlyName ?? "<Unknown>",
-                Password = this.HashedPassword,
-                IsInitialised = true,
+                FriendlyName = this.MachineName ?? "<Unknown>",
+                IsInitialised = false,
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);

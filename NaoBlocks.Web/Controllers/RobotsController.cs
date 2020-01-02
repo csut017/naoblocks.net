@@ -93,7 +93,8 @@ namespace NaoBlocks.Web.Controllers
             var command = new AddRobotCommand
             {
                 MachineName = robot.MachineName,
-                FriendlyName = robot.FriendlyName
+                FriendlyName = robot.FriendlyName,
+                Password = robot.Password
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
         }
@@ -114,9 +115,29 @@ namespace NaoBlocks.Web.Controllers
             {
                 CurrentMachineName = id,
                 MachineName = robot.MachineName,
-                FriendlyName = robot.FriendlyName
+                FriendlyName = robot.FriendlyName,
             };
             return await this.commandManager.ExecuteForHttp(command);
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Robot>>> Register(Dtos.Robot robot)
+        {
+            if (robot == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot details"
+                });
+            }
+
+            this._logger.LogInformation($"Registering new robot '{robot.MachineName}'");
+            var command = new RegisterRobotCommand
+            {
+                MachineName = robot.MachineName
+            };
+            return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
         }
     }
 }

@@ -26,13 +26,30 @@ class Communications(object):
         self._serverDisconnected = False
         self._connectionCount = 0
 
-    def start(self, address, pwd=None):
-        start_address = 'https://' + address + '/api/v1/connections/robot'
-        print '[Comms] Authenticating to %s' % (start_address)
-        hostname = socket.gethostname()
-        start_json = json.dumps({'name': hostname, 'password': pwd})
+    def start(self, address, pwd=None, verify=True):
+        start_address = 'https://' + address + '/api/v1/version'
+        print '[Comms] Checking server version (%s)' % (start_address,)
         try:
-            req = requests.post(start_address, data=start_json, timeout=10)
+            response = requests.get(start_address, timeout=10, verify=verify)
+            print '[Comms] -> Received response %s' % (response.text,)
+        except requests.exceptions.ConnectionError as e:
+            print '[Comms] Server not responding: ' + str(e) + '!'
+            return False
+        except requests.exceptions.Timeout:
+            print '[Comms] Connection attempt timed out!'
+            return False
+        except Exception as e:
+            print '[Comms] unknown error: ' + str(e) + '!'
+            return False
+
+        start_address = 'https://' + address + '/api/v1/session'
+        print '[Comms] Authenticating (%s)' % (start_address,)
+        hostname = socket.gethostname()
+        print '[Comms] -> user name %s' % (hostname,)
+        start_json = json.dumps({'name': hostname, 'password': pwd, 'role': 'robot'})
+        headers = {'Content-type': 'application/json'}
+        try:
+            req = requests.post(start_address, data=start_json, timeout=10, verify=verify, headers=headers)
         except requests.exceptions.ConnectionError:
             print '[Comms] Server not responding!'
             return False
@@ -44,12 +61,13 @@ class Communications(object):
             return False
 
         if req.status_code != 200:
-            print '[Comms] Login failed!'
+            print '[Comms] Login failed [' + str(req.status_code) + ']!'
+            print '[Comms] -> ' + req.text
             return False
 
         token = requests.utils.dict_from_cookiejar(req.cookies)[
             'session-security']
-        ws_address = 'ws://' + address + '/api/socket'
+        ws_address = 'ws://' + address + '/api/v1/connections/robot'
         print '[Comms] Connecting to %s' % (ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,

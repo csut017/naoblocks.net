@@ -84,11 +84,23 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Starting new session for '{user.Name}'");
-            var command = new StartSessionCommand
+            CommandBase command;
+            if (user.Role == "robot")
             {
-                Password = user.Password,
-                Name = user.Name
-            };
+                command = new StartRobotSessionCommand
+                {
+                    Password = user.Password,
+                    Name = user.Name
+                };
+            }
+            else
+            {
+                command = new StartUserSessionCommand
+                {
+                    Password = user.Password,
+                    Name = user.Name
+                };
+            }
 
             return await this.ApplyCommand(command).ConfigureAwait(false);
         }

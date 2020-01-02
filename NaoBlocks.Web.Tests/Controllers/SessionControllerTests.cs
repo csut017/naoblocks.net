@@ -123,7 +123,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Post(request);
 
             // Assert
-            var command = Assert.IsType<StartSessionCommand>(manager.LastCommand);
+            var command = Assert.IsType<StartUserSessionCommand>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal("password", command.Password);
             Assert.Equal(UserRole.Student, command.Role);

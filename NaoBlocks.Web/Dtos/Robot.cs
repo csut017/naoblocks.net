@@ -4,15 +4,20 @@ namespace NaoBlocks.Web.Dtos
 {
     public class Robot
     {
-        public string FriendlyName { get; set; }
+        public string FriendlyName { get; set; } = string.Empty;
 
-        public string MachineName { get; set; }
+        public bool IsInitialised { get; set; }
 
-        public static Robot FromModel(Data.Robot value)
+        public string MachineName { get; set; } = string.Empty;
+
+        public string? Password { get; set; }
+
+        public static Robot? FromModel(Data.Robot value)
         {
             return value == null ? null : new Robot
             {
                 FriendlyName = value.FriendlyName,
+                IsInitialised = value.IsInitialised,
                 MachineName = value.MachineName
             };
         }
