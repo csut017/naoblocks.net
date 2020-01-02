@@ -23,3 +23,5 @@ RavenDB.Mocks/obj/**/*.*
 /client/.sass-cache
 /client/connect.lock
 /client/npm-debug.log
+
+robot/**/*.pyc
