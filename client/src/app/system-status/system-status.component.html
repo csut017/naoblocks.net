@@ -1,4 +1,11 @@
 <div class="clr-row" style="margin-bottom: 1em;">
+    <div class="clr-col-1">
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="refreshStatus()" [disabled]="isLoading">
+                <clr-icon shape="refresh"></clr-icon> Refresh
+            </button>
+        </div>
+    </div>
     <div class="clr-col">
         <div *ngIf="isLoading">
             <span class="spinner spinner-inline">
@@ -19,13 +26,6 @@
                     </span>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="clr-col-1">
-        <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-secondary" (click)="refreshStatus()" [disabled]="isLoading">
-                <clr-icon shape="refresh"></clr-icon> Refresh
-            </button>
         </div>
     </div>
 </div>
