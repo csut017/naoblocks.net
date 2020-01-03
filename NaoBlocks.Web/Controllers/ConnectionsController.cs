@@ -41,11 +41,10 @@ namespace NaoBlocks.Web.Controllers
             {
                 this._logger.LogInformation($"Accepting web socket request from {context.Connection.RemoteIpAddress}");
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                using (var client = new ClientConnection(webSocket, clientType, this._messageProcessor))
-                {
-                    this._hub.AddClient(client);
-                    await client.StartAsync();
-                }
+                var client = new ClientConnection(webSocket, clientType, this._messageProcessor);
+                this._hub.AddClient(client);
+                await client.StartAsync();
+                client.Dispose();
             }
             else
             {

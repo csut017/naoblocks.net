@@ -186,6 +186,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         if (this.currentStartStep) {
           let errMsg = msg.values['error'] || 'Unknown';
           this.failStep(this.currentStartStep, `Server error: ${errMsg}`);
+          this.currentStartStep = undefined;
           this.connection.close();
         }
         break;
@@ -218,6 +219,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
       case ClientMessageType.ProgramStopped:
         this.changeExecuting(false);
+        this.connection.close();
         break;
     }
   }

@@ -26,7 +26,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             var request = new Data.User { Name = "Bob" };
 
             // Act
@@ -49,7 +49,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             var request = new Data.User { Name = "Bob", Password = "password" };
 
             // Act
@@ -71,7 +71,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
 
             // Act
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await controller.Initialise(null));
@@ -88,7 +88,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             var request = new Data.User { Name = "Bob" };
 
             // Act
@@ -114,7 +114,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new[] { new User() };
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             var request = new Data.User();
 
             // Act
@@ -139,7 +139,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var users = new User[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(users.AsRavenQueryable());
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             var request = new Data.User();
 
             // Act
@@ -161,7 +161,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var manager = new FakeCommandManager()
                 .SetupDoNothing();
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
 
             // Act
             var result = controller.Version();
@@ -179,7 +179,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
 
             // Act
             var response = await controller.WhoAmI();
@@ -198,7 +198,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .SetupDoNothing()
                 .SetupValidateErrors("Oops");
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object);
+            var controller = new SystemController(loggerMock.Object, manager, sessionMock.Object, null);
             Utils.InitialiseUser(sessionMock, controller, new User { Id = "users/1", Name = "Bob" });
 
             // Act

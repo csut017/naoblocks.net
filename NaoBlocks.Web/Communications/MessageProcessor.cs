@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Communications
@@ -25,9 +24,16 @@ namespace NaoBlocks.Web.Communications
             {
                 {  ClientMessageType.Authenticate, this.Authenticate },
                 { ClientMessageType.RequestRobot, this.AllocateRobot },
-                { ClientMessageType.TransferProgram, this.TransferRobot },
+                { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
                 { ClientMessageType.StopProgram, this.StopProgram },
+                { ClientMessageType.ProgramDownloaded, this.BroadcastMessage(ClientMessageType.ProgramTransferred) },
+                { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted) },
+                { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished) },
+                { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped) },
+                { ClientMessageType.RobotDebugMessage, this.BroadcastMessage(ClientMessageType.RobotDebugMessage, true) },
+                { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, true) },
+                { ClientMessageType.RobotStateUpdate, this.BroadcastMessage(ClientMessageType.RobotStateUpdate, true) },
             };
             this._hub = hub;
             this._logger = logger;
@@ -117,13 +123,13 @@ namespace NaoBlocks.Web.Communications
 
         private async Task Authenticate(ClientConnection client, ClientMessage message)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
             if (!message.Values.TryGetValue("token", out string? token))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is missing"));
                 return;
             }
 
+            var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadJwtToken(token);
             var sessionId = jwtToken.Claims.FirstOrDefault(c => c.Type == "SessionId");
             if (sessionId == null)
@@ -151,12 +157,62 @@ namespace NaoBlocks.Web.Communications
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
+        private TypeProcessor BroadcastMessage(ClientMessageType messageType, bool includeValues = false)
+        {
+            return (ClientConnection client, ClientMessage message) =>
+            {
+                var msg = GenerateResponse(message, messageType);
+                if (includeValues)
+                {
+                    foreach (var (key, value) in message.Values)
+                    {
+                        msg.Values[key] = value;
+                    }
+                }
+                client.NotifyListeners(msg);
+                return Task.CompletedTask;
+            };
+        }
+
+        private bool RetrieveRobot(ClientConnection client, ClientMessage message, out ClientConnection? robotClient)
+        {
+            robotClient = null;
+            if (!message.Values.TryGetValue("robot", out string? robotCode))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot is missing"));
+                return false;
+            }
+
+            if (!int.TryParse(robotCode, out int robotId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot id is invalid"));
+                return false;
+            }
+
+            robotClient = this._hub.GetClient(robotId);
+            if (robotClient == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot is not longer connected"));
+                return false;
+            }
+
+            return true;
+        }
+
         private Task StartProgram(ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
 
-            Thread.Sleep(1000);
-            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStarted));
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
+                return Task.CompletedTask;
+            }
+
+            var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
+            clientMessage.Values.Add("program", programId);
+            robotClient?.SendMessage(clientMessage);
             return Task.CompletedTask;
         }
 
@@ -168,12 +224,20 @@ namespace NaoBlocks.Web.Communications
             return Task.CompletedTask;
         }
 
-        private Task TransferRobot(ClientConnection client, ClientMessage message)
+        private Task TransferProgramToRobot(ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
 
-            Thread.Sleep(1000);
-            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramTransferred));
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
+                return Task.CompletedTask;
+            }
+
+            var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
+            clientMessage.Values.Add("program", programId);
+            robotClient?.SendMessage(clientMessage);
             return Task.CompletedTask;
         }
     }
