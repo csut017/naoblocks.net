@@ -18,7 +18,7 @@ export class SystemStatusComponent implements OnInit {
     this.refreshStatus();
   }
 
-  private refreshStatus(): void {
+  refreshStatus(): void {
     this.isLoading = true;
     this.systemService.refresh().subscribe(data => {
       this.status = data;

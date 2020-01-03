@@ -4,9 +4,9 @@ import { RobotStatus } from './robot-status';
 export class SystemStatus {
     usersConnected: UserStatus[] = [];
     robotsConnected: RobotStatus[] = [];
-    status: string;
+    error: string;
 
-    constructor(status?: string) {
-        this.status = status;
+    constructor(error?: string) {
+        this.error = error;
     }
 }

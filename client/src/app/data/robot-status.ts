@@ -1,6 +1,7 @@
 export class RobotStatus {
     id: number;
-    name: string;
+    machineName: string;
+    friendlyName: string;
     status: string;
     isAvailable: boolean;
 }
