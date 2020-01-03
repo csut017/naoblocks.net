@@ -29,6 +29,7 @@ class Communications(object):
         self._token = None
         self._verify = True
         self._base_address = None
+        self._ast = None
 
     def start(self, address, pwd=None, verify=True):
         self._verify = verify
@@ -119,12 +120,15 @@ class Communications(object):
     def _execute_code(self, data):
         print '[Comms] Running code'
         self.send(501, {'state': 'Initialising'})
-        self._engine.configure(data['values']['opts'])
+        try:
+            opts = json.loads(data['values']['opts'])
+        except KeyError:
+            opts = {}
+        self._engine.configure(opts)
+        self.send(102, {})
         self.send(501, {'state': 'Running'})
-        self._engine.run(data['values']['ast'])
-        self.send(103, {
-            'cancelled': self._engine.is_cancelled
-        })
+        self._engine.run(self._ast)
+        self.send(202 if self._engine.is_cancelled else 103, {})
         self.send(501, {'state': 'Waiting'})
 
     def _message(self, message):
@@ -132,13 +136,18 @@ class Communications(object):
         data = json.loads(message)
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
-            program_address = 'https://' + self._base_address + '/api/v1/programs/' + data['values']['user'] + '/' + data['values']['program']
+            program_address = 'https://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
             print '[Comms] Downloading program from ' + program_address
             headers = {'Authorization': 'Bearer ' + self._token}
             try:
                 req = requests.get(program_address, verify=self._verify, headers=headers)
                 req.raise_for_status()
                 print '[Comms] Program downloaded'
+                print '[Comms] -> ' + req.text
+
+                result = json.loads(req.text)
+                self._ast = result['output']['nodes']
+
                 self.send(23, {})
                 self.send(501, {'state': 'Prepared'})
             except Exception as e:
@@ -146,7 +155,7 @@ class Communications(object):
                 self.send(24, { 'error': str(e) } )
                 self.send(501, {'state': 'Waiting'})
 
-        elif data['type'] == 20:
+        elif data['type'] == 101:
             thrd = Thread(target=self._execute_code, args=(data,))
             thrd.start()
 

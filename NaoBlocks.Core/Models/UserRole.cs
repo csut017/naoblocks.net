@@ -4,6 +4,8 @@
     {
         Student,
         Teacher,
-        Administrator
+        Administrator,
+
+        Robot
     }
 }

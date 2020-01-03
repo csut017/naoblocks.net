@@ -122,6 +122,7 @@ namespace NaoBlocks.Web
             {
                 opts.AddPolicy("Teacher", policy => policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
                 opts.AddPolicy("Administrator", policy => policy.RequireRole(UserRole.Administrator.ToString()));
+                opts.AddPolicy("Robot", policy => policy.RequireRole(UserRole.Robot.ToString()));
             });
 
             services.AddHttpContextAccessor();

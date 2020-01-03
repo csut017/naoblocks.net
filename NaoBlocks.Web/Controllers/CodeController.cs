@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
 using System.Threading.Tasks;
@@ -68,6 +69,28 @@ namespace NaoBlocks.Web.Controllers
                     if (output != null) output.ProgramId = store?.Number;
                     return output;
                 });
+        }
+
+        [HttpGet("{user}/{program}")]
+        [Authorize("Robot")]
+        public async Task<ActionResult<Dtos.ExecutionResult<CompiledProgram>>> Get(string user, long program)
+        {
+            this._logger.LogInformation($"Getting program {program} for {user}");
+            var userDetails = await this.session.Query<User>()
+                .FirstOrDefaultAsync(u => u.Name == user);
+            if (userDetails == null) return NotFound();
+
+            var programDetails = userDetails.Programs.FirstOrDefault(p => p.Number == program);
+            if (programDetails == null) return NotFound();
+
+            this._logger.LogInformation("Compiling code");
+            var compileCommand = new CompileCodeCommand
+            {
+                Code = programDetails.Code
+            };
+            return await this.commandManager.ExecuteForHttp(
+                compileCommand,
+                c => c);
         }
     }
 }

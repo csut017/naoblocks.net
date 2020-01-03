@@ -147,12 +147,19 @@ namespace NaoBlocks.Web.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(this.jwtSecret);
             var expiry = result.Output?.WhenExpires ?? DateTime.UtcNow;
+            var role = UserRole.Student;
+            if (result.Output != null)
+            {
+                role = result.Output.IsRobot
+                    ? UserRole.Robot
+                    : (result.Output.Role ?? UserRole.Student);
+            }
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, result.Output?.UserId ?? string.Empty),
-                    new Claim(ClaimTypes.Role, (result.Output?.Role ?? UserRole.Student).ToString()),
+                    new Claim(ClaimTypes.Role, role.ToString()),
                     new Claim("SessionId", result.Output?.Id ?? string.Empty)
                 }),
                 Expires = expiry,

@@ -199,7 +199,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         break;
 
       case ClientMessageType.RobotAllocated:
-        this.assignedRobot =  msg.values.robot;
+        this.assignedRobot = msg.values.robot;
         this.currentStartStep = this.completeStep(this.currentStartStep);
         let transferCmd = new ClientMessage(ClientMessageType.TransferProgram);
         transferCmd.values['robot'] = this.assignedRobot;
@@ -233,6 +233,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         this.currentStartStep = undefined;
         break;
 
+      case ClientMessageType.ProgramFinished:
       case ClientMessageType.ProgramStopped:
         this.changeExecuting(false);
         this.connection.close();
