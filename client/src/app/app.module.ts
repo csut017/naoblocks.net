@@ -24,6 +24,7 @@ import { RobotEditorComponent } from './robot-editor/robot-editor.component';
 import { HeartbeatComponent } from './heartbeat/heartbeat.component';
 import { SaveProgramComponent } from './save-program/save-program.component';
 import { LoadProgramComponent } from './load-program/load-program.component';
+import { SystemStatusComponent } from './system-status/system-status.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { LoadProgramComponent } from './load-program/load-program.component';
     RobotEditorComponent,
     HeartbeatComponent,
     SaveProgramComponent,
-    LoadProgramComponent
+    LoadProgramComponent,
+    SystemStatusComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,46 @@
+<clr-accordion>
+    <clr-accordion-panel>
+        <clr-accordion-title>
+            Users <span class="badge badge-info">{{status.usersConnected.length}}</span>
+        </clr-accordion-title>
+        <clr-accordion-content *clrIfExpanded>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="left">Name</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of status.usersConnected">
+                        <td class="left">{{user.name}}</td>
+                        <td>{{user.status}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </clr-accordion-content>
+    </clr-accordion-panel>
+    <clr-accordion-panel>
+        <clr-accordion-title>
+            Robots <span class="badge badge-info">{{status.robotsConnected.length}}</span>
+        </clr-accordion-title>
+        <clr-accordion-content *clrIfExpanded>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="left">Name</th>
+                        <th>Status</th>
+                        <th>Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let robot of status.robotsConnected">
+                        <td class="left">{{robot.name}}</td>
+                        <td>{{robot.status}}</td>
+                        <td>{{robot.isAvailable ? 'Yes' : 'No'}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </clr-accordion-content>
+    </clr-accordion-panel>
+</clr-accordion>

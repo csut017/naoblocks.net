@@ -44,9 +44,13 @@
             <app-logs-list *ngIf="currentView=='logs'"></app-logs-list>
             <app-settings-editor *ngIf="currentView=='settings'"></app-settings-editor>
             <app-users-list *ngIf="currentView=='users'"></app-users-list>
+            <app-system-status *ngIf="currentView=='status'"></app-system-status>
         </div>
         <nav class="sidenav">
             <section class="sidenav-content">
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='status'" (click)="changeView('status')">
+                    System Status
+                </a>
                 <a href="javascript://" class="nav-link" [class.active]="currentView=='logs'" (click)="changeView('logs')">
                     Logs
                 </a>

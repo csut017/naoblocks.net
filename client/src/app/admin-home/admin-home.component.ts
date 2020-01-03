@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 })
 export class AdminHomeComponent extends HomeBase implements OnInit {
 
-  currentView: string = 'logs';
+  currentView: string = 'status';
 
   constructor(authenticationService: AuthenticationService,
     router: Router) {
