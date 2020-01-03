@@ -1,4 +1,4 @@
-﻿using NaoBlocks.Web.Communications.Messages;
+﻿using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -13,9 +13,11 @@ namespace NaoBlocks.Web.Communications
 {
     public class ClientConnection : IDisposable
     {
+        private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
         private readonly IMessageProcessor _messageProcessor;
         private readonly ConcurrentQueue<ClientMessage> _queue = new ConcurrentQueue<ClientMessage>();
         private readonly WebSocket _socket;
+        private IList<ClientConnection> _listeners = new List<ClientConnection>();
 
         public ClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
         {
@@ -30,7 +32,28 @@ namespace NaoBlocks.Web.Communications
 
         public long Id { get; set; }
 
+        public bool IsClosing { get; private set; }
+
+        public Robot? Robot { get; set; }
+
+        public ClientStatus Status { get; } = new ClientStatus();
         public ClientConnectionType Type { get; private set; }
+
+        public User? User { get; set; }
+
+        public void AddListener(ClientConnection listener)
+        {
+            if (listener == null) throw new ArgumentNullException(nameof(listener));
+
+            this._listeners.Add(listener);
+            listener.Closed += (o, e) => this.RemoveListener(listener);
+        }
+
+        public void Close()
+        {
+            this._cancellationSource.Cancel();
+            this.IsClosing = true;
+        }
 
         public void Dispose()
         {
@@ -38,19 +61,32 @@ namespace NaoBlocks.Web.Communications
             GC.SuppressFinalize(this);
         }
 
+        public void NotifyListeners(ClientMessage message)
+        {
+            foreach (var listener in this._listeners)
+            {
+                listener.SendMessage(message.Clone());
+            }
+        }
+
+        public void RemoveListener(ClientConnection listener)
+        {
+            if (this._listeners.Contains(listener)) this._listeners.Remove(listener);
+        }
+
         public void SendMessage(ClientMessage message)
         {
             this._queue.Enqueue(message);
         }
 
-        public async Task StartAsync(CancellationToken cancelToken)
+        public async Task StartAsync()
         {
-            var pushTask = Task.Run(async () => await this.PushMessagesAsync(cancelToken));
+            var pushTask = Task.Run(async () => await this.PushMessagesAsync(this._cancellationSource.Token));
             try
             {
-                while (true)
+                while (!this.IsClosing)
                 {
-                    var (response, message) = await this.ReceiveFullMessageAsync(cancelToken);
+                    var (response, message) = await this.ReceiveFullMessageAsync(this._cancellationSource.Token);
                     if (response.MessageType == WebSocketMessageType.Close)
                         break;
 
@@ -83,6 +119,7 @@ namespace NaoBlocks.Web.Communications
             if (disposing)
             {
                 this._socket.Dispose();
+                this._cancellationSource.Dispose();
             }
         }
 

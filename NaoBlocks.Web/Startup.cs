@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
-using NaoBlocks.Web.Communications.Messages;
+using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Embedded;

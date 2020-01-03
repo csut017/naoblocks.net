@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace NaoBlocks.Web.Communications.Messages
+namespace NaoBlocks.Web.Communications
 {
     public interface IMessageProcessor
     {

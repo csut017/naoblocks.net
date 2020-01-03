@@ -7,6 +7,7 @@ import traceback
 
 import numpy
 import requests
+import ssl
 import websocket
 
 from engine import Engine
@@ -25,6 +26,7 @@ class Communications(object):
         self._reconnect = reconnectAttempts
         self._serverDisconnected = False
         self._connectionCount = 0
+        self._token = None
 
     def start(self, address, pwd=None, verify=True):
         start_address = 'https://' + address + '/api/v1/version'
@@ -78,15 +80,14 @@ class Communications(object):
 
             return False
 
-        token = requests.utils.dict_from_cookiejar(req.cookies)[
-            'session-security']
-        ws_address = 'ws://' + address + '/api/v1/connections/robot'
+        authResp = json.loads(req.text)
+        self._token = authResp['output']['token']
+        ws_address = 'wss://' + address + '/api/v1/connections/robot'
         print '[Comms] Connecting to %s' % (ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,
                                           on_error=self._error,
-                                          on_close=self._close,
-                                          cookie='session-security=' + token)
+                                          on_close=self._close)
         self._ws.on_open = self._open
         connectAgain = True
         while connectAgain:
@@ -96,7 +97,10 @@ class Communications(object):
                 for _ in range(delayTime):
                     time.sleep(1)
             print '[Comms] Connection attempt #%d' % (self._connectionCount)
-            self._ws.run_forever()
+            if not verify:
+                self._ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+            else:
+                self._ws.run_forever()
             if self._serverDisconnected:
                 self._connectionCount += 1
                 connectAgain = self._connectionCount <= self._reconnect
@@ -110,25 +114,27 @@ class Communications(object):
 
     def _execute_code(self, data):
         print '[Comms] Running code'
-        self.send('state', {'state': 'Initialising'})
-        self._engine.configure(data['data']['opts'])
-        self.send('state', {'state': 'Running'})
-        self._engine.run(data['data']['ast'])
-        self.send('completed', {
+        self.send(501, {'state': 'Initialising'})
+        self._engine.configure(data['values']['opts'])
+        self.send(501, {'state': 'Running'})
+        self._engine.run(data['values']['ast'])
+        self.send(103, {
             'cancelled': self._engine.is_cancelled
         })
-        self.send('state', {'state': 'Waiting'})
+        self.send(501, {'state': 'Waiting'})
 
     def _message(self, message):
         print '[Comms] Received %s' % (message)
         data = json.loads(message)
-        if data['type'] == 'code':
+        if data['type'] == 20:
             thrd = Thread(target=self._execute_code, args=(data,))
             thrd.start()
-        elif data['type'] == 'cancel':
+        elif data['type'] == 201:
             print '[Comms] Cancelling current run'
-            self.send('state', {'state': 'Cancelling'})
+            self.send(501, {'state': 'Cancelling'})
             self._engine.cancel()
+        elif data['type'] == 2:
+            print '[Comms] Robot has been authenticated'
         else:
             print '[Comms] Unknown or missing message type "%s"' % (
                 data['type'])
@@ -137,17 +143,8 @@ class Communications(object):
         if isinstance(error, KeyboardInterrupt):
             self._serverDisconnected = False
             return
-        try:
-            errno = error.errno
-        except KeyError:
-            errno = 0
-        if errno == 10054:
-            self._serverDisconnected = True
-            print '[Comms] Lost connection to server'
-        elif errno == 10061:
-            print '[Comms] Unable to connect to server'
-        else:
-            print '[Comms] Unknown error: %s' % (error)
+        self._serverDisconnected = True
+        print '[Comms] Lost connection: %s' % (error,)
 
     def _close(self):
         print '[Comms] Closed'
@@ -156,13 +153,10 @@ class Communications(object):
         print '[Comms] Opened'
         self._serverDisconnected = False
         self._connectionCount = 0
-        hostname = socket.gethostname()
         msg = json.dumps({
-            'type': 'register',
-            'data': {
-                'type': 'robot',
-                'robot': 'nao',
-                'name': hostname
+            'type': 1,
+            'values': {
+                'token': self._token
             }
         })
         self._ws.send(msg)
@@ -175,6 +169,6 @@ class Communications(object):
         print '[Comms] Sending `' + msg_type + '` message'
         msg = json.dumps({
             'type': msg_type,
-            'data': data
+            'values': data
         })
         self._ws.send(msg)

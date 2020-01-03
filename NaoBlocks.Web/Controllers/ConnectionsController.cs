@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Web.Communications;
-using NaoBlocks.Web.Communications.Messages;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Controllers
@@ -46,7 +44,7 @@ namespace NaoBlocks.Web.Controllers
                 using (var client = new ClientConnection(webSocket, clientType, this._messageProcessor))
                 {
                     this._hub.AddClient(client);
-                    await client.StartAsync(CancellationToken.None);
+                    await client.StartAsync();
                 }
             }
             else

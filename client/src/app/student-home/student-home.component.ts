@@ -79,7 +79,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
     let currentBlocks: any;
     if (!!this.workspace) {
-      currentBlocks = Blockly.Xml.workspaceToDom(this.workspace);      
+      currentBlocks = Blockly.Xml.workspaceToDom(this.workspace);
       this.workspace.dispose();
     }
 
@@ -186,6 +186,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         if (this.currentStartStep) {
           let errMsg = msg.values['error'] || 'Unknown';
           this.failStep(this.currentStartStep, `Server error: ${errMsg}`);
+          this.connection.close();
         }
         break;
 
@@ -196,6 +197,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       case ClientMessageType.RobotAllocated:
         this.currentStartStep = this.completeStep(this.currentStartStep);
         this.connection.send(new ClientMessage(ClientMessageType.TransferProgram));
+        break;
+
+      case ClientMessageType.NoRobotsAvailable:
+        this.failStep(this.currentStartStep, 'No robots available');
+        this.currentStartStep = undefined;
+        this.connection.close();
         break;
 
       case ClientMessageType.ProgramTransferred:

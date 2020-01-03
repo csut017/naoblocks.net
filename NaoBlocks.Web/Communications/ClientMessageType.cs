@@ -12,8 +12,13 @@
         ProgramTransferred = 21,
         StartProgram = 101,
         ProgramStarted = 102,
+        ProgramFinished = 103,
         StopProgram = 201,
         ProgramStopped = 202,
+        RobotStateUpdate = 501,
+        RobotDebugMessage = 502,
+        RobotError = 503,
         Error = 1000,
+        NotAuthenticated = 1001
     }
 }

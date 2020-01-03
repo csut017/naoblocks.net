@@ -19,6 +19,20 @@ namespace NaoBlocks.Web.Communications
             return JsonConvert.DeserializeObject<ClientMessage>(json);
         }
 
+        public ClientMessage Clone()
+        {
+            var message = new ClientMessage
+            {
+                ConversationId = this.ConversationId,
+                Type = this.Type
+            };
+            foreach (var (key, value) in this.Values)
+            {
+                message.Values.Add(key, value);
+            }
+            return message;
+        }
+
         public byte[] ToArray()
         {
             var settings = new JsonSerializerSettings

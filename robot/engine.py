@@ -163,9 +163,8 @@ class Engine(object):
     def _error(self, message):
         print '[Engine] ' + message
         msg = json.dumps({
-            'type': 'status',
-            'data': {
-                'type': 'error',
+            'type': 503,
+            'values': {
                 'message': message
             }
         })
@@ -174,8 +173,8 @@ class Engine(object):
     def _change_state(self, name, value):
         print '[Engine] Sending state change for ' + name + ' of ' + str(value)
         msg = json.dumps({
-            'type': 'state_change',
-            'data': {
+            'type': 501,
+            'values': {
                 'name': name,
                 'value': value
             }
@@ -187,8 +186,8 @@ class Engine(object):
             debug_id = block['sourceID']
             print '[Engine] Sending debug info for block ' + debug_id + ' [' + status + ']'
             msg = json.dumps({
-                'type': 'debug',
-                'data': {
+                'type': 502,
+                'values': {
                     'sourceID': debug_id,
                     'status': status,
                     'function': block['token']['value']

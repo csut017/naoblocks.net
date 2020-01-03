@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace NaoBlocks.Web.Communications
 {
-    public class Hub : IHub
+    public sealed class Hub : IHub
     {
         private readonly IDictionary<long, ClientConnection> _clients = new Dictionary<long, ClientConnection>();
         private readonly ReaderWriterLockSlim _clientsLock = new ReaderWriterLockSlim();
@@ -41,12 +41,34 @@ namespace NaoBlocks.Web.Communications
             };
         }
 
+        public void Dispose()
+        {
+            this._clientsLock.Dispose();
+        }
+
         public ClientConnection? GetClient(long id)
         {
             this._clientsLock.EnterReadLock();
             try
             {
                 return this._clients.TryGetValue(id, out ClientConnection? client) ? client : null;
+            }
+            finally
+            {
+                this._clientsLock.ExitReadLock();
+            }
+        }
+
+        public IEnumerable<ClientConnection> GetClients(ClientConnectionType type)
+        {
+            this._clientsLock.EnterReadLock();
+            try
+            {
+                var clients = this._clients
+                    .Where(c => c.Value.Type == type)
+                    .Select(c => c.Value)
+                    .ToArray();
+                return clients;
             }
             finally
             {

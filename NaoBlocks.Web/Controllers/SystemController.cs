@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
+using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -19,15 +20,17 @@ namespace NaoBlocks.Web.Controllers
     [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
     public class SystemController : ControllerBase
     {
-        private readonly ICommandManager commandManager;
-        private readonly ILogger<SystemController> logger;
-        private readonly IAsyncDocumentSession session;
+        private readonly ICommandManager _commandManager;
+        private readonly IHub _hub;
+        private readonly ILogger<SystemController> _logger;
+        private readonly IAsyncDocumentSession _session;
 
-        public SystemController(ILogger<SystemController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public SystemController(ILogger<SystemController> logger, ICommandManager commandManager, IAsyncDocumentSession session, IHub hub)
         {
-            this.logger = logger;
-            this.commandManager = commandManager;
-            this.session = session;
+            this._logger = logger;
+            this._commandManager = commandManager;
+            this._session = session;
+            this._hub = hub;
         }
 
         [HttpPost("system/initialise")]
@@ -36,9 +39,9 @@ namespace NaoBlocks.Web.Controllers
         {
             if (administrator is null) throw new ArgumentNullException(nameof(administrator));
 
-            this.logger.LogWarning("Initialising system");
+            this._logger.LogWarning("Initialising system");
 
-            var hasUsers = await this.session.Query<User>()
+            var hasUsers = await this._session.Query<User>()
                 .AnyAsync()
                 .ConfigureAwait(false);
             if (hasUsers)
@@ -58,14 +61,39 @@ namespace NaoBlocks.Web.Controllers
                 Role = UserRole.Administrator
             };
 
-            return await this.commandManager.ExecuteForHttp(command).ConfigureAwait(false);
+            return await this._commandManager.ExecuteForHttp(command).ConfigureAwait(false);
+        }
+
+        [HttpGet("system/status")]
+        [Authorize("Administrator")]
+        public Task<ActionResult<Dtos.SystemStatus>> SystemStatus()
+        {
+            var status = new Dtos.SystemStatus();
+            foreach (var robot in this._hub.GetClients(ClientConnectionType.Robot))
+            {
+                status.RobotsConnected.Add(new Dtos.RobotStatus
+                {
+                    Id = robot.Id,
+                    IsAvailable = robot.Status.IsAvailable
+                });
+            }
+
+            foreach (var user in this._hub.GetClients(ClientConnectionType.User))
+            {
+                status.UsersConnected.Add(new Dtos.UserStatus
+                {
+                    Id = user.Id
+                });
+            }
+
+            return Task.FromResult(new ActionResult<Dtos.SystemStatus>(status));
         }
 
         [HttpGet("version")]
         [AllowAnonymous]
         public ActionResult<object> Version()
         {
-            this.logger.LogInformation("Retrieving system version number");
+            this._logger.LogInformation("Retrieving system version number");
             return new
             {
                 Version = Assembly.GetEntryAssembly()
@@ -77,8 +105,8 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("whoami")]
         public async Task<ActionResult<Dtos.User>> WhoAmI()
         {
-            this.logger.LogInformation("Retrieving current user");
-            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            this._logger.LogInformation("Retrieving current user");
+            var user = await this.LoadUser(this._session).ConfigureAwait(false);
             if (user == null) return this.NotFound();
             return new Dtos.User
             {
