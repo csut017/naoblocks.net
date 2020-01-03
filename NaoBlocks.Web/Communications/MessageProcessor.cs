@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Communications
 {
+    [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
     public class MessageProcessor : IMessageProcessor
     {
         private readonly IHub _hub;
@@ -33,7 +34,8 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped) },
                 { ClientMessageType.RobotDebugMessage, this.BroadcastMessage(ClientMessageType.RobotDebugMessage, true) },
                 { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, true) },
-                { ClientMessageType.RobotStateUpdate, this.BroadcastMessage(ClientMessageType.RobotStateUpdate, true) },
+                { ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
+                { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, true) },
             };
             this._hub = hub;
             this._logger = logger;
@@ -88,12 +90,36 @@ namespace NaoBlocks.Web.Communications
             return response;
         }
 
-        private static bool ValidateRequest(ClientConnection client, ClientMessage message)
+        private static bool ValidateRequest(ClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
         {
-            if (client.User == null)
+            if ((client.User == null) && (client.Robot == null))
             {
                 client.SendMessage(GenerateResponse(message, ClientMessageType.NotAuthenticated));
                 return false;
+            }
+
+            if (requiredRole.HasValue)
+            {
+                switch (requiredRole.Value)
+                {
+                    case ClientConnectionType.Robot:
+                        if (client.Robot == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
+
+                    case ClientConnectionType.User:
+                        if (client.User == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
+                }
             }
 
             return true;
@@ -101,7 +127,7 @@ namespace NaoBlocks.Web.Communications
 
         private Task AllocateRobot(ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
 
             var rnd = new Random();
             var nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
@@ -115,6 +141,7 @@ namespace NaoBlocks.Web.Communications
             }
 
             nextRobot.Status.IsAvailable = false;
+            nextRobot.AddListener(client);
             var response = GenerateResponse(message, ClientMessageType.RobotAllocated);
             response.Values["robot"] = nextRobot.Id.ToString(CultureInfo.InvariantCulture);
             client.SendMessage(response);
@@ -201,7 +228,7 @@ namespace NaoBlocks.Web.Communications
 
         private Task StartProgram(ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
             if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
 
             if (!message.Values.TryGetValue("program", out string? programId))
@@ -218,7 +245,7 @@ namespace NaoBlocks.Web.Communications
 
         private Task StopProgram(ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
 
             client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
             return Task.CompletedTask;
@@ -226,7 +253,7 @@ namespace NaoBlocks.Web.Communications
 
         private Task TransferProgramToRobot(ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
             if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
 
             if (!message.Values.TryGetValue("program", out string? programId))
@@ -237,7 +264,32 @@ namespace NaoBlocks.Web.Communications
 
             var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
             clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
             robotClient?.SendMessage(clientMessage);
+            return Task.CompletedTask;
+        }
+
+        private Task UpdateRobotState(ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return Task.CompletedTask;
+
+            if (message.Values.TryGetValue("state", out string? state))
+            {
+                client.Status.IsAvailable = state == "Waiting";
+                client.Status.Message = state ?? "Unknown";
+            }
+            else
+            {
+                client.Status.Message = "Unknown";
+            }
+
+            var msg = GenerateResponse(message, ClientMessageType.RobotStateUpdate);
+            foreach (var (key, value) in message.Values)
+            {
+                msg.Values[key] = value;
+            }
+            client.NotifyListeners(msg);
+
             return Task.CompletedTask;
         }
     }

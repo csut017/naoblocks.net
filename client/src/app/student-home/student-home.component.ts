@@ -47,6 +47,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   errorMessage: string;
   onResize: any;
   isSidebarOpen: boolean = true;
+  assignedRobot: string;
+  storedProgram: string;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -158,6 +160,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           return;
         }
 
+        this.storedProgram = result.output.programId.toString();
         this.currentStartStep = 1;
         this.completeStep(0);
         this.connection.start().subscribe(msg => this.processServerMessage(msg));
@@ -196,8 +199,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         break;
 
       case ClientMessageType.RobotAllocated:
+        this.assignedRobot =  msg.values.robot;
         this.currentStartStep = this.completeStep(this.currentStartStep);
-        this.connection.send(new ClientMessage(ClientMessageType.TransferProgram));
+        let transferCmd = new ClientMessage(ClientMessageType.TransferProgram);
+        transferCmd.values['robot'] = this.assignedRobot;
+        transferCmd.values['program'] = this.storedProgram;
+        this.connection.send(transferCmd);
         break;
 
       case ClientMessageType.NoRobotsAvailable:
@@ -208,7 +215,16 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
       case ClientMessageType.ProgramTransferred:
         this.currentStartStep = this.completeStep(this.currentStartStep);
-        this.connection.send(new ClientMessage(ClientMessageType.StartProgram));
+        let startCmd = new ClientMessage(ClientMessageType.StartProgram);
+        startCmd.values['robot'] = this.assignedRobot;
+        startCmd.values['program'] = this.storedProgram;
+        this.connection.send(startCmd);
+        break;
+
+      case ClientMessageType.UnableToDownloadProgram:
+        this.failStep(this.currentStartStep, 'Program download failed');
+        this.currentStartStep = undefined;
+        this.connection.close();
         break;
 
       case ClientMessageType.ProgramStarted:
@@ -356,7 +372,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   private failStep(step: number, reason: string) {
     this.startMessage = reason;
-    if (step >= this.steps.length) return;
+    if (!this.steps[step]) return;
     this.steps[step].isCurrent = false;
     this.steps[step].image = 'error-standard';
   }

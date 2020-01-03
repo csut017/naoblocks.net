@@ -9,5 +9,7 @@
         public bool IsAvailable { get; set; }
 
         public string MachineName { get; set; } = string.Empty;
+
+        public string Status { get; set; } = "Unknown";
     }
 }

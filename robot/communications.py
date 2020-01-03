@@ -27,12 +27,16 @@ class Communications(object):
         self._serverDisconnected = False
         self._connectionCount = 0
         self._token = None
+        self._verify = True
+        self._base_address = None
 
     def start(self, address, pwd=None, verify=True):
-        start_address = 'https://' + address + '/api/v1/version'
+        self._verify = verify
+        self._base_address = address
+        start_address = 'https://' + self._base_address + '/api/v1/version'
         print '[Comms] Checking server version (%s)' % (start_address,)
         try:
-            response = requests.get(start_address, timeout=10, verify=verify)
+            response = requests.get(start_address, timeout=10, verify=self._verify)
             print '[Comms] -> Received response %s' % (response.text,)
         except requests.exceptions.ConnectionError as e:
             print '[Comms] Server not responding: ' + str(e) + '!'
@@ -44,14 +48,14 @@ class Communications(object):
             print '[Comms] unknown error: ' + str(e) + '!'
             return False
 
-        start_address = 'https://' + address + '/api/v1/session'
+        start_address = 'https://' + self._base_address + '/api/v1/session'
         print '[Comms] Authenticating (%s)' % (start_address,)
         hostname = socket.gethostname()
         print '[Comms] -> user name %s' % (hostname,)
         start_json = json.dumps({'name': hostname, 'password': pwd, 'role': 'robot'})
         headers = {'Content-type': 'application/json'}
         try:
-            req = requests.post(start_address, data=start_json, timeout=10, verify=verify, headers=headers)
+            req = requests.post(start_address, data=start_json, verify=self._verify, headers=headers)
         except requests.exceptions.ConnectionError:
             print '[Comms] Server not responding!'
             return False
@@ -66,11 +70,11 @@ class Communications(object):
             print '[Comms] Login failed [' + str(req.status_code) + ']!'
             print '[Comms] -> ' + req.text
 
-            start_address = 'https://' + address + '/api/v1/robots/register'
+            start_address = 'https://' + self._base_address + '/api/v1/robots/register'
             print '[Comms] Registering robot %s (%s)' % (hostname, start_address)
             start_json = json.dumps({'machineName': hostname})
             try:
-                req = requests.post(start_address, data=start_json, timeout=10, verify=verify, headers=headers)
+                req = requests.post(start_address, data=start_json, timeout=10, verify=self._verify, headers=headers)
                 req.raise_for_status()
                 print '[Comms] -> robot registered'
             except Exception as e:
@@ -82,7 +86,7 @@ class Communications(object):
 
         authResp = json.loads(req.text)
         self._token = authResp['output']['token']
-        ws_address = 'wss://' + address + '/api/v1/connections/robot'
+        ws_address = 'wss://' + self._base_address + '/api/v1/connections/robot'
         print '[Comms] Connecting to %s' % (ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,
@@ -97,7 +101,7 @@ class Communications(object):
                 for _ in range(delayTime):
                     time.sleep(1)
             print '[Comms] Connection attempt #%d' % (self._connectionCount)
-            if not verify:
+            if not self._verify:
                 self._ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
             else:
                 self._ws.run_forever()
@@ -126,15 +130,35 @@ class Communications(object):
     def _message(self, message):
         print '[Comms] Received %s' % (message)
         data = json.loads(message)
-        if data['type'] == 20:
+        if data['type'] == 22:
+            self.send(501, {'state': 'Downloading'})
+            program_address = 'https://' + self._base_address + '/api/v1/programs/' + data['values']['user'] + '/' + data['values']['program']
+            print '[Comms] Downloading program from ' + program_address
+            headers = {'Authorization': 'Bearer ' + self._token}
+            try:
+                req = requests.get(program_address, verify=self._verify, headers=headers)
+                req.raise_for_status()
+                print '[Comms] Program downloaded'
+                self.send(23, {})
+                self.send(501, {'state': 'Prepared'})
+            except Exception as e:
+                print '[Comms] unknown error: ' + str(e) + '!'
+                self.send(24, { 'error': str(e) } )
+                self.send(501, {'state': 'Waiting'})
+
+        elif data['type'] == 20:
             thrd = Thread(target=self._execute_code, args=(data,))
             thrd.start()
+
         elif data['type'] == 201:
             print '[Comms] Cancelling current run'
             self.send(501, {'state': 'Cancelling'})
             self._engine.cancel()
+
         elif data['type'] == 2:
             print '[Comms] Robot has been authenticated'
+            self.send(501, {'state': 'Waiting'})
+
         else:
             print '[Comms] Unknown or missing message type "%s"' % (
                 data['type'])
@@ -153,22 +177,17 @@ class Communications(object):
         print '[Comms] Opened'
         self._serverDisconnected = False
         self._connectionCount = 0
-        msg = json.dumps({
-            'type': 1,
-            'values': {
-                'token': self._token
-            }
-        })
-        self._ws.send(msg)
+        self.send(1, { 'token': self._token })
         try:
             self._engine = Engine(self._ws, self._use_robot)
         except:
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        print '[Comms] Sending `' + msg_type + '` message'
+        print '[Comms] Sending `' + str(msg_type) + '` message'
         msg = json.dumps({
             'type': msg_type,
             'values': data
         })
+        print '[Comms] ->  ' + msg
         self._ws.send(msg)

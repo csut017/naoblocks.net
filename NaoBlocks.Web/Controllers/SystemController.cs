@@ -76,7 +76,8 @@ namespace NaoBlocks.Web.Controllers
                     Id = robot.Id,
                     MachineName = robot.Robot?.MachineName ?? string.Empty,
                     FriendlyName = robot.Robot?.FriendlyName ?? string.Empty,
-                    IsAvailable = robot.Status.IsAvailable
+                    IsAvailable = robot.Status.IsAvailable,
+                    Status = robot.Status.Message
                 });
             }
 
@@ -85,7 +86,8 @@ namespace NaoBlocks.Web.Controllers
                 status.UsersConnected.Add(new Dtos.UserStatus
                 {
                     Id = user.Id,
-                    Name = user.User?.Name ?? string.Empty
+                    Name = user.User?.Name ?? string.Empty,
+                    Status = user.Status.Message
                 });
             }
 
