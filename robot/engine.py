@@ -133,21 +133,22 @@ class Engine(object):
         last_result = None
         try:
             func = self._functions[func_name]
-            if func.top_level and not top_level:
-                self._error('Function ' + func_name +
-                            ' cannot be executed here')
-            else:
-                print '[Engine] Executing function "%s"' % (func_name)
-                self._debug(block, 'start')
-                func_state = ExecutionState(block, state, func_name)
-                last_result = func.execute(func_state)
-                if not state is None and func_state.completed:
-                    state.complete()
-                if not top_level:
-                    self._do_delay()
-                self._debug(block, 'end')
         except KeyError:
             self._error('Unknown function: ' + func_name)
+
+        if func.top_level and not top_level:
+            self._error('Function ' + func_name +
+                        ' cannot be executed here')
+        else:
+            print '[Engine] Executing function "%s"' % (func_name)
+            self._debug(block, 'start')
+            func_state = ExecutionState(block, state, func_name)
+            last_result = func.execute(func_state)
+            if not state is None and func_state.completed:
+                state.complete()
+            if not top_level:
+                self._do_delay()
+            self._debug(block, 'end')
 
         return last_result
 
@@ -161,7 +162,7 @@ class Engine(object):
                 time.sleep(1)
 
     def _error(self, message):
-        print '[Engine] ' + message
+        print '[Engine] Sending error message: "' + message + '"'
         msg = json.dumps({
             'type': 503,
             'values': {
@@ -183,7 +184,7 @@ class Engine(object):
 
     def _debug(self, block, status):
         try:
-            debug_id = block['sourceID']
+            debug_id = block['sourceId']
             print '[Engine] Sending debug info for block ' + debug_id + ' [' + status + ']'
             msg = json.dumps({
                 'type': 502,
@@ -201,19 +202,19 @@ class Engine(object):
         ''' Evaluates a node. '''
         node_type = node['token']['type']
         node_value = node['token']['value']
-        if node_type == 'TEXT':
+        if node_type == 'Text':
             return str(node_value)
-        elif node_type == 'CONSTANT':
+        elif node_type == 'Constant':
             return str(node_value)
-        elif node_type == 'NUMBER':
+        elif node_type == 'Number':
             return float(node_value)
-        elif node_type == 'BOOLEAN':
+        elif node_type == 'Boolean':
             return node_value == 'TRUE'
-        elif node_type == 'IDENTIFIER':
+        elif node_type == 'Identifier':
             return self._execute([node], state)
-        elif node_type == 'VARIABLE':
+        elif node_type == 'Variable':
             return self._get_variable(node_value)
-        elif node_type == 'COLOUR':
+        elif node_type == 'Colour':
             return '#' + str(node_value)
 
         print '[Engine] Unknown expression type: ' + node_type
@@ -322,7 +323,7 @@ class Engine(object):
 
     def _look(self, state):
         ''' Make the robot look in a direction. '''
-        direction = self._evaluate(state.ast['args'][0], state)
+        direction = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Looking ' + direction
         movement = HeadMovement()
         if direction == 'left':
@@ -335,8 +336,8 @@ class Engine(object):
 
     def _point(self, state):
         ''' Make the robot point in a direction. '''
-        arm = self._evaluate(state.ast['args'][0], state)
-        direction = self._evaluate(state.ast['args'][1], state)
+        arm = self._evaluate(state.ast['arguments'][0], state)
+        direction = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Pointing ' + arm + ' arm ' + direction
         movement = ArmMovement(ArmMovement.LEFT if arm == 'left' else ArmMovement.RIGHT)
         if direction == 'out':
@@ -356,7 +357,7 @@ class Engine(object):
             return
 
         try:
-            speech = self._evaluate(state.ast['args'][speech], state)
+            speech = self._evaluate(state.ast['arguments'][speech], state)
             self._robot.say(speech)
         except KeyError:
             pass
@@ -372,8 +373,8 @@ class Engine(object):
             self._robot.say('I cannot dance in this posture')
             return
 
-        dance = self._evaluate(state.ast['args'][0], state)
-        music = self._evaluate(state.ast['args'][1], state)
+        dance = self._evaluate(state.ast['arguments'][0], state)
+        music = self._evaluate(state.ast['arguments'][1], state)
         dances = {
             'macaranna': Dances.MACARENA,
             'gangnam': Dances.GANGNAM,
@@ -398,7 +399,7 @@ class Engine(object):
 
     def _wait(self, state):
         ''' Make the robot wait. '''
-        seconds = self._evaluate(state.ast['args'][0], state)
+        seconds = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Waiting for ' + str(seconds) + 's'
         for _ in range(0, int(seconds)):
             if self.is_cancelled:
@@ -413,8 +414,8 @@ class Engine(object):
             return
 
         self._robot.setSonars(True)
-        xDist = self._evaluate(state.ast['args'][0], state)
-        yDist = self._evaluate(state.ast['args'][1], state)
+        xDist = self._evaluate(state.ast['arguments'][0], state)
+        yDist = self._evaluate(state.ast['arguments'][1], state)
         self._leftFoot = self._robot.getSensor(sensors.Sensor.FOOT_LEFT)
         self._rightFoot = self._robot.getSensor(sensors.Sensor.FOOT_RIGHT)
         self._leftSonar = self._robot.getSensor(sensors.Sensor.SONAR_LEFT)
@@ -502,7 +503,7 @@ class Engine(object):
             self._robot.say('I cannot turn in this posture')
             return
 
-        degs = float(self._evaluate(state.ast['args'][0], state))
+        degs = float(self._evaluate(state.ast['arguments'][0], state))
         if degs > 360:
             degs = 360
         elif degs < -360:
@@ -518,7 +519,7 @@ class Engine(object):
 
     def _say(self, state):
         ''' Make the robot speak. '''
-        value = self._evaluate(state.ast['args'][0], state)
+        value = self._evaluate(state.ast['arguments'][0], state)
         text_to_say = str(value)
         try:
             number_value = float(value)
@@ -531,20 +532,18 @@ class Engine(object):
 
     def _position(self, state):
         ''' Make the robot move to a position. '''
-        value = self._evaluate(state.ast['args'][0], state)
+        value = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Moving to position ' + value
         try:
-            speech = self._evaluate(state.ast['args'][1], state)
+            speech = self._evaluate(state.ast['arguments'][1], state)
             self._robot.say(speech)
         except (KeyError, IndexError):
             pass
-        print 'Printing robot'
-        print self._robot
         self._robot.goToPosture(value).wait()
 
     def _change_LED(self, state):
         ''' Change an LED. '''
-        item = self._evaluate(state.ast['args'][0], state)
+        item = self._evaluate(state.ast['arguments'][0], state)
         items = {
             'CHEST': Robot.CHEST,
             'BOTH_EYES': [Robot.RIGHT_EYE, Robot.LEFT_EYE],
@@ -557,7 +556,7 @@ class Engine(object):
             self._error('Unknown LED ' + item)
             return
 
-        value = self._evaluate(state.ast['args'][1], state)
+        value = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Changing LED ' + str(item) + ' to ' + value
         self._robot.setLEDColour(led, value)
 
@@ -565,8 +564,8 @@ class Engine(object):
         ''' Make the robot open or close one or two hands. '''
         hand = [Robot.LEFT_HAND]
         text = ' left hand'
-        handArg = self._evaluate(state.ast['args'][1], state)
-        actionArg = self._evaluate(state.ast['args'][0], state)
+        handArg = self._evaluate(state.ast['arguments'][1], state)
+        actionArg = self._evaluate(state.ast['arguments'][0], state)
         if handArg == 'right':
             hand = [Robot.RIGHT_HAND]
             text = ' right hand'
@@ -579,7 +578,7 @@ class Engine(object):
 
     def _read_sensor(self, state):
         ''' Reads a robot sensor. '''
-        sensor = self._evaluate(state.ast['args'][0], state)
+        sensor = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Reading ' + sensor + ' sensor'
         try:
             sensor = self._robot.getSensor(sensor) 
@@ -597,7 +596,7 @@ class Engine(object):
 
     def _loop(self, state):
         ''' Define or update a variable. '''
-        iterations = int(self._evaluate(state.ast['args'][0], state))
+        iterations = int(self._evaluate(state.ast['arguments'][0], state))
         print '[Engine] Starting loop with ' + str(iterations) + ' iterations'
         for loop in range(iterations):
             self._change_state('loop', loop)
@@ -609,16 +608,16 @@ class Engine(object):
 
     def _define_variable(self, state):
         ''' Define or update a variable. '''
-        name = state.ast['args'][0]['token']['value']
-        value = self._evaluate(state.ast['args'][1], state)
+        name = state.ast['arguments'][0]['token']['value']
+        value = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Setting variable ' + name + ' to ' + str(value)
         self._variables[name] = value
         self._change_state(name, value)
 
     def _add_to_variable(self, state):
         ''' Increases a variable. '''
-        name = state.ast['args'][0]['token']['value']
-        value = self._evaluate(state.ast['args'][1], state)
+        name = state.ast['arguments'][0]['token']['value']
+        value = self._evaluate(state.ast['arguments'][1], state)
         try:
             current = self._variables[name]
             new_value = (current + value)
@@ -630,61 +629,61 @@ class Engine(object):
 
     def _invert(self, state):
         ''' Inverts a value. '''
-        value = self._evaluate(state.ast['args'][0], state)
+        value = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Inverting: ' + str(value)
         return not value
 
     def _round(self, state):
         ''' Rounds a value. '''
-        value = self._evaluate(state.ast['args'][0], state)
+        value = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Rounding: ' + str(value)
         return round(value, 0)
 
     def _check_if_equal(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 == value2
 
     def _check_less_than(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 < value2
 
     def _check_greater_than(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 > value2
 
     def _check_not_equal(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 != value2
 
     def _check_less_than_equal(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 <= value2
 
     def _check_greater_than_equal(self, state):
         ''' Checks if the two sides are equal. '''
-        value1 = self._evaluate(state.ast['args'][0], state)
-        value2 = self._evaluate(state.ast['args'][1], state)
+        value1 = self._evaluate(state.ast['arguments'][0], state)
+        value2 = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
         return value1 >= value2
 
     def _check_if_condition(self, state):
         ''' Check a condition block. '''
-        result = self._evaluate(state.ast['args'][0], state)
+        result = self._evaluate(state.ast['arguments'][0], state)
         if result is True:
             state.complete()
             print '[Engine] Executing if block'
@@ -693,13 +692,13 @@ class Engine(object):
     def _while(self, state):
         ''' Check a condition block. '''
         print '[Engine] Executing while block'
-        result = self._evaluate(state.ast['args'][0], state)
+        result = self._evaluate(state.ast['arguments'][0], state)
         while result is True:
             print '[Engine] Starting loop'
             state.complete()
             print '[Engine] Executing if block'
             self._execute(state.ast['children'], state)
-            result = self._evaluate(state.ast['args'][0], state)
+            result = self._evaluate(state.ast['arguments'][0], state)
             print '[Engine] Finished loop'
 
     def _check_else(self, state):

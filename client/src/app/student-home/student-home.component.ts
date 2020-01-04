@@ -171,7 +171,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     if (newValue == this.isExecuting) return;
 
     this.isExecuting = newValue;
-    this.initialiseWorkspace(this.isExecuting);
+    // this.initialiseWorkspace(this.isExecuting);
   }
 
   processServerMessage(msg: ClientMessage) {
@@ -237,6 +237,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       case ClientMessageType.ProgramStopped:
         this.changeExecuting(false);
         this.connection.close();
+        break;
+
+      case ClientMessageType.RobotDebugMessage:
+        let sId = msg.values['sourceID'];
+        let action = msg.values['status'];
+        this.workspace.highlightBlock(sId, action === 'start');
         break;
     }
   }
