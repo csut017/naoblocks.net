@@ -57,7 +57,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   isExecuting: boolean = false;
   isValid: boolean = true;
   canStop: boolean = false;
-  requireEvents: boolean = false;
+  requireEvents: boolean = true;
   currentUser: User;
   currentStartStep: number;
   errorMessage: string;
@@ -95,6 +95,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .includeVariables()
       .includeDances()
       .includeSensors()
+      .includeEvents()
       .build();
 
     let currentBlocks: any;
@@ -103,11 +104,20 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       this.workspace.dispose();
     }
 
+    Blockly.BlockSvg.START_HAT = true;
     let blocklyArea = document.getElementById('blocklyArea');
     let blocklyDiv = document.getElementById('blocklyDiv');
     this.workspace = Blockly.inject('blocklyDiv', {
       readOnly: isReadonly,
-      toolbox: xml
+      toolbox: xml,
+      grid: {
+        spacing: 20,
+        snap:true
+      },
+      zoom: {
+        controls: true,
+        wheel: true
+      }
     });
     if (!!currentBlocks) {
       Blockly.Xml.domToWorkspace(currentBlocks, this.workspace);
@@ -147,7 +157,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     setInterval(() => this.onResize(), 0);
   }
 
-  validateWorkspace(event): void {
+  validateWorkspace(event?: any): void {
     if (this.workspace.isDragging()) return;
     console.log('Validating');
     var validate = !event ||
@@ -164,7 +174,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     var blocks = this.workspace.getTopBlocks();
 
     if (this.requireEvents) {
-      blocks.forEach(function (block) {
+      blocks.forEach(block => {
         if (!block.type.startsWith('robot_on_')) {
           this.invalidBlocks.push(block);
           block.setWarningText('This cannot be a top level block.');
