@@ -27,6 +27,22 @@ class executionStatusStep {
   }
 }
 
+class promptSettings {
+  open: boolean = false;
+  title: string;
+  value: string;
+  action: any;
+  showOk: boolean = false;
+  showValue: boolean = false;
+  mode: userInputMode;
+}
+
+enum userInputMode {
+  prompt,
+  confirm,
+  alert
+}
+
 @Component({
   selector: 'app-student-home',
   templateUrl: './student-home.component.html',
@@ -49,6 +65,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   isSidebarOpen: boolean = true;
   assignedRobot: string;
   storedProgram: string;
+  invalidBlocks: any[] = [];
+  userInput: promptSettings = new promptSettings();
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -95,6 +113,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       Blockly.Xml.domToWorkspace(currentBlocks, this.workspace);
     }
 
+    this.configureEditor();
+
     // Initialise the resizing
     const workspace = this.workspace;
     this.onResize = function () {
@@ -127,6 +147,33 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     setInterval(() => this.onResize(), 0);
   }
 
+  validateWorkspace(event): void {
+    if (this.workspace.isDragging()) return;
+    console.log('Validating');
+    var validate = !event ||
+      (event.type == Blockly.Events.CREATE) ||
+      (event.type == Blockly.Events.MOVE) ||
+      (event.type == Blockly.Events.DELETE);
+    if (!validate) return;
+
+    this.invalidBlocks.forEach(function (block) {
+      if (block.rendered) block.setWarningText(null);
+    })
+    this.invalidBlocks = [];
+    this.isValid = true;
+    var blocks = this.workspace.getTopBlocks();
+
+    if (this.requireEvents) {
+      blocks.forEach(function (block) {
+        if (!block.type.startsWith('robot_on_')) {
+          this.invalidBlocks.push(block);
+          block.setWarningText('This cannot be a top level block.');
+          this.isValid = false;
+        }
+      });
+    }
+  }
+
   doCancelSend(): void {
     if (this.sendingToRobot) {
       this.sendingToRobot = false;
@@ -137,6 +184,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   doChangeSpeed(): void {
     alert('TODO');
+  }
+
+  doClear(): void {
+    this.workspace.clear();
+    this.validateWorkspace();
   }
 
   doPlay(): void {
@@ -267,6 +319,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
             this.loadIntoWorkspace(xml);
             console.log(xml);
             this.loadProgram.close();
+            this.validateWorkspace();
           } catch (error) {
             console.error(error);
             this.loadProgram.showError('Something went wrong loading the blocks');
@@ -323,6 +376,25 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     }
   }
 
+  closeUserInput(ok: boolean): void {
+    this.userInput.open = false;
+    if (this.userInput.action) {
+      switch (this.userInput.mode) {
+        case userInputMode.alert:
+          this.userInput.action();
+          break;
+
+        case userInputMode.confirm:
+          this.userInput.action(ok);
+          break;
+
+        case userInputMode.prompt:
+          this.userInput.action(this.userInput.value);
+          break;
+      }
+    }
+  }
+
   private validateBlocks(): string {
     var blocks = this.workspace.getTopBlocks();
     if (!blocks.length) {
@@ -337,6 +409,53 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       if (!this.isValid) {
         return 'Program is not valid!';
       }
+    }
+  }
+
+  private configureEditor(): void {
+    console.groupCollapsed('Initialising blockly editor');
+    try {
+      console.log('Defining colours');
+      Blockly.FieldColour.COLOURS = [
+        '#f00', '#0f0',
+        '#00f', '#ff0',
+        '#f0f', '#0ff',
+        '#000', '#fff'
+      ];
+      Blockly.FieldColour.COLUMNS = 2;
+
+      console.log('Configuring modals');
+      let that = this;
+      Blockly.alert = function (message: string, callback: any) {
+        that.userInput.title = message;
+        that.userInput.action = callback;
+        that.userInput.showOk = false;
+        that.userInput.showValue = false;
+        that.userInput.mode = userInputMode.alert;
+        that.userInput.open = true;
+      };
+      Blockly.confirm = function (message: string, callback: any) {
+        that.userInput.title = message;
+        that.userInput.action = callback;
+        that.userInput.showOk = true;
+        that.userInput.showValue = false;
+        that.userInput.mode = userInputMode.alert;
+        that.userInput.open = true;
+      };
+      Blockly.prompt = function (message: string, defaultValue: any, callback: any) {
+        that.userInput.title = message;
+        that.userInput.action = callback;
+        that.userInput.showOk = true;
+        that.userInput.showValue = true;
+        that.userInput.mode = userInputMode.prompt;
+        that.userInput.value = defaultValue;
+        that.userInput.open = true;
+      };
+
+      console.log('Adding validator');
+      this.workspace.addChangeListener(evt => this.validateWorkspace(evt));
+    } finally {
+      console.groupEnd();
     }
   }
 

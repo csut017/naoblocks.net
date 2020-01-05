@@ -50,11 +50,18 @@
                 Stop
             </a>
             <div class="nav-divider"></div>
-            <a clrVerticalNavLink href="javascript://" (click)="doLoad()" [class.disabled]="!currentUser">
+            <a clrVerticalNavLink href="javascript://" (click)="doClear()" [class.disabled]="isExecuting">
+                <clr-icon clrVerticalNavIcon shape="eraser"></clr-icon>
+                Clear
+            </a>
+            <div class="nav-divider"></div>
+            <a clrVerticalNavLink href="javascript://" (click)="doLoad()"
+                [class.disabled]="isExecuting || !currentUser">
                 <clr-icon clrVerticalNavIcon shape="upload"></clr-icon>
                 Load
             </a>
-            <a clrVerticalNavLink href="javascript://" (click)="doSave()" [class.disabled]="!currentUser">
+            <a clrVerticalNavLink href="javascript://" (click)="doSave()"
+                [class.disabled]="isExecuting || !currentUser">
                 <clr-icon clrVerticalNavIcon shape="download"></clr-icon>
                 Save
             </a>
@@ -118,6 +125,27 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-primary" (click)="doCancelSend()">
                 {{startMessage ? 'Close' : 'Cancel'}}
+            </button>
+        </div>
+    </clr-modal>
+    <clr-modal [(clrModalOpen)]="userInput.open" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+        <div class="modal-body">
+            <div *ngIf="!userInput.showValue">
+                {{userInput.title}}
+            </div>
+            <form class="clrForm" *ngIf="userInput.showValue" style="height:6em;" clrLayout="horizontal">
+                <clr-input-container>
+                    <label class="clr-col-12 clr-col-md-4">{{userInput.title}}</label>
+                    <input class="clr-col-12 clr-col-md-8" clrInput type="text" [(ngModel)]="userInput.value" name="userInputValue" />
+                </clr-input-container>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" (click)="closeUserInput(true)">
+                Ok
+            </button>
+            <button type="button" class="btn" (click)="closeUserInput(false)">
+                Cancel
             </button>
         </div>
     </clr-modal>
