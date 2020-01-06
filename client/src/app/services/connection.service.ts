@@ -49,8 +49,9 @@ export class ConnectionService extends ClientService {
 
   constructor(errorHandler: ErrorHandlerService,
     private authenticationService: AuthenticationService) {
-    super('ConnectionService', errorHandler);
-  }
+    super(errorHandler);
+    this.serviceName = 'ConnectionService';
+}
 
   start(): Observable<ClientMessage> {
     if (!this.isConnected) {

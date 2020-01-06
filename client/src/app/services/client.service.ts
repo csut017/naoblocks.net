@@ -7,8 +7,9 @@ import { ErrorHandlerService } from './error-handler.service';
 })
 export abstract class ClientService {
 
-  constructor(private serviceName: string,
-    protected errorhandler: ErrorHandlerService) { }
+  serviceName: string;
+
+  constructor(protected errorhandler: ErrorHandlerService) { }
 
   protected log(message: string, data?: any) {
     const msg = `[${this.serviceName}] ${message}`;

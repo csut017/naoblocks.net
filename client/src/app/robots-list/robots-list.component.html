@@ -21,8 +21,10 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                        <button type="button" (click)="doExportDetails()" clrDropdownItem [disabled]="selected.length === 0">Details</button>
-                        <button type="button" (click)="doExportLogs()" clrDropdownItem [disabled]="selected.length === 0">Logs</button>
+                        <button type="button" (click)="doExportDetails()" clrDropdownItem
+                            [disabled]="selected.length === 0">Details</button>
+                        <button type="button" (click)="doExportLogs()" clrDropdownItem
+                            [disabled]="selected.length === 0">Logs</button>
                     </clr-dropdown-menu>
                 </clr-dropdown>
             </div>
@@ -30,11 +32,7 @@
 
         <clr-dg-column [clrDgField]="'machineName'">Machine Name</clr-dg-column>
         <clr-dg-column [clrDgField]="'friendlyName'">Friendly Name</clr-dg-column>
-        <clr-dg-column [clrDgField]="'whenAdded'">
-            <ng-container *clrDgHideableColumn="{hidden: date}">
-                When Added
-            </ng-container>
-        </clr-dg-column>
+        <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let robot of robots.items" [clrDgItem]="robot">
             <clr-dg-cell>{{robot.machineName}}</clr-dg-cell>
@@ -60,7 +58,7 @@
         </div>
         <button type="button" class="close" aria-label="Close" (click)="errorMessage=undefined">
             <clr-icon aria-hidden="true" shape="close"></clr-icon>
-        </button>        
+        </button>
     </div>
 
     <div class="alert alert-success" role="alert" *ngIf="message">
@@ -76,7 +74,7 @@
         </div>
         <button type="button" class="close" aria-label="Close" (click)="message=undefined">
             <clr-icon aria-hidden="true" shape="close"></clr-icon>
-        </button>        
+        </button>
     </div>
 </div>
 <div *ngIf="isInEditor">

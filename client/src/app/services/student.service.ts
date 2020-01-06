@@ -16,7 +16,8 @@ export class StudentService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('StudentService', errorHandler);
+    super(errorHandler);
+    this.serviceName = 'StudentService';
   }
 
   list(page: number = 0, size: number = 20): Observable<ResultSet<Student>> {

@@ -14,8 +14,9 @@ export class SystemService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('SystemService', errorHandler);
-  }
+    super(errorHandler);
+    this.serviceName = 'SystemService';
+}
 
   refresh(): Observable<SystemStatus> {
     const url = `${environment.apiURL}v1/system/status`;

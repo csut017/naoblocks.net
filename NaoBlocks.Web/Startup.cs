@@ -38,6 +38,15 @@ namespace NaoBlocks.Web
             }
 
             app.UseHttpsRedirection();
+            app.Use(async (context, next) =>
+            {
+                var url = context.Request.Path.Value;
+                if (!(url.StartsWith("/api", StringComparison.Ordinal) || url.Contains(".", StringComparison.Ordinal)))
+                {
+                    context.Request.Path = "/";
+                }
+                await next.Invoke();
+            });
 
             var options = new DefaultFilesOptions();
             options.DefaultFileNames.Clear();

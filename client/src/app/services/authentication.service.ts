@@ -34,7 +34,8 @@ export class AuthenticationService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('AuthenticationService', errorHandler);
+    super(errorHandler);
+    this.serviceName = 'AuthenticationService';
     this.token = sessionStorage.getItem(this.tokenKeyName) || '';
     this.role = UserRole[sessionStorage.getItem(this.roleKeyName) || 'Unknown'];
   }

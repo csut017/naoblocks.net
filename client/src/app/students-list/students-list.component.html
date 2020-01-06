@@ -29,11 +29,7 @@
         </clr-dg-action-bar>
 
         <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
-        <clr-dg-column [clrDgField]="'whenAdded'">
-            <ng-container *clrDgHideableColumn="{hidden: date}">
-                When Added
-            </ng-container>
-        </clr-dg-column>
+        <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let student of students.items" [clrDgItem]="student">
             <clr-dg-cell>{{student.name}}</clr-dg-cell>

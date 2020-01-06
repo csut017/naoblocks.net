@@ -17,7 +17,8 @@ export class ProgramService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('ProgramService', errorHandler);
+      super(errorHandler);
+      this.serviceName = 'ProgramService';
   }
 
   compile(code: string, store: boolean = true): Observable<ExecutionResult<Compilation>> {

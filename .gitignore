@@ -25,3 +25,4 @@ RavenDB.Mocks/obj/**/*.*
 /client/npm-debug.log
 
 robot/**/*.pyc
+NaoBlocks.Web/wwwroot/**/*.*

@@ -22,8 +22,9 @@ export class HeartbeatService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('heartbeatService', errorHandler);
-  }
+    super(errorHandler);
+    this.serviceName = 'heartbeatService';
+}
 
   check(): Observable<heartbeat> {
     const url = `${environment.apiURL}v1/session`;

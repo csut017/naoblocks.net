@@ -16,8 +16,9 @@ export class RobotService extends ClientService {
 
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
-    super('RobotService', errorHandler);
-  }
+    super(errorHandler);
+    this.serviceName = 'RobotService';
+}
 
   list(page: number = 0, size: number = 20): Observable<ResultSet<Robot>> {
     const url = `${environment.apiURL}v1/robots?page=${page}&size=${size}`;
