@@ -25,7 +25,7 @@
     "@webcomponents/custom-elements": "^1.0.0",
     "blockly": "git://github.com/google/blockly.git#3.20191014.4",
     "file-saver": "^2.0.2",
-    "rxjs": "~6.4.0",
+    "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },
