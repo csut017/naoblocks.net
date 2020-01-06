@@ -6,6 +6,7 @@ import { ErrorHandlerService } from './error-handler.service';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { catchError, tap } from 'rxjs/operators';
+import { SystemVersion } from '../system-version';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,15 @@ export class SystemService extends ClientService {
     return this.http.get<SystemStatus>(url).pipe(
       catchError(this.handleError('login', msg => new SystemStatus(msg))),
       tap(_ => this.log('System status retrieved'))
+    );
+  }
+
+  getVersion(): Observable<SystemVersion> {
+    const url = `${environment.apiURL}v1/version`;
+    this.log('Retrieving system version');
+    return this.http.get<SystemVersion>(url).pipe(
+      catchError(this.handleError('login', msg => new SystemVersion(msg))),
+      tap(_ => this.log('System version retrieved'))
     );
   }
 }

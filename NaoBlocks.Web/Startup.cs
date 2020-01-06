@@ -1,21 +1,16 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Commands;
-using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
-using Raven.Client.Documents;
-using Raven.Embedded;
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace NaoBlocks.Web
@@ -30,11 +25,16 @@ namespace NaoBlocks.Web
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
+                logger.LogInformation("In Development environment");
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                logger.LogInformation("In Production environment");
             }
 
             app.UseHttpsRedirection();
@@ -91,56 +91,15 @@ namespace NaoBlocks.Web
             var appSettings = appSettingsSection.Get<AppSettings>();
 
             services.AddHealthChecks();
-
-            EmbeddedServer.Instance.StartServer(new ServerOptions
-            {
-                ServerUrl = "http://127.0.0.1:8088"
-            });
-            var store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
-            store.Initialize();
-            services.AddSingleton<IDocumentStore>(store);
-            services.AddScoped(serviceProvider =>
-            {
-                return serviceProvider
-                    .GetService<IDocumentStore>()
-                    .OpenAsyncSession();
-            });
-
-            if (appSettings.JwtSecret == null) throw new ApplicationException("Cannot initialise application - missing JWT secret in settings");
-            var key = Encoding.ASCII.GetBytes(appSettings.JwtSecret);
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true
-                };
-            });
-            services.AddAuthorization(opts =>
-            {
-                opts.AddPolicy("Teacher", policy => policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
-                opts.AddPolicy("Administrator", policy => policy.RequireRole(UserRole.Administrator.ToString()));
-                opts.AddPolicy("Robot", policy => policy.RequireRole(UserRole.Robot.ToString()));
-            });
+            services.AddRavenDb(appSettings);
+            services.AddJwtSecurity(appSettings);
 
             services.AddHttpContextAccessor();
             services.AddTransient<IPrincipal>(s =>
                 s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
 
             services.AddScoped<ICommandManager, CommandManager>();
-            var hub = new Communications.Hub();
-            services.AddSingleton<Communications.IHub>(hub);
+            services.AddSingleton<IHub, Hub>();
             services.AddTransient<IMessageProcessor, MessageProcessor>();
         }
     }

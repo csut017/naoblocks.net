@@ -7,11 +7,11 @@
         <div class="login-group">
             <clr-input-container>
                 <label>Username</label>
-                <input type="text" name="username" clrInput [(ngModel)]="username"/>
+                <input type="text" name="username" clrInput [(ngModel)]="username" />
             </clr-input-container>
             <clr-password-container>
                 <label>Password</label>
-                <input type="password" name="password" clrPassword [(ngModel)]="password"/>
+                <input type="password" name="password" clrPassword [(ngModel)]="password" />
             </clr-password-container>
             <clr-select-container>
                 <label>Role</label>
@@ -25,6 +25,19 @@
                 {{loginError}}
             </div>
             <button type="submit" class="btn btn-primary">Next</button>
+            <div class="version-information">
+                <span *ngIf="!version">
+                    <span class="spinner spinner-inline">
+                        (_)
+                    </span>
+                    <span>
+                        Loading version...
+                    </span>
+                </span>
+                <span *ngIf="version">
+                    Version {{version.version}}
+                </span>
+            </div>
         </div>
     </form>
 </div>
