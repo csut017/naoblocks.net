@@ -143,8 +143,9 @@ def main():
                 if not connected:
                     server = row[0]
                     pwd = row[1]
-                    print '[Main] Connecting to ' + server
-                    if comms.start(server, pwd, verifySSL):
+                    secure = True if len(row) < 3 else row[2] != 'no'
+                    print '[Main] Connecting to ' + server + ('' if secure else ' [not secure]')
+                    if comms.start(server, pwd, verifySSL, secure):
                         connected = True
 
     if not connected:

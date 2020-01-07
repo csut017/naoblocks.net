@@ -30,11 +30,13 @@ class Communications(object):
         self._verify = True
         self._base_address = None
         self._ast = None
+        self._secure = True
 
-    def start(self, address, pwd=None, verify=True):
+    def start(self, address, pwd=None, verify=True, secure=True):
         self._verify = verify
+        self._secure = secure
         self._base_address = address
-        start_address = 'https://' + self._base_address + '/api/v1/version'
+        start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/version'
         print '[Comms] Checking server version (%s)' % (start_address,)
         try:
             response = requests.get(start_address, timeout=10, verify=self._verify)
@@ -49,7 +51,7 @@ class Communications(object):
             print '[Comms] unknown error: ' + str(e) + '!'
             return False
 
-        start_address = 'https://' + self._base_address + '/api/v1/session'
+        start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/session'
         print '[Comms] Authenticating (%s)' % (start_address,)
         hostname = socket.gethostname()
         print '[Comms] -> user name %s' % (hostname,)
@@ -71,7 +73,7 @@ class Communications(object):
             print '[Comms] Login failed [' + str(req.status_code) + ']!'
             print '[Comms] -> ' + req.text
 
-            start_address = 'https://' + self._base_address + '/api/v1/robots/register'
+            start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/robots/register'
             print '[Comms] Registering robot %s (%s)' % (hostname, start_address)
             start_json = json.dumps({'machineName': hostname})
             try:
@@ -87,7 +89,7 @@ class Communications(object):
 
         authResp = json.loads(req.text)
         self._token = authResp['output']['token']
-        ws_address = 'wss://' + self._base_address + '/api/v1/connections/robot'
+        ws_address = ('wss' if self._secure else 'ws') + '://' + self._base_address + '/api/v1/connections/robot'
         print '[Comms] Connecting to %s' % (ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,
@@ -131,12 +133,13 @@ class Communications(object):
         self.send(202 if self._engine.is_cancelled else 103, {})
         self.send(501, {'state': 'Waiting'})
 
-    def _message(self, message):
+    def _message(self, *args):
+        message = args[-1]
         print '[Comms] Received %s' % (message)
         data = json.loads(message)
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
-            program_address = 'https://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
+            program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
             print '[Comms] Downloading program from ' + program_address
             headers = {'Authorization': 'Bearer ' + self._token}
             try:
@@ -172,17 +175,18 @@ class Communications(object):
             print '[Comms] Unknown or missing message type "%s"' % (
                 data['type'])
 
-    def _error(self, error):
+    def _error(self, *args):
+        error = args[-1]
         if isinstance(error, KeyboardInterrupt):
             self._serverDisconnected = False
             return
         self._serverDisconnected = True
         print '[Comms] Lost connection: %s' % (error,)
 
-    def _close(self):
+    def _close(self, *args):
         print '[Comms] Closed'
 
-    def _open(self):
+    def _open(self, *args):
         print '[Comms] Opened'
         self._serverDisconnected = False
         self._connectionCount = 0
@@ -193,7 +197,7 @@ class Communications(object):
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        print '[Comms] Sending `' + str(msg_type) + '` message'
+        print '[Comms] Sending message of type ' + str(msg_type)
         msg = json.dumps({
             'type': msg_type,
             'values': data
