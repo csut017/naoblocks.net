@@ -1,6 +1,9 @@
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+
+[assembly: AssemblyInformationalVersion("1.0.0-α2")]
 
 namespace NaoBlocks.Web
 {

@@ -9,6 +9,7 @@ using NaoBlocks.Core.Commands;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using System;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Json.Serialization;
@@ -27,22 +28,18 @@ namespace NaoBlocks.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+            this.PrintAppInformation(env, logger);
             if (env.IsDevelopment())
             {
-                logger.LogInformation("In Development environment");
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                logger.LogInformation("In Production environment");
-            }
 
-            app.UseHttpsRedirection();
             app.Use(async (context, next) =>
             {
                 var url = context.Request.Path.Value;
                 if (!(url.StartsWith("/api", StringComparison.Ordinal) || url.Contains(".", StringComparison.Ordinal)))
                 {
+                    logger.LogInformation("Redirecting to default");
                     context.Request.Path = "/";
                 }
                 await next.Invoke();
@@ -101,6 +98,18 @@ namespace NaoBlocks.Web
             services.AddScoped<ICommandManager, CommandManager>();
             services.AddSingleton<IHub, Hub>();
             services.AddTransient<IMessageProcessor, MessageProcessor>();
+        }
+
+        private void PrintAppInformation(IWebHostEnvironment env, ILogger<Startup> logger)
+        {
+            var version = Assembly.GetEntryAssembly()
+                    ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion;
+            logger.LogInformation($"Starting NaoBlocks.Net");
+            logger.LogInformation($"=> version {version}");
+
+            var environment = env.IsDevelopment() ? "DEVELOPMENT" : "PRODUCTION";
+            logger.LogInformation($"=> {environment} environment");
         }
     }
 }
