@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthenticationService } from '../services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SystemService } from '../services/system.service';
-import { SystemVersion } from '../system-version';
+import { SystemVersion } from '../data/system-version';
 
 @Component({
   selector: 'app-login',

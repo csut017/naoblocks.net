@@ -121,15 +121,15 @@ export class Toolbox {
         { xml: this.postureBlocks, style: 'simple' },
         { xml: this.simpleActionBlocks, style: 'simple' },
         { xml: this.eventBlocks, mode: 'events', style: 'default' },
-        { xml: this.robotActionBlocks, style: 'default' },
         { xml: this.movementBlocks, style: 'default' },
+        { xml: this.robotActionBlocks, style: 'default' },
+        { xml: this.colourBlocks, style: 'default' },
         { xml: this.danceBlocks, mode: 'dances', style: 'default' },
         { xml: this.sensorBlocks, mode: 'sensors', style: 'default' },
         { xml: this.logicBlocks, mode: 'conditionals', style: 'default' },
         { xml: this.loopBlocks, mode: 'loops', style: 'default' },
         { xml: this.mathBlocks, mode: 'variables', style: 'default' },
         { xml: this.textBlocks, mode: 'variables', style: 'default' },
-        { xml: this.colourBlocks, mode: 'variables', style: 'default' },
         { xml: this.variableBlocks, mode: 'variables', style: 'default', seperatorBefore: true },
     ];
 

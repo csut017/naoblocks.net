@@ -29,7 +29,7 @@
                     <clr-icon shape="caret down"></clr-icon>
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
-                    <a href="javascript://" clrDropdownItem>Preferences</a>
+                    <a href="javascript://" clrDropdownItem (click)="showSettings()">Settings</a>
                     <a href="javascript://" clrDropdownItem (click)="changeRole()">Change Role</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
@@ -95,6 +95,7 @@
     <app-change-role [role]="'Student'"></app-change-role>
     <app-save-program (save)="onSave($event)"></app-save-program>
     <app-load-program (load)="onLoad($event)"></app-load-program>
+    <app-user-settings (save)="onSaveSettings($event)"></app-user-settings>
     <clr-modal [(clrModalOpen)]="sendingToRobot" [clrModalStaticBackdrop]="false" [clrModalClosable]="false"
         [clrModalSize]="'xl'">
         <h3 class="modal-title">Starting Program</h3>

@@ -17,6 +17,8 @@ namespace NaoBlocks.Core.Models
 
         public UserRole Role { get; set; }
 
+        public UserSettings Settings { get; set; } = new UserSettings();
+
         public DateTime WhenAdded { get; set; }
     }
 }

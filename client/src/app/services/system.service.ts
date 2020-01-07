@@ -6,7 +6,7 @@ import { ErrorHandlerService } from './error-handler.service';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { catchError, tap } from 'rxjs/operators';
-import { SystemVersion } from '../system-version';
+import { SystemVersion } from '../data/system-version';
 
 @Injectable({
   providedIn: 'root'

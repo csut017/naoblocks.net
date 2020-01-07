@@ -71,6 +71,21 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
+        [HttpGet("settings")]
+        public async Task<ActionResult<UserSettings>> GetSettings()
+        {
+            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            if (user == null) return NotFound();
+
+            var now = this.CurrentTimeFunc();
+            var session = await this.session.Query<Session>()
+                .FirstOrDefaultAsync(s => s.UserId == user.Id && s.WhenExpires > now);
+            var remaining = session != null
+                ? session.WhenExpires.Subtract(now).TotalMinutes
+                : -1;
+            return user.Settings;
+        }
+
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> Post(Dtos.User? user)
@@ -103,6 +118,30 @@ namespace NaoBlocks.Web.Controllers
             }
 
             return await this.ApplyCommand(command).ConfigureAwait(false);
+        }
+
+        [HttpPost("settings")]
+        public async Task<ActionResult<Dtos.ExecutionResult<UserSettings>>> PostSettings(UserSettings settings)
+        {
+            if (settings == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing settings"
+                });
+            }
+
+            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            if (user == null) return NotFound();
+
+            this._logger.LogInformation($"Updating settings for '{user.Name}'");
+            var command = new StoreSettingsCommand
+            {
+                UserId = user.Id,
+                Settings = settings
+            };
+
+            return await this.commandManager.ExecuteForHttp(command, s => s);
         }
 
         [HttpPut]

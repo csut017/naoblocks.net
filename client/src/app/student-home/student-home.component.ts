@@ -12,6 +12,9 @@ import { saveAs } from 'file-saver';
 import { LoadProgramComponent } from '../load-program/load-program.component';
 import { AstConverterService } from '../services/ast-converter.service';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
+import { UserSettings } from '../data/user-settings';
+import { SettingsService } from '../services/settings.service';
+import { UserSettingsComponent } from '../user-settings/user-settings.component';
 
 declare var Blockly: any;
 
@@ -67,16 +70,19 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   storedProgram: string;
   invalidBlocks: any[] = [];
   userInput: promptSettings = new promptSettings();
+  settings: UserSettings = new UserSettings();
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
+  @ViewChild(UserSettingsComponent, { static: false }) settingsDisplay: UserSettingsComponent;
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
     private programService: ProgramService,
     private errorHandler: ErrorHandlerService,
     private astConverter: AstConverterService,
-    private connection: ConnectionService) {
+    private connection: ConnectionService,
+    private settingsService: SettingsService) {
     super(authenticationService, router);
   }
 
@@ -84,20 +90,18 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.checkAccess(UserRole.Student);
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
+    this.settingsService.get()
+      .subscribe(s => {
+        this.settings = s.output;
+        let xml = this.buildToolboxXml();
+        this.workspace.updateToolbox(xml);
+      });
 
     this.initialiseWorkspace();
   }
 
   private initialiseWorkspace(isReadonly: boolean = false) {
-    let xml = new Toolbox()
-      .includeConditionals()
-      .includeLoops()
-      .includeVariables()
-      .includeDances()
-      .includeSensors()
-      .includeEvents()
-      .build();
-
+    let xml = this.buildToolboxXml();
     let currentBlocks: any;
     if (!!this.workspace) {
       currentBlocks = Blockly.Xml.workspaceToDom(this.workspace);
@@ -112,7 +116,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       toolbox: xml,
       grid: {
         spacing: 20,
-        snap:true
+        snap: true
       },
       zoom: {
         controls: true,
@@ -144,6 +148,31 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     };
     window.addEventListener('resize', _ => this.onResize(), false);
     this.onResize();
+  }
+
+  private buildToolboxXml() {
+    let toolbox = new Toolbox();
+    if (this.settings.simple) {
+      toolbox.useSimpleStyle();
+    }
+    else {
+      toolbox.useDefaultStyle();
+      if (this.settings.conditionals)
+        toolbox.includeConditionals();
+      if (this.settings.loops)
+        toolbox.includeLoops();
+      if (this.settings.variables)
+        toolbox.includeVariables();
+      if (this.settings.dances)
+        toolbox.includeDances();
+      if (this.settings.sensors)
+        toolbox.includeSensors();
+      if (this.settings.events)
+        toolbox.includeEvents();
+    }
+    let xml = toolbox.build();
+    this.requireEvents = this.settings.events && !this.settings.simple;
+    return xml;
   }
 
   get sidebarCollapsed(): boolean {
@@ -182,6 +211,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         }
       });
     }
+  }
+
+  showSettings(): void {
+    let cloned = JSON.parse(JSON.stringify(this.settings));
+    this.settingsDisplay.show(cloned);
   }
 
   doCancelSend(): void {
@@ -403,6 +437,21 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           break;
       }
     }
+  }
+
+  onSaveSettings(settings: UserSettings): void {
+    this.settingsService.update(settings)
+      .subscribe(result => {
+        if (result.successful) {
+          this.settings = result.output;
+          let xml = this.buildToolboxXml();
+          this.workspace.updateToolbox(xml);
+          this.settingsDisplay.close();
+        } else {
+          let error = this.errorHandler.formatError(result);
+          this.settingsDisplay.showError(error);
+        }
+      });
   }
 
   private validateBlocks(): string {
