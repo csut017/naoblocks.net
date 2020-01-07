@@ -1,14 +1,14 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { Student } from '../data/student';
 import { StudentService } from '../services/student.service';
+import { UserSettings } from '../data/user-settings';
 
 @Component({
   selector: 'app-student-editor',
   templateUrl: './student-editor.component.html',
   styleUrls: ['./student-editor.component.scss']
 })
-export class StudentEditorComponent implements OnInit {
-
+export class StudentEditorComponent implements OnChanges {
   @Input() student: Student;
   @Output() closed = new EventEmitter<boolean>();
   errors: string[];
@@ -16,7 +16,8 @@ export class StudentEditorComponent implements OnInit {
 
   constructor(private studentService: StudentService) { }
 
-  ngOnInit() {
+  ngOnChanges(_: SimpleChanges): void {
+    if (this.student) this.student.settings = this.student.settings || new UserSettings();
   }
 
   doSave() {

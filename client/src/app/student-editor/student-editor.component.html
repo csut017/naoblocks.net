@@ -14,6 +14,7 @@
         <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="student.password" name="password" />
         <clr-control-helper>The password for the student.</clr-control-helper>
     </clr-input-container>
+    <app-user-settings-editor [settings]="student.settings"></app-user-settings-editor>
     <div class="btn-group" style="margin-top: 1em;" class="clr-col-12 clr-offset-md-2 clr-col-md-10">
         <button class="btn btn-primary" (click)="doSave()">Save</button>
         <button class="btn" (click)="doCancel()">Cancel</button>

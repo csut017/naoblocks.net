@@ -2,47 +2,7 @@
     <h3 class="modal-title">Settings</h3>
     <div class="modal-body">
         <form clrForm>
-            <clr-toggle-container>
-                <label>Interface Style</label>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="default" value="true" [(ngModel)]="interfaces.default" />
-                    <label>Default Blocks</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="simple" value="true" [(ngModel)]="interfaces.simple" />
-                    <label>Simple Blocks Only</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="events" value="true" [(ngModel)]="interfaces.events" />
-                    <label>Require Events</label>
-                </clr-toggle-wrapper>
-                <clr-control-helper>The type of block interface to use</clr-control-helper>
-            </clr-toggle-container>
-            <clr-toggle-container>
-                <label>Categories</label>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="dances" value="true" [(ngModel)]="settings.dances" />
-                    <label>Dances</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="conditionals" value="true"
-                        [(ngModel)]="settings.conditionals" />
-                    <label>Conditionals</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="loops" value="true" [(ngModel)]="settings.loops" />
-                    <label>Loops</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="sensors" value="true" [(ngModel)]="settings.sensors" />
-                    <label>Sensors</label>
-                </clr-toggle-wrapper>
-                <clr-toggle-wrapper>
-                    <input type="checkbox" clrToggle name="variables" value="true" [(ngModel)]="settings.variables" />
-                    <label>Variables</label>
-                </clr-toggle-wrapper>
-                <clr-control-helper>Which categories of block to display</clr-control-helper>
-            </clr-toggle-container>
+            <app-user-settings-editor [settings]="settings"></app-user-settings-editor>
         </form>
         <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
             <div class="alert-items">

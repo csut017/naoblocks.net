@@ -23,6 +23,8 @@ namespace NaoBlocks.Core.Commands
 
         public UserRole Role { get; set; }
 
+        public UserSettings? Settings { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -47,6 +49,7 @@ namespace NaoBlocks.Core.Commands
             if (this.person == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
             if (this.HashedPassword != null) this.person.Password = this.HashedPassword;
+            if (this.Settings != null) this.person.Settings = this.Settings;
             return Task.FromResult(CommandResult.New(this.Number));
         }
     }

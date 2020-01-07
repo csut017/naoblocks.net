@@ -19,6 +19,8 @@ namespace NaoBlocks.Core.Commands
 
         public UserRole Role { get; set; }
 
+        public UserSettings? Settings { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -55,6 +57,7 @@ namespace NaoBlocks.Core.Commands
                 Name = this.Name ?? "<Unknown>",
                 Role = this.Role,
                 Password = this.HashedPassword,
+                Settings = this.Settings ?? new UserSettings(),
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(user).ConfigureAwait(false);

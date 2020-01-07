@@ -4,13 +4,20 @@ namespace NaoBlocks.Web.Dtos
 {
     public class Student : User
     {
-        public static Student? FromModel(Data.User? value)
+        public Data.UserSettings? Settings { get; set; }
+
+        public static Student FromModel(Data.User value, bool includeDetails = false)
         {
-            return value == null ? null : new Student
+            var student = new Student
             {
                 Name = value.Name,
                 WhenAdded = value.WhenAdded
             };
+            if (includeDetails)
+            {
+                student.Settings = value.Settings;
+            }
+            return student;
         }
     }
 }

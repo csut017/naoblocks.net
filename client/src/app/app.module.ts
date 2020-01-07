@@ -26,6 +26,7 @@ import { SaveProgramComponent } from './save-program/save-program.component';
 import { LoadProgramComponent } from './load-program/load-program.component';
 import { SystemStatusComponent } from './system-status/system-status.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { UserSettingsEditorComponent } from './user-settings-editor/user-settings-editor.component';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     SaveProgramComponent,
     LoadProgramComponent,
     SystemStatusComponent,
-    UserSettingsComponent
+    UserSettingsComponent,
+    UserSettingsEditorComponent
   ],
   imports: [
     BrowserModule,
