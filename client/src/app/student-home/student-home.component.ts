@@ -74,6 +74,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   userInput: promptSettings = new promptSettings();
   userSettings: UserSettings = new UserSettings();
   runSettings: RunSettings = new RunSettings();
+  lastConversationId: number;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -227,7 +228,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       this.sendingToRobot = false;
       return;
     }
-    alert('TODO');
+    this.doStop();
   }
 
   doChangeSpeed(): void {
@@ -286,6 +287,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   processServerMessage(msg: ClientMessage) {
+    this.lastConversationId = msg.conversationId;
     switch (msg.type) {
       case ClientMessageType.Closed:
         if (this.currentStartStep) {
@@ -360,7 +362,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   doStop(): void {
-    this.connection.send(new ClientMessage(ClientMessageType.StopProgram));
+    let msg = new ClientMessage(ClientMessageType.StopProgram);
+    msg.conversationId = this.lastConversationId;
+    msg.values['robot'] = this.assignedRobot;
+    this.connection.send(msg);
   }
 
   doLoad(): void {

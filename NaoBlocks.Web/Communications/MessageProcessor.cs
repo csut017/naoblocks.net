@@ -315,12 +315,21 @@ namespace NaoBlocks.Web.Communications
             }
         }
 
-        private Task StopProgram(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        private async Task StopProgram(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
 
-            client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
-            return Task.CompletedTask;
+            var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
+            robotClient?.SendMessage(clientMessage);
+            if ((robotClient != null) && (robotClient.Robot != null))
+            {
+                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program stopping");
+            }
+            else
+            {
+                this._logger.LogWarning("Unable to add to log: robot is missing");
+            }
         }
 
         private async Task TransferProgramToRobot(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
