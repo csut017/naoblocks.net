@@ -96,6 +96,7 @@
     <app-save-program (save)="onSave($event)"></app-save-program>
     <app-load-program (load)="onLoad($event)"></app-load-program>
     <app-user-settings (save)="onSaveSettings($event)"></app-user-settings>
+    <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>
     <clr-modal [(clrModalOpen)]="sendingToRobot" [clrModalStaticBackdrop]="false" [clrModalClosable]="false"
         [clrModalSize]="'xl'">
         <h3 class="modal-title">Starting Program</h3>

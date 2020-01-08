@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaoBlocks.Core.Models;
+using System;
 using System.Collections.Generic;
 
 namespace NaoBlocks.Web.Communications

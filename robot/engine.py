@@ -67,9 +67,9 @@ class Engine(object):
     RIGHT = 2
     FRONT = LEFT + RIGHT
 
-    def __init__(self, websocket, use_robot=True, ip='127.0.0.1'):
+    def __init__(self, comms, use_robot=True, ip='127.0.0.1'):
         ''' Initialises the engine. '''
-        self._ws = websocket
+        self._comms = comms
         self._opts = EngineSettings({})
         self._reset(None)
         self.is_cancelled = False
@@ -163,40 +163,32 @@ class Engine(object):
 
     def _error(self, message):
         print '[Engine] Sending error message: "' + message + '"'
-        msg = json.dumps({
-            'type': 503,
-            'values': {
-                'message': message
-            }
-        })
-        self._ws.send(msg)
+        data = {
+            'message': message
+        }
+        self._comms.send(503, data)
 
     def _change_state(self, name, value):
         print '[Engine] Sending state change for ' + name + ' of ' + str(value)
-        msg = json.dumps({
-            'type': 501,
-            'values': {
-                'name': name,
-                'value': value
-            }
-        })
-        self._ws.send(msg)
+        data = {
+            'name': name,
+            'value': value
+        }
+        self._comms.send(501, data)
 
     def _debug(self, block, status):
         try:
             debug_id = block['sourceId']
-            print '[Engine] Sending debug info for block ' + debug_id + ' [' + status + ']'
-            msg = json.dumps({
-                'type': 502,
-                'values': {
-                    'sourceID': debug_id,
-                    'status': status,
-                    'function': block['token']['value']
-                }
-            })
-            self._ws.send(msg)
+            print '[Engine] Sending debug info for block ' + \
+                debug_id + ' [' + status + ']'
+            data = {
+                'sourceID': debug_id,
+                'status': status,
+                'function': block['token']['value']
+            }
+            self._comms.send(502, data)
         except KeyError:
-            pass
+            print '[Engine] Unable to find sourceId, skipping send debug'
 
     def _evaluate(self, node, state):
         ''' Evaluates a node. '''
@@ -295,7 +287,8 @@ class Engine(object):
             try:
                 block = self._blocks[block_name]
             except KeyError:
-                print '[Engine] ' + block_name + ' block not registered, skipping'
+                print '[Engine] ' + block_name + \
+                    ' block not registered, skipping'
                 return
 
             print '[Engine] Executing ' + block_name + ' block'
@@ -339,7 +332,8 @@ class Engine(object):
         arm = self._evaluate(state.ast['arguments'][0], state)
         direction = self._evaluate(state.ast['arguments'][1], state)
         print '[Engine] Pointing ' + arm + ' arm ' + direction
-        movement = ArmMovement(ArmMovement.LEFT if arm == 'left' else ArmMovement.RIGHT)
+        movement = ArmMovement(ArmMovement.LEFT if arm ==
+                               'left' else ArmMovement.RIGHT)
         if direction == 'out':
             movement = movement.pointOut()
         elif direction == 'down':
@@ -421,7 +415,8 @@ class Engine(object):
         self._leftSonar = self._robot.getSensor(sensors.Sensor.SONAR_LEFT)
         self._rightSonar = self._robot.getSensor(sensors.Sensor.SONAR_RIGHT)
 
-        print '[Engine] Walking forwards ' + str(xDist) + 's, sideways ' + str(yDist) + 's'
+        print '[Engine] Walking forwards ' + \
+            str(xDist) + 's, sideways ' + str(yDist) + 's'
         x_time = abs(int(xDist))
         y_time = abs(int(yDist))
         direction = Engine.BACK
@@ -508,7 +503,8 @@ class Engine(object):
             degs = 360
         elif degs < -360:
             degs = -360
-        print '[Engine] Turning ' + str(degs) + ' degrees [' + str(degs) + ' degrees]'
+        print '[Engine] Turning ' + \
+            str(degs) + ' degrees [' + str(degs) + ' degrees]'
         self._robot.walkTo(0, 0, degs).wait()
 
     def _wipe_forehead(self, state):
@@ -581,7 +577,7 @@ class Engine(object):
         sensor = self._evaluate(state.ast['arguments'][0], state)
         print '[Engine] Reading ' + sensor + ' sensor'
         try:
-            sensor = self._robot.getSensor(sensor) 
+            sensor = self._robot.getSensor(sensor)
             value = sensor.read()
         except KeyError:
             self._error('Unknown sensor ' + sensor)
@@ -591,7 +587,8 @@ class Engine(object):
 
     def _last_recognised_word(self, state):
         ''' Retrieves the last recognised word. '''
-        print '[Engine] Retrieving last recognised word (' + self._last_word + ')'
+        print '[Engine] Retrieving last recognised word (' + \
+            self._last_word + ')'
         return self._last_word
 
     def _loop(self, state):
@@ -621,7 +618,8 @@ class Engine(object):
         try:
             current = self._variables[name]
             new_value = (current + value)
-            print '[Engine] Increasing variable ' + name + ' by ' + str(value) + ' from ' + str(current) + ' to ' + str(new_value)
+            print '[Engine] Increasing variable ' + name + ' by ' + \
+                str(value) + ' from ' + str(current) + ' to ' + str(new_value)
             self._variables[name] = new_value
             self._change_state(name, new_value)
         except KeyError:
@@ -643,42 +641,48 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 == value2
 
     def _check_less_than(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 < value2
 
     def _check_greater_than(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 > value2
 
     def _check_not_equal(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 != value2
 
     def _check_less_than_equal(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 <= value2
 
     def _check_greater_than_equal(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        print '[Engine] Checking for equality: ' + str(value1) + ' and ' + str(value2)
+        print '[Engine] Checking for equality: ' + \
+            str(value1) + ' and ' + str(value2)
         return value1 >= value2
 
     def _check_if_condition(self, state):

@@ -15,6 +15,8 @@ import { ConnectionService, ClientMessage, ClientMessageType } from '../services
 import { UserSettings } from '../data/user-settings';
 import { SettingsService } from '../services/settings.service';
 import { UserSettingsComponent } from '../user-settings/user-settings.component';
+import { RunSettingsComponent } from '../run-settings/run-settings.component';
+import { RunSettings } from '../data/run-settings';
 
 declare var Blockly: any;
 
@@ -70,11 +72,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   storedProgram: string;
   invalidBlocks: any[] = [];
   userInput: promptSettings = new promptSettings();
-  settings: UserSettings = new UserSettings();
+  userSettings: UserSettings = new UserSettings();
+  runSettings: RunSettings = new RunSettings();
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
-  @ViewChild(UserSettingsComponent, { static: false }) settingsDisplay: UserSettingsComponent;
+  @ViewChild(UserSettingsComponent, { static: false }) userSettingsDisplay: UserSettingsComponent;
+  @ViewChild(RunSettingsComponent, { static: false }) runSettingsDisplay: RunSettingsComponent;
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
@@ -92,7 +96,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .subscribe(u => this.currentUser = u);
     this.settingsService.get()
       .subscribe(s => {
-        this.settings = s.output;
+        this.userSettings = s.output;
         let xml = this.buildToolboxXml();
         this.workspace.updateToolbox(xml);
       });
@@ -152,26 +156,26 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   private buildToolboxXml() {
     let toolbox = new Toolbox();
-    if (this.settings.simple) {
+    if (this.userSettings.simple) {
       toolbox.useSimpleStyle();
     }
     else {
       toolbox.useDefaultStyle();
-      if (this.settings.conditionals)
+      if (this.userSettings.conditionals)
         toolbox.includeConditionals();
-      if (this.settings.loops)
+      if (this.userSettings.loops)
         toolbox.includeLoops();
-      if (this.settings.variables)
+      if (this.userSettings.variables)
         toolbox.includeVariables();
-      if (this.settings.dances)
+      if (this.userSettings.dances)
         toolbox.includeDances();
-      if (this.settings.sensors)
+      if (this.userSettings.sensors)
         toolbox.includeSensors();
-      if (this.settings.events)
+      if (this.userSettings.events)
         toolbox.includeEvents();
     }
     let xml = toolbox.build();
-    this.requireEvents = this.settings.events && !this.settings.simple;
+    this.requireEvents = this.userSettings.events && !this.userSettings.simple;
     return xml;
   }
 
@@ -214,8 +218,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   showSettings(): void {
-    let cloned = JSON.parse(JSON.stringify(this.settings));
-    this.settingsDisplay.show(cloned);
+    let cloned = JSON.parse(JSON.stringify(this.userSettings));
+    this.userSettingsDisplay.show(cloned);
   }
 
   doCancelSend(): void {
@@ -227,7 +231,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   doChangeSpeed(): void {
-    alert('TODO');
+    this.runSettingsDisplay.show(this.runSettings);
+  }
+
+  onChangeRunSettings(settings: RunSettings): void {
+    this.runSettings = settings;
+    this.runSettingsDisplay.close();
   }
 
   doClear(): void {
@@ -270,6 +279,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     // this.initialiseWorkspace(this.isExecuting);
   }
 
+  private generateReply(msg: ClientMessage, type: ClientMessageType): ClientMessage {
+    let newMsg = new ClientMessage(type);
+    newMsg.conversationId = msg.conversationId;
+    return newMsg;
+  }
+
   processServerMessage(msg: ClientMessage) {
     switch (msg.type) {
       case ClientMessageType.Closed:
@@ -291,13 +306,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         break;
 
       case ClientMessageType.Authenticated:
-        this.connection.send(new ClientMessage(ClientMessageType.RequestRobot));
+        this.connection.send(this.generateReply(msg, ClientMessageType.RequestRobot));
         break;
 
       case ClientMessageType.RobotAllocated:
         this.assignedRobot = msg.values.robot;
         this.currentStartStep = this.completeStep(this.currentStartStep);
-        let transferCmd = new ClientMessage(ClientMessageType.TransferProgram);
+        let transferCmd = this.generateReply(msg, ClientMessageType.TransferProgram);
         transferCmd.values['robot'] = this.assignedRobot;
         transferCmd.values['program'] = this.storedProgram;
         this.connection.send(transferCmd);
@@ -311,9 +326,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
       case ClientMessageType.ProgramTransferred:
         this.currentStartStep = this.completeStep(this.currentStartStep);
-        let startCmd = new ClientMessage(ClientMessageType.StartProgram);
+        let startCmd = this.generateReply(msg, ClientMessageType.StartProgram);
         startCmd.values['robot'] = this.assignedRobot;
         startCmd.values['program'] = this.storedProgram;
+        startCmd.values['opts'] = JSON.stringify(this.runSettings);
         this.connection.send(startCmd);
         break;
 
@@ -443,13 +459,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.settingsService.update(settings)
       .subscribe(result => {
         if (result.successful) {
-          this.settings = result.output;
+          this.userSettings = result.output;
           let xml = this.buildToolboxXml();
           this.workspace.updateToolbox(xml);
-          this.settingsDisplay.close();
+          this.userSettingsDisplay.close();
         } else {
           let error = this.errorHandler.formatError(result);
-          this.settingsDisplay.showError(error);
+          this.userSettingsDisplay.showError(error);
         }
       });
   }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Models;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
 using System.Collections.Generic;
@@ -17,9 +18,9 @@ namespace NaoBlocks.Web.Communications
         private readonly IHub _hub;
         private readonly ILogger<MessageProcessor> _logger;
         private readonly IDictionary<ClientMessageType, TypeProcessor> _processors;
-        private readonly IAsyncDocumentSession _session;
+        private readonly IDocumentStore _store;
 
-        public MessageProcessor(IHub hub, ILogger<MessageProcessor> logger, IAsyncDocumentSession session)
+        public MessageProcessor(IHub hub, ILogger<MessageProcessor> logger, IDocumentStore store)
         {
             this._processors = new Dictionary<ClientMessageType, TypeProcessor>
             {
@@ -28,21 +29,21 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
                 { ClientMessageType.StopProgram, this.StopProgram },
-                { ClientMessageType.ProgramDownloaded, this.BroadcastMessage(ClientMessageType.ProgramTransferred) },
-                { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted) },
-                { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished) },
-                { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped) },
-                { ClientMessageType.RobotDebugMessage, this.BroadcastMessage(ClientMessageType.RobotDebugMessage, true) },
-                { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, true) },
+                { ClientMessageType.ProgramDownloaded, this.BroadcastMessage(ClientMessageType.ProgramTransferred, "Program transferred") },
+                { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted, "Program started") },
+                { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished, "Program finished") },
+                { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped, "Program stopped") },
+                { ClientMessageType.RobotDebugMessage, this.BroadcastMessage(ClientMessageType.RobotDebugMessage, "Debug information received", true) },
+                { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
                 { ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
-                { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, true) },
+                { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
             };
             this._hub = hub;
             this._logger = logger;
-            this._session = session;
+            this._store = store;
         }
 
-        private delegate Task TypeProcessor(ClientConnection client, ClientMessage message);
+        private delegate Task TypeProcessor(IAsyncDocumentSession session, ClientConnection client, ClientMessage message);
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Message processor should catch any errors and pass it to the client")]
         public async Task ProcessAsync(ClientConnection client, ClientMessage message)
@@ -53,8 +54,12 @@ namespace NaoBlocks.Web.Communications
             {
                 try
                 {
-                    this._logger.LogInformation($"Processing message type {message.Type}");
-                    await processor(client, message);
+                    using (var session = this._store.OpenAsyncSession())
+                    {
+                        this._logger.LogInformation($"Processing message type {message.Type}");
+                        await processor(session, client, message);
+                        await session.SaveChangesAsync();
+                    }
                 }
                 catch (Exception err)
                 {
@@ -67,6 +72,31 @@ namespace NaoBlocks.Web.Communications
                 this._logger.LogWarning($"Unable to find processor for message type {message.Type}");
                 client.SendMessage(GenerateErrorResponse(message, $"Unable to find processor for {message.Type}"));
             }
+        }
+
+        private static async Task AddToRobotLogAsync(IAsyncDocumentSession session, string robotId, ClientMessage message, string description, bool skipValues = false)
+        {
+            var line = new RobotLogLine
+            {
+                Description = description,
+                SourceMessageType = message.Type,
+                WhenAdded = DateTime.UtcNow
+            };
+            if (!skipValues)
+            {
+                foreach (var (key, value) in message.Values)
+                {
+                    line.Values.Add(new RobotLogLineValue
+                    {
+                        Name = key,
+                        Value = value
+                    });
+                }
+            }
+
+            var log = await GetOrAddRobotLogAsync(session, robotId, message.ConversationId ?? 0);
+            log.Lines.Add(line);
+            log.WhenLastUpdated = DateTime.UtcNow;
         }
 
         private static ClientMessage GenerateErrorResponse(ClientMessage request, string message)
@@ -88,6 +118,24 @@ namespace NaoBlocks.Web.Communications
                 ConversationId = request.ConversationId
             };
             return response;
+        }
+
+        private static async Task<RobotLog> GetOrAddRobotLogAsync(IAsyncDocumentSession session, string robotId, long conversationId)
+        {
+            var log = await session.Query<RobotLog>()
+                .FirstOrDefaultAsync(rl => rl.RobotId == robotId && rl.ConversationId == conversationId);
+            if (log == null)
+            {
+                log = new RobotLog
+                {
+                    ConversationId = conversationId,
+                    RobotId = robotId,
+                    WhenAdded = DateTime.UtcNow,
+                    WhenLastUpdated = DateTime.UtcNow
+                };
+                await session.StoreAsync(log);
+            }
+            return log;
         }
 
         private static bool ValidateRequest(ClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
@@ -125,9 +173,9 @@ namespace NaoBlocks.Web.Communications
             return true;
         }
 
-        private Task AllocateRobot(ClientConnection client, ClientMessage message)
+        private async Task AllocateRobot(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
 
             var rnd = new Random();
             var nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
@@ -136,8 +184,9 @@ namespace NaoBlocks.Web.Communications
 
             if (nextRobot == null)
             {
+                this._logger.LogInformation($"No robots available for allocation");
                 client.SendMessage(GenerateResponse(message, ClientMessageType.NoRobotsAvailable));
-                return Task.CompletedTask;
+                return;
             }
 
             nextRobot.Status.IsAvailable = false;
@@ -145,10 +194,11 @@ namespace NaoBlocks.Web.Communications
             var response = GenerateResponse(message, ClientMessageType.RobotAllocated);
             response.Values["robot"] = nextRobot.Id.ToString(CultureInfo.InvariantCulture);
             client.SendMessage(response);
-            return Task.CompletedTask;
+            this._logger.LogInformation($"Allocated robot {nextRobot.Id}");
+            await AddToRobotLogAsync(session, nextRobot.Robot.Id, message, "Robot allocated to user");
         }
 
-        private async Task Authenticate(ClientConnection client, ClientMessage message)
+        private async Task Authenticate(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
             if (!message.Values.TryGetValue("token", out string? token))
             {
@@ -165,28 +215,33 @@ namespace NaoBlocks.Web.Communications
                 return;
             }
 
-            var session = await this._session.LoadAsync<Session>(sessionId.Value);
-            if ((session == null) || (session.WhenExpires < DateTime.UtcNow))
+            var userSession = await session.LoadAsync<Session>(sessionId.Value);
+            if ((userSession == null) || (userSession.WhenExpires < DateTime.UtcNow))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Session is invalid"));
                 return;
             }
 
-            if (session.IsRobot)
+            if (userSession.IsRobot)
             {
-                client.Robot = await this._session.LoadAsync<Robot>(session.UserId);
+                client.Robot = await session.LoadAsync<Robot>(userSession.UserId);
+                if (client.Robot != null)
+                {
+                    await AddToRobotLogAsync(session, client.Robot.Id, message, "Robot authenticated", false);
+                }
             }
             else
             {
-                client.User = await this._session.LoadAsync<User>(session.UserId);
+                client.User = await session.LoadAsync<User>(userSession.UserId);
+                message.ConversationId = client.User.NextConversationId++;
             }
 
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
-        private TypeProcessor BroadcastMessage(ClientMessageType messageType, bool includeValues = false)
+        private TypeProcessor BroadcastMessage(ClientMessageType messageType, string logDescription, bool includeValues = false)
         {
-            return (ClientConnection client, ClientMessage message) =>
+            return async (IAsyncDocumentSession session, ClientConnection client, ClientMessage message) =>
             {
                 var msg = GenerateResponse(message, messageType);
                 if (includeValues)
@@ -197,7 +252,10 @@ namespace NaoBlocks.Web.Communications
                     }
                 }
                 client.NotifyListeners(msg);
-                return Task.CompletedTask;
+                if ((client != null) && (client.Robot != null))
+                {
+                    await AddToRobotLogAsync(session, client.Robot.Id, message, logDescription);
+                }
             };
         }
 
@@ -226,24 +284,38 @@ namespace NaoBlocks.Web.Communications
             return true;
         }
 
-        private Task StartProgram(ClientConnection client, ClientMessage message)
+        private async Task StartProgram(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) ;
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
-                return Task.CompletedTask;
+                return;
+            }
+
+            if (!message.Values.TryGetValue("opts", out string? opts))
+            {
+                opts = "{}";
             }
 
             var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
             clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("opts", opts);
+            this._logger.LogInformation($"Starting program {programId} with {opts}");
             robotClient?.SendMessage(clientMessage);
-            return Task.CompletedTask;
+            if ((robotClient != null) && (robotClient.Robot != null))
+            {
+                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program starting");
+            }
+            else
+            {
+                this._logger.LogWarning("Unable to add to log: robot is missing");
+            }
         }
 
-        private Task StopProgram(ClientConnection client, ClientMessage message)
+        private Task StopProgram(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
 
@@ -251,27 +323,34 @@ namespace NaoBlocks.Web.Communications
             return Task.CompletedTask;
         }
 
-        private Task TransferProgramToRobot(ClientConnection client, ClientMessage message)
+        private async Task TransferProgramToRobot(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
-                return Task.CompletedTask;
+                return;
             }
 
             var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
             clientMessage.Values.Add("program", programId);
             clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
             robotClient?.SendMessage(clientMessage);
-            return Task.CompletedTask;
+            if ((robotClient != null) && (robotClient.Robot != null))
+            {
+                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program transferring");
+            }
+            else
+            {
+                this._logger.LogWarning("Unable to add to log: robot is missing");
+            }
         }
 
-        private Task UpdateRobotState(ClientConnection client, ClientMessage message)
+        private async Task UpdateRobotState(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return Task.CompletedTask;
+            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
 
             if (message.Values.TryGetValue("state", out string? state))
             {
@@ -290,7 +369,11 @@ namespace NaoBlocks.Web.Communications
             }
             client.NotifyListeners(msg);
 
-            return Task.CompletedTask;
+            if (client.Robot != null)
+            {
+                state ??= "Unknown";
+                await AddToRobotLogAsync(session, client.Robot.Id, message, $"State updated to {state}");
+            }
         }
     }
 }

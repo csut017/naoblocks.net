@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Web.Communications
+﻿namespace NaoBlocks.Core.Models
 {
     public enum ClientConnectionType
     {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using System;
 using System.Threading.Tasks;

@@ -6,6 +6,7 @@ import { Observable, Subject } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
 
 export class ClientMessage {
+  conversationId: number;
   values: { [id: string]: string } = {};
   constructor(public type: ClientMessageType) { }
 }

@@ -31,6 +31,7 @@ class Communications(object):
         self._base_address = None
         self._ast = None
         self._secure = True
+        self._conversationId = 0
 
     def start(self, address, pwd=None, verify=True, secure=True):
         self._verify = verify
@@ -132,11 +133,13 @@ class Communications(object):
         self._engine.run(self._ast)
         self.send(202 if self._engine.is_cancelled else 103, {})
         self.send(501, {'state': 'Waiting'})
+        self._conversationId = 0
 
     def _message(self, *args):
         message = args[-1]
         print '[Comms] Received %s' % (message)
         data = json.loads(message)
+        self._conversationId = data['conversationId']
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
             program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
@@ -157,6 +160,7 @@ class Communications(object):
                 print '[Comms] unknown error: ' + str(e) + '!'
                 self.send(24, { 'error': str(e) } )
                 self.send(501, {'state': 'Waiting'})
+                self._conversationId = 0
 
         elif data['type'] == 101:
             thrd = Thread(target=self._execute_code, args=(data,))
@@ -170,6 +174,7 @@ class Communications(object):
         elif data['type'] == 2:
             print '[Comms] Robot has been authenticated'
             self.send(501, {'state': 'Waiting'})
+            self._conversationId = 0
 
         else:
             print '[Comms] Unknown or missing message type "%s"' % (
@@ -192,7 +197,7 @@ class Communications(object):
         self._connectionCount = 0
         self.send(1, { 'token': self._token })
         try:
-            self._engine = Engine(self._ws, self._use_robot)
+            self._engine = Engine(self, self._use_robot)
         except:
             traceback.print_exc()
         
@@ -200,6 +205,7 @@ class Communications(object):
         print '[Comms] Sending message of type ' + str(msg_type)
         msg = json.dumps({
             'type': msg_type,
+            'conversationId': self._conversationId,
             'values': data
         })
         print '[Comms] ->  ' + msg
