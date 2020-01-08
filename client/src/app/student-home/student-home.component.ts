@@ -75,6 +75,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   userSettings: UserSettings = new UserSettings();
   runSettings: RunSettings = new RunSettings();
   lastConversationId: number;
+  lastHighlightBlock: string;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -351,11 +352,16 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       case ClientMessageType.ProgramStopped:
         this.changeExecuting(false);
         this.connection.close();
+        if (this.lastHighlightBlock) {
+          this.workspace.highlightBlock(this.lastHighlightBlock, false);
+          this.lastHighlightBlock = undefined;
+        }
         break;
 
       case ClientMessageType.RobotDebugMessage:
         let sId = msg.values['sourceID'];
         let action = msg.values['status'];
+        this.lastHighlightBlock = sId;
         this.workspace.highlightBlock(sId, action === 'start');
         break;
     }

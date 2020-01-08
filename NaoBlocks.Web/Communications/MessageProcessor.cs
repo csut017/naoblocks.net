@@ -318,7 +318,12 @@ namespace NaoBlocks.Web.Communications
         private async Task StopProgram(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient))
+            {
+                // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
+                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));    
+                return;
+            }
 
             var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
             robotClient?.SendMessage(clientMessage);
