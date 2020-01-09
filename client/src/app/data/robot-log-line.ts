@@ -1,8 +1,8 @@
-import { ClientMessageType } from '../services/connection.service'
-
 export class RobotLogLine {
     description: string;
-    sourceMessageType: ClientMessageType;
+    sourceMessageType: string;
     whenAdded: Date;
+    icon: string;
     values: { [id: string]: string };
+    skip: boolean;
 }

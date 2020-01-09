@@ -11,12 +11,12 @@
             </div>
             <clr-tree [clrLazy]="true">
                 <clr-tree-node [clrLoading]="robot.isLoading" *ngFor="let robot of robots.items">
-                    <clr-icon shape="building"></clr-icon>
+                    <clr-icon shape="rack-server"></clr-icon>
                     {{robot.machineName}} [{{robot.friendlyName}}]
                     <ng-template clrIfExpanded (clrIfExpandedChange)="$event ? loadLogs(robot) : null">
                         <clr-tree-node *ngFor="let log of robot.logs">
                             <button class="clr-treenode-link" [class.active]="log.selected" (click)="viewLogs(log)">
-                                <clr-icon shape="file"></clr-icon>
+                                <clr-icon [attr.shape]="log.conversationId === 0 ? 'cloud-network' : 'file'"></clr-icon>
                                 {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
                             </button>
                         </clr-tree-node>
@@ -46,6 +46,7 @@
                             {{line.whenAdded | date:'h:mm:ss a'}}
                         </td>
                         <td class="left">
+                            <clr-icon [attr.shape]="line.icon"></clr-icon>
                             {{line.description}}
                         </td>
                     </tr>
