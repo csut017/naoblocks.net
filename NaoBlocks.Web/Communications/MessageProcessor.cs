@@ -233,7 +233,7 @@ namespace NaoBlocks.Web.Communications
             else
             {
                 client.User = await session.LoadAsync<User>(userSession.UserId);
-                message.ConversationId = client.User.NextConversationId++;
+                message.ConversationId = ++client.User.NextConversationId;
             }
 
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
@@ -321,7 +321,7 @@ namespace NaoBlocks.Web.Communications
             if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient))
             {
                 // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
-                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));    
+                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
                 return;
             }
 
