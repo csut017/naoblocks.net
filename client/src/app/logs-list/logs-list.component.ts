@@ -18,6 +18,10 @@ export class LogsListComponent implements OnInit {
   currentRobot: RobotLog;
   message: string;
   errorMessage: string;
+  selectedRobot: Robot;
+  selectedLog: RobotLog = new RobotLog();
+  isLogSelected: boolean;
+  isLogLoading: boolean;
 
   constructor(private logService: RobotLogService,
     private robotService: RobotService) { }
@@ -28,10 +32,28 @@ export class LogsListComponent implements OnInit {
 
   loadLogs(robot: Robot): void {
     robot.isLoading = true;
+    this.selectedRobot = robot;
     this.logService.list(robot.machineName)
       .subscribe(data => {
         robot.isLoading = false;
         robot.logs = data.items;
+      });
+  }
+
+  viewLogs(log: RobotLog): void {
+    this.selectedLog.selected = false;
+    this.selectedLog = log;
+    this.selectedLog.selected = true;
+    this.isLogSelected = true;
+    if (log.lines) {
+      return;
+    }
+
+    this.isLogLoading = true;
+    this.logService.get(this.selectedRobot.machineName, this.selectedLog.conversationId)
+      .subscribe(data => {
+        this.selectedLog.lines = data.output.lines;
+        this.isLogLoading = false;
       });
   }
 
