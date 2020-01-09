@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
 
 namespace NaoBlocks.Web.Helpers
@@ -39,6 +40,9 @@ namespace NaoBlocks.Web.Helpers
                 logger.LogInformation("Initialising database store");
                 store.Initialize();
 
+                logger.LogInformation("Generating indexes");
+                IndexCreation.CreateIndexes(typeof(DatabaseSupport).Assembly, store);
+
                 logger.LogInformation($"Embedded database can be access on {options.ServerUrl}");
                 return store;
             });
@@ -52,6 +56,6 @@ namespace NaoBlocks.Web.Helpers
             });
         }
 
-        private class DatabaseInformation { }
+        internal class DatabaseInformation { }
     }
 }

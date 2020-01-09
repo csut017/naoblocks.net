@@ -1,1 +1,61 @@
-<p>logs-list works!</p>
+<div *ngIf="isInList">
+    <div class="clr-row">
+        <div class="clr-col-6">
+            <div *ngIf="isLoading">
+                <span class="spinner spinner-inline">
+                    (_)
+                </span>
+                <span>
+                    Loading, please wait...
+                </span>
+            </div>
+            <clr-tree [clrLazy]="true">
+                <clr-tree-node [clrLoading]="robot.isLoading" *ngFor="let robot of robots.items">
+                    <clr-icon shape="building"></clr-icon>
+                    {{robot.machineName}} [{{robot.friendlyName}}]
+                    <ng-template clrIfExpanded (clrIfExpandedChange)="$event ? loadLogs(robot) : null">
+                        <clr-tree-node *ngFor="let log of robot.logs">
+                            <button class="clr-treenode-link" [class.active]="log.selected" (click)="log.selected = true">
+                                <clr-icon shape="file"></clr-icon>
+                                {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
+                            </button>
+                        </clr-tree-node>
+                    </ng-template>
+                </clr-tree-node>
+            </clr-tree>
+        </div>
+        <div class="clr-col-6"></div>
+    </div>
+
+    <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                </div>
+                <span class="alert-text">
+                    {{errorMessage}}
+                </span>
+            </div>
+        </div>
+        <button type="button" class="close" aria-label="Close" (click)="errorMessage=undefined">
+            <clr-icon aria-hidden="true" shape="close"></clr-icon>
+        </button>
+    </div>
+
+    <div class="alert alert-success" role="alert" *ngIf="message">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <clr-icon class="alert-icon" shape="check-circle"></clr-icon>
+                </div>
+                <span class="alert-text">
+                    {{message}}
+                </span>
+            </div>
+        </div>
+        <button type="button" class="close" aria-label="Close" (click)="message=undefined">
+            <clr-icon aria-hidden="true" shape="close"></clr-icon>
+        </button>
+    </div>
+</div>
