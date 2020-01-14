@@ -72,23 +72,84 @@
             </a>
         </clr-vertical-nav>
         <div class="content-area">
-            <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
-                <div class="alert-items">
-                    <div class="alert-item static">
-                        <div class="alert-icon-wrapper">
-                            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+            <div class="clr-row" style="height:100%">
+                <div class="clr-col-10 clr-col-lg-9" [ngClass]="{'editor-full': !tutorialOpen}">
+                    <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+                        <div class="alert-items">
+                            <div class="alert-item static">
+                                <div class="alert-icon-wrapper">
+                                    <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                                </div>
+                                <span class="alert-text">
+                                    {{errorMessage}}
+                                </span>
+                            </div>
                         </div>
-                        <span class="alert-text">
-                            {{errorMessage}}
-                        </span>
+                        <button type="button" class="close" aria-label="Close" (click)="errorMessage=undefined">
+                            <clr-icon aria-hidden="true" shape="close"></clr-icon>
+                        </button>
+                    </div>
+                    <div id="blocklyArea" style="height: 100%; width: 100%;"></div>
+                    <div id="blocklyDiv" style="position: absolute;"></div>
+                </div>
+                <div class="clr-col-2 clr-col-lg-3" [ngClass]="{'hide-tutorial': !tutorialOpen}">
+                    <div class="card" style="margin-top: 0;">
+                        <div class="card-header">
+                            <button (click)="tutorialOpen=!tutorialOpen" class="btn btn-sm btn-link">
+                                <clr-icon shape="angle-double" class="trigger-button" [ngClass]="{'trigger-button-open': tutorialOpen, 'trigger-button-closed': !tutorialOpen}">
+                                </clr-icon>
+                            </button>
+                            Practise Exercises
+                        </div>
+                        <div class="card-block" *ngIf="tutorialOpen">
+                            <div class="card-text">
+                                <form clrStepper [formGroup]="tutorialForm" (ngSubmit)="markTutorialComplete()">
+                                    <clr-stepper-panel formGroupName="ex1">
+                                        <clr-step-title>Exercise 1.</clr-step-title>
+                                        <clr-step-content *clrIfExpanded>
+                                            <h3>Basic Postures</h3>
+                                            <ol>
+                                                <li>Move the robot into a standing position.</li>
+                                                <li>Move the robot into a lying position.</li>
+                                                <li>Move the robot into a sitting position.</li>
+                                            </ol>
+                                            <button clrStepButton="next">next</button>
+                                        </clr-step-content>
+                                    </clr-stepper-panel>
+                                    <clr-stepper-panel formGroupName="ex2">
+                                        <clr-step-title>Exercise 2.</clr-step-title>
+                                        <clr-step-content *clrIfExpanded>
+                                            <h3>Basic Postures</h3>
+                                            <ol>
+                                                <li>Move the robot into a standing position.</li>
+                                                <li>Move the robot into a lying position.</li>
+                                                <li>Move the robot into a sitting position.</li>
+                                            </ol>
+                                            <button clrStepButton="next">next</button>
+                                        </clr-step-content>
+                                    </clr-stepper-panel>
+                                    <clr-stepper-panel formGroupName="ex3">
+                                        <clr-step-title>Exercise 2.</clr-step-title>
+                                        <clr-step-content *clrIfExpanded>
+
+
+                                            <button clrStepButton="next">next</button>
+                                        </clr-step-content>
+                                    </clr-stepper-panel>
+                                    <clr-stepper-panel formGroupName="ex4">
+                                        <clr-step-title>Exercise 2.</clr-step-title>
+                                        <clr-step-content *clrIfExpanded>
+
+
+                                            <button clrStepButton="next">next</button>
+                                        </clr-step-content>
+                                    </clr-stepper-panel>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button type="button" class="close" aria-label="Close" (click)="errorMessage=undefined">
-                    <clr-icon aria-hidden="true" shape="close"></clr-icon>
-                </button>
             </div>
-            <div id="blocklyArea" style="height: 100%; width: 100%;"></div>
-            <div id="blocklyDiv" style="position: absolute;"></div>
         </div>
     </div>
     <app-about></app-about>
@@ -138,7 +199,8 @@
             <form class="clrForm" *ngIf="userInput.showValue" style="height:6em;" clrLayout="horizontal">
                 <clr-input-container>
                     <label class="clr-col-12 clr-col-md-4">{{userInput.title}}</label>
-                    <input class="clr-col-12 clr-col-md-8" clrInput type="text" [(ngModel)]="userInput.value" name="userInputValue" />
+                    <input class="clr-col-12 clr-col-md-8" clrInput type="text" [(ngModel)]="userInput.value"
+                        name="userInputValue" />
                 </clr-input-container>
             </form>
         </div>

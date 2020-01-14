@@ -17,6 +17,7 @@ import { SettingsService } from '../services/settings.service';
 import { UserSettingsComponent } from '../user-settings/user-settings.component';
 import { RunSettingsComponent } from '../run-settings/run-settings.component';
 import { RunSettings } from '../data/run-settings';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 declare var Blockly: any;
 
@@ -76,6 +77,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   runSettings: RunSettings = new RunSettings();
   lastConversationId: number;
   lastHighlightBlock: string;
+  tutorialForm: FormGroup;
+  isTutorialOpen: boolean = true;
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -88,8 +91,15 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     private errorHandler: ErrorHandlerService,
     private astConverter: AstConverterService,
     private connection: ConnectionService,
-    private settingsService: SettingsService) {
+    private settingsService: SettingsService,
+    private formBuilder: FormBuilder) {
     super(authenticationService, router);
+    this.tutorialForm = this.formBuilder.group({
+      ex1: this.formBuilder.group({}),
+      ex2: this.formBuilder.group({}),
+      ex3: this.formBuilder.group({}),
+      ex4: this.formBuilder.group({})
+    });
   }
 
   ngOnInit() {
@@ -104,6 +114,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       });
 
     this.initialiseWorkspace();
+  }
+
+  markTutorialComplete(): void {
+    alert('TODO');
   }
 
   private initialiseWorkspace(isReadonly: boolean = false) {
@@ -187,6 +201,17 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   set sidebarCollapsed(value: boolean) {
     this.isSidebarOpen = !value;
+
+    if (!this.onResize) return;
+    setInterval(() => this.onResize(), 0);
+  }
+
+  get tutorialOpen(): boolean {
+    return this.isTutorialOpen;
+  }
+
+  set tutorialOpen(value: boolean) {
+    this.isTutorialOpen = value;
 
     if (!this.onResize) return;
     setInterval(() => this.onResize(), 0);
