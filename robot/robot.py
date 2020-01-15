@@ -6,7 +6,7 @@ import time
 import qi
 from PIL import Image
 import sensors
-
+import logger
 
 class Robot(object):
     ''' Defines a common interface to a Nao robot.
@@ -43,7 +43,7 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
         self._ip = ip
         self._session = qi.Session()
         address = "tcp://" + ip + ":9559"
-        print '[Robot] Connecting to ' + address
+        logger.log('[Robot] Connecting to ' + address)
         self._session.connect(address)
         self._audio = self._session.service("ALAudioDevice")
         self._behavior = self._session.service("ALBehaviorManager")
@@ -79,7 +79,7 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
         self._sonars_on = False
 
     def _log(self, msg):
-        print '[Robot:' + self.name + '] ' + msg
+        logger.log('[Robot:' + self.name + '] ' + msg)
 
     def _moveHand(self, hand, openHand):
         handName = None

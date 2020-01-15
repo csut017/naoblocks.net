@@ -11,6 +11,7 @@ import ssl
 import websocket
 
 from engine import Engine
+import logger
 
 logging.basicConfig()
 
@@ -38,51 +39,51 @@ class Communications(object):
         self._secure = secure
         self._base_address = address
         start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/version'
-        print '[Comms] Checking server version (%s)' % (start_address,)
+        logger.log('[Comms] Checking server version (%s)', start_address)
         try:
             response = requests.get(start_address, timeout=10, verify=self._verify)
-            print '[Comms] -> Received response %s' % (response.text,)
+            logger.log('[Comms] -> Received response %s', response.text)
         except requests.exceptions.ConnectionError as e:
-            print '[Comms] Server not responding: ' + str(e) + '!'
+            logger.log('[Comms] Server not responding: ' + str(e) + '!')
             return False
         except requests.exceptions.Timeout:
-            print '[Comms] Connection attempt timed out!'
+            logger.log('[Comms] Connection attempt timed out!')
             return False
         except Exception as e:
-            print '[Comms] unknown error: ' + str(e) + '!'
+            logger.log('[Comms] unknown error: ' + str(e) + '!')
             return False
 
         start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/session'
-        print '[Comms] Authenticating (%s)' % (start_address,)
+        logger.log('[Comms] Authenticating (%s)', start_address)
         hostname = socket.gethostname()
-        print '[Comms] -> user name %s' % (hostname,)
+        logger.log('[Comms] -> user name %s', hostname)
         start_json = json.dumps({'name': hostname, 'password': pwd, 'role': 'robot'})
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(start_address, data=start_json, verify=self._verify, headers=headers)
         except requests.exceptions.ConnectionError:
-            print '[Comms] Server not responding!'
+            logger.log('[Comms] Server not responding!')
             return False
         except requests.exceptions.Timeout:
-            print '[Comms] Connection attempt timed out!'
+            logger.log('[Comms] Connection attempt timed out!')
             return False
         except Exception as e:
-            print '[Comms] unknown error: ' + str(e) + '!'
+            logger.log('[Comms] unknown error: ' + str(e) + '!')
             return False
 
         if req.status_code != 200:
-            print '[Comms] Login failed [' + str(req.status_code) + ']!'
-            print '[Comms] -> ' + req.text
+            logger.log('[Comms] Login failed [' + str(req.status_code) + ']!')
+            logger.log('[Comms] -> ' + req.text)
 
             start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/robots/register'
-            print '[Comms] Registering robot %s (%s)' % (hostname, start_address)
+            logger.log('[Comms] Registering robot %s (%s)', hostname, start_address)
             start_json = json.dumps({'machineName': hostname})
             try:
                 req = requests.post(start_address, data=start_json, timeout=10, verify=self._verify, headers=headers)
                 req.raise_for_status()
-                print '[Comms] -> robot registered'
+                logger.log('[Comms] -> robot registered')
             except Exception as e:
-                print '[Comms] registration failed: ' + str(e)
+                logger.log('[Comms] registration failed: ' + str(e))
                 return False
 
 
@@ -91,7 +92,7 @@ class Communications(object):
         authResp = json.loads(req.text)
         self._token = authResp['output']['token']
         ws_address = ('wss' if self._secure else 'ws') + '://' + self._base_address + '/api/v1/connections/robot'
-        print '[Comms] Connecting to %s' % (ws_address)
+        logger.log('[Comms] Connecting to %s', ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,
                                           on_error=self._error,
@@ -101,10 +102,10 @@ class Communications(object):
         while connectAgain:
             if self._connectionCount > 0:
                 delayTime = 2 ** self._connectionCount
-                print '[Comms] Pausing for %ds' % (delayTime)
+                logger.log('[Comms] Pausing for %ds', delayTime)
                 for _ in range(delayTime):
                     time.sleep(1)
-            print '[Comms] Connection attempt #%d' % (self._connectionCount)
+            logger.log('[Comms] Connection attempt #%d', self._connectionCount)
             if not self._verify:
                 self._ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
             else:
@@ -121,7 +122,7 @@ class Communications(object):
         self._engine.trigger(block_name, value)
 
     def _execute_code(self, data):
-        print '[Comms] Running code'
+        logger.log('[Comms] Running code')
         self.send(501, {'state': 'Initialising'})
         try:
             opts = json.loads(data['values']['opts'])
@@ -137,19 +138,19 @@ class Communications(object):
 
     def _message(self, *args):
         message = args[-1]
-        print '[Comms] Received %s' % (message)
+        logger.log('[Comms] Received %s', message)
         data = json.loads(message)
         self._conversationId = data['conversationId']
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
             program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
-            print '[Comms] Downloading program from ' + program_address
+            logger.log('[Comms] Downloading program from ' + program_address)
             headers = {'Authorization': 'Bearer ' + self._token}
             try:
                 req = requests.get(program_address, verify=self._verify, headers=headers)
                 req.raise_for_status()
-                print '[Comms] Program downloaded'
-                print '[Comms] -> ' + req.text
+                logger.log('[Comms] Program downloaded')
+                logger.log('[Comms] -> ' + req.text)
 
                 result = json.loads(req.text)
                 self._ast = result['output']['nodes']
@@ -157,7 +158,7 @@ class Communications(object):
                 self.send(23, {})
                 self.send(501, {'state': 'Prepared'})
             except Exception as e:
-                print '[Comms] unknown error: ' + str(e) + '!'
+                logger.log('[Comms] unknown error: ' + str(e) + '!')
                 self.send(24, { 'error': str(e) } )
                 self.send(501, {'state': 'Waiting'})
                 self._conversationId = 0
@@ -167,18 +168,17 @@ class Communications(object):
             thrd.start()
 
         elif data['type'] == 201:
-            print '[Comms] Cancelling current run'
+            logger.log('[Comms] Cancelling current run')
             self.send(501, {'state': 'Cancelling'})
             self._engine.cancel()
 
         elif data['type'] == 2:
-            print '[Comms] Robot has been authenticated'
+            logger.log('[Comms] Robot has been authenticated')
             self.send(501, {'state': 'Waiting'})
             self._conversationId = 0
 
         else:
-            print '[Comms] Unknown or missing message type "%s"' % (
-                data['type'])
+            logger.log('[Comms] Unknown or missing message type "%s"', data['type'])
 
     def _error(self, *args):
         error = args[-1]
@@ -186,13 +186,13 @@ class Communications(object):
             self._serverDisconnected = False
             return
         self._serverDisconnected = True
-        print '[Comms] Lost connection: %s' % (error,)
+        logger.log('[Comms] Lost connection: %s', error)
 
     def _close(self, *args):
-        print '[Comms] Closed'
+        logger.log('[Comms] Closed')
 
     def _open(self, *args):
-        print '[Comms] Opened'
+        logger.log('[Comms] Opened')
         self._serverDisconnected = False
         self._connectionCount = 0
         self.send(1, { 'token': self._token })
@@ -202,11 +202,11 @@ class Communications(object):
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        print '[Comms] Sending message of type ' + str(msg_type)
+        logger.log('[Comms] Sending message of type ' + str(msg_type))
         msg = json.dumps({
             'type': msg_type,
             'conversationId': self._conversationId,
             'values': data
         })
-        print '[Comms] ->  ' + msg
+        logger.log('[Comms] ->  ' + msg)
         self._ws.send(msg)

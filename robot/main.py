@@ -10,6 +10,7 @@ import websocket
     
 from noRobot import RobotMock
 from communications import Communications
+import logger
 
 try:
     from naoqi import ALBroker, ALModule, ALProxy
@@ -48,39 +49,39 @@ class NaoRemoteModule(ALModule):
                                 "NaoRemote", "onRearTouchDetected")
         memory.subscribeToEvent("ChestButtonPressed",
                                 "NaoRemote", "onChestButtonDetected")
-        print '[Module] Subscribed to all events'
+        logger.log('[Module] Subscribed to all events')
 
     def _unregisterEvents(self):
         memory.unsubscribeToEvent("MiddleTactilTouched", "NaoRemote")
         memory.unsubscribeToEvent("FrontTactilTouched", "NaoRemote")
         memory.unsubscribeToEvent("RearTactilTouched", "NaoRemote")
         memory.unsubscribeToEvent("ChestButtonPressed", "NaoRemote")
-        print '[Module] Unsubscribed from all events'
+        logger.log('[Module] Unsubscribed from all events')
 
     def onMiddleTouchDetected(self, *args):
         """ This will be called each time the middle head button is pushed. """
-        print '[Module] Middle head tactile touched'
+        logger.log('[Module] Middle head tactile touched')
         self._unregisterEvents()
         self._comms.trigger('middle')
         self._registerEvents()
 
     def onChestButtonDetected(self, *args):
         """ This will be called each time the middle head button is pushed. """
-        print '[Module] Chest button tactile touched'
+        logger.log('[Module] Chest button tactile touched')
         self._unregisterEvents()
         self._comms.trigger('chest')
         self._registerEvents()
 
     def onFrontTouchDetected(self, *args):
         """ This will be called each time the front head button is pushed. """
-        print '[Module] Front head tactile touched'
+        logger.log('[Module] Front head tactile touched')
         self._unregisterEvents()
         self._comms.trigger('front')
         self._registerEvents()
 
     def onRearTouchDetected(self, *args):
         """ This will be called each time the rear head button is pushed. """
-        print '[Module] Rear head tactile touched'
+        logger.log('[Module] Rear head tactile touched')
         self._unregisterEvents()
         self._comms.trigger('rear')
         self._registerEvents()
@@ -111,10 +112,10 @@ def main():
         server = server + ':' + args.port
 
     args.reconnect = int(args.reconnect)
-    print '[Main] Starting communications'
-    print '[Main] Environment'
-    print '[Main] -- Test robot              : %r' % (args.test)
-    print '[Main] -- Number of reconnections : %r' % (args.reconnect)
+    logger.log('[Main] Starting communications')
+    logger.log('[Main] Environment')
+    logger.log('[Main] -- Test robot              : %r' % (args.test))
+    logger.log('[Main] -- Number of reconnections : %r' % (args.reconnect))
     comms = Communications(not args.test, args.reconnect)
     if not args.test:
         if has_nao:
@@ -122,34 +123,34 @@ def main():
             global NaoRemote
             NaoRemote = NaoRemoteModule("NaoRemote", comms)
         else:
-            print '[Main] !!NaoQI not installed!!'
+            logger.log('[Main] !!NaoQI not installed!!')
             return
 
     verifySSL = not args.ignoreSSL
     if not verifySSL:
-        print '[Main] WARNING: ignoring SSL errors'
+        logger.log('[Main] WARNING: ignoring SSL errors')
 
     connected = False
     if not args.server is None:
-        print '[Main] Connecting to ' + server
+        logger.log('[Main] Connecting to ' + server)
         comms.start(server, pwd, verifySSL)
         connected = True
 
     if not connected:
-        print '[Main] Attempting to connect using connect.txt'
-        with open('connect.txt', 'rb') as conn_file:
+        logger.log('[Main] Attempting to connect using connect.txt')
+        with open('connect.txt', 'r') as conn_file:
             rdr = csv.reader(conn_file)
             for row in rdr:
                 if not connected:
                     server = row[0]
                     pwd = row[1]
                     secure = True if len(row) < 3 else row[2] != 'no'
-                    print '[Main] Connecting to ' + server + ('' if secure else ' [not secure]')
+                    logger.log('[Main] Connecting to ' + server + ('' if secure else ' [not secure]'))
                     if comms.start(server, pwd, verifySSL, secure):
                         connected = True
 
     if not connected:
-        print '[Main] Unable to connect'
+        logger.log('[Main] Unable to connect')
         robot = RobotMock()
         if not args.test and has_nao:
             robot = Robot('127.0.0.1')
@@ -157,7 +158,7 @@ def main():
 
 
 def shutdown():
-    print '[Main] Shutting down'
+    logger.log('[Main] Shutting down')
 
 if __name__ == "__main__":
     atexit.register(shutdown)
