@@ -28,7 +28,7 @@ namespace NaoBlocks.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
-            this.PrintAppInformation(env, logger);
+            PrintAppInformation(env, logger);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -101,7 +101,7 @@ namespace NaoBlocks.Web
             services.AddTransient<IMessageProcessor, MessageProcessor>();
         }
 
-        private void PrintAppInformation(IWebHostEnvironment env, ILogger<Startup> logger)
+        private static void PrintAppInformation(IWebHostEnvironment env, ILogger<Startup> logger)
         {
             var version = Assembly.GetEntryAssembly()
                     ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()

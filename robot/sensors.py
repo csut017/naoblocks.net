@@ -1,3 +1,5 @@
+import logger
+
 class Sensor(object):
     ''' Encapsulates a sensor. '''
 
@@ -21,7 +23,7 @@ class Sensor(object):
         self._log = self._doLog
 
     def _doLog(self, message):
-        print message
+        logger.log(message)
 
     def read(self):
         ''' Reads the sensor value. '''

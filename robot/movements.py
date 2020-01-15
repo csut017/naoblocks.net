@@ -190,7 +190,7 @@ class BodyMovement(Movement):
         return self._times
 
     def addJoint(self, joint_name, joint_angles, joint_times):
-        if len(joint_angles) <> len(joint_times):
+        if len(joint_angles) != len(joint_times):
             raise ValueError('Angle and time lengths are different')
 
         self._names.append(joint_name)
