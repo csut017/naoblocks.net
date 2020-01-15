@@ -180,8 +180,7 @@ class Engine(object):
     def _debug(self, block, status):
         try:
             debug_id = block['sourceId']
-            logger.log('[Engine] Sending debug info for block ' + \
-                debug_id + ' [' + status + ']')
+            logger.log('[Engine] Sending debug info for block %s [%s]', debug_id, status)
             data = {
                 'sourceID': debug_id,
                 'status': status,

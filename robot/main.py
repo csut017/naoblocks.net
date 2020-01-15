@@ -114,8 +114,8 @@ def main():
     args.reconnect = int(args.reconnect)
     logger.log('[Main] Starting communications')
     logger.log('[Main] Environment')
-    logger.log('[Main] -- Test robot              : %r' % (args.test))
-    logger.log('[Main] -- Number of reconnections : %r' % (args.reconnect))
+    logger.log('[Main] -- Test robot              : %r', args.test)
+    logger.log('[Main] -- Number of reconnections : %r', args.reconnect)
     comms = Communications(not args.test, args.reconnect)
     if not args.test:
         if has_nao:
@@ -132,7 +132,7 @@ def main():
 
     connected = False
     if not args.server is None:
-        logger.log('[Main] Connecting to ' + server)
+        logger.log('[Main] Connecting to %s', server)
         comms.start(server, pwd, verifySSL)
         connected = True
 
@@ -145,7 +145,7 @@ def main():
                     server = row[0]
                     pwd = row[1]
                     secure = True if len(row) < 3 else row[2] != 'no'
-                    logger.log('[Main] Connecting to ' + server + ('' if secure else ' [not secure]'))
+                    logger.log('[Main] Connecting to %s %s', server, ('' if secure else ' [not secure]'))
                     if comms.start(server, pwd, verifySSL, secure):
                         connected = True
 

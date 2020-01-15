@@ -144,13 +144,13 @@ class Communications(object):
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
             program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
-            logger.log('[Comms] Downloading program from ' + program_address)
+            logger.log('[Comms] Downloading program from %s', program_address)
             headers = {'Authorization': 'Bearer ' + self._token}
             try:
                 req = requests.get(program_address, verify=self._verify, headers=headers)
                 req.raise_for_status()
                 logger.log('[Comms] Program downloaded')
-                logger.log('[Comms] -> ' + req.text)
+                logger.log('[Comms] -> %s', req.text)
 
                 result = json.loads(req.text)
                 self._ast = result['output']['nodes']
@@ -158,7 +158,7 @@ class Communications(object):
                 self.send(23, {})
                 self.send(501, {'state': 'Prepared'})
             except Exception as e:
-                logger.log('[Comms] unknown error: ' + str(e) + '!')
+                logger.log('[Comms] unknown error: %s!', e)
                 self.send(24, { 'error': str(e) } )
                 self.send(501, {'state': 'Waiting'})
                 self._conversationId = 0
@@ -202,11 +202,11 @@ class Communications(object):
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        logger.log('[Comms] Sending message of type ' + str(msg_type))
+        logger.log('[Comms] Sending message of type %s', str(msg_type))
         msg = json.dumps({
             'type': msg_type,
             'conversationId': self._conversationId,
             'values': data
         })
-        logger.log('[Comms] ->  ' + msg)
+        logger.log('[Comms] -> %s', msg)
         self._ws.send(msg)
