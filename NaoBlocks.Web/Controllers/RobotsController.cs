@@ -28,6 +28,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting robot '{id}'");
@@ -79,6 +80,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)
         {
             if (robot == null)
@@ -100,6 +102,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Robot? robot)
         {
             if ((robot == null) || string.IsNullOrEmpty(id))

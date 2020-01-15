@@ -24,7 +24,7 @@ namespace NaoBlocks.Web.Communications
         {
             this._processors = new Dictionary<ClientMessageType, TypeProcessor>
             {
-                {  ClientMessageType.Authenticate, this.Authenticate },
+                { ClientMessageType.Authenticate, this.Authenticate },
                 { ClientMessageType.RequestRobot, this.AllocateRobot },
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
@@ -54,12 +54,10 @@ namespace NaoBlocks.Web.Communications
             {
                 try
                 {
-                    using (var session = this._store.OpenAsyncSession())
-                    {
-                        this._logger.LogInformation($"Processing message type {message.Type}");
-                        await processor(session, client, message);
-                        await session.SaveChangesAsync();
-                    }
+                    using var session = this._store.OpenAsyncSession();
+                    this._logger.LogInformation($"Processing message type {message.Type}");
+                    await processor(session, client, message);
+                    await session.SaveChangesAsync();
                 }
                 catch (Exception err)
                 {

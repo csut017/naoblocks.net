@@ -80,6 +80,7 @@ namespace NaoBlocks.Web
                 .AddJsonOptions(opts =>
                 {
                     opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    opts.JsonSerializerOptions.Converters.Add(new TutorialExerciseLineConverter());
                     opts.JsonSerializerOptions.IgnoreNullValues = true;
                 });
 
