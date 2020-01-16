@@ -8,5 +8,8 @@ export class UserSettings {
     sensors: boolean;
     variables: boolean;
 
+    currentTutorial: string;
+    currentExercise: number;
+
     isLoaded: boolean = false;
 }

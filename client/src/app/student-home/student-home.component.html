@@ -96,13 +96,31 @@
                     <div class="card" style="margin-top: 0;">
                         <div class="card-header">
                             <button (click)="tutorialOpen=!tutorialOpen" class="btn btn-sm btn-link">
-                                <clr-icon shape="angle-double" class="trigger-button" [ngClass]="{'trigger-button-open': tutorialOpen, 'trigger-button-closed': !tutorialOpen}">
+                                <clr-icon shape="angle-double" class="trigger-button"
+                                    [ngClass]="{'trigger-button-open': tutorialOpen, 'trigger-button-closed': !tutorialOpen}">
                                 </clr-icon>
                             </button>
-                            Practise Exercises
+                            {{currentTutorial ? currentTutorial.name : 'Tutorial'}}
                         </div>
                         <div class="card-block" *ngIf="tutorialOpen">
-                            <div class="card-text">
+                            <div class="card-text" *ngIf="tutorialLoading">
+                                <span class="spinner spinner-inline">
+                                    (_)
+                                </span>
+                                <span>
+                                    Loading tutorial details, please wait...
+                                </span>
+                            </div>
+                            <div class="card-text" *ngIf="!tutorialLoading && !currentTutorial">
+                                <div style="margin-bottom: 1rem;">
+                                    You are not in a tutorial.
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary btn-block" (click)="showStartTutorial()">Start
+                                        Tutorial</button>
+                                </div>
+                            </div>
+                            <div class="card-text" *ngIf="!tutorialLoading && !!currentTutorial">
                                 <form clrStepper [formGroup]="tutorialForm" (ngSubmit)="markTutorialComplete()">
                                     <clr-stepper-panel formGroupName="ex1">
                                         <clr-step-title>Exercise 1.</clr-step-title>
@@ -209,6 +227,31 @@
                 Ok
             </button>
             <button type="button" class="btn" (click)="closeUserInput(false)">
+                Cancel
+            </button>
+        </div>
+    </clr-modal>
+    <clr-modal [(clrModalOpen)]="tutorialSelectorOpen" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
+        <h3 class="modal-title">Select Tutorial</h3>
+        <div class="modal-body" style="height: 10rem; overflow-y: auto;">
+            <div *ngIf="loadingTutorials">
+                <span class="spinner spinner-inline">
+                    (_)
+                </span>
+                <span>
+                    Loading tutorials, please wait...
+                </span>
+            </div>
+            <div *ngIf="!loadingTutorials">
+                <div *ngFor="let tutorial of tutorialList">
+                    <button type="button" class="btn btn-block" (click)="selectTutorial(tutorial)">
+                        {{tutorial.name}}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn" (click)="selectTutorial()">
                 Cancel
             </button>
         </div>

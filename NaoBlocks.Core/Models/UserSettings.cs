@@ -4,6 +4,10 @@
     {
         public bool Conditionals { get; set; }
 
+        public string? CurrentExercise { get; set; }
+
+        public string? CurrentTutorial { get; set; }
+
         public bool Dances { get; set; }
 
         public bool Events { get; set; }

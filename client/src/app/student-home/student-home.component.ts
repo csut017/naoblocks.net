@@ -18,6 +18,8 @@ import { UserSettingsComponent } from '../user-settings/user-settings.component'
 import { RunSettingsComponent } from '../run-settings/run-settings.component';
 import { RunSettings } from '../data/run-settings';
 import { FormGroup, FormBuilder } from '@angular/forms';
+import { TutorialService } from '../services/tutorial.service';
+import { Tutorial } from '../data/tutorial';
 
 declare var Blockly: any;
 
@@ -79,6 +81,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   lastHighlightBlock: string;
   tutorialForm: FormGroup;
   isTutorialOpen: boolean = true;
+  currentTutorial: Tutorial;
+  tutorialLoading: boolean = false;
+  tutorialSelectorOpen: boolean = false;
+  loadingTutorials: boolean = false;
+  tutorialList: Tutorial[];
 
   @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
@@ -92,7 +99,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     private astConverter: AstConverterService,
     private connection: ConnectionService,
     private settingsService: SettingsService,
-    private formBuilder: FormBuilder) {
+    private formBuilder: FormBuilder,
+    private tutorialService: TutorialService) {
     super(authenticationService, router);
     this.tutorialForm = this.formBuilder.group({
       ex1: this.formBuilder.group({}),
@@ -106,11 +114,18 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.checkAccess(UserRole.Student);
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
+    this.tutorialLoading = true;
     this.settingsService.get()
       .subscribe(s => {
         this.userSettings = s.output;
         let xml = this.buildToolboxXml();
         this.workspace.updateToolbox(xml);
+        if (this.userSettings.currentTutorial) {
+          this.loadTutorial();
+        } else {
+          this.currentTutorial = undefined;
+          this.tutorialLoading = false;
+        }
       });
 
     this.initialiseWorkspace();
@@ -118,6 +133,40 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   markTutorialComplete(): void {
     alert('TODO');
+  }
+
+  showStartTutorial(): void {
+    this.tutorialSelectorOpen = true;
+    this.loadingTutorials = true;
+    this.tutorialService.list()
+      .subscribe(data => {
+        this.loadingTutorials = false;
+        this.tutorialList = data.items;
+      });
+  }
+
+  selectTutorial(value?: Tutorial): void {
+    if (!!value) {
+      this.userSettings.currentTutorial = value.id;
+      this.loadTutorial();
+    } else {
+      this.userSettings.currentTutorial = undefined;
+      this.currentTutorial = undefined;
+    }
+    this.settingsService.update(this.userSettings)
+      .subscribe(result => {
+        console.log(result);
+      });
+    this.tutorialSelectorOpen = false;
+  }
+
+  private loadTutorial(): void {
+    this.tutorialLoading = true;
+    this.tutorialService.get(this.userSettings.currentTutorial)
+      .subscribe(data => {
+        this.tutorialLoading = false;
+        this.currentTutorial = data.output;
+      });
   }
 
   private initialiseWorkspace(isReadonly: boolean = false) {
