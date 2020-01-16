@@ -122,44 +122,18 @@
                             </div>
                             <div class="card-text" *ngIf="!tutorialLoading && !!currentTutorial">
                                 <form clrStepper [formGroup]="tutorialForm" (ngSubmit)="markTutorialComplete()">
-                                    <clr-stepper-panel formGroupName="ex1">
-                                        <clr-step-title>Exercise 1.</clr-step-title>
-                                        <clr-step-content *clrIfExpanded>
-                                            <h3>Basic Postures</h3>
+                                    <clr-stepper-panel [formGroupName]="'ex' + ex.order" *ngFor="let ex of currentTutorial.exercises">
+                                        <clr-step-title>{{ex.name}}</clr-step-title>
+                                        <clr-step-content [(clrIfExpanded)]="ex.isCurrent">
+                                            <h3 *ngIf="ex.title">{{ex.title}}</h3>
                                             <ol>
-                                                <li>Move the robot into a standing position.</li>
-                                                <li>Move the robot into a lying position.</li>
-                                                <li>Move the robot into a sitting position.</li>
+                                                <li *ngFor="let line of ex.lines">
+                                                    {{line.message}}
+                                                </li>
                                             </ol>
-                                            <button clrStepButton="next">next</button>
-                                        </clr-step-content>
-                                    </clr-stepper-panel>
-                                    <clr-stepper-panel formGroupName="ex2">
-                                        <clr-step-title>Exercise 2.</clr-step-title>
-                                        <clr-step-content *clrIfExpanded>
-                                            <h3>Basic Postures</h3>
-                                            <ol>
-                                                <li>Move the robot into a standing position.</li>
-                                                <li>Move the robot into a lying position.</li>
-                                                <li>Move the robot into a sitting position.</li>
-                                            </ol>
-                                            <button clrStepButton="next">next</button>
-                                        </clr-step-content>
-                                    </clr-stepper-panel>
-                                    <clr-stepper-panel formGroupName="ex3">
-                                        <clr-step-title>Exercise 2.</clr-step-title>
-                                        <clr-step-content *clrIfExpanded>
-
-
-                                            <button clrStepButton="next">next</button>
-                                        </clr-step-content>
-                                    </clr-stepper-panel>
-                                    <clr-stepper-panel formGroupName="ex4">
-                                        <clr-step-title>Exercise 2.</clr-step-title>
-                                        <clr-step-content *clrIfExpanded>
-
-
-                                            <button clrStepButton="next">next</button>
+                                            <button clrStepButton="next" (click)="markExerciseAsComplete(ex)">
+                                                {{ex.isLast ? 'Done' : 'Next'}}
+                                            </button>
                                         </clr-step-content>
                                     </clr-stepper-panel>
                                 </form>

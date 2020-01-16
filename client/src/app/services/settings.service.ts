@@ -41,7 +41,7 @@ export class SettingsService extends ClientService {
         tap(_ => {
           this.log(`Updated user settings`)
         }),
-        catchError(this.handleError('list', msg => new ExecutionResult<UserSettings>(undefined, msg)))
+        catchError(this.handleError('update', msg => new ExecutionResult<UserSettings>(undefined, msg)))
       );
   }
 }

@@ -5,4 +5,7 @@ export class TutorialExercise {
     title: string;
     order: number;
     lines: TutorialExerciseLine[];
+
+    isCurrent: boolean;
+    isLast: boolean;
 }

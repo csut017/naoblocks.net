@@ -4,7 +4,7 @@
     {
         public bool Conditionals { get; set; }
 
-        public string? CurrentExercise { get; set; }
+        public int? CurrentExercise { get; set; }
 
         public string? CurrentTutorial { get; set; }
 

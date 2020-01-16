@@ -20,6 +20,7 @@ import { RunSettings } from '../data/run-settings';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { TutorialService } from '../services/tutorial.service';
 import { Tutorial } from '../data/tutorial';
+import { TutorialExercise } from '../data/tutorial-exercise';
 
 declare var Blockly: any;
 
@@ -102,12 +103,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     private formBuilder: FormBuilder,
     private tutorialService: TutorialService) {
     super(authenticationService, router);
-    this.tutorialForm = this.formBuilder.group({
-      ex1: this.formBuilder.group({}),
-      ex2: this.formBuilder.group({}),
-      ex3: this.formBuilder.group({}),
-      ex4: this.formBuilder.group({})
-    });
+    this.tutorialForm = this.formBuilder.group({});
   }
 
   ngOnInit() {
@@ -160,12 +156,32 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.tutorialSelectorOpen = false;
   }
 
+  markExerciseAsComplete(exercise: TutorialExercise): void {
+    console.log(`Completed exercise ${exercise.name}`);
+    this.userSettings.currentExercise = exercise.order + 1;
+    this.settingsService.update(this.userSettings)
+      .subscribe(result => {
+        console.log(result);
+      });
+  }
+
   private loadTutorial(): void {
     this.tutorialLoading = true;
     this.tutorialService.get(this.userSettings.currentTutorial)
       .subscribe(data => {
         this.tutorialLoading = false;
         this.currentTutorial = data.output;
+
+        let tutorialConfig = {};
+        const lastPos = this.currentTutorial.exercises.length - 1;
+        this.currentTutorial
+          .exercises
+          .forEach((ex, pos) => {
+            tutorialConfig['ex' + ex.order] = this.formBuilder.group({});
+            ex.isLast = pos == lastPos;
+            ex.isCurrent = ex.order == this.userSettings.currentExercise;
+          });
+        this.tutorialForm = this.formBuilder.group(tutorialConfig);
       });
   }
 
