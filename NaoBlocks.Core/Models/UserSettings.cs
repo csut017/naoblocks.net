@@ -18,6 +18,8 @@
 
         public bool Simple { get; set; }
 
+        public bool Tutorials { get; set; }
+
         public bool Variables { get; set; }
     }
 }

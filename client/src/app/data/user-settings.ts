@@ -6,6 +6,7 @@ export class UserSettings {
     dances: boolean;
     loops: boolean;
     sensors: boolean;
+    tutorials: boolean;
     variables: boolean;
 
     currentTutorial: string;

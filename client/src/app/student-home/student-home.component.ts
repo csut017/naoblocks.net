@@ -116,6 +116,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .subscribe(s => {
         this.userSettings = s.output;
         let xml = this.buildToolboxXml();
+        this.isTutorialHidden = !this.userSettings.tutorials;
         this.workspace.updateToolbox(xml);
         if (this.userSettings.currentTutorial) {
           this.loadTutorial();
