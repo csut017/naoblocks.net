@@ -73,7 +73,7 @@
         </clr-vertical-nav>
         <div class="content-area">
             <div class="clr-row" style="height:100%">
-                <div class="clr-col-10 clr-col-lg-9" [ngClass]="{'editor-full': !tutorialOpen}">
+                <div class="clr-col-10 clr-col-lg-9" [ngClass]="{'editor-full': !isTutorialHidden && !tutorialOpen, 'editor-fill': isTutorialHidden}">
                     <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
                         <div class="alert-items">
                             <div class="alert-item static">
@@ -92,7 +92,7 @@
                     <div id="blocklyArea" style="height: 100%; width: 100%;"></div>
                     <div id="blocklyDiv" style="position: absolute;"></div>
                 </div>
-                <div class="clr-col-2 clr-col-lg-3" [ngClass]="{'hide-tutorial': !tutorialOpen}">
+                <div class="clr-col-2 clr-col-lg-3" [ngClass]="{'hide-tutorial': !tutorialOpen}" *ngIf="!isTutorialHidden">
                     <div class="card" style="margin-top: 0;">
                         <div class="card-header">
                             <button (click)="tutorialOpen=!tutorialOpen" class="btn btn-sm btn-link">

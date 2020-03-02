@@ -25,3 +25,8 @@ a.disabled {
   flex: 0 0 calc(100% - 3rem);
   max-width: calc(100% - 3rem);
 }
+
+.editor-fill {
+  flex: 0 0 100%;
+  max-width: 100%;
+}

@@ -82,6 +82,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   lastHighlightBlock: string;
   tutorialForm: FormGroup;
   isTutorialOpen: boolean = true;
+  isTutorialHidden: boolean = true;
   currentTutorial: Tutorial;
   tutorialLoading: boolean = false;
   tutorialSelectorOpen: boolean = false;
@@ -232,7 +233,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       Blockly.svgResize(workspace);
     };
     window.addEventListener('resize', _ => this.onResize(), false);
-    this.onResize();
+    setInterval(() => this.onResize(), 0);
   }
 
   private buildToolboxXml() {
