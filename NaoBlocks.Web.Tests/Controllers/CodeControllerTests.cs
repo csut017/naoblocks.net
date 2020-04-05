@@ -26,7 +26,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Compile(null);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledCodeProgram>>>(response);
             Assert.IsType<BadRequestObjectResult>(actual.Result);
         }
 
@@ -65,10 +65,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledCodeProgram>>>(response);
             var objectResult = Assert.IsType<ObjectResult>(actual.Result);
             Assert.Equal(500, objectResult.StatusCode);
-            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledProgram>>(objectResult.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledCodeProgram>>(objectResult.Value);
             Assert.Null(innerResponse.ValidationErrors);
             Assert.NotEmpty(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);
@@ -88,9 +88,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Compile(request);
 
             // Assert
-            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledProgram>>>(response);
+            var actual = Assert.IsType<ActionResult<Data.ExecutionResult<CompiledCodeProgram>>>(response);
             var badRequest = Assert.IsType<BadRequestObjectResult>(actual.Result);
-            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledProgram>>(badRequest.Value);
+            var innerResponse = Assert.IsType<Data.ExecutionResult<CompiledCodeProgram>>(badRequest.Value);
             Assert.NotEmpty(innerResponse.ValidationErrors);
             Assert.Null(innerResponse.ExecutionErrors);
             Assert.Null(innerResponse.Output);

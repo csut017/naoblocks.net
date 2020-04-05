@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class CompileCodeCommand
-        : CommandBase<CompiledProgram>
+        : CommandBase<CompiledCodeProgram>
     {
         public string? Code { get; set; }
 
@@ -27,7 +27,7 @@ namespace NaoBlocks.Core.Commands
         {
             var parser = CodeParser.New(this.Code ?? string.Empty);
             var parseResult = await parser.ParseAsync().ConfigureAwait(false);
-            return this.Result(new CompiledProgram(parseResult));
+            return this.Result(new CompiledCodeProgram(parseResult));
         }
     }
 }

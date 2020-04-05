@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace NaoBlocks.Core.Models
 {
-    public class CompiledProgram
+    public class CompiledCodeProgram
     {
-        public CompiledProgram(ParseResult result)
+        public CompiledCodeProgram(ParseResult result)
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
 

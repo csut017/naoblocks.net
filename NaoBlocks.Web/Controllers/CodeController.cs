@@ -7,6 +7,8 @@ using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Controllers
@@ -28,7 +30,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("compile")]
-        public async Task<ActionResult<Dtos.ExecutionResult<CompiledProgram?>>> Compile(Dtos.CodeProgram codeToCompile)
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CompiledCodeProgram?>>> Compile(Dtos.CodeProgram codeToCompile)
         {
             if (codeToCompile == null)
             {
@@ -47,7 +49,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 return await this.commandManager.ExecuteForHttp(
                     compileCommand,
-                    c => c);
+                    Dtos.CompiledCodeProgram.FromModel);
             }
 
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
@@ -64,16 +66,27 @@ namespace NaoBlocks.Web.Controllers
                 r =>
                 {
                     var results = r.ToArray();
-                    var output = results[0].As<CompiledProgram>().Output;
+                    var output = Dtos.CompiledCodeProgram.FromModel(results[0].As<CompiledCodeProgram>().Output);
                     var store = results[1].As<CodeProgram>().Output;
                     if (output != null) output.ProgramId = store?.Number;
+
+                    var opts = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        IgnoreNullValues = true,
+                        WriteIndented = true
+                    };
+                    opts.Converters.Add(new JsonStringEnumConverter());
+                    var jsonString = JsonSerializer.Serialize(output, opts);
+                    this._logger.LogDebug(jsonString);
+
                     return output;
                 });
         }
 
         [HttpGet("{user}/{program}")]
         [Authorize("Robot")]
-        public async Task<ActionResult<Dtos.ExecutionResult<CompiledProgram>>> Get(string user, long program)
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CompiledCodeProgram?>>> Get(string user, long program)
         {
             this._logger.LogInformation($"Getting program {program} for {user}");
             var userDetails = await this.session.Query<User>()
@@ -90,7 +103,7 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.commandManager.ExecuteForHttp(
                 compileCommand,
-                c => c);
+                Dtos.CompiledCodeProgram.FromModel);
         }
     }
 }

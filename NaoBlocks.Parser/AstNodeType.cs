@@ -7,6 +7,7 @@
         Argument,
         Constant,
         Variable,
-        Compound
+        Compound,
+        Empty
     }
 }

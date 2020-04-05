@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NaoBlocks.Parser
+﻿namespace NaoBlocks.Parser
 {
     public enum TokenType
     {
@@ -23,6 +19,7 @@ namespace NaoBlocks.Parser
         Variable,
         Boolean,
         Generated,
-        Colour
+        Colour,
+        Empty
     }
 }

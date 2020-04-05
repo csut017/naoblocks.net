@@ -87,7 +87,7 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogDebug($"Retrieved {count} programs");
             var result = new Dtos.ListResult<Dtos.CodeProgram>
             {
-                Count = currentUser.Programs.Count,
+                Count = allPrograms.Count(),
                 Page = pageNum,
                 Items = programs.Select(Dtos.CodeProgram.FromModel).Where(p => p != null)
             };

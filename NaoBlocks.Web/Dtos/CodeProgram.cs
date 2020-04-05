@@ -7,6 +7,8 @@ namespace NaoBlocks.Web.Dtos
     {
         public string? Code { get; set; }
 
+        public long? Id { get; set; }
+
         public string? Name { get; set; }
 
         public bool? Store { get; set; }
@@ -17,6 +19,7 @@ namespace NaoBlocks.Web.Dtos
         {
             return value == null ? null : new CodeProgram
             {
+                Id = value.Number,
                 Name = value.Name,
                 WhenAdded = value.WhenAdded
             };
@@ -26,6 +29,7 @@ namespace NaoBlocks.Web.Dtos
         {
             return value == null ? null : new CodeProgram
             {
+                Id = value.Number,
                 Name = value.Name,
                 WhenAdded = value.WhenAdded,
                 Code = value.Code
