@@ -14,6 +14,7 @@ namespace NaoBlocks.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseUrls("http://192.168.0.13:5000", "http://localhost:5000", "https://localhost:5001");
                     webBuilder.UseStartup<Startup>();
                 });
 

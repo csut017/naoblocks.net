@@ -5,7 +5,6 @@ from threading import Thread
 import time
 import traceback
 
-import numpy
 import requests
 import ssl
 import websocket

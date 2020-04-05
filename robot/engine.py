@@ -125,7 +125,7 @@ class Engine(object):
                     if compound_state.completed:
                         break
             else:
-                self._error('Unknown node type: ' + block['type'])
+                self._error('Unknown node type: %s' % (block['type'], ))
         return last_result
 
     def _execute_function(self, block, state, top_level):
