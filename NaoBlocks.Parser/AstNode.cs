@@ -16,8 +16,11 @@ namespace NaoBlocks.Parser
         }
 
         public IList<AstNode> Arguments { get; private set; }
+
         public IList<AstNode> Children { get; private set; }
+
         public string SourceId { get; set; }
+
         public Token Token { get; set; }
 
         public AstNodeType Type { get; set; }

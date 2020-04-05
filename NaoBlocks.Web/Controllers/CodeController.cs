@@ -28,7 +28,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("compile")]
-        public async Task<ActionResult<Dtos.ExecutionResult<CompiledProgram>>> Compile(Dtos.CodeProgram codeToCompile)
+        public async Task<ActionResult<Dtos.ExecutionResult<CompiledProgram?>>> Compile(Dtos.CodeProgram codeToCompile)
         {
             if (codeToCompile == null)
             {
