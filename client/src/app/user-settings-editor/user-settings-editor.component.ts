@@ -1,5 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { UserSettings } from '../data/user-settings';
+import { RobotTypeService } from '../services/robot-type.service';
+import { RobotType } from '../data/robot-type';
 
 class InterfaceHelper {
   constructor(private settings: UserSettings) {}
@@ -40,6 +42,7 @@ class InterfaceHelper {
 export class UserSettingsEditorComponent implements OnInit {
 
   interfaces: InterfaceHelper;
+  types: RobotType[] = [];
 
   private _settings: UserSettings;
 
@@ -52,9 +55,13 @@ export class UserSettingsEditorComponent implements OnInit {
     this.interfaces = new InterfaceHelper(this.settings);
   }
 
-  constructor() { }
+  constructor(private robotTypeService: RobotTypeService) { }
 
   ngOnInit() {
+    this.robotTypeService.list()
+      .subscribe(results => {
+        this.types = results.items;
+      });
   }
 
 }

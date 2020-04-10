@@ -22,8 +22,8 @@ export class RobotTypeService extends ClientService {
   }
 
   list(page: number = 0, size: number = 20): Observable<ResultSet<RobotType>> {
-    const url = `${environment.apiURL}v1/robots?page=${page}&size=${size}`;
-    this.log('Listing robots');
+    const url = `${environment.apiURL}v1/robots/types?page=${page}&size=${size}`;
+    this.log('Listing robot types');
     return this.http.get<ResultSet<RobotType>>(url)
       .pipe(
         tap(data => {
@@ -35,8 +35,8 @@ export class RobotTypeService extends ClientService {
   }
 
   get(id: string): Observable<ExecutionResult<RobotType>> {
-    const url = `${environment.apiURL}v1/robots/${id}`;
-    this.log(`Retrieving robot ${id}`);
+    const url = `${environment.apiURL}v1/robots/types/${id}`;
+    this.log(`Retrieving robot type ${id}`);
     return this.http.get<RobotType>(url)
       .pipe(
         tap(data => {
@@ -50,7 +50,7 @@ export class RobotTypeService extends ClientService {
 
   save(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
     if (robotType.isNew) {
-      const url = `${environment.apiURL}v1/robots`;
+      const url = `${environment.apiURL}v1/robots/types`;
       this.log('Adding new robot type');
       return this.http.post<any>(url, robotType)
         .pipe(
@@ -58,7 +58,7 @@ export class RobotTypeService extends ClientService {
           catchError(this.handleError('saveNew', msg => new ExecutionResult<Robot>(undefined, msg)))
         );
     } else {
-      const url = `${environment.apiURL}v1/robots/${robotType.id}`;
+      const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;
       this.log('Updating robot type');
       return this.http.put<any>(url, robotType)
         .pipe(
@@ -69,7 +69,7 @@ export class RobotTypeService extends ClientService {
   }
 
   delete(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
-    const url = `${environment.apiURL}v1/robots/${robotType.id}`;
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;
     this.log('Deleting robot type');
     return this.http.delete<ExecutionResult<RobotType>>(url)
       .pipe(

@@ -1,9 +1,8 @@
 <div style="column-count: 2;">
     <clr-select-container>
         <label>Robot Type</label>
-        <select clrSelect name="robotType" [(ngModel)]="settings.robotType" required>
-            <option value="one">Nao</option>
-            <option value="two">Turtlebot</option>
+        <select clrSelect name="robotType" [(ngModel)]="settings.robotType">
+            <option value="{{robotType.name}}" *ngFor="let robotType of types">{{robotType.name}}</option>
         </select>
         <clr-control-helper>The type of robot to program</clr-control-helper>
     </clr-select-container>
