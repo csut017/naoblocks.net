@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { ExecutionResult } from '../data/execution-result';
 import { environment } from 'src/environments/environment';
 import { tap, map, catchError } from 'rxjs/operators';
-import { UserSettings } from '../data/user-settings';
+import { EditorSettings } from '../data/editor-settings';
 
 @Injectable({
   providedIn: 'root'
@@ -19,29 +19,29 @@ export class SettingsService extends ClientService {
     this.serviceName = 'SettingsService';
   }
 
-  get(): Observable<ExecutionResult<UserSettings>> {
+  get(): Observable<ExecutionResult<EditorSettings>> {
     const url = `${environment.apiURL}v1/session/settings`;
-    this.log(`Retrieving user settings`);
-    return this.http.get<UserSettings>(url)
+    this.log(`Retrieving editor settings`);
+    return this.http.get<EditorSettings>(url)
       .pipe(
         tap(data => {
           data.isLoaded = true;
-          this.log(`Retrieved user settings`)
+          this.log(`Retrieved editor settings`)
         }),
-        map(data => new ExecutionResult<UserSettings>(data)),
-        catchError(this.handleError('list', msg => new ExecutionResult<UserSettings>(undefined, msg)))
+        map(data => new ExecutionResult<EditorSettings>(data)),
+        catchError(this.handleError('list', msg => new ExecutionResult<EditorSettings>(undefined, msg)))
       );
   }
 
-  update(settings: UserSettings): Observable<ExecutionResult<UserSettings>> {
+  update(settings: EditorSettings): Observable<ExecutionResult<EditorSettings>> {
     const url = `${environment.apiURL}v1/session/settings`;
-    this.log(`Updating user settings`);
-    return this.http.post<ExecutionResult<UserSettings>>(url, settings)
+    this.log(`Updating editor settings`);
+    return this.http.post<ExecutionResult<EditorSettings>>(url, settings)
       .pipe(
         tap(_ => {
-          this.log(`Updated user settings`)
+          this.log(`Updated editor settings`)
         }),
-        catchError(this.handleError('update', msg => new ExecutionResult<UserSettings>(undefined, msg)))
+        catchError(this.handleError('update', msg => new ExecutionResult<EditorSettings>(undefined, msg)))
       );
   }
 }

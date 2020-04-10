@@ -12,7 +12,5 @@ export class UserSettings {
     currentTutorial: string;
     currentExercise: number;
 
-    isLoaded: boolean = false;
-
     robotType: string;
 }

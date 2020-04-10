@@ -21,6 +21,7 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { TutorialService } from '../services/tutorial.service';
 import { Tutorial } from '../data/tutorial';
 import { TutorialExercise } from '../data/tutorial-exercise';
+import { EditorSettings } from '../data/editor-settings';
 
 declare var Blockly: any;
 
@@ -76,7 +77,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   storedProgram: string;
   invalidBlocks: any[] = [];
   userInput: promptSettings = new promptSettings();
-  userSettings: UserSettings = new UserSettings();
+  editorSettings: EditorSettings = new EditorSettings();
   runSettings: RunSettings = new RunSettings();
   lastConversationId: number;
   lastHighlightBlock: string;
@@ -114,11 +115,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.tutorialLoading = true;
     this.settingsService.get()
       .subscribe(s => {
-        this.userSettings = s.output;
+        this.editorSettings = s.output;
         let xml = this.buildToolboxXml();
-        this.isTutorialHidden = !this.userSettings.tutorials;
+        this.isTutorialHidden = !this.editorSettings.user.tutorials;
         this.workspace.updateToolbox(xml);
-        if (this.userSettings.currentTutorial) {
+        if (this.editorSettings.user.currentTutorial) {
           this.loadTutorial();
         } else {
           this.currentTutorial = undefined;
@@ -145,13 +146,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   selectTutorial(value?: Tutorial): void {
     if (!!value) {
-      this.userSettings.currentTutorial = value.id;
+      this.editorSettings.user.currentTutorial = value.id;
       this.loadTutorial();
     } else {
-      this.userSettings.currentTutorial = undefined;
+      this.editorSettings.user.currentTutorial = undefined;
       this.currentTutorial = undefined;
     }
-    this.settingsService.update(this.userSettings)
+    this.settingsService.update(this.editorSettings)
       .subscribe(result => {
         console.log(result);
       });
@@ -159,9 +160,9 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   markExerciseAsComplete(exercise: TutorialExercise): void {
-    console.log(`Completed exercise ${exercise.name}`);
-    this.userSettings.currentExercise = exercise.order + 1;
-    this.settingsService.update(this.userSettings)
+    console.log(`[StudentHome] Completed exercise ${exercise.name}`);
+    this.editorSettings.user.currentExercise = exercise.order + 1;
+    this.settingsService.update(this.editorSettings)
       .subscribe(result => {
         console.log(result);
       });
@@ -169,7 +170,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   private loadTutorial(): void {
     this.tutorialLoading = true;
-    this.tutorialService.get(this.userSettings.currentTutorial)
+    this.tutorialService.get(this.editorSettings.user.currentTutorial)
       .subscribe(data => {
         this.tutorialLoading = false;
         this.currentTutorial = data.output;
@@ -181,13 +182,14 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           .forEach((ex, pos) => {
             tutorialConfig['ex' + ex.order] = this.formBuilder.group({});
             ex.isLast = pos == lastPos;
-            ex.isCurrent = ex.order == this.userSettings.currentExercise;
+            ex.isCurrent = ex.order == this.editorSettings.user.currentExercise;
           });
         this.tutorialForm = this.formBuilder.group(tutorialConfig);
       });
   }
 
   private initialiseWorkspace(isReadonly: boolean = false) {
+    console.log(`[StudentHome] Initialising workspace`);
     let xml = this.buildToolboxXml();
     let currentBlocks: any;
     if (!!this.workspace) {
@@ -239,26 +241,26 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   private buildToolboxXml() {
     let toolbox = new Toolbox();
-    if (this.userSettings.simple) {
+    if (this.editorSettings.user.simple) {
       toolbox.useSimpleStyle();
     }
     else {
       toolbox.useDefaultStyle();
-      if (this.userSettings.conditionals)
+      if (this.editorSettings.user.conditionals)
         toolbox.includeConditionals();
-      if (this.userSettings.loops)
+      if (this.editorSettings.user.loops)
         toolbox.includeLoops();
-      if (this.userSettings.variables)
+      if (this.editorSettings.user.variables)
         toolbox.includeVariables();
-      if (this.userSettings.dances)
+      if (this.editorSettings.user.dances)
         toolbox.includeDances();
-      if (this.userSettings.sensors)
+      if (this.editorSettings.user.sensors)
         toolbox.includeSensors();
-      if (this.userSettings.events)
+      if (this.editorSettings.user.events)
         toolbox.includeEvents();
     }
     let xml = toolbox.build();
-    this.requireEvents = this.userSettings.events && !this.userSettings.simple;
+    this.requireEvents = this.editorSettings.user.events && !this.editorSettings.user.simple;
     return xml;
   }
 
@@ -286,7 +288,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   validateWorkspace(event?: any): void {
     if (this.workspace.isDragging()) return;
-    console.log('Validating');
+    console.log('[StudentHome] Validating');
     var validate = !event ||
       (event.type == Blockly.Events.CREATE) ||
       (event.type == Blockly.Events.MOVE) ||
@@ -312,7 +314,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   showSettings(): void {
-    let cloned = JSON.parse(JSON.stringify(this.userSettings));
+    let cloned = JSON.parse(JSON.stringify(this.editorSettings.user));
     this.userSettingsDisplay.show(cloned);
   }
 
@@ -497,12 +499,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   loadIntoWorkspace(xml: HTMLElement): void {
-    console.log('Loading workspace');
+    console.log('[StudentHome] Loading workspace');
     try {
       this.workspace.clear();
       Blockly.Xml.domToWorkspace(xml, this.workspace);
     } catch (err) {
-      console.log('Load failed!');
+      console.log('[StudentHome] Load failed!');
       console.error(err);
     }
     console.groupEnd();
@@ -559,10 +561,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onSaveSettings(settings: UserSettings): void {
-    this.settingsService.update(settings)
+    let newSettings = new EditorSettings();
+    newSettings.user = settings;
+    this.settingsService.update(newSettings)
       .subscribe(result => {
         if (result.successful) {
-          this.userSettings = result.output;
+          this.editorSettings = result.output;
           let xml = this.buildToolboxXml();
           this.workspace.updateToolbox(xml);
           this.userSettingsDisplay.close();
@@ -598,7 +602,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   private configureEditor(): void {
     console.groupCollapsed('Initialising blockly editor');
     try {
-      console.log('Defining colours');
+      console.log('[StudentHome] Defining colours');
       Blockly.FieldColour.COLOURS = [
         '#f00', '#0f0',
         '#00f', '#ff0',
@@ -607,7 +611,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       ];
       Blockly.FieldColour.COLUMNS = 2;
 
-      console.log('Configuring modals');
+      console.log('[StudentHome] Configuring modals');
       let that = this;
       Blockly.alert = function (message: string, callback: any) {
         that.userInput.title = message;
@@ -635,7 +639,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
         that.userInput.open = true;
       };
 
-      console.log('Adding validator');
+      console.log('[StudentHome] Adding validator');
       this.workspace.addChangeListener(evt => this.validateWorkspace(evt));
     } finally {
       console.groupEnd();

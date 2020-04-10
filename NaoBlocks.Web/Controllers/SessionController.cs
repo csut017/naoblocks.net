@@ -72,7 +72,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet("settings")]
-        public async Task<ActionResult<UserSettings>> GetSettings()
+        public async Task<ActionResult<Dtos.EditorSettings>> GetSettings()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
@@ -83,7 +83,10 @@ namespace NaoBlocks.Web.Controllers
             var remaining = session != null
                 ? session.WhenExpires.Subtract(now).TotalMinutes
                 : -1;
-            return user.Settings;
+            return new Dtos.EditorSettings
+            {
+                User = user.Settings
+            };
         }
 
         [AllowAnonymous]
@@ -121,7 +124,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("settings")]
-        public async Task<ActionResult<Dtos.ExecutionResult<UserSettings>>> PostSettings(UserSettings settings)
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.EditorSettings>>> PostSettings(Dtos.EditorSettings settings)
         {
             if (settings == null)
             {
@@ -138,10 +141,10 @@ namespace NaoBlocks.Web.Controllers
             var command = new StoreSettingsCommand
             {
                 UserId = user.Id,
-                Settings = settings
+                Settings = settings.User
             };
 
-            return await this.commandManager.ExecuteForHttp(command, s => s);
+            return await this.commandManager.ExecuteForHttp(command, s => new Dtos.EditorSettings { User = s });
         }
 
         [HttpPut]
