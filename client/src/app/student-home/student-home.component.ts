@@ -573,6 +573,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       });
   }
 
+  canChangeRole(): boolean {
+    return this.authenticationService.canAccess(UserRole.Teacher)
+      || this.authenticationService.canAccess(UserRole.Administrator);
+  }
+
   private validateBlocks(): string {
     var blocks = this.workspace.getTopBlocks();
     if (!blocks.length) {

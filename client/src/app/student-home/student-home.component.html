@@ -30,7 +30,7 @@
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
                     <a href="javascript://" clrDropdownItem (click)="showSettings()">Settings</a>
-                    <a href="javascript://" clrDropdownItem (click)="changeRole()">Change Role</a>
+                    <a href="javascript://" clrDropdownItem (click)="changeRole()" *ngIf="canChangeRole()">Change Role</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
                     <div class="dropdown-divider" role="separator"></div>
