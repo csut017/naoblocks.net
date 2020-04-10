@@ -89,10 +89,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   loadingTutorials: boolean = false;
   tutorialList: Tutorial[];
 
-  @ViewChild(LoadProgramComponent, { static: false }) loadProgram: LoadProgramComponent;
-  @ViewChild(SaveProgramComponent, { static: false }) saveProgram: SaveProgramComponent;
-  @ViewChild(UserSettingsComponent, { static: false }) userSettingsDisplay: UserSettingsComponent;
-  @ViewChild(RunSettingsComponent, { static: false }) runSettingsDisplay: RunSettingsComponent;
+  @ViewChild(LoadProgramComponent) loadProgram: LoadProgramComponent;
+  @ViewChild(SaveProgramComponent) saveProgram: SaveProgramComponent;
+  @ViewChild(UserSettingsComponent) userSettingsDisplay: UserSettingsComponent;
+  @ViewChild(RunSettingsComponent) runSettingsDisplay: RunSettingsComponent;
 
   constructor(authenticationService: AuthenticationService,
     router: Router,

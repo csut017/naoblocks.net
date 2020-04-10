@@ -2,13 +2,14 @@ import { AuthenticationService, UserRole } from './services/authentication.servi
 
 import { Router } from '@angular/router';
 import { ChangeRoleComponent } from './change-role/change-role.component';
-import { ViewChild } from '@angular/core';
+import { ViewChild, Directive } from '@angular/core';
 import { AboutComponent } from './about/about.component';
 
+@Directive()
 export class HomeBase {
 
-    @ViewChild(AboutComponent, { static: false }) about: AboutComponent;
-    @ViewChild(ChangeRoleComponent, { static: false }) roleSelector: ChangeRoleComponent;
+    @ViewChild(AboutComponent) about: AboutComponent;
+    @ViewChild(ChangeRoleComponent) roleSelector: ChangeRoleComponent;
 
     hasAccess: boolean;
 
