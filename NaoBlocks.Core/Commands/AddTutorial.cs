@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class AddTutorialCommand
+    public class AddTutorial
         : CommandBase<Tutorial>
     {
         public string? Category { get; set; }

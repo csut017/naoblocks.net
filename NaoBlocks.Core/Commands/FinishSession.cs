@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class FinishSessionCommand
+    public class FinishSession
         : CommandBase
     {
         public string? UserId { get; set; }

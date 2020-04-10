@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -20,10 +19,10 @@ namespace NaoBlocks.Web.Controllers
     public class RobotTypesController : ControllerBase
     {
         private readonly ILogger<RobotTypesController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public RobotTypesController(ILogger<RobotTypesController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public RobotTypesController(ILogger<RobotTypesController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -35,7 +34,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting robot type '{id}'");
-            var command = new DeleteRobotTypeCommand
+            var command = new Commands.DeleteRobotType
             {
                 Name = id
             };
@@ -95,7 +94,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new robot type '{robotType.Name}'");
-            var command = new AddRobotTypeCommand
+            var command = new Commands.AddRobotType
             {
                 Name = robotType.Name
             };
@@ -142,7 +141,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Updating robot type '{id}'");
-            var command = new UpdateRobotTypeCommand
+            var command = new Commands.UpdateRobotType
             {
                 CurrentName = id,
                 Name = robotType.Name

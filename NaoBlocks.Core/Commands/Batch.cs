@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class BatchCommand
+    public class Batch
         : CommandBase<IEnumerable<CommandResult>>
     {
-        public BatchCommand(params CommandBase[] commands)
+        public Batch(params CommandBase[] commands)
         {
             this.Commands = new List<CommandBase>(commands);
         }

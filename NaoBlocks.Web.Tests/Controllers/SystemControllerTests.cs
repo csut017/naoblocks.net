@@ -56,7 +56,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Initialise(request);
 
             // Assert
-            var command = Assert.IsType<AddUserCommand>(manager.LastCommand);
+            var command = Assert.IsType<AddUser>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal("password", command.Password);
             Assert.Equal(UserRole.Administrator, command.Role);

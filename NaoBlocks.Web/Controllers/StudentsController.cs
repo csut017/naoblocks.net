@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Commands = NaoBlocks.Core.Commands;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -17,10 +18,10 @@ namespace NaoBlocks.Web.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly ILogger<StudentsController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public StudentsController(ILogger<StudentsController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public StudentsController(ILogger<StudentsController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -31,7 +32,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting student '{id}'");
-            var command = new DeleteUserCommand
+            var command = new Commands.DeleteUser
             {
                 Name = id,
                 Role = UserRole.Student
@@ -92,7 +93,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new student '{student.Name}'");
-            var command = new AddUserCommand
+            var command = new Commands.AddUser
             {
                 Name = student.Name,
                 Password = student.Password,
@@ -114,7 +115,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Updating student '{id}'");
-            var command = new UpdateUserCommand
+            var command = new Commands.UpdateUser
             {
                 CurrentName = id,
                 Name = student.Name,

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class DeleteTutorialCommand
+    public class DeleteTutorial
         : CommandBase
     {
         private Tutorial? tutorial;

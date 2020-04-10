@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Commands = NaoBlocks.Core.Commands;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -17,10 +18,10 @@ namespace NaoBlocks.Web.Controllers
     public class ProgramsController : ControllerBase
     {
         private readonly ILogger<ProgramsController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public ProgramsController(ILogger<ProgramsController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public ProgramsController(ILogger<ProgramsController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -115,7 +116,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new program '{program.Name}'");
-            var command = new StoreProgramCommand
+            var command = new Commands.StoreProgram
             {
                 Name = program.Name,
                 Code = program.Code,

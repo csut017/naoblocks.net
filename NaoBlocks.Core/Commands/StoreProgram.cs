@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class StoreProgramCommand
+    public class StoreProgram
         : CommandBase<CodeProgram>
     {
         public string? Code { get; set; }

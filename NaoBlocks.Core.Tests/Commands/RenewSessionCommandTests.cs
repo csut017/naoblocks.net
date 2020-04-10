@@ -15,7 +15,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new RenewSessionCommand();
+            var command = new RenewSession();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -23,7 +23,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ApplySetsWhenAddedAndWhenExpires()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new RenewSessionCommand
+            var command = new RenewSession
             {
                 Session = new Session { WhenExpires = new DateTime(2018, 12, 31) },
                 WhenExecuted = new DateTime(2019, 1, 1)
@@ -39,7 +39,7 @@ namespace NaoBlocks.Core.Tests.Commands
 
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(data);
-            var command = new RenewSessionCommand
+            var command = new RenewSession
             {
                 UserId = "testing"
             };
@@ -55,7 +55,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateMustBeCalledBeforeApply()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new RenewSessionCommand { UserId = "testing" };
+            var command = new RenewSession { UserId = "testing" };
             await Assert.ThrowsAsync<InvalidCallOrderException>(async () => await command.ApplyAsync(sessionMock.Object));
         }
 
@@ -69,7 +69,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(data.AsRavenQueryable());
 
-            var command = new RenewSessionCommand { UserId = "testing", WhenExecuted = new DateTime(2019, 1, 1) };
+            var command = new RenewSession { UserId = "testing", WhenExecuted = new DateTime(2019, 1, 1) };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
             Assert.Equal(expected, result.Select(r => r.Error));
@@ -80,7 +80,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresId()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new RenewSessionCommand { };
+            var command = new RenewSession { };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -92,7 +92,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new RenewSessionCommand();
+            var command = new RenewSession();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
     }

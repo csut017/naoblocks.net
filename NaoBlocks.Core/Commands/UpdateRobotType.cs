@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class UpdateRobotTypeCommand
+    public class UpdateRobotType
         : CommandBase<RobotType>
     {
         private RobotType? robotType;

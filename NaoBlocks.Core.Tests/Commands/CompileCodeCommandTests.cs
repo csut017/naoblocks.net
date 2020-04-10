@@ -11,7 +11,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task CompilesCode()
         {
-            var command = new CompileCodeCommand { Code = "rest()" };
+            var command = new CompileCode { Code = "rest()" };
             var result = (await command.ApplyAsync(null)).As<CompiledCodeProgram>();
             Assert.True(result.WasSuccessful);
             Assert.Null(result.Output?.Errors);
@@ -21,7 +21,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task FailsValidationWithNoCode()
         {
-            var command = new CompileCodeCommand { Code = string.Empty };
+            var command = new CompileCode { Code = string.Empty };
             var result = await command.ValidateAsync(null);
             var expected = new[]
             {
@@ -33,7 +33,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidatesWithCode()
         {
-            var command = new CompileCodeCommand { Code = "rest()" };
+            var command = new CompileCode { Code = "rest()" };
             var result = await command.ValidateAsync(null);
             Assert.Empty(result);
         }

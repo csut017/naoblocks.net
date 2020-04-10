@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class UpdateUserCommand
+    public class UpdateUser
         : CommandBase
     {
         private User? person;

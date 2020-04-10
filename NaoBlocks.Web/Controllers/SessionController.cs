@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -16,6 +15,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
+using Commands = NaoBlocks.Core.Commands;
+
 namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1/[controller]")]
@@ -24,11 +25,11 @@ namespace NaoBlocks.Web.Controllers
     public class SessionController : ControllerBase
     {
         private readonly ILogger<SessionController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly string jwtSecret;
         private readonly IAsyncDocumentSession session;
 
-        public SessionController(ILogger<SessionController> logger, ICommandManager commandManager, IAsyncDocumentSession session, IOptions<AppSettings> appSettings)
+        public SessionController(ILogger<SessionController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session, IOptions<AppSettings> appSettings)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -47,7 +48,7 @@ namespace NaoBlocks.Web.Controllers
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
-            var command = new FinishSessionCommand { UserId = user.Id };
+            var command = new Commands.FinishSession { UserId = user.Id };
             return await this.commandManager.ExecuteForHttp(command);
         }
 
@@ -102,10 +103,10 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Starting new session for '{user.Name}'");
-            CommandBase command;
+            Commands.CommandBase command;
             if (user.Role == "robot")
             {
-                command = new StartRobotSessionCommand
+                command = new Commands.StartRobotSession
                 {
                     Password = user.Password,
                     Name = user.Name
@@ -113,7 +114,7 @@ namespace NaoBlocks.Web.Controllers
             }
             else
             {
-                command = new StartUserSessionCommand
+                command = new Commands.StartUserSession
                 {
                     Password = user.Password,
                     Name = user.Name
@@ -138,7 +139,7 @@ namespace NaoBlocks.Web.Controllers
             if (user == null) return NotFound();
 
             this._logger.LogInformation($"Updating settings for '{user.Name}'");
-            var command = new StoreSettingsCommand
+            var command = new Commands.StoreSettings
             {
                 UserId = user.Id,
                 Settings = settings.User
@@ -153,11 +154,11 @@ namespace NaoBlocks.Web.Controllers
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
-            var command = new RenewSessionCommand { UserId = user.Id };
+            var command = new Commands.RenewSession { UserId = user.Id };
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(CommandBase command)
+        private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(Commands.CommandBase command)
         {
             var errors = await commandManager.ValidateAsync(command).ConfigureAwait(false);
             if (errors.Any())
@@ -169,7 +170,7 @@ namespace NaoBlocks.Web.Controllers
 
                 return new BadRequestObjectResult(new Dtos.ExecutionResult<Dtos.Session>
                 {
-                    ValidationErrors = new[] { new CommandError(0, "Unable to validate session details") }
+                    ValidationErrors = new[] { new Commands.CommandError(0, "Unable to validate session details") }
                 });
             }
 

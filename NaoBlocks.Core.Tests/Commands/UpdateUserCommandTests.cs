@@ -15,7 +15,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new UpdateUserCommand();
+            var command = new UpdateUser();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -30,7 +30,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data.AsRavenQueryable());
 
-            var command = new UpdateUserCommand { Name = "Bill", CurrentName = "Bob" };
+            var command = new UpdateUser { Name = "Bill", CurrentName = "Bob" };
             await command.ValidateAsync(sessionMock.Object);
             var result = await command.ApplyAsync(sessionMock.Object);
             Assert.True(result.WasSuccessful);
@@ -48,7 +48,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
 
-            var command = new UpdateUserCommand { Name = "Bob", Role = UserRole.Teacher };
+            var command = new UpdateUser { Name = "Bob", Role = UserRole.Teacher };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
             Assert.Equal(expected, result.Select(r => r.Error));
@@ -62,7 +62,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
 
-            var command = new UpdateUserCommand { CurrentName = "Bob", Role = UserRole.Teacher };
+            var command = new UpdateUser { CurrentName = "Bob", Role = UserRole.Teacher };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -74,7 +74,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new UpdateUserCommand();
+            var command = new UpdateUser();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
     }

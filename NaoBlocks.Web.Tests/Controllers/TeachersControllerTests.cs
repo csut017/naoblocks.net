@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Delete("Bob");
 
             // Assert
-            var command = Assert.IsType<DeleteUserCommand>(manager.LastCommand);
+            var command = Assert.IsType<DeleteUser>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal(UserRole.Teacher, command.Role);
         }
@@ -196,7 +196,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Post(request);
 
             // Assert
-            var command = Assert.IsType<AddUserCommand>(manager.LastCommand);
+            var command = Assert.IsType<AddUser>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal("password", command.Password);
             Assert.Equal(UserRole.Teacher, command.Role);

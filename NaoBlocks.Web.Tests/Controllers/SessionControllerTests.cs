@@ -33,7 +33,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Delete();
 
             // Assert
-            var command = Assert.IsType<FinishSessionCommand>(manager.LastCommand);
+            var command = Assert.IsType<FinishSession>(manager.LastCommand);
             Assert.Equal("users/1", command.UserId);
         }
 
@@ -123,7 +123,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Post(request);
 
             // Assert
-            var command = Assert.IsType<StartUserSessionCommand>(manager.LastCommand);
+            var command = Assert.IsType<StartUserSession>(manager.LastCommand);
             Assert.Equal("Bob", command.Name);
             Assert.Equal("password", command.Password);
             Assert.Equal(UserRole.Student, command.Role);

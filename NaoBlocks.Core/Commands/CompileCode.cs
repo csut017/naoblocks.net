@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class CompileCodeCommand
+    public class CompileCode
         : CommandBase<CompiledCodeProgram>
     {
         public string? Code { get; set; }

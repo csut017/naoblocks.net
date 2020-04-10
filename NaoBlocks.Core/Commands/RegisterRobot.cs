@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class RegisterRobotCommand
+    public class RegisterRobot
         : CommandBase<Robot>
     {
         public string? MachineName { get; set; }

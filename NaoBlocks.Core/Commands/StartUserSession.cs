@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class StartUserSessionCommand
+    public class StartUserSession
         : CommandBase<Session>
     {
         [JsonIgnore]

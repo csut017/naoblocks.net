@@ -16,7 +16,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new AddUserCommand();
+            var command = new AddUser();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -24,7 +24,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ApplySetsWhenAdded()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Name = "Bob", Password = "Hello", WhenExecuted = new DateTime(2019, 1, 1) };
+            var command = new AddUser { Name = "Bob", Password = "Hello", WhenExecuted = new DateTime(2019, 1, 1) };
             var result = (await command.ApplyAsync(sessionMock.Object)).As<User>();
             Assert.Equal(command.WhenExecuted, result.Output?.WhenAdded);
         }
@@ -33,7 +33,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ApplyStoresUser()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Name = "Bob", Password = string.Empty };
+            var command = new AddUser { Name = "Bob", Password = string.Empty };
             var result = await command.ApplyAsync(sessionMock.Object);
             Assert.True(result.WasSuccessful);
             sessionMock.Verify(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -50,7 +50,7 @@ namespace NaoBlocks.Core.Tests.Commands
 
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
-            var command = new AddUserCommand
+            var command = new AddUser
             {
                 Name = "Old",
                 Password = "testing",
@@ -71,7 +71,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
 
-            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
+            var command = new AddUser { Name = "Bob", Password = "Hello" };
             var result = await command.ValidateAsync(sessionMock.Object);
             Assert.NotEqual(Password.Empty, command.HashedPassword, new Password.Comparer());
         }
@@ -83,7 +83,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<User>(null, null, false)).Returns(data);
 
-            var command = new AddUserCommand { Name = "Bob", Password = "Hello" };
+            var command = new AddUser { Name = "Bob", Password = "Hello" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
             Assert.Equal(expected, result.Select(r => r.Error));
@@ -93,7 +93,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresName()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Password = string.Empty };
+            var command = new AddUser { Password = string.Empty };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -106,7 +106,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresNameForTeacher()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Password = string.Empty, Role = UserRole.Teacher };
+            var command = new AddUser { Password = string.Empty, Role = UserRole.Teacher };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -119,7 +119,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresPassword()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new AddUserCommand { Name = "Bob" };
+            var command = new AddUser { Name = "Bob" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -131,7 +131,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new AddUserCommand();
+            var command = new AddUser();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
     }

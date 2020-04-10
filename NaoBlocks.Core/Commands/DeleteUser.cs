@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class DeleteRobotTypeCommand
+    public class DeleteUser
         : CommandBase
     {
-        private RobotType? robotType;
+        private User? person;
 
         public string? Name { get; set; }
+
+        public UserRole Role { get; set; } = UserRole.Student;
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
@@ -21,29 +23,15 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"Machine name is required for robot"));
+                errors.Add(this.Error($"{this.Role} name is required"));
             }
 
             if (!errors.Any())
             {
-                this.robotType = await session.Query<RobotType>()
-                                            .FirstOrDefaultAsync(u => u.Name == this.Name)
+                this.person = await session.Query<User>()
+                                            .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
                                             .ConfigureAwait(false);
-                if (this.robotType == null)
-                {
-                    errors.Add(this.Error($"Robot type {this.Name} does not exist"));
-                }
-                else
-                {
-                    var hasRobots = await session.Query<Robot>()
-                        .AnyAsync(r => r.RobotTypeId == this.robotType.Id)
-                        .ConfigureAwait(false);
-
-                    if (hasRobots)
-                    {
-                        errors.Add(this.Error($"Robot type {this.Name} has robots instances"));
-                    }
-                }
+                if (person == null) errors.Add(this.Error($"{this.Role} {this.Name} does not exist"));
             }
 
             return errors.AsEnumerable();
@@ -53,7 +41,7 @@ namespace NaoBlocks.Core.Commands
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
 
-            session.Delete(this.robotType);
+            session.Delete(this.person);
             return Task.FromResult(CommandResult.New(this.Number));
         }
     }

@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Commands = NaoBlocks.Core.Commands;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -17,10 +18,10 @@ namespace NaoBlocks.Web.Controllers
     public class RobotsController : ControllerBase
     {
         private readonly ILogger<RobotsController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public RobotsController(ILogger<RobotsController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public RobotsController(ILogger<RobotsController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -32,7 +33,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting robot '{id}'");
-            var command = new DeleteRobotCommand
+            var command = new Commands.DeleteRobot
             {
                 MachineName = id
             };
@@ -108,7 +109,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Adding new robot '{robot.MachineName}'");
-            var command = new AddRobotCommand
+            var command = new Commands.AddRobot
             {
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName,
@@ -131,7 +132,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Updating robot '{id}'");
-            var command = new UpdateRobotCommand
+            var command = new Commands.UpdateRobot
             {
                 CurrentMachineName = id,
                 MachineName = robot.MachineName,
@@ -155,7 +156,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Registering new robot '{robot.MachineName}'");
-            var command = new RegisterRobotCommand
+            var command = new Commands.RegisterRobot
             {
                 MachineName = robot.MachineName
             };

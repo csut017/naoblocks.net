@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -11,6 +10,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
+using Commands = NaoBlocks.Core.Commands;
+
 namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1/[controller]")]
@@ -19,10 +20,10 @@ namespace NaoBlocks.Web.Controllers
     public class CodeController : ControllerBase
     {
         private readonly ILogger<CodeController> _logger;
-        private readonly ICommandManager commandManager;
+        private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
 
-        public CodeController(ILogger<CodeController> logger, ICommandManager commandManager, IAsyncDocumentSession session)
+        public CodeController(ILogger<CodeController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
         {
             this._logger = logger;
             this.commandManager = commandManager;
@@ -41,7 +42,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation("Compiling code");
-            var compileCommand = new CompileCodeCommand
+            var compileCommand = new Commands.CompileCode
             {
                 Code = codeToCompile.Code
             };
@@ -54,13 +55,13 @@ namespace NaoBlocks.Web.Controllers
 
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
-            var storeCommand = new StoreProgramCommand
+            var storeCommand = new Commands.StoreProgram
             {
                 UserId = user.Id,
                 Code = codeToCompile.Code
             };
 
-            var batchCommand = new BatchCommand(compileCommand, storeCommand);
+            var batchCommand = new Commands.Batch(compileCommand, storeCommand);
             return await this.commandManager.ExecuteForHttp(
                 batchCommand,
                 r =>
@@ -97,7 +98,7 @@ namespace NaoBlocks.Web.Controllers
             if (programDetails == null) return NotFound();
 
             this._logger.LogInformation("Compiling code");
-            var compileCommand = new CompileCodeCommand
+            var compileCommand = new Commands.CompileCode
             {
                 Code = programDetails.Code
             };

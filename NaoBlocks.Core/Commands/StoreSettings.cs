@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class StoreSettingsCommand
+    public class StoreSettings
         : CommandBase<UserSettings>
     {
         public UserSettings? Settings { get; set; }

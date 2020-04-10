@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Delete("Bob");
 
             // Assert
-            var command = Assert.IsType<DeleteRobotCommand>(manager.LastCommand);
+            var command = Assert.IsType<DeleteRobot>(manager.LastCommand);
             Assert.Equal("Bob", command.MachineName);
         }
 
@@ -196,7 +196,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Post(request);
 
             // Assert
-            var command = Assert.IsType<AddRobotCommand>(manager.LastCommand);
+            var command = Assert.IsType<AddRobot>(manager.LastCommand);
             Assert.Equal("Bob", command.FriendlyName);
             Assert.Equal("r2d2", command.MachineName);
         }
@@ -279,7 +279,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             await controller.Put("Bob", new Data.Robot { MachineName = "Bill", FriendlyName = "Bill the Bot" });
 
             // Assert
-            var command = Assert.IsType<UpdateRobotCommand>(manager.LastCommand);
+            var command = Assert.IsType<UpdateRobot>(manager.LastCommand);
             Assert.Equal("Bob", command.CurrentMachineName);
             Assert.Equal("Bill", command.MachineName);
             Assert.Equal("Bill the Bot", command.FriendlyName);

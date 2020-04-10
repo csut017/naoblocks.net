@@ -17,7 +17,7 @@ namespace NaoBlocks.Core.Tests.Commands
         {
             var sessions = new Session[0];
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new FinishSessionCommand { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
+            var command = new FinishSession { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
             var result = (await command.ApplyAsync(sessionMock.Object));
             Assert.Null(result as CommandResult<Session>);
@@ -26,7 +26,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new FinishSessionCommand();
+            var command = new FinishSession();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -38,7 +38,7 @@ namespace NaoBlocks.Core.Tests.Commands
                 new Session { WhenExpires = new DateTime(2019, 1, 2, 0, 1, 0)}
             };
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new FinishSessionCommand { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
+            var command = new FinishSession { UserId = "Hello", WhenExecuted = new DateTime(2019, 1, 2) };
             sessionMock.Setup(s => s.Query<Session>(null, null, false)).Returns(sessions.AsRavenQueryable());
             var result = (await command.ApplyAsync(sessionMock.Object)).As<Session>();
             Assert.Equal(new DateTime(2019, 1, 1, 23, 59, 0), result.Output?.WhenExpires);
@@ -47,7 +47,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new FinishSessionCommand();
+            var command = new FinishSession();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
 
@@ -55,7 +55,7 @@ namespace NaoBlocks.Core.Tests.Commands
         public async Task ValidateRequiresUserId()
         {
             var sessionMock = new Mock<IAsyncDocumentSession>();
-            var command = new FinishSessionCommand { UserId = string.Empty };
+            var command = new FinishSession { UserId = string.Empty };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {

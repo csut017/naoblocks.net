@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using NaoBlocks.Core.Commands;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
@@ -12,6 +11,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Commands = NaoBlocks.Core.Commands;
+
 namespace NaoBlocks.Web.Controllers
 {
     [Route("api/v1")]
@@ -20,12 +21,12 @@ namespace NaoBlocks.Web.Controllers
     [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
     public class SystemController : ControllerBase
     {
-        private readonly ICommandManager _commandManager;
+        private readonly Commands.ICommandManager _commandManager;
         private readonly IHub _hub;
         private readonly ILogger<SystemController> _logger;
         private readonly IAsyncDocumentSession _session;
 
-        public SystemController(ILogger<SystemController> logger, ICommandManager commandManager, IAsyncDocumentSession session, IHub hub)
+        public SystemController(ILogger<SystemController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session, IHub hub)
         {
             this._logger = logger;
             this._commandManager = commandManager;
@@ -49,12 +50,12 @@ namespace NaoBlocks.Web.Controllers
                 return new BadRequestObjectResult(new Dtos.ExecutionResult
                 {
                     ValidationErrors = new[] {
-                        new CommandError(0, "System already initialised")
+                        new Commands.CommandError(0, "System already initialised")
                     }
                 }); ;
             }
 
-            var command = new AddUserCommand
+            var command = new Commands.AddUser
             {
                 Name = administrator.Name,
                 Password = administrator.Password,

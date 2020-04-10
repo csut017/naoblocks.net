@@ -15,7 +15,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ApplyRequiresSession()
         {
-            var command = new UpdateRobotCommand();
+            var command = new UpdateRobot();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ApplyAsync(null));
         }
 
@@ -30,7 +30,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data.AsRavenQueryable());
 
-            var command = new UpdateRobotCommand { FriendlyName = "Bill", CurrentMachineName = "Bob" };
+            var command = new UpdateRobot { FriendlyName = "Bill", CurrentMachineName = "Bob" };
             await command.ValidateAsync(sessionMock.Object);
             var result = await command.ApplyAsync(sessionMock.Object);
             Assert.True(result.WasSuccessful);
@@ -48,7 +48,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data.AsRavenQueryable());
 
-            var command = new UpdateRobotCommand { MachineName = "Bill", CurrentMachineName = "Bob" };
+            var command = new UpdateRobot { MachineName = "Bill", CurrentMachineName = "Bob" };
             await command.ValidateAsync(sessionMock.Object);
             var result = await command.ApplyAsync(sessionMock.Object);
             Assert.True(result.WasSuccessful);
@@ -66,7 +66,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
 
-            var command = new UpdateRobotCommand { CurrentMachineName = "Bob" };
+            var command = new UpdateRobot { CurrentMachineName = "Bob" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new string[0];
             Assert.Equal(expected, result.Select(r => r.Error));
@@ -80,7 +80,7 @@ namespace NaoBlocks.Core.Tests.Commands
             var sessionMock = new Mock<IAsyncDocumentSession>();
             sessionMock.Setup(s => s.Query<Robot>(null, null, false)).Returns(data);
 
-            var command = new UpdateRobotCommand { CurrentMachineName = "Bob" };
+            var command = new UpdateRobot { CurrentMachineName = "Bob" };
             var result = await command.ValidateAsync(sessionMock.Object);
             var expected = new[]
             {
@@ -92,7 +92,7 @@ namespace NaoBlocks.Core.Tests.Commands
         [Fact]
         public async Task ValidateRequiresSession()
         {
-            var command = new UpdateRobotCommand();
+            var command = new UpdateRobot();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await command.ValidateAsync(null));
         }
     }

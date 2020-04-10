@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class DeleteRobotCommand
+    public class DeleteRobot
         : CommandBase
     {
         private Robot? robot;
