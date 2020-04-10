@@ -15,6 +15,7 @@ export class LoginComponent implements OnInit {
   username: string;
   userrole: string = 'Student';
   version: SystemVersion;
+  loggingIn: boolean = false;
 
   loginError: string;
 
@@ -30,8 +31,10 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     if (this.username && this.password) {
       console.log('Logging in');
+      this.loggingIn = true;
       this.authenticationService.login(this.username, this.password, this.userrole)
         .subscribe(data => {
+          this.loggingIn = false;
           if (data.successful) {
             this.loginError = null;
             this.router.navigateByUrl(this.userrole.toLowerCase());

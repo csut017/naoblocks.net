@@ -13,21 +13,21 @@
                 <label>Password</label>
                 <input type="password" name="password" clrPassword [(ngModel)]="password" />
             </clr-password-container>
-            <clr-select-container>
-                <label>Role</label>
-                <select clrSelect name="type" [(ngModel)]="userrole">
-                    <option value="Student">Student</option>
-                    <option value="Teacher">Teacher</option>
-                    <option value="Administrator">Administrator</option>
-                </select>
-            </clr-select-container>
             <div class="error active" *ngIf="loginError">
                 {{loginError}}
             </div>
-            <button type="submit" class="btn btn-primary">Next</button>
+            <div *ngIf="loggingIn" class="btn">
+                <span class="spinner spinner-inline">
+                    (_)
+                </span>
+                Authenticating...
+            </div>
+            <button type="submit" class="btn btn-primary" *ngIf="!loggingIn">
+                Next
+            </button>
             <div class="version-information">
                 <span *ngIf="!version">
-                    <span class="spinner spinner-inline">
+                    <span class="spinner spinner-inline spinner-inverse">
                         (_)
                     </span>
                     <span>
