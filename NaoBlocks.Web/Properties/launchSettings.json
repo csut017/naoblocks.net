@@ -20,7 +20,7 @@
     "NaoBlocks.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://192.168.0.13:5000",
+      "launchUrl": "https://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
