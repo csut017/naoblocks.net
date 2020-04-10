@@ -26,7 +26,7 @@
             <clr-dropdown>
                 <button class="nav-text" clrDropdownTrigger aria-label="toggle settings menu">
                     <clr-icon shape="cog"></clr-icon>
-                    {{currentUser.name}}
+                    {{currentUser ? currentUser.name : ''}}
                     <clr-icon shape="caret down"></clr-icon>
                 </button>
                     <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
