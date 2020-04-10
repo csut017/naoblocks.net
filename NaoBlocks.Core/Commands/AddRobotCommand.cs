@@ -19,6 +19,10 @@ namespace NaoBlocks.Core.Commands
 
         public string? Password { get; set; }
 
+        public RobotType? RobotType { get; set; }
+
+        public string? Type { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -33,9 +37,25 @@ namespace NaoBlocks.Core.Commands
                 this.FriendlyName = this.MachineName;
             }
 
-            if (!errors.Any() && await session.Query<Robot>().AnyAsync(s => s.MachineName == this.MachineName).ConfigureAwait(false))
+            if (string.IsNullOrWhiteSpace(this.Type))
             {
-                errors.Add(this.Error($"Robot with name {this.MachineName} already exists"));
+                errors.Add(this.Error($"Type is required for a robot"));
+            }
+
+            if (!errors.Any())
+            {
+                if (await session.Query<Robot>().AnyAsync(s => s.MachineName == this.MachineName).ConfigureAwait(false))
+                {
+                    errors.Add(this.Error($"Robot with name {this.MachineName} already exists"));
+                }
+
+                this.RobotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.Type)
+                    .ConfigureAwait(false);
+                if (this.RobotType == null)
+                {
+                    errors.Add(this.Error($"Unknown robot type {this.Type}"));
+                }
             }
 
             this.HashedPassword = Models.Password.New(this.Password ?? string.Empty);
@@ -54,6 +74,7 @@ namespace NaoBlocks.Core.Commands
                 FriendlyName = this.FriendlyName ?? "<Unknown>",
                 Password = this.HashedPassword,
                 IsInitialised = true,
+                RobotTypeId = this.RobotType?.Id ?? string.Empty,
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);

@@ -12,13 +12,16 @@ namespace NaoBlocks.Web.Dtos
 
         public string? Password { get; set; }
 
+        public string? Type { get; set; }
+
         public static Robot? FromModel(Data.Robot value)
         {
             return value == null ? null : new Robot
             {
                 FriendlyName = value.FriendlyName,
                 IsInitialised = value.IsInitialised,
-                MachineName = value.MachineName
+                MachineName = value.MachineName,
+                Type = value.Type?.Name
             };
         }
     }

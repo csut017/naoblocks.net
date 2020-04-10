@@ -9,17 +9,23 @@ using System.Threading.Tasks;
 namespace NaoBlocks.Core.Commands
 {
     public class UpdateRobotCommand
-        : CommandBase
+        : CommandBase<Robot>
     {
         private Robot? robot;
 
         public string? CurrentMachineName { get; set; }
 
         public string? FriendlyName { get; set; }
+
         public Password? HashedPassword { get; set; }
+
         public string? MachineName { get; set; }
 
         public string? Password { get; set; }
+
+        public RobotType? RobotType { get; set; }
+
+        public string? Type { get; set; }
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
@@ -36,6 +42,17 @@ namespace NaoBlocks.Core.Commands
                 this.Password = null;
             }
 
+            if (!string.IsNullOrEmpty(this.Type))
+            {
+                this.RobotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.Type)
+                    .ConfigureAwait(false);
+                if (this.RobotType == null)
+                {
+                    errors.Add(this.Error($"Unknown robot type {this.Type}"));
+                }
+            }
+
             return errors.AsEnumerable();
         }
 
@@ -50,8 +67,12 @@ namespace NaoBlocks.Core.Commands
                 this.robot.Password = this.HashedPassword;
                 this.robot.IsInitialised = true;
             }
+            if (this.RobotType != null)
+            {
+                this.robot.RobotTypeId = this.RobotType.Id;
+            }
 
-            return Task.FromResult(CommandResult.New(this.Number));
+            return Task.FromResult(CommandResult.New(this.Number, this.robot));
         }
     }
 }

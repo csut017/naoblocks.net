@@ -43,31 +43,47 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<Dtos.Robot>> GetRobot(string id)
         {
             this._logger.LogDebug($"Retrieving robot: id {id}");
-            var queryable = this.session.Query<Robot>();
+            var queryable = this.session.Query<Robot>()
+                .Include<Robot>(r => r.RobotTypeId);
             var robot = await queryable.FirstOrDefaultAsync(u => u.MachineName == id);
             if (robot == null)
             {
                 return NotFound();
             }
 
+            robot.Type = await session.LoadAsync<RobotType>(robot.RobotTypeId);
             this._logger.LogDebug("Retrieved robot");
             return Dtos.Robot.FromModel(robot);
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.Robot>> GetRobots(int? page, int? size)
+        public async Task<ActionResult<Dtos.ListResult<Dtos.Robot>>> GetRobots(int? page, int? size, string? type)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
             if (pageSize > 100) pageSize = 100;
 
             this._logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
-            var robots = await this.session.Query<Robot>()
-                                             .Statistics(out QueryStatistics stats)
-                                             .OrderBy(s => s.MachineName)
-                                             .Skip(pageNum * pageSize)
-                                             .Take(pageSize)
-                                             .ToListAsync();
+            var query = this.session.Query<Robot>()
+                .Include<Robot>(r => r.RobotTypeId)
+                .Statistics(out QueryStatistics stats)
+                .OrderBy(s => s.MachineName);
+            if (!string.IsNullOrEmpty(type))
+            {
+                var robotType = await this.session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == type);
+                if (robotType == null)
+                {
+                    return NotFound();
+                }
+
+                query.Where(r => r.RobotTypeId == robotType.Id);
+            }
+
+            var robots = await query
+                .Skip(pageNum * pageSize)
+                .Take(pageSize).ToListAsync();
+            robots.ForEach(async r => r.Type = await session.LoadAsync<RobotType>(r.RobotTypeId));
             var count = robots.Count;
             this._logger.LogDebug($"Retrieved {count} robots");
             var result = new Dtos.ListResult<Dtos.Robot>
@@ -96,7 +112,8 @@ namespace NaoBlocks.Web.Controllers
             {
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName,
-                Password = robot.Password
+                Password = robot.Password,
+                Type = robot.Type
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
         }
@@ -119,7 +136,8 @@ namespace NaoBlocks.Web.Controllers
                 CurrentMachineName = id,
                 MachineName = robot.MachineName,
                 FriendlyName = robot.FriendlyName,
-                Password = robot.Password
+                Password = robot.Password,
+                Type = robot.Type
             };
             return await this.commandManager.ExecuteForHttp(command);
         }

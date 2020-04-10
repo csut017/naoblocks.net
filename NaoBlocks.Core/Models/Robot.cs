@@ -14,6 +14,10 @@ namespace NaoBlocks.Core.Models
 
         public Password Password { get; set; } = Password.Empty;
 
+        public string RobotTypeId { get; set; } = string.Empty;
+
+        public RobotType? Type { get; set; }
+
         public DateTime WhenAdded { get; set; }
     }
 }

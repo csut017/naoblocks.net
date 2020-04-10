@@ -14,6 +14,8 @@
 
         public bool Loops { get; set; }
 
+        public string RobotType { get; set; } = "Nao";
+
         public bool Sensors { get; set; }
 
         public bool Simple { get; set; }
