@@ -1,4 +1,5 @@
-﻿using Data = NaoBlocks.Core.Models;
+﻿using System.Collections.Generic;
+using Data = NaoBlocks.Core.Models;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -6,12 +7,28 @@ namespace NaoBlocks.Web.Dtos
     {
         public string Name { get; set; } = string.Empty;
 
+        public IList<Data.ToolboxCategory>? Toolbox { get; private set; }
+
         public static RobotType? FromModel(Data.RobotType value)
         {
-            return value == null ? null : new RobotType
+            return FromModel(value, ConversionOptions.SummaryOnly);
+        }
+
+        public static RobotType? FromModel(Data.RobotType value, ConversionOptions opts)
+        {
+            if (value == null) return null;
+            
+            var output = new RobotType
             {
                 Name = value.Name
             };
+
+            if (opts.HasFlag(ConversionOptions.IncludeDetails))
+            {
+                output.Toolbox = value.Toolbox;
+            }
+
+            return output;
         }
     }
 }

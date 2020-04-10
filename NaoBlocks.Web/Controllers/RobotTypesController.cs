@@ -6,8 +6,11 @@ using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Commands = NaoBlocks.Core.Commands;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -99,27 +102,52 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
         }
 
-        //[HttpPut("{id}")]
-        //[Authorize(Policy = "Teacher")]
-        //public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Robot? robot)
-        //{
-        //    if ((robot == null) || string.IsNullOrEmpty(id))
-        //    {
-        //        return this.BadRequest(new
-        //        {
-        //            Error = "Missing robot details"
-        //        });
-        //    }
+        [HttpPost("{id}/toolbox")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.RobotType>>> ImportToolbox(string? id)
+        {
+            var xml = string.Empty;
+            using (var reader = new StreamReader(this.Request.Body))
+            {
+                xml = await reader.ReadToEndAsync();
+            }
 
-        //    this._logger.LogInformation($"Updating robot '{id}'");
-        //    var command = new UpdateRobotCommand
-        //    {
-        //        CurrentMachineName = id,
-        //        MachineName = robot.MachineName,
-        //        FriendlyName = robot.FriendlyName,
-        //        Password = robot.Password
-        //    };
-        //    return await this.commandManager.ExecuteForHttp(command);
-        //}
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing toolbox definition"
+                });
+            }
+
+            this._logger.LogInformation($"Updating robot type '{id}'");
+            var command = new Commands.ImportToolbox
+            {
+                Name = id,
+                Definition = xml
+            };
+            return await this.commandManager.ExecuteForHttp(command, rt => Dtos.RobotType.FromModel(rt, Dtos.ConversionOptions.IncludeDetails));
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.RobotType>>> Put(string? id, Dtos.RobotType? robotType)
+        {
+            if ((robotType == null) || string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot type details"
+                });
+            }
+
+            this._logger.LogInformation($"Updating robot type '{id}'");
+            var command = new UpdateRobotTypeCommand
+            {
+                CurrentName = id,
+                Name = robotType.Name
+            };
+            return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
+        }
     }
 }

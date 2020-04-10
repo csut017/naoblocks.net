@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NaoBlocks.Core.Models
 {
@@ -9,5 +10,7 @@ namespace NaoBlocks.Core.Models
         public string Name { get; set; } = string.Empty;
 
         public DateTime WhenAdded { get; set; }
+
+        public IList<ToolboxCategory> Toolbox { get; private set; } = new List<ToolboxCategory>();
     }
 }
