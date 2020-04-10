@@ -24,13 +24,15 @@
         </div>
         <div class="header-actions">
             <clr-dropdown>
-                <button class="nav-icon" clrDropdownTrigger aria-label="toggle settings menu">
+                <button class="nav-text" clrDropdownTrigger aria-label="toggle settings menu">
                     <clr-icon shape="cog"></clr-icon>
+                    {{currentUser.name}}
                     <clr-icon shape="caret down"></clr-icon>
                 </button>
-                <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+                    <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
                     <a href="javascript://" clrDropdownItem (click)="showSettings()">Settings</a>
-                    <a href="javascript://" clrDropdownItem (click)="changeRole()" *ngIf="canChangeRole()">Change Role</a>
+                    <a href="javascript://" clrDropdownItem (click)="changeRole()" *ngIf="canChangeRole()">Change
+                        Role</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
                     <div class="dropdown-divider" role="separator"></div>
@@ -73,7 +75,8 @@
         </clr-vertical-nav>
         <div class="content-area">
             <div class="clr-row" style="height:100%">
-                <div class="clr-col-10 clr-col-lg-9" [ngClass]="{'editor-full': !isTutorialHidden && !tutorialOpen, 'editor-fill': isTutorialHidden}">
+                <div class="clr-col-10 clr-col-lg-9"
+                    [ngClass]="{'editor-full': !isTutorialHidden && !tutorialOpen, 'editor-fill': isTutorialHidden}">
                     <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
                         <div class="alert-items">
                             <div class="alert-item static">
@@ -92,7 +95,8 @@
                     <div id="blocklyArea" style="height: 100%; width: 100%;"></div>
                     <div id="blocklyDiv" style="position: absolute;"></div>
                 </div>
-                <div class="clr-col-2 clr-col-lg-3" [ngClass]="{'hide-tutorial': !tutorialOpen}" *ngIf="!isTutorialHidden">
+                <div class="clr-col-2 clr-col-lg-3" [ngClass]="{'hide-tutorial': !tutorialOpen}"
+                    *ngIf="!isTutorialHidden">
                     <div class="card" style="margin-top: 0;">
                         <div class="card-header">
                             <button (click)="tutorialOpen=!tutorialOpen" class="btn btn-sm btn-link">
@@ -122,7 +126,8 @@
                             </div>
                             <div class="card-text" *ngIf="!tutorialLoading && !!currentTutorial">
                                 <form clrStepper [formGroup]="tutorialForm" (ngSubmit)="markTutorialComplete()">
-                                    <clr-stepper-panel [formGroupName]="'ex' + ex.order" *ngFor="let ex of currentTutorial.exercises">
+                                    <clr-stepper-panel [formGroupName]="'ex' + ex.order"
+                                        *ngFor="let ex of currentTutorial.exercises">
                                         <clr-step-title>{{ex.name}}</clr-step-title>
                                         <clr-step-content [(clrIfExpanded)]="ex.isCurrent">
                                             <h3 *ngIf="ex.title">{{ex.title}}</h3>
