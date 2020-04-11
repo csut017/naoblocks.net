@@ -1,6 +1,8 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Robot } from '../data/robot';
 import { RobotService } from '../services/robot.service';
+import { RobotType } from '../data/robot-type';
+import { RobotTypeService } from '../services/robot-type.service';
 
 @Component({
   selector: 'app-robot-editor',
@@ -13,10 +15,16 @@ export class RobotEditorComponent implements OnInit {
   @Output() closed = new EventEmitter<boolean>();
   errors: string[];
   showPassword: boolean = false;
+  types: RobotType[] = [];
 
-  constructor(private robotService: RobotService) { }
+  constructor(private robotService: RobotService,
+    private robotTypeService: RobotTypeService) { }
 
   ngOnInit() {
+    this.robotTypeService.list()
+      .subscribe(results => {
+        this.types = results.items;
+      });
   }
 
   doSave() {

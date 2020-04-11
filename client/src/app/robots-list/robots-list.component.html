@@ -32,11 +32,16 @@
 
         <clr-dg-column [clrDgField]="'machineName'">Machine Name</clr-dg-column>
         <clr-dg-column [clrDgField]="'friendlyName'">Friendly Name</clr-dg-column>
+        <clr-dg-column [clrDgField]="'type'">Type</clr-dg-column>
         <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let robot of robots.items" [clrDgItem]="robot">
-            <clr-dg-cell>{{robot.machineName}}</clr-dg-cell>
+            <clr-dg-cell>
+                <clr-icon shape="vm" [ngClass]="{'has-badge': !robot.isInitialised}"></clr-icon>
+                {{robot.machineName}}
+            </clr-dg-cell>
             <clr-dg-cell>{{robot.friendlyName}}</clr-dg-cell>
+            <clr-dg-cell>{{robot.type}}</clr-dg-cell>
             <clr-dg-cell>{{robot.whenAdded | date}}</clr-dg-cell>
         </clr-dg-row>
 
