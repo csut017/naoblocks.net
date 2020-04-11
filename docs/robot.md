@@ -25,4 +25,5 @@ This client runs directly on the robot itself. The client is written in Python (
 
 The client depends on the following packages:
 
+* requests ([site](https://pypi.org/project/requests/)) - installed by default on Nao robots
 * websocket-client ([site](https://pypi.org/project/websocket_client/))
