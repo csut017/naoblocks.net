@@ -28,6 +28,23 @@ namespace NaoBlocks.Core.Commands
             {
                 errors.Add(this.Error($"Settings are required"));
             }
+            else
+            {
+                if (!string.IsNullOrEmpty(this.Settings.RobotType))
+                {
+                    var robotType = await session.Query<RobotType>()
+                        .FirstOrDefaultAsync(rt => rt.Name == this.Settings.RobotType)
+                        .ConfigureAwait(false);
+                    if (robotType == null)
+                    {
+                        errors.Add(this.Error($"Unknown robot type {this.Settings.RobotType}"));
+                    }
+                    else
+                    {
+                        this.Settings.RobotTypeId = robotType.Id;
+                    }
+                }
+            }
 
             if (this.User == null)
             {

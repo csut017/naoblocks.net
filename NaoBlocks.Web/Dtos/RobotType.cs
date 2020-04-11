@@ -7,6 +7,8 @@ namespace NaoBlocks.Web.Dtos
     {
         public string Name { get; set; } = string.Empty;
 
+        public bool? IsDefault { get; set; }
+
         public IList<Data.ToolboxCategory>? Toolbox { get; private set; }
 
         public static RobotType? FromModel(Data.RobotType value)
@@ -20,7 +22,8 @@ namespace NaoBlocks.Web.Dtos
             
             var output = new RobotType
             {
-                Name = value.Name
+                Name = value.Name,
+                IsDefault = value.IsDefault
             };
 
             if (opts.HasFlag(ConversionOptions.IncludeDetails))

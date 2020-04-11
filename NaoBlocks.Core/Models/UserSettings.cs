@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Core.Models
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Core.Models
 {
     public class UserSettings
     {
@@ -14,7 +16,9 @@
 
         public bool Loops { get; set; }
 
-        public string RobotType { get; set; } = "Nao";
+        public string? RobotType { get; set; }
+        
+        public string? RobotTypeId { get; set; }
 
         public bool Sensors { get; set; }
 

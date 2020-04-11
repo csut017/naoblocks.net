@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
+using Generators = NaoBlocks.Core.Generators;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -78,16 +79,31 @@ namespace NaoBlocks.Web.Controllers
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
-            var now = this.CurrentTimeFunc();
-            var session = await this.session.Query<Session>()
-                .FirstOrDefaultAsync(s => s.UserId == user.Id && s.WhenExpires > now);
-            var remaining = session != null
-                ? session.WhenExpires.Subtract(now).TotalMinutes
-                : -1;
+            var robotType = await this.RetrieveRobotTypeForUser(user);
+            var toolbox = Generators.UserToolbox.Generate(user, robotType);
+
             return new Dtos.EditorSettings
             {
-                User = user.Settings
+                User = user.Settings,
+                Toolbox = toolbox
             };
+        }
+
+        private async Task<RobotType> RetrieveRobotTypeForUser(User? user)
+        {
+            RobotType? robotType = null;
+            if (!string.IsNullOrEmpty(user?.Settings.RobotTypeId))
+            {
+                robotType = await this.session.LoadAsync<RobotType>(user.Settings.RobotTypeId);
+            }
+
+            if (robotType == null)
+            {
+                robotType = await this.session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.IsDefault);
+            }
+
+            return robotType;
         }
 
         [AllowAnonymous]
@@ -145,7 +161,16 @@ namespace NaoBlocks.Web.Controllers
                 Settings = settings.User
             };
 
-            return await this.commandManager.ExecuteForHttp(command, s => new Dtos.EditorSettings { User = s });
+            return await this.commandManager.ExecuteForHttp(command, async s =>
+            {
+                var robotType = await this.RetrieveRobotTypeForUser(user);
+                var xml = Generators.UserToolbox.Generate(user, robotType);
+                return new Dtos.EditorSettings
+                {
+                    User = s,
+                    Toolbox = xml
+                };
+            });
         }
 
         [HttpPut]

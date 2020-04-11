@@ -96,7 +96,8 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Adding new robot type '{robotType.Name}'");
             var command = new Commands.AddRobotType
             {
-                Name = robotType.Name
+                Name = robotType.Name,
+                IsDefault = robotType.IsDefault.GetValueOrDefault(false)
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
         }
@@ -144,7 +145,8 @@ namespace NaoBlocks.Web.Controllers
             var command = new Commands.UpdateRobotType
             {
                 CurrentName = id,
-                Name = robotType.Name
+                Name = robotType.Name,
+                IsDefault = robotType.IsDefault
             };
             return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
         }

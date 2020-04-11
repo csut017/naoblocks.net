@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Toolbox } from './toolbox';
 import { AuthenticationService, UserRole } from '../services/authentication.service';
 import { Router } from '@angular/router';
 import { HomeBase } from '../home-base';
@@ -240,26 +239,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   private buildToolboxXml() {
-    let toolbox = new Toolbox();
-    if (this.editorSettings.user.simple) {
-      toolbox.useSimpleStyle();
-    }
-    else {
-      toolbox.useDefaultStyle();
-      if (this.editorSettings.user.conditionals)
-        toolbox.includeConditionals();
-      if (this.editorSettings.user.loops)
-        toolbox.includeLoops();
-      if (this.editorSettings.user.variables)
-        toolbox.includeVariables();
-      if (this.editorSettings.user.dances)
-        toolbox.includeDances();
-      if (this.editorSettings.user.sensors)
-        toolbox.includeSensors();
-      if (this.editorSettings.user.events)
-        toolbox.includeEvents();
-    }
-    let xml = toolbox.build();
+    let xml = this.editorSettings.toolbox || '<xml><category name="Loading..."></category></xml>';
     this.requireEvents = this.editorSettings.user.events && !this.editorSettings.user.simple;
     return xml;
   }

@@ -15,6 +15,8 @@ namespace NaoBlocks.Core.Commands
 
         public string? CurrentName { get; set; }
 
+        public bool? IsDefault { get; set; }
+
         public string? Name { get; set; }
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
@@ -34,6 +36,7 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.robotType == null) throw new InvalidOperationException("ValidateAsync must be called first");
             if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.robotType.Name)) this.robotType.Name = this.Name;
+            if (this.IsDefault.HasValue) this.robotType.IsDefault = this.IsDefault.Value;
 
             return Task.FromResult(CommandResult.New(this.Number, this.robotType));
         }

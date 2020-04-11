@@ -383,18 +383,32 @@ var blocks = [{
     "output": null,
     "tooltip": "Append text to a variable."
 }, {
-    "type": "robot_turn",
-    "message0": "turn %1 degrees",
+    "type": "robot_move",
+    "message0": "move forward %1s seconds",
     "args0": [{
         "type": "input_value",
         "check": "Number",
-        "name": "ANGLE"
+        "name": "SECONDS"
+    }
+    ],
+    "inputsInline": true,
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Moves forward for the duration."
+}, {
+    "type": "robot_turn",
+    "message0": "turn %1 seconds",
+    "args0": [{
+        "type": "input_value",
+        "check": "Number",
+        "name": "SECONDS"
     }],
     "inputsInline": true,
     "nextStatement": null,
     "previousStatement": null,
     "colour": 65,
-    "tooltip": "Walks to the location."
+    "tooltip": "Turns for the duration."
 }, {
     "type": "robot_walk",
     "message0": "walk forward %1s, sideways %2s",
@@ -413,7 +427,7 @@ var blocks = [{
     "nextStatement": null,
     "previousStatement": null,
     "colour": 65,
-    "tooltip": "Walks to the location."
+    "tooltip": "Walks for the duration."
 }];
 Blockly.NaoLang.Postures.forEach(function (posture) {
     blocks.push({

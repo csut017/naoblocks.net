@@ -43,7 +43,18 @@ Content-Type: application/json; charset=utf-8
 Authorization: Bearer {{authToken}}
 
 {
-  "name": "nao"
+  "name": "nao",
+  "isDefault": true
+}
+###
+
+PUT {{baseURL}}/robots/types/nao HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Nao",
+  "isDefault": true
 }
 ###
 
@@ -62,7 +73,7 @@ Authorization: Bearer {{authToken}}
     <block type="robot_on_start"></block>
     <block type="robot_on_button"></block>
   </category>
-  <category name="Robot Postures" colour="65">
+  <category name="Robot Postures" colour="65" tags="simple">
     <block type="robot_posture_Stand"></block>
     <block type="robot_posture_Sit"></block>
     <block type="robot_posture_SitRelax"></block>
@@ -70,23 +81,7 @@ Authorization: Bearer {{authToken}}
     <block type="robot_posture_LyingBelly"></block>
     <block type="robot_posture_LyingBack"></block>
   </category>
-  <category name="Robot Actions" colour="65">
-    <block type="robot_say">
-      <value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
-    </block>
-    <block type="robot_wait">
-      <value name="TIME"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-    </block>
-    <block type="robot_action_wave"></block>
-    <block type="robot_action_wipe_forehead"></block>
-  </category>
-  <category name="Robot Actions" colour="65">
-    <block type="robot_change_chest">
-      <value name="COLOUR"><shadow type="colour_picker"><field name="COLOUR">#ff0000</field></shadow></value>
-    </block>
-    <block type="robot_change_eye">
-      <value name="COLOUR"><shadow type="colour_picker"><field name="COLOUR">#ff0000</field></shadow></value>
-    </block>
+  <category name="Robot Actions" colour="65" tags="simple default">
     <block type="robot_rest"></block>
     <block type="robot_wait">
       <value name="TIME"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
@@ -95,7 +90,19 @@ Authorization: Bearer {{authToken}}
       <value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
     </block>
   </category>
-  <category name="Robot Movements" colour="65">
+  <category name="Robot Actions" colour="65" tags="simple">
+    <block type="robot_action_wave"></block>
+    <block type="robot_action_wipe_forehead"></block>
+  </category>
+  <category name="Robot Actions" colour="65" tags="default">
+    <block type="robot_change_chest">
+      <value name="COLOUR"><shadow type="colour_picker"><field name="COLOUR">#ff0000</field></shadow></value>
+    </block>
+    <block type="robot_change_eye">
+      <value name="COLOUR"><shadow type="colour_picker"><field name="COLOUR">#ff0000</field></shadow></value>
+    </block>
+  </category>
+  <category name="Robot Movements" colour="65" tags="default">
     <block type="robot_posture"></block>
     <block type="robot_posture_and_say">
       <value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
@@ -108,37 +115,37 @@ Authorization: Bearer {{authToken}}
     <block type="robot_hand"></block>
     <block type="robot_point"></block>
     <block type="robot_turn">
-      <value name="ANGLE"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+      <value name="SECONDS"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
     </block>
     <block type="robot_walk">
       <value name="X"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
       <value name="Y"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
     </block>
   </category>
-  <category name="Robot Dances" colour="65">
+  <category name="Robot Dances" colour="65" tags="dances">
     <block type="robot_gangnam"></block>
     <block type="robot_taichi"></block>
   </category>
-  <category name="Robot Sensors" colour="85">
+  <category name="Robot Sensors" colour="85" tags="sensors">
     <block type="robot_sensor_head"></block>
     <block type="robot_sensor_battery"></block>
     <block type="robot_sensor_sonar"></block>
     <block type="robot_sensor_gyroscope"></block>
   </category>
-  <category name="Logic" colour="%{BKY_LOGIC_HUE}">
+  <category name="Logic" colour="%{BKY_LOGIC_HUE}" tags="conditionals">
     <block type="controls_if"></block>
     <block type="logic_compare"></block>
     <block type="logic_operation"></block>
     <block type="logic_negate"></block>
     <block type="logic_boolean"></block>
   </category>
-  <category name="Loops" colour="%{BKY_LOOPS_HUE}">
+  <category name="Loops" colour="%{BKY_LOOPS_HUE}" tags="loops">
     <block type="controls_repeat_ext">
       <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
     </block>
     <block type="controls_whileUntil"></block>
   </category>
-  <category name="Maths" colour="%{BKY_MATH_HUE}">
+  <category name="Maths" colour="%{BKY_MATH_HUE}" tags="conditionals variables">
     <block type="math_number"></block>
     <block type="math_arithmetic">
       <value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
@@ -155,7 +162,7 @@ Authorization: Bearer {{authToken}}
       <value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
     </block>
   </category>
-  <category name="Text" colour="%{BKY_TEXTS_HUE}">
+  <category name="Text" colour="%{BKY_TEXTS_HUE}" tags="variables">
     <block type="text"></block>
     <block type="text_concat">
       <value name="TEXT"><shadow type="text"></shadow></value>
@@ -164,11 +171,90 @@ Authorization: Bearer {{authToken}}
       <value name="VALUE"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
     </block>
   </category>
-  <category name="Colour" colour="%{BKY_COLOUR_HUE}">
+  <category name="Colour" colour="%{BKY_COLOUR_HUE}" tags="default">
     <block type="colour_picker"></block>
     <block type="colour_random"></block>
   </category>
-  <category name="Variables" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE">
+  <category name="Variables" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE" tags="variables">
+  </category>
+</toolbox>
+###
+
+POST {{baseURL}}/robots/types HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "TurtleBot2"
+}
+###
+
+POST {{baseURL}}/robots/types/TurtleBot2/toolbox HTTP/1.1
+Content-Type: text/plain
+Authorization: Bearer {{authToken}}
+
+<toolbox>
+  <category name="Robot Events" colour="290" tags="events">
+    <block type="robot_on_start"></block>
+  </category>
+  <category name="Robot Actions" colour="65" tags="simple default">
+    <block type="robot_wait">
+      <value name="TIME"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+    </block>
+    <block type="robot_say">
+      <value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
+    </block>
+    <block type="robot_move">
+      <value name="SECONDS"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+    </block>
+    <block type="robot_turn">
+      <value name="SECONDS"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+    </block>
+  </category>
+  <category name="Robot Sensors" colour="85" tags="sensors">
+    <block type="robot_sensor_sonar"></block>
+    <block type="robot_sensor_gyroscope"></block>
+  </category>
+  <category name="Logic" colour="%{BKY_LOGIC_HUE}" tags="conditionals">
+    <block type="controls_if"></block>
+    <block type="logic_compare"></block>
+    <block type="logic_operation"></block>
+    <block type="logic_negate"></block>
+    <block type="logic_boolean"></block>
+  </category>
+  <category name="Loops" colour="%{BKY_LOOPS_HUE}" tags="loops">
+    <block type="controls_repeat_ext">
+      <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
+    </block>
+    <block type="controls_whileUntil"></block>
+  </category>
+  <category name="Maths" colour="%{BKY_MATH_HUE}" tags="conditionals variables">
+    <block type="math_number"></block>
+    <block type="math_arithmetic">
+      <value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+      <value name="B"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+    </block>
+    <block type="math_number_property">
+      <value name="NUMBER_TO_CHECK"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+    </block>
+    <block type="math_round">
+      <value name="NUM"><shadow type="math_number"><field name="NUM">3.1</field></shadow></value>
+    </block>
+    <block type="math_random_int">
+      <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+      <value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+    </block>
+  </category>
+  <category name="Text" colour="%{BKY_TEXTS_HUE}" tags="variables">
+    <block type="text"></block>
+    <block type="text_concat">
+      <value name="TEXT"><shadow type="text"></shadow></value>
+    </block>
+    <block type="text_length">
+      <value name="VALUE"><shadow type="text"><field name="TEXT">abc</field></shadow></value>
+    </block>
+  </category>
+  <category name="Variables" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE" tags="variables">
   </category>
 </toolbox>
 ###

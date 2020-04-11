@@ -206,8 +206,13 @@ Blockly.NaoLang.robot_say = function (block) {
     return Blockly.NaoLang.generatePrefix() + code;
 };
 Blockly.NaoLang.robot_turn = function (block) {
-    var angle = Blockly.NaoLang.valueToCode(block, 'ANGLE', Blockly.NaoLang.ORDER_ATOMIC),
-        code = 'turn(' + angle + ')\n';
+    var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
+        code = 'turn(' + seconds + ')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
+Blockly.NaoLang.robot_move = function (block) {
+    var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
+        code = 'moveForward(' + seconds + ')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
 Blockly.NaoLang.robot_walk = function (block) {

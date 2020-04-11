@@ -13,6 +13,8 @@ namespace NaoBlocks.Core.Commands
     {
         public string? Name { get; set; }
 
+        public bool IsDefault { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -37,8 +39,10 @@ namespace NaoBlocks.Core.Commands
             var robot = new RobotType
             {
                 Name= this.Name?? "<Unknown>",
+                IsDefault = this.IsDefault,
                 WhenAdded = this.WhenExecuted
             };
+
             await session.StoreAsync(robot).ConfigureAwait(false);
             return this.Result(robot);
         }
