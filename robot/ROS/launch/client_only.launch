@@ -1,0 +1,9 @@
+<launch>
+    <node pkg="block_client" type="block_client.py" name="block_client" required="true" output="screen">
+        <param name="use_ssl" value="false" />
+        <param name="server_address" value="192.168.0.4:5000" />
+        <param name="server_pwd" value="robot" />
+        <param name="reconnect_count" value="5" />
+    </node>
+    <include file="$(find sound_play)/soundplay_node.launch" />
+</launch>

@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+  <include file="$(find astra_launch)/launch/astra.launch" />
+  <include file="$(find block_client)/launch/client_only.launch" />
+  <node pkg="web_video_server" type="web_video_server" name="web_video_server" />
+</launch>

@@ -32,6 +32,7 @@ class Communications(object):
         self._ast = None
         self._secure = True
         self._conversationId = 0
+        self._closing = False
 
     def start(self, address, pwd=None, verify=True, secure=True):
         self._verify = verify
@@ -99,6 +100,12 @@ class Communications(object):
         self._ws.on_open = self._open
         connectAgain = True
         while connectAgain:
+            # If we are closing, shut down without attempting to reconnect
+            if self._closing:
+                connectAgain = False
+                continue
+
+            # Attempt to reconnect
             if self._connectionCount > 0:
                 delayTime = 2 ** self._connectionCount
                 logger.log('[Comms] Pausing for %ds', delayTime)
@@ -209,3 +216,7 @@ class Communications(object):
         })
         logger.log('[Comms] -> %s', msg)
         self._ws.send(msg)
+
+    def close(self):
+        logger.log('[Comms] Closing down communications')
+        self._closing = True
