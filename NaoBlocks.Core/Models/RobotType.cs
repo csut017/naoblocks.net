@@ -5,6 +5,11 @@ namespace NaoBlocks.Core.Models
 {
     public class RobotType
     {
+        public static RobotType Unknown
+        {
+            get { return new RobotType { Name = "Unknown" }; }
+        }
+
         public string Id { get; set; } = string.Empty;
 
         public bool IsDefault { get; set; }

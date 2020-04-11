@@ -84,7 +84,12 @@ namespace NaoBlocks.Web.Controllers
             var robots = await query
                 .Skip(pageNum * pageSize)
                 .Take(pageSize).ToListAsync();
-            robots.ForEach(async r => r.Type = await session.LoadAsync<RobotType>(r.RobotTypeId));
+            robots.ForEach(async r =>
+            {
+                r.Type = string.IsNullOrEmpty(r.RobotTypeId)
+                    ? RobotType.Unknown
+                    : await session.LoadAsync<RobotType>(r.RobotTypeId);
+            });
             var count = robots.Count;
             this._logger.LogDebug($"Retrieved {count} robots");
             var result = new Dtos.ListResult<Dtos.Robot>
