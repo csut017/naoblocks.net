@@ -32,7 +32,7 @@ export class AstConverterService {
     'round': new BlockDefinition('math_round', [this.generateField('OP', 'ROUND'), this.generateValue('NUM')]),
     'say': new BlockDefinition('robot_say', this.generateValue('TEXT')),
     'moveForward': new BlockDefinition('robot_move', this.generateValue('SECONDS')),
-    'turn': new BlockDefinition('robot_turn', this.generateValue('SECONDS')),
+    'turn': new BlockDefinition('robot_turn', [this.generateField('DIR'), this.generateValue('SECONDS')]),
     'variable': new BlockDefinition('variables_set', [this.generateField('VAR'), this.generateValue('VALUE')]),
     'walk': new BlockDefinition('robot_walk', [this.generateValue('X'), this.generateValue('Y')]),
     'wait': new BlockDefinition('robot_wait', this.generateValue('TIME')),

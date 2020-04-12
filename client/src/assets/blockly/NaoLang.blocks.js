@@ -398,8 +398,15 @@ var blocks = [{
     "tooltip": "Moves forward for the duration."
 }, {
     "type": "robot_turn",
-    "message0": "turn %1 seconds",
+    "message0": "turn %1 for %2 seconds",
     "args0": [{
+        "type": "field_dropdown",
+        "name": "DIR",
+        "options": [
+            ["left", "LEFT"],
+            ["right", "RIGHT"],
+        ]
+    },{
         "type": "input_value",
         "check": "Number",
         "name": "SECONDS"

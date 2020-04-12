@@ -207,7 +207,8 @@ Blockly.NaoLang.robot_say = function (block) {
 };
 Blockly.NaoLang.robot_turn = function (block) {
     var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
-        code = 'turn(' + seconds + ')\n';
+        value_dir = block.getFieldValue('DIR'),
+        code = 'turn(' + value_dir + ',' + seconds + ')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
 Blockly.NaoLang.robot_move = function (block) {
