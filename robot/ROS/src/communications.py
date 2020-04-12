@@ -1,4 +1,3 @@
-import logging
 import json
 import socket
 from threading import Thread
@@ -6,13 +5,11 @@ import time
 import traceback
 
 import requests
+import rospy
 import ssl
 import websocket
 
 from engine import Engine
-import logger
-
-logging.basicConfig()
 
 class Communications(object):
     '''The communications interface. '''
@@ -39,51 +36,51 @@ class Communications(object):
         self._secure = secure
         self._base_address = address
         start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/version'
-        logger.log('[Comms] Checking server version (%s)', start_address)
+        rospy.loginfo('[Comms] Checking server version (%s)', start_address)
         try:
             response = requests.get(start_address, timeout=10, verify=self._verify)
-            logger.log('[Comms] -> Received response %s', response.text)
+            rospy.loginfo('[Comms] -> Received response %s', response.text)
         except requests.exceptions.ConnectionError as e:
-            logger.log('[Comms] Server not responding: ' + str(e) + '!')
+            rospy.logerr('[Comms] Server not responding: ' + str(e) + '!')
             return False
         except requests.exceptions.Timeout:
-            logger.log('[Comms] Connection attempt timed out!')
+            rospy.logerr('[Comms] Connection attempt timed out!')
             return False
         except Exception as e:
-            logger.log('[Comms] unknown error: ' + str(e) + '!')
+            rospy.logerr('[Comms] unknown error: ' + str(e) + '!')
             return False
 
         start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/session'
-        logger.log('[Comms] Authenticating (%s)', start_address)
+        rospy.loginfo('[Comms] Authenticating (%s)', start_address)
         hostname = socket.gethostname()
-        logger.log('[Comms] -> user name %s', hostname)
+        rospy.loginfo('[Comms] -> user name %s', hostname)
         start_json = json.dumps({'name': hostname, 'password': pwd, 'role': 'robot'})
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(start_address, data=start_json, verify=self._verify, headers=headers)
         except requests.exceptions.ConnectionError:
-            logger.log('[Comms] Server not responding!')
+            rospy.logerr('[Comms] Server not responding!')
             return False
         except requests.exceptions.Timeout:
-            logger.log('[Comms] Connection attempt timed out!')
+            rospy.logerr('[Comms] Connection attempt timed out!')
             return False
         except Exception as e:
-            logger.log('[Comms] unknown error: ' + str(e) + '!')
+            rospy.logerr('[Comms] unknown error: ' + str(e) + '!')
             return False
 
         if req.status_code != 200:
-            logger.log('[Comms] Login failed [' + str(req.status_code) + ']!')
-            logger.log('[Comms] -> ' + req.text)
+            rospy.logwarn('[Comms] Login failed [' + str(req.status_code) + ']!')
+            rospy.logwarn('[Comms] -> ' + req.text)
 
             start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/robots/register'
-            logger.log('[Comms] Registering robot %s (%s)', hostname, start_address)
+            rospy.loginfo('[Comms] Registering robot %s (%s)', hostname, start_address)
             start_json = json.dumps({'machineName': hostname})
             try:
                 req = requests.post(start_address, data=start_json, timeout=10, verify=self._verify, headers=headers)
                 req.raise_for_status()
-                logger.log('[Comms] -> robot registered')
+                rospy.loginfo('[Comms] -> robot registered')
             except Exception as e:
-                logger.log('[Comms] registration failed: ' + str(e))
+                rospy.logerr('[Comms] registration failed: ' + str(e))
                 return False
 
 
@@ -92,7 +89,7 @@ class Communications(object):
         authResp = json.loads(req.text)
         self._token = authResp['output']['token']
         ws_address = ('wss' if self._secure else 'ws') + '://' + self._base_address + '/api/v1/connections/robot'
-        logger.log('[Comms] Connecting to %s', ws_address)
+        rospy.loginfo('[Comms] Connecting to %s', ws_address)
         self._ws = websocket.WebSocketApp(ws_address,
                                           on_message=self._message,
                                           on_error=self._error,
@@ -108,10 +105,10 @@ class Communications(object):
             # Attempt to reconnect
             if self._connectionCount > 0:
                 delayTime = 2 ** self._connectionCount
-                logger.log('[Comms] Pausing for %ds', delayTime)
+                rospy.loginfo('[Comms] Pausing for %ds', delayTime)
                 for _ in range(delayTime):
                     time.sleep(1)
-            logger.log('[Comms] Connection attempt #%d', self._connectionCount)
+            rospy.loginfo('[Comms] Connection attempt #%d', self._connectionCount)
             if not self._verify:
                 self._ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
             else:
@@ -128,7 +125,7 @@ class Communications(object):
         self._engine.trigger(block_name, value)
 
     def _execute_code(self, data):
-        logger.log('[Comms] Running code')
+        rospy.loginfo('[Comms] Running code')
         self.send(501, {'state': 'Initialising'})
         try:
             opts = json.loads(data['values']['opts'])
@@ -144,19 +141,19 @@ class Communications(object):
 
     def _message(self, *args):
         message = args[-1]
-        logger.log('[Comms] Received %s', message)
+        rospy.loginfo('[Comms] Received %s', message)
         data = json.loads(message)
         self._conversationId = data['conversationId']
         if data['type'] == 22:
             self.send(501, {'state': 'Downloading'})
             program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
-            logger.log('[Comms] Downloading program from %s', program_address)
+            rospy.loginfo('[Comms] Downloading program from %s', program_address)
             headers = {'Authorization': 'Bearer ' + self._token}
             try:
                 req = requests.get(program_address, verify=self._verify, headers=headers)
                 req.raise_for_status()
-                logger.log('[Comms] Program downloaded')
-                logger.log('[Comms] -> %s', req.text)
+                rospy.loginfo('[Comms] Program downloaded')
+                rospy.loginfo('[Comms] -> %s', req.text)
 
                 result = json.loads(req.text)
                 self._ast = result['output']['nodes']
@@ -164,7 +161,7 @@ class Communications(object):
                 self.send(23, {})
                 self.send(501, {'state': 'Prepared'})
             except Exception as e:
-                logger.log('[Comms] unknown error: %s!', e)
+                rospy.logerr('[Comms] unknown error: %s!', e)
                 self.send(24, { 'error': str(e) } )
                 self.send(501, {'state': 'Waiting'})
                 self._conversationId = 0
@@ -174,17 +171,17 @@ class Communications(object):
             thrd.start()
 
         elif data['type'] == 201:
-            logger.log('[Comms] Cancelling current run')
+            rospy.loginfo('[Comms] Cancelling current run')
             self.send(501, {'state': 'Cancelling'})
             self._engine.cancel()
 
         elif data['type'] == 2:
-            logger.log('[Comms] Robot has been authenticated')
+            rospy.loginfo('[Comms] Robot has been authenticated')
             self.send(501, {'state': 'Waiting'})
             self._conversationId = 0
 
         else:
-            logger.log('[Comms] Unknown or missing message type "%s"', data['type'])
+            rospy.loginfo('[Comms] Unknown or missing message type "%s"', data['type'])
 
     def _error(self, *args):
         error = args[-1]
@@ -192,13 +189,13 @@ class Communications(object):
             self._serverDisconnected = False
             return
         self._serverDisconnected = True
-        logger.log('[Comms] Lost connection: %s', error)
+        rospy.loginfo('[Comms] Lost connection: %s', error)
 
     def _close(self, *args):
-        logger.log('[Comms] Closed')
+        rospy.loginfo('[Comms] Closed')
 
     def _open(self, *args):
-        logger.log('[Comms] Opened')
+        rospy.loginfo('[Comms] Opened')
         self._serverDisconnected = False
         self._connectionCount = 0
         self.send(1, { 'token': self._token })
@@ -208,15 +205,15 @@ class Communications(object):
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        logger.log('[Comms] Sending message of type %s', str(msg_type))
+        rospy.loginfo('[Comms] Sending message of type %s', str(msg_type))
         msg = json.dumps({
             'type': msg_type,
             'conversationId': self._conversationId,
             'values': data
         })
-        logger.log('[Comms] -> %s', msg)
+        rospy.loginfo('[Comms] -> %s', msg)
         self._ws.send(msg)
 
     def close(self):
-        logger.log('[Comms] Closing down communications')
+        rospy.loginfo('[Comms] Closing down communications')
         self._closing = True

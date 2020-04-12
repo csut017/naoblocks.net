@@ -1,11 +1,13 @@
 ''' Wrappers for working with the Nao robot. '''
 
 import rospy
+from geometry_msgs.msg import Twist
+
+import math
 import time
 from sound_play.libsoundplay import SoundClient
 
 from PIL import Image
-import logger
 
 class Robot(object):
     ''' Defines a common interface to a ROS-based robot.
@@ -43,17 +45,19 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
 
     def __init__(self, ip):
         self._ip = ip
-        logger.log('[Robot] Starting ROS robot interface')
+        rospy.loginfo('[Robot] Starting ROS robot interface')
         try:
             self.name = rospy.get_param('/robot/name')
         except KeyError:
             self.name = 'unknown'
 
+        self._cmd_vel = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=10)
+
         self._soundhandle = SoundClient()
         rospy.sleep(1)
 
     def _log(self, msg):
-        logger.log('[Robot:' + self.name + '] ' + msg)
+        rospy.loginfo('[Robot:' + self.name + '] ' + msg)
 
     def _parseLed(self, ledSets, led):
         if led == Robot.RIGHT_EYE:
@@ -95,8 +99,8 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
 
     def getPosture(self):
         ''' Retrieves the current posture family. '''
-        self._log('Functionality not implemented: getPosture()')
-        return ''
+        self._log('getPosture() --> returning default posture')
+        return 'Standing'
 
     def getSensor(self, name):
         ''' Retrieves a sensor. '''
@@ -175,11 +179,20 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
         return self
 
     def walkStart(self, x, y, theta, wait=False, useArms=True):
-        self._log('Functionality not implemented: walkStart()')
+        self._log('walkStart() --> moving forward %f, turning %f' % (x, theta))
+
+        move_cmd = Twist()
+        move_cmd.linear.x = x
+        move_cmd.angular.z = math.radians(theta)
+        self._cmd_vel.publish(move_cmd)
+        rospy.sleep(1)
+
         return self.wait() if wait else self
 
     def walkStop(self):
-        self._log('Functionality not implemented: walkStop()')
+        self._log('walkStop() --> stopping movement')
+        self._cmd_vel.publish(Twist())
+        rospy.sleep(1)
         return self
 
     def walkTo(self, x, y, theta, wait=False, useArms=True):

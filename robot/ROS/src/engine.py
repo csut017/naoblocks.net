@@ -5,7 +5,7 @@ import random
 import time
 import pdb
 
-import logger
+import rospy
 from noRobot import RobotMock
 try:
     from robot import Robot
@@ -82,7 +82,7 @@ class Engine(object):
         self._rightSonar = None
 
         with self._initialise_robot(ip) as robot:
-            logger.log('[Engine] Robot is ready')
+            rospy.loginfo('[Engine] Robot is ready')
             robot.say('I am ready now')
 
     def configure(self, opts):
@@ -121,7 +121,9 @@ class Engine(object):
                     if compound_state.completed:
                         break
             else:
-                self._error('Unknown node type: %s' % (block['type'], ))
+                errMsg = 'Unknown node type: %s' % (block['type'], )
+                self._error(errMsg)
+                rospy.logerr(errMsg)
         return last_result
 
     def _execute_function(self, block, state, top_level):
@@ -131,13 +133,17 @@ class Engine(object):
         try:
             func = self._functions[func_name]
         except KeyError:
-            self._error('Unknown function: ' + func_name)
+            errMsg = 'Unknown function: %s' % (func_name, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
+            return last_result
 
         if func.top_level and not top_level:
-            self._error('Function ' + func_name +
-                        ' cannot be executed here')
+            errMsg = 'Function %s cannot be executed here' % (func_name, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
         else:
-            logger.log('[Engine] Executing function "%s"', func_name)
+            rospy.loginfo('[Engine] Executing function "%s"', func_name)
             self._debug(block, 'start')
             func_state = ExecutionState(block, state, func_name)
             last_result = func.execute(func_state)
@@ -152,21 +158,21 @@ class Engine(object):
     def _do_delay(self):
         seconds = int(self._opts.delay)
         if seconds > 0:
-            logger.log('[Engine] Delaying for ' + str(seconds) + 's')
+            rospy.loginfo('[Engine] Delaying for ' + str(seconds) + 's')
             for _ in range(0, seconds):
                 if self.is_cancelled:
                     break
                 time.sleep(1)
 
     def _error(self, message):
-        logger.log('[Engine] Sending error message: "' + message + '"')
+        rospy.loginfo('[Engine] Sending error message: "' + message + '"')
         data = {
             'message': message
         }
         self._comms.send(503, data)
 
     def _change_state(self, name, value):
-        logger.log('[Engine] Sending state change for ' + name + ' of ' + str(value))
+        rospy.loginfo('[Engine] Sending state change for ' + name + ' of ' + str(value))
         data = {
             'name': name,
             'value': value
@@ -176,7 +182,7 @@ class Engine(object):
     def _debug(self, block, status):
         try:
             debug_id = block['sourceId']
-            logger.log('[Engine] Sending debug info for block %s [%s]', debug_id, status)
+            rospy.loginfo('[Engine] Sending debug info for block %s [%s]', debug_id, status)
             data = {
                 'sourceID': debug_id,
                 'status': status,
@@ -184,7 +190,7 @@ class Engine(object):
             }
             self._comms.send(502, data)
         except KeyError:
-            logger.log('[Engine] Unable to find sourceId, skipping send debug')
+            rospy.logwarn('[Engine] Unable to find sourceId, skipping send debug')
 
     def _evaluate(self, node, state):
         ''' Evaluates a node. '''
@@ -205,18 +211,20 @@ class Engine(object):
         elif node_type == 'Colour':
             return '#' + str(node_value)
 
-        logger.log('[Engine] Unknown expression type: ' + node_type)
+        rospy.logerr('[Engine] Unknown expression type: ' + node_type)
 
     def _get_variable(self, name):
-        logger.log('[Engine] Retrieving variable ' + name)
+        rospy.loginfo('[Engine] Retrieving variable ' + name)
         try:
             return self._variables[name]
         except KeyError:
-            self._error('Unknown variable ' + name)
+            errMsg = 'Unknown variable %s' % (name, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
 
     def _reset(self, state):
         ''' Resets the execution engine. '''
-        logger.log('[Engine] Resetting engine')
+        rospy.loginfo('[Engine] Resetting engine')
         self._variables = {}
         self._blocks = {}
         self._last_function = None
@@ -235,6 +243,7 @@ class Engine(object):
             'wave': EngineFunction(self._wave),
             'dance': EngineFunction(self._dance),
             'look': EngineFunction(self._look),
+            'moveForward': EngineFunction(self._moveForward),
             'point': EngineFunction(self._point),
             'say': EngineFunction(self._say),
             'rest': EngineFunction(self._rest),
@@ -272,7 +281,7 @@ class Engine(object):
         ''' Generates a closure to register block. '''
         def _register_block(state):
             ''' Registers the on start block. '''
-            logger.log('[Engine] Registering ' + block_name + ' block')
+            rospy.loginfo('[Engine] Registering ' + block_name + ' block')
             self._blocks[block_name] = state.ast
         return _register_block
 
@@ -283,22 +292,22 @@ class Engine(object):
             try:
                 block = self._blocks[block_name]
             except KeyError:
-                logger.log('[Engine] ' + block_name + \
+                rospy.logerr('[Engine] ' + block_name + \
                     ' block not registered, skipping')
                 return
 
-            logger.log('[Engine] Executing ' + block_name + ' block')
+            rospy.loginfo('[Engine] Executing ' + block_name + ' block')
             with self._initialise_robot(self._ip) as robot:
                 self._robot = robot
                 self._execute(block['children'], None)
                 robot.rest()
                 self._robot = None
-            logger.log('[Engine] ' + block_name + ' block completed')
+            rospy.loginfo('[Engine] ' + block_name + ' block completed')
 
         return _execute_block
 
     def _initialise_robot(self, ip):
-        logger.log('[Engine] Initialising robot')
+        rospy.loginfo('[Engine] Initialising robot')
         if self._use_robot:
             r = Robot(ip)
             return r
@@ -306,14 +315,14 @@ class Engine(object):
 
     def _wave(self, state):
         ''' Make the robot wave. '''
-        logger.log('[Engine] Waving')
+        rospy.loginfo('[Engine] Waving')
         movement = BodyMovement().wave()
         self._perform_movement(state, movement, 'wave')
 
     def _look(self, state):
         ''' Make the robot look in a direction. '''
         direction = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Looking ' + direction)
+        rospy.loginfo('[Engine] Looking ' + direction)
         movement = HeadMovement()
         if direction == 'left':
             movement = movement.lookLeft()
@@ -327,7 +336,7 @@ class Engine(object):
         ''' Make the robot point in a direction. '''
         arm = self._evaluate(state.ast['arguments'][0], state)
         direction = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Pointing ' + arm + ' arm ' + direction)
+        rospy.loginfo('[Engine] Pointing ' + arm + ' arm ' + direction)
         movement = ArmMovement(ArmMovement.LEFT if arm ==
                                'left' else ArmMovement.RIGHT)
         if direction == 'out':
@@ -361,6 +370,7 @@ class Engine(object):
         posture = self._robot.getPosture()
         if posture != 'Standing':
             self._robot.say('I cannot dance in this posture')
+            rospy.loginfo('[Engine] Cancelling action due to incorrect posture')
             return
 
         dance = self._evaluate(state.ast['arguments'][0], state)
@@ -373,34 +383,53 @@ class Engine(object):
         if not music:
             self._robot.muteAudioVolume()
         try:
-            logger.log('[Engine] Performing dance ' + dance)
+            rospy.loginfo('[Engine] Performing dance ' + dance)
             self._robot.startBehaviour(dances[dance])
             self._robot.wait()
         except KeyError:
-            logger.log('[Engine] Unknown dance ' + dance)
+            rospy.logerr('[Engine] Unknown dance ' + dance)
 
         if not music:
             self._robot.restoreAudioVolume()
 
     def _rest(self, state):
         ''' Make the robot rest. '''
-        logger.log('[Engine] Resting')
+        rospy.loginfo('[Engine] Resting')
         self._robot.rest()
 
     def _wait(self, state):
         ''' Make the robot wait. '''
         seconds = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Waiting for ' + str(seconds) + 's')
+        rospy.loginfo('[Engine] Waiting for ' + str(seconds) + 's')
         for _ in range(0, int(seconds)):
             if self.is_cancelled:
                 break
             time.sleep(1)
+
+    def _moveForward(self, state):
+        ''' Get the robot to move forward. '''
+        posture = self._robot.getPosture()
+        if posture != 'Standing':
+            rospy.loginfo('[Engine] Cancelling action due to incorrect posture')
+            self._robot.say('I cannot move in this posture')
+            return
+
+        secs = int(self._evaluate(state.ast['arguments'][0], state))
+        rospy.loginfo('[Engine] Moving forward for %d s' % (secs, ))
+        for count in range(0, secs):
+            self._robot.walkStart(0.5, 0, 0).wait()
+            if self.is_cancelled:
+                break
+            time.sleep(1)
+            rospy.loginfo('[Engine] Duration = %d' % (count, ))
+        self._robot.walkStop()
 
     def _walk(self, state):
         ''' Make the robot walk. '''
         posture = self._robot.getPosture()
         if posture != 'Standing':
             self._robot.say('I cannot walk in this posture')
+            rospy.loginfo('[Engine] Cancelling action due to incorrect posture')
             return
 
         self._robot.setSonars(True)
@@ -411,7 +440,7 @@ class Engine(object):
         self._leftSonar = self._robot.getSensor(sensors.Sensor.SONAR_LEFT)
         self._rightSonar = self._robot.getSensor(sensors.Sensor.SONAR_RIGHT)
 
-        logger.log('[Engine] Walking forwards ' + \
+        rospy.loginfo('[Engine] Walking forwards ' + \
             str(xDist) + 's, sideways ' + str(yDist) + 's')
         x_time = abs(int(xDist))
         y_time = abs(int(yDist))
@@ -451,7 +480,7 @@ class Engine(object):
                 break
             time.sleep(1)
         if not walk_cancelled:
-            logger.log('[Engine] Stopping walk due to time expired')
+            rospy.loginfo('[Engine] Stopping walk due to time expired')
         self._robot.walkStop()
         self._is_walking = False
         self._robot.setSonars(False)
@@ -460,23 +489,23 @@ class Engine(object):
         ''' Checks if there are any obstacles. '''
         left_foot = self._leftFoot.read()
         right_foot = self._rightFoot.read()
-        logger.log('[Engine] Foot buttons (%s,%s)', left_foot, right_foot)
+        rospy.loginfo('[Engine] Foot buttons (%s,%s)', left_foot, right_foot)
         if not (left_foot and right_foot):
-            logger.log('[Engine] Stopping walk due to foot buttons')
+            rospy.loginfo('[Engine] Stopping walk due to foot buttons')
             return True
 
         if direction & Engine.LEFT:
             dist = self._leftSonar.read()
-            logger.log('[Engine] Left distance is %f', dist)
+            rospy.loginfo('[Engine] Left distance is %f', dist)
             if dist < 0.25:
-                logger.log('[Engine] Stopping walk due to left sonar')
+                rospy.loginfo('[Engine] Stopping walk due to left sonar')
                 return True
 
         if direction & Engine.RIGHT:
             dist = self._rightSonar.read()
-            logger.log('[Engine] Right distance is %f', dist)
+            rospy.loginfo('[Engine] Right distance is %f', dist)
             if dist < 0.25:
-                logger.log('[Engine] Stopping walk due to right sonar')
+                rospy.loginfo('[Engine] Stopping walk due to right sonar')
                 return True
 
         return False
@@ -491,21 +520,25 @@ class Engine(object):
         ''' Make the robot turn. '''
         posture = self._robot.getPosture()
         if posture != 'Standing':
+            rospy.loginfo('[Engine] Cancelling action due to incorrect posture')
             self._robot.say('I cannot turn in this posture')
             return
 
-        degs = float(self._evaluate(state.ast['arguments'][0], state))
-        if degs > 360:
-            degs = 360
-        elif degs < -360:
-            degs = -360
-        logger.log('[Engine] Turning ' + \
-            str(degs) + ' degrees [' + str(degs) + ' degrees]')
-        self._robot.walkTo(0, 0, degs).wait()
+        turn_left = self._evaluate(state.ast['arguments'][0], state) == 'LEFT'
+        angular = 90 if turn_left else -90
+        secs = int(self._evaluate(state.ast['arguments'][1], state))
+        rospy.loginfo('[Engine] Turning %s (%d) for %d s' % ('left' if dir else 'right', angular, secs))
+        for count in range(0, secs):
+            self._robot.walkStart(0, 0, angular).wait()
+            if self.is_cancelled:
+                break
+            time.sleep(1)
+            rospy.loginfo('[Engine] Duration = %d' % (count, ))
+        self._robot.walkStop()
 
     def _wipe_forehead(self, state):
         ''' Make the robot wipe forehead. '''
-        logger.log('[Engine] Wiping forehead')
+        rospy.loginfo('[Engine] Wiping forehead')
         movement = BodyMovement().wipeForehead()
         self._perform_movement(state, movement, 'wipe forehead')
 
@@ -519,13 +552,13 @@ class Engine(object):
                 text_to_say = '{:.0f}'.format(number_value)
         except:
             pass
-        logger.log('[Engine] Saying "' + text_to_say + '"')
+        rospy.loginfo('[Engine] Saying "' + text_to_say + '"')
         self._robot.say(text_to_say).wait()
 
     def _position(self, state):
         ''' Make the robot move to a position. '''
         value = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Moving to position ' + value)
+        rospy.loginfo('[Engine] Moving to position ' + value)
         try:
             speech = self._evaluate(state.ast['arguments'][1], state)
             self._robot.say(speech)
@@ -545,11 +578,13 @@ class Engine(object):
         try:
             led = items[item]
         except:
-            self._error('Unknown LED ' + item)
+            errMsg = 'Unknown LED %s' % (item, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
             return
 
         value = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Changing LED ' + str(item) + ' to ' + value)
+        rospy.loginfo('[Engine] Changing LED ' + str(item) + ' to ' + value)
         self._robot.setLEDColour(led, value)
 
     def _change_hand(self, state):
@@ -565,45 +600,47 @@ class Engine(object):
             hand = [Robot.RIGHT_HAND, Robot.LEFT_HAND]
             text = ' both hands'
 
-        logger.log('[Engine] Changing ' + text)
+        rospy.loginfo('[Engine] Changing ' + text)
         self._robot.moveHands(hand, actionArg == 'open').wait()
 
     def _read_sensor(self, state):
         ''' Reads a robot sensor. '''
         sensor = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Reading ' + sensor + ' sensor')
+        rospy.loginfo('[Engine] Reading ' + sensor + ' sensor')
         try:
             sensor = self._robot.getSensor(sensor)
             value = sensor.read()
         except KeyError:
-            self._error('Unknown sensor ' + sensor)
+            errMsg = 'Unknown sensor %s' % (sensor, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
             return
 
         return value
 
     def _last_recognised_word(self, state):
         ''' Retrieves the last recognised word. '''
-        logger.log('[Engine] Retrieving last recognised word (' + \
+        rospy.loginfo('[Engine] Retrieving last recognised word (' + \
             self._last_word + ')')
         return self._last_word
 
     def _loop(self, state):
         ''' Define or update a variable. '''
         iterations = int(self._evaluate(state.ast['arguments'][0], state))
-        logger.log('[Engine] Starting loop with ' + str(iterations) + ' iterations')
+        rospy.loginfo('[Engine] Starting loop with ' + str(iterations) + ' iterations')
         for loop in range(iterations):
             self._change_state('loop', loop)
-            logger.log('[Engine] Executing iteration ' + str(loop))
+            rospy.loginfo('[Engine] Executing iteration ' + str(loop))
             self._execute(state.ast['children'], state)
             if self.is_cancelled:
                 break
-        logger.log('[Engine] Loop completed')
+        rospy.loginfo('[Engine] Loop completed')
 
     def _define_variable(self, state):
         ''' Define or update a variable. '''
         name = state.ast['arguments'][0]['token']['value']
         value = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Setting variable ' + name + ' to ' + str(value))
+        rospy.loginfo('[Engine] Setting variable ' + name + ' to ' + str(value))
         self._variables[name] = value
         self._change_state(name, value)
 
@@ -614,30 +651,32 @@ class Engine(object):
         try:
             current = self._variables[name]
             new_value = (current + value)
-            logger.log('[Engine] Increasing variable ' + name + ' by ' + \
+            rospy.loginfo('[Engine] Increasing variable ' + name + ' by ' + \
                 str(value) + ' from ' + str(current) + ' to ' + str(new_value))
             self._variables[name] = new_value
             self._change_state(name, new_value)
         except KeyError:
-            self._error('Unknown variable ' + name)
+            errMsg = 'Unknown variable %s' % (name, )
+            self._error(errMsg)
+            rospy.logerr(errMsg)
 
     def _invert(self, state):
         ''' Inverts a value. '''
         value = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Inverting: ' + str(value))
+        rospy.loginfo('[Engine] Inverting: ' + str(value))
         return not value
 
     def _round(self, state):
         ''' Rounds a value. '''
         value = self._evaluate(state.ast['arguments'][0], state)
-        logger.log('[Engine] Rounding: ' + str(value))
+        rospy.loginfo('[Engine] Rounding: ' + str(value))
         return round(value, 0)
 
     def _check_if_equal(self, state):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 == value2
 
@@ -645,7 +684,7 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 < value2
 
@@ -653,7 +692,7 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 > value2
 
@@ -661,7 +700,7 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 != value2
 
@@ -669,7 +708,7 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 <= value2
 
@@ -677,7 +716,7 @@ class Engine(object):
         ''' Checks if the two sides are equal. '''
         value1 = self._evaluate(state.ast['arguments'][0], state)
         value2 = self._evaluate(state.ast['arguments'][1], state)
-        logger.log('[Engine] Checking for equality: ' + \
+        rospy.loginfo('[Engine] Checking for equality: ' + \
             str(value1) + ' and ' + str(value2))
         return value1 >= value2
 
@@ -686,24 +725,24 @@ class Engine(object):
         result = self._evaluate(state.ast['arguments'][0], state)
         if result is True:
             state.complete()
-            logger.log('[Engine] Executing if block')
+            rospy.loginfo('[Engine] Executing if block')
             self._execute(state.ast['children'], state)
 
     def _while(self, state):
         ''' Check a condition block. '''
-        logger.log('[Engine] Executing while block')
+        rospy.loginfo('[Engine] Executing while block')
         result = self._evaluate(state.ast['arguments'][0], state)
         while result is True:
-            logger.log('[Engine] Starting loop')
+            rospy.loginfo('[Engine] Starting loop')
             state.complete()
-            logger.log('[Engine] Executing if block')
+            rospy.loginfo('[Engine] Executing if block')
             self._execute(state.ast['children'], state)
             result = self._evaluate(state.ast['arguments'][0], state)
-            logger.log('[Engine] Finished loop')
+            rospy.loginfo('[Engine] Finished loop')
 
     def _check_else(self, state):
         ''' Check a else block. '''
-        logger.log('[Engine] Executing else block')
+        rospy.loginfo('[Engine] Executing else block')
         self._execute(state.ast['children'], state)
 
     def _random_colour(self, state):

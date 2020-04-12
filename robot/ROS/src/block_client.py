@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import rospy
-import logger
 from communications import Communications
 
 class BlockClientNode():
@@ -17,30 +16,30 @@ class BlockClientNode():
         server_pwd = rospy.get_param('/block_client/server_pwd', None)
         use_robot_mock = rospy.get_param('/block_client/robot_mock', False)
 
-        logger.log("[Main] Starting BlockClientNode")
+        rospy.loginfo("[Main] Starting BlockClientNode")
         rospy.on_shutdown(self.shutdown)
-        logger.log("[Main] Use SSL:         %s", ("YES" if use_ssl else "NO"))
-        logger.log("[Main] Verify SSL:      %s", ("YES" if verify_ssl else "NO"))
-        logger.log("[Main] Reconnect Count: %d", reconnect_count)
-        logger.log("[Main] Use Robot Mock:  %s", ("YES" if use_robot_mock else "NO"))
+        rospy.loginfo("[Main] Use SSL:         %s", ("YES" if use_ssl else "NO"))
+        rospy.loginfo("[Main] Verify SSL:      %s", ("YES" if verify_ssl else "NO"))
+        rospy.loginfo("[Main] Reconnect Count: %d", reconnect_count)
+        rospy.loginfo("[Main] Use Robot Mock:  %s", ("YES" if use_robot_mock else "NO"))
 
         BlockClientNode.comms = Communications(not use_robot_mock, reconnect_count)
         if not verify_ssl:
-            logger.log('[Main] WARNING: ignoring SSL errors')
+            rospy.loginfo('[Main] WARNING: ignoring SSL errors')
 
         connected = False
         if not server_address is None:
-            logger.log('[Main] Connecting to %s', server_address)
+            rospy.loginfo('[Main] Connecting to %s', server_address)
             BlockClientNode.comms.start(server_address, server_pwd, verify_ssl, use_ssl)
             connected = True
         else:
-            logger.log('[Main] Server address has not been set')
+            rospy.loginfo('[Main] Server address has not been set')
 
         if not connected:
-            logger.log('[Main] Unable to connect')
+            rospy.loginfo('[Main] Unable to connect')
 
     def shutdown(self):
-        logger.log("[Main] Stopping BlockClientNode")
+        rospy.loginfo("[Main] Stopping BlockClientNode")
         if not BlockClientNode.comms is None:
             BlockClientNode.comms.close()
         rospy.sleep(1)
