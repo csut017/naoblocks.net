@@ -2,6 +2,11 @@
     <clr-datagrid [(clrDgSelected)]="selected" [clrDgLoading]="isLoading">
         <clr-dg-action-bar>
             <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="doRefresh()">
+                    <clr-icon shape="refresh"></clr-icon> Refresh
+                </button>
+            </div>
+            <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-secondary" (click)="doAddNew()">
                     <clr-icon shape="plus"></clr-icon> Add New
                 </button>
@@ -21,6 +26,10 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                        <button type="button" (click)="doExportList()" clrDropdownItem>
+                            List
+                        </button>
+                        <div class="dropdown-divider" role="separator"></div>
                         <button type="button" (click)="doExportDetails()" clrDropdownItem
                             [disabled]="selected.length === 0">Details</button>
                         <button type="button" (click)="doExportLogs()" clrDropdownItem
@@ -33,7 +42,6 @@
         <clr-dg-column [clrDgField]="'machineName'">Machine Name</clr-dg-column>
         <clr-dg-column [clrDgField]="'friendlyName'">Friendly Name</clr-dg-column>
         <clr-dg-column [clrDgField]="'type'">Type</clr-dg-column>
-        <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let robot of robots.items" [clrDgItem]="robot">
             <clr-dg-cell>
@@ -42,7 +50,6 @@
             </clr-dg-cell>
             <clr-dg-cell>{{robot.friendlyName}}</clr-dg-cell>
             <clr-dg-cell>{{robot.type}}</clr-dg-cell>
-            <clr-dg-cell>{{robot.whenAdded | date}}</clr-dg-cell>
         </clr-dg-row>
 
         <clr-dg-footer>{{robots.count}} robots</clr-dg-footer>

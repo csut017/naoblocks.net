@@ -85,3 +85,8 @@ Content-Type: application/json; charset=utf-8
   "machineName": "c-3po"
 }
 ###
+
+GET {{baseURL}}/robots/export/list HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+###

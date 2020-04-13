@@ -3,6 +3,8 @@ import { Robot } from '../data/robot';
 import { ResultSet } from '../data/result-set';
 import { RobotService } from '../services/robot.service';
 import { forkJoin } from 'rxjs';
+import { FileDownloaderService } from '../services/file-downloader.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-robots-list',
@@ -21,20 +23,21 @@ export class RobotsListComponent implements OnInit {
   message: string;
   errorMessage: string;
 
-  constructor(private robotService: RobotService) { }
+  constructor(private robotService: RobotService,
+    private downloaderService: FileDownloaderService) { }
 
   ngOnInit() {
     this.loadList();
   }
 
-  doAddNew() {
+  doAddNew(): void {
     this.isInEditor = true;
     this.isInList = false;
     this.isNew = true;
     this.currentRobot = new Robot(true);
   }
 
-  doDelete() {
+  doDelete(): void {
     forkJoin(this.selected.map(s => this.robotService.delete(s)))
       .subscribe(results => {
         let successful = results.filter(r => r.successful).map(r => r.output);
@@ -57,18 +60,22 @@ export class RobotsListComponent implements OnInit {
       });
   }
 
-  doEdit() {
+  doEdit(): void {
     this.isInEditor = true;
     this.isInList = false;
     this.isNew = false;
     this.currentRobot = this.selected[0];
   }
 
-  doExportDetails() {
+  doExportList(): void {
+    this.downloaderService.download('v1/robots/export/list', 'robots-list.xlsx');
+  }
+
+  doExportDetails(): void {
 
   }
 
-  doExportLogs() {
+  doExportLogs(): void {
 
   }
 
@@ -84,6 +91,10 @@ export class RobotsListComponent implements OnInit {
         this.message = `Updated robot '${this.currentRobot.friendlyName}'`;
       }
     }
+  }
+
+  doRefresh(): void {
+    this.loadList();
   }
 
   private loadList(): void {
