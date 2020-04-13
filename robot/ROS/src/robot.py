@@ -51,7 +51,7 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
         except KeyError:
             self.name = 'unknown'
 
-        self._cmd_vel = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=10)
+        self._cmd_vel = rospy.Publisher('/naoblocks/wheel',Twist,queue_size=10)
 
         self._soundhandle = SoundClient()
         rospy.sleep(1)
