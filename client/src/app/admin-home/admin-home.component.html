@@ -42,6 +42,7 @@
         <div class="content-area">
             <app-logs-list *ngIf="currentView=='logs'"></app-logs-list>
             <app-settings-editor *ngIf="currentView=='settings'"></app-settings-editor>
+            <app-robot-types-list *ngIf="currentView=='robotTypes'"></app-robot-types-list>
             <app-users-list *ngIf="currentView=='users'"></app-users-list>
             <app-system-status *ngIf="currentView=='status'"></app-system-status>
         </div>
@@ -52,6 +53,9 @@
                 </a>
                 <a href="javascript://" class="nav-link" [class.active]="currentView=='logs'" (click)="changeView('logs')">
                     Logs
+                </a>
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='robotTypes'" (click)="changeView('robotTypes')">
+                    Robot Types
                 </a>
                 <!-- <a href="javascript://" class="nav-link" [class.active]="currentView=='settings'" (click)="changeView('settings')">
                     Settings

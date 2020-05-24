@@ -1,0 +1,34 @@
+<form clrForm>
+    <clr-input-container>
+        <label class="clr-col-12 clr-col-md-2">Name:</label>
+        <input class="clr-col-12 clr-col-md-10" clrInput type="text" [(ngModel)]="robotType.name" name="name"
+            required />
+        <clr-control-helper>The name of the robot type must be unique.
+        </clr-control-helper>
+        <clr-control-error>Name is missing</clr-control-error>
+    </clr-input-container>
+    <clr-toggle-container class="clr-col-12 clr-col-md-10 clr-offset-md-2">
+        <clr-toggle-wrapper>
+            <input type="checkbox" clrToggle name="options" value="true" [(ngModel)]="robotType.isDefault" />
+            <label>Is Default Robot Type</label>
+        </clr-toggle-wrapper>
+    </clr-toggle-container>
+    <div class="btn-group" style="margin-top: 1em;" class="clr-col-12 clr-offset-md-2 clr-col-md-10">
+        <button class="btn btn-primary" (click)="doSave()">Save</button>
+        <button class="btn" (click)="doCancel()">Cancel</button>
+    </div>
+    <div class="clr-col-12 clr-offset-md-2 clr-col-md-10" *ngIf="errors">
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static" *ngFor="let error of errors">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{error}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

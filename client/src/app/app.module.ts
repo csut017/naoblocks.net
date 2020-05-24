@@ -28,6 +28,8 @@ import { SystemStatusComponent } from './system-status/system-status.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
 import { UserSettingsEditorComponent } from './user-settings-editor/user-settings-editor.component';
 import { RunSettingsComponent } from './run-settings/run-settings.component';
+import { RobotTypesListComponent } from './robot-types-list/robot-types-list.component';
+import { RobotTypeEditorComponent } from './robot-type-editor/robot-type-editor.component';
 
 @NgModule({
   declarations: [
@@ -51,7 +53,9 @@ import { RunSettingsComponent } from './run-settings/run-settings.component';
     SystemStatusComponent,
     UserSettingsComponent,
     UserSettingsEditorComponent,
-    RunSettingsComponent
+    RunSettingsComponent,
+    RobotTypesListComponent,
+    RobotTypeEditorComponent
   ],
   imports: [
     BrowserModule,
