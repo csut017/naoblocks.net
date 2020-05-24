@@ -79,13 +79,29 @@ namespace NaoBlocks.Web.Controllers
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
 
+            var settings = await this.PrepareSettings(user);
+            return settings;
+        }
+
+        private async Task<Dtos.EditorSettings> PrepareSettings(User? user, UserSettings? settings = null)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
             var robotType = await this.RetrieveRobotTypeForUser(user);
-            var toolbox = Generators.UserToolbox.Generate(user, robotType);
+            if (robotType != null)
+            {
+                var toolbox = Generators.UserToolbox.Generate(user, robotType);
+                return new Dtos.EditorSettings
+                {
+                    IsSystemInitialised = true,
+                    User = settings ?? user.Settings,
+                    Toolbox = toolbox
+                };
+            }
 
             return new Dtos.EditorSettings
             {
-                User = user.Settings,
-                Toolbox = toolbox
+                IsSystemInitialised = false,
+                User = settings ?? user.Settings
             };
         }
 
@@ -163,13 +179,8 @@ namespace NaoBlocks.Web.Controllers
 
             return await this.commandManager.ExecuteForHttp(command, async s =>
             {
-                var robotType = await this.RetrieveRobotTypeForUser(user);
-                var xml = Generators.UserToolbox.Generate(user, robotType);
-                return new Dtos.EditorSettings
-                {
-                    User = s,
-                    Toolbox = xml
-                };
+                var settings = await this.PrepareSettings(user, s);
+                return settings;
             });
         }
 
