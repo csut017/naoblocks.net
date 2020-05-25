@@ -410,6 +410,26 @@ namespace RavenDB.Mocks
             throw new NotImplementedException();
         }
 
+        public IAsyncDocumentQuery<TItem> OrderByDistance(Expression<Func<TItem, object>> propertySelector, double latitude, double longitude, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistance(string fieldName, double latitude, double longitude, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistance(Expression<Func<TItem, object>> propertySelector, string shapeWkt, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistance(string fieldName, string shapeWkt, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
         public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(DynamicSpatialField field, double latitude, double longitude)
         {
             throw new NotImplementedException();
@@ -446,6 +466,26 @@ namespace RavenDB.Mocks
         }
 
         public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(string fieldName, string shapeWkt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(Expression<Func<TItem, object>> propertySelector, double latitude, double longitude, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(string fieldName, double latitude, double longitude, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(Expression<Func<TItem, object>> propertySelector, string shapeWkt, double roundFactor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncDocumentQuery<TItem> OrderByDistanceDescending(string fieldName, string shapeWkt, double roundFactor)
         {
             throw new NotImplementedException();
         }
