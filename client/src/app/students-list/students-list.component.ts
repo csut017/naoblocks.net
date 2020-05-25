@@ -3,6 +3,7 @@ import { ResultSet } from '../data/result-set';
 import { Student } from '../data/student';
 import { StudentService } from '../services/student.service';
 import { forkJoin } from 'rxjs';
+import { FileDownloaderService } from '../services/file-downloader.service';
 
 @Component({
   selector: 'app-students-list',
@@ -21,7 +22,8 @@ export class StudentsListComponent implements OnInit {
   message: string;
   errorMessage: string;
 
-  constructor(private studentService: StudentService) { }
+  constructor(private studentService: StudentService,
+    private downloaderService: FileDownloaderService) { }
 
   ngOnInit() {
     this.loadList();
@@ -58,6 +60,9 @@ export class StudentsListComponent implements OnInit {
     this.isInList = false;
     this.isNew = false;
     this.currentStudent = this.selected[0];
+  }
+  doExportList(): void {
+    this.downloaderService.download('v1/students/export/list', 'students-list.xlsx');
   }
 
   doExportDetails() {

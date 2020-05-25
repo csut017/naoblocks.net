@@ -21,6 +21,10 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                        <button type="button" (click)="doExportList()" clrDropdownItem>
+                            List
+                        </button>
+                        <div class="dropdown-divider" role="separator"></div>
                         <button type="button" (click)="doExportDetails()" clrDropdownItem [disabled]="selected.length === 0">Details</button>
                         <button type="button" (click)="doExportLogs()" clrDropdownItem [disabled]="selected.length === 0">Logs</button>
                     </clr-dropdown-menu>

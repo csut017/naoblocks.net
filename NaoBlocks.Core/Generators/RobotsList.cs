@@ -11,7 +11,7 @@ namespace NaoBlocks.Core.Generators
 {
     public static class RobotsList
     {
-        public static async Task<ExcelPackage> GenerateAsync(IAsyncDocumentSession session)
+        public static async Task<byte[]> GenerateAsync(IAsyncDocumentSession session)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using var package = new ExcelPackage();
@@ -50,7 +50,7 @@ namespace NaoBlocks.Core.Generators
             worksheet.Cells[$"A1:E{row}"].AutoFilter = true;
             worksheet.Cells.AutoFitColumns(0);
 
-            return package;
+            return await package.GetAsByteArrayAsync().ConfigureAwait(false);
         }
     }
 }

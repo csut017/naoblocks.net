@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
+using Generators = NaoBlocks.Core.Generators;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -124,6 +125,16 @@ namespace NaoBlocks.Web.Controllers
                 Settings = student.Settings
             };
             return await this.commandManager.ExecuteForHttp(command);
+        }
+
+        [HttpGet("export/list")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportList()
+        {
+            var excelData = await Generators.StudentsList.GenerateAsync(this.session);
+            var contentType = ContentTypes.Xlsx;
+            var fileName = "Students-List.xlsx";
+            return File(excelData, contentType, fileName);
         }
     }
 }
