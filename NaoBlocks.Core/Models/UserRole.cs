@@ -6,6 +6,8 @@
         Teacher,
         Administrator,
 
-        Robot
+        Robot,
+
+        Unknown
     }
 }

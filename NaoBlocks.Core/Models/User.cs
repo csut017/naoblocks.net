@@ -9,8 +9,6 @@ namespace NaoBlocks.Core.Models
 
         public string Name { get; set; } = string.Empty;
 
-        public long NextConversationId { get; set; }
-
         public long NextProgramNumber { get; set; }
 
         public Password Password { get; set; } = Password.Empty;

@@ -45,7 +45,10 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved robot log");
-            return Dtos.RobotLog.FromModel(log, true);
+            var conversation = await this.session
+                .Query<Conversation>()
+                .FirstOrDefaultAsync(c => c.ConversationId == log.ConversationId);
+            return Dtos.RobotLog.FromModel(log, true, conversation);
         }
 
         [HttpGet]
@@ -70,7 +73,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
-                Items = logs.Select(rl => Dtos.RobotLog.FromModel(rl, false))
+                Items = logs.Select(rl => Dtos.RobotLog.FromModel(rl, false, null))
             };
             return result;
         }

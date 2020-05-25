@@ -32,7 +32,8 @@ namespace NaoBlocks.Core.Commands
             this.person = await session.Query<User>()
                                         .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
                                         .ConfigureAwait(false);
-            if (this.person == null) errors.Add(this.Error($"{this.Role} {this.CurrentName} does not exist"));
+            var roleName = this.Role == UserRole.Unknown ? "User" : this.Role.ToString();
+            if (this.person == null) errors.Add(this.Error($"{roleName} {this.CurrentName} does not exist"));
 
             if (this.Password != null)
             {

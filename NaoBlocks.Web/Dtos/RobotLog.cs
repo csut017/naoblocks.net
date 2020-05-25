@@ -9,13 +9,15 @@ namespace NaoBlocks.Web.Dtos
     {
         public long ConversationId { get; set; }
 
+        public string? UserName { get; set; }
+
         public IList<RobotLogLine>? Lines { get; private set; }
 
         public DateTime WhenAdded { get; set; } = DateTime.UtcNow;
 
         public DateTime WhenLastUpdated { get; set; } = DateTime.UtcNow;
 
-        public static RobotLog FromModel(Data.RobotLog value, bool includeLines)
+        public static RobotLog FromModel(Data.RobotLog value, bool includeLines, Data.Conversation? converstion)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
             var robotLog = new RobotLog
@@ -24,6 +26,7 @@ namespace NaoBlocks.Web.Dtos
                 WhenAdded = value.WhenAdded,
                 WhenLastUpdated = value.WhenLastUpdated
             };
+            if (converstion != null) robotLog.UserName = converstion.UserName;
             if (includeLines)
             {
                 robotLog.Lines = value.Lines.Select(RobotLogLine.FromModel).ToList();

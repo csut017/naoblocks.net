@@ -26,9 +26,17 @@ namespace NaoBlocks.Core.Commands
             if (session == null) throw new ArgumentNullException(nameof(session));
 
             var errors = new List<CommandError>();
+            var roleName = this.Role.ToString();
+
+            if (this.Role == UserRole.Unknown)
+            {
+                roleName = "User";
+                errors.Add(this.Error($"Role is unknown or missing"));
+            }
+
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"{this.Role} name is required"));
+                errors.Add(this.Error($"{roleName} name is required"));
             }
 
             if (this.Password == null)
@@ -43,7 +51,7 @@ namespace NaoBlocks.Core.Commands
 
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
-                errors.Add(this.Error($"{this.Role} with name {this.Name} already exists"));
+                errors.Add(this.Error($"{roleName} with name {this.Name} already exists"));
             }
 
             return errors.AsEnumerable();

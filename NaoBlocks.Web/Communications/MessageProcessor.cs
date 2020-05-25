@@ -231,7 +231,20 @@ namespace NaoBlocks.Web.Communications
             else
             {
                 client.User = await session.LoadAsync<User>(userSession.UserId);
-                message.ConversationId = ++client.User.NextConversationId;
+                var systemValues = await session.Query<SystemValues>().FirstOrDefaultAsync();
+                if (systemValues == null)
+                {
+                    systemValues = new SystemValues();
+                    await session.StoreAsync(systemValues);
+                }
+                var conversationId = ++systemValues.NextConversationId;
+                message.ConversationId = conversationId;
+                await session.StoreAsync(new Conversation
+                {
+                    ConversationId = conversationId,
+                    UserId = client.User.Id,
+                    UserName = client.User.Name
+                });
             }
 
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));

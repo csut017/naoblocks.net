@@ -71,36 +71,36 @@ export class LogsListComponent implements OnInit {
   }
 
   private iconMappings: { [id: string]: string } = {
-    'Authenticate': 'unlock',
-    'Authenticated': 'unlock',
-    'RequestRobot': 'assign-user',
-    'RobotAllocated': 'assign-user',
-    'NoRobotsAvailable': 'error-standard',
-    'TransferProgram': 'download',
-    'ProgramTransferred': 'download',
-    'DownloadProgram': 'download',
-    'ProgramDownloaded': 'download',
-    'UnableToDownloadProgram': 'error-standard',
-    'StartProgram': 'play',
-    'ProgramStarted': 'play',
-    'ProgramFinished': 'check',
-    'StopProgram': 'stop',
-    'ProgramStopped': 'stop',
-    'RobotStateUpdate': 'help-info',
-    'RobotDebugMessage': 'step-forward',
-    'RobotError': 'error-standard',
-    'Error': 'error-standard',
-    'NotAuthenticated': 'lock',
-    'Forbidden': 'lock',
+    '1': 'unlock',
+    '2': 'unlock',
+    '11': 'assign-user',
+    '12': 'assign-user',
+    '13': 'error-standard',
+    '20': 'download',
+    '21': 'download',
+    '22': 'download',
+    '23': 'download',
+    '24': 'error-standard',
+    '101': 'play',
+    '102': 'play',
+    '103': 'check',
+    '201': 'stop',
+    '202': 'stop',
+    '501': 'help-info',
+    '502': 'step-forward',
+    '503': 'error-standard',
+    '1000': 'error-standard',
+    '1001': 'lock',
+    '1002': 'lock',
   };
 
   private initialiseLine(line: RobotLogLine): RobotLogLine {
-    line.icon = this.iconMappings[line.sourceMessageType] || 'unknown-status';
+    line.icon = this.iconMappings[line.sourceMessageType.toString()] || 'unknown-status';
     if (line.values) {
       let funcName = line.values.function;
       if (funcName) line.description += ` [${funcName}-${line.values.status}]`;
     }
-    line.skip = line.sourceMessageType == 'RobotStateUpdate';
+    line.skip = line.sourceMessageType == 502;
     return line;
   }
 

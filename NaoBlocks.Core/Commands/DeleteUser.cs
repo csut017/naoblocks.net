@@ -15,23 +15,28 @@ namespace NaoBlocks.Core.Commands
 
         public string? Name { get; set; }
 
-        public UserRole Role { get; set; } = UserRole.Student;
+        public UserRole? Role { get; set; }
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<CommandError>();
+            var roleName = this.Role?.ToString() ?? "User";
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"{this.Role} name is required"));
+                errors.Add(this.Error($"{roleName} name is required"));
             }
 
             if (!errors.Any())
             {
-                this.person = await session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
-                                            .ConfigureAwait(false);
-                if (person == null) errors.Add(this.Error($"{this.Role} {this.Name} does not exist"));
+                this.person = this.Role == null
+                    ? await session.Query<User>()
+                                .FirstOrDefaultAsync(u => u.Name == this.Name)
+                                .ConfigureAwait(false)
+                    : await session.Query<User>()
+                                .FirstOrDefaultAsync(u => u.Name == this.Name && u.Role == this.Role)
+                                .ConfigureAwait(false);
+                if (person == null) errors.Add(this.Error($"{roleName} {this.Name} does not exist"));
             }
 
             return errors.AsEnumerable();
