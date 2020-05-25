@@ -121,12 +121,14 @@ namespace NaoBlocks.Web.Communications
         private static async Task<RobotLog> GetOrAddRobotLogAsync(IAsyncDocumentSession session, string robotId, long conversationId)
         {
             var log = await session.Query<RobotLog>()
-                .FirstOrDefaultAsync(rl => rl.RobotId == robotId && rl.ConversationId == conversationId);
+                .FirstOrDefaultAsync(rl => rl.RobotId == robotId && rl.Conversation.ConversationId == conversationId);
+            var conversation = await session.Query<Conversation>()
+                .FirstAsync(c => c.ConversationId == conversationId);
             if (log == null)
             {
                 log = new RobotLog
                 {
-                    ConversationId = conversationId,
+                    Conversation = conversation,
                     RobotId = robotId,
                     WhenAdded = DateTime.UtcNow,
                     WhenLastUpdated = DateTime.UtcNow

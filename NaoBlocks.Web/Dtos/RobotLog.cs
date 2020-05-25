@@ -22,7 +22,7 @@ namespace NaoBlocks.Web.Dtos
             if (value == null) throw new ArgumentNullException(nameof(value));
             var robotLog = new RobotLog
             {
-                ConversationId = value.ConversationId,
+                ConversationId = value.Conversation.ConversationId,
                 WhenAdded = value.WhenAdded,
                 WhenLastUpdated = value.WhenLastUpdated
             };

@@ -66,11 +66,13 @@ export class StudentsListComponent implements OnInit {
   }
 
   doExportDetails() {
-
+    this.selected.forEach(s => 
+      this.downloaderService.download(`v1/students/${s.id}/export/details`, `student-${s.id}-details.xlsx`));
   }
 
   doExportLogs() {
-
+    this.selected.forEach(s => 
+      this.downloaderService.download(`v1/students/${s.id}/export/logs`, `student-${s.id}-logs.xlsx`));
   }
 
   onClosed(saved: boolean) {

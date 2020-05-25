@@ -13,7 +13,7 @@ namespace NaoBlocks.Web.Indexes
             this.Map = logs => from log in logs
                                select new
                                {
-                                   log.ConversationId,
+                                   log.Conversation.ConversationId,
                                    LoadDocument<Robot>(log.RobotId).MachineName,
                                    log.WhenAdded
                                };

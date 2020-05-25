@@ -136,5 +136,57 @@ namespace NaoBlocks.Web.Controllers
             var fileName = "Students-List.xlsx";
             return File(excelData, contentType, fileName);
         }
+
+        [HttpGet("{id}/export/details")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportDetails(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student details"
+                });
+            }
+
+            var student = await this.session.Query<User>()
+                                .FirstOrDefaultAsync(u => u.Name == id && u.Role == UserRole.Student);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Generating details for {student.Name}");
+            var excelData = await Generators.StudentDetails.GenerateAsync(this.session, student);
+            var contentType = ContentTypes.Xlsx;
+            var fileName = "Students-List.xlsx";
+            return File(excelData, contentType, fileName);
+        }
+
+        [HttpGet("{id}/export/logs")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportLogs(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student details"
+                });
+            }
+
+            var student = await this.session.Query<User>()
+                                            .FirstOrDefaultAsync(u => u.Name == id && u.Role == UserRole.Student);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Generating details for {student.Name}");
+            var excelData = await Generators.StudentLogs.GenerateAsync(this.session, student);
+            var contentType = ContentTypes.Xlsx;
+            var fileName = "Students-List.xlsx";
+            return File(excelData, contentType, fileName);
+        }
     }
 }

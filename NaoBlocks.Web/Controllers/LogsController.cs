@@ -47,7 +47,7 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogDebug("Retrieved robot log");
             var conversation = await this.session
                 .Query<Conversation>()
-                .FirstOrDefaultAsync(c => c.ConversationId == log.ConversationId);
+                .FirstOrDefaultAsync(c => c.ConversationId == log.Conversation.ConversationId);
             return Dtos.RobotLog.FromModel(log, true, conversation);
         }
 

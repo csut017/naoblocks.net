@@ -5,7 +5,7 @@ namespace NaoBlocks.Core.Models
 {
     public class RobotLog
     {
-        public long ConversationId { get; set; }
+        public Conversation Conversation { get; set; }
 
         public string? Id { get; set; }
 
