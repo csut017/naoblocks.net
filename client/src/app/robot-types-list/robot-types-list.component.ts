@@ -22,6 +22,10 @@ export class RobotTypesListComponent implements OnInit {
   message: string;
   errorMessage: string;
 
+  importToolboxOpened: boolean = false;
+  canSendToolbox: boolean = false;
+  toolboxToUpload: any;
+
   constructor(private robotTypeService: RobotTypeService,
     private downloaderService: FileDownloaderService) { }
 
@@ -53,8 +57,8 @@ export class RobotTypesListComponent implements OnInit {
         }
 
         this.robotTypes.items = this.robotTypes
-            .items
-            .filter(el => !successful.includes(el));
+          .items
+          .filter(el => !successful.includes(el));
         this.robotTypes.count -= successful.length;
       });
   }
@@ -75,11 +79,40 @@ export class RobotTypesListComponent implements OnInit {
   }
 
   doExportPackage(): void {
-
+    this.selected.forEach(rt =>
+      this.downloaderService.download(
+        `v1/robots/types/export/package/${rt.name}`,
+        `robotType-${rt.name}-package.zip`)
+    );
   }
 
   doImportPackage(): void {
 
+  }
+
+  doImportToolbox(): void {
+    this.importToolboxOpened = true;
+  }
+
+  doSendToolbox(): void {
+    this.importToolboxOpened = false;
+    this.selected.forEach(rt => {
+      this.robotTypeService.storeToolbox(rt, this.toolboxToUpload)
+        .subscribe(result => {
+          alert(result.successful ? 'Successful' : 'Failed');
+        });
+    });
+  }
+
+  loadToolbox(fileInput: any): void {
+    if (fileInput.target.files && fileInput.target.files[0]) {
+      this.canSendToolbox = true;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.toolboxToUpload = e.target.result;
+      };
+      reader.readAsText(fileInput.target.files[0]);
+    }
   }
 
   onClosed(saved: boolean) {

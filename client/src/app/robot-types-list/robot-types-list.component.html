@@ -45,6 +45,9 @@
                     </button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                         <button type="button" (click)="doImportPackage()" clrDropdownItem>Package</button>
+                        <div class="dropdown-divider" role="separator"></div>
+                        <button type="button" (click)="doImportToolbox()" clrDropdownItem
+                            [disabled]="selected.length === 0">Toolbox</button>
                     </clr-dropdown-menu>
                 </clr-dropdown>
             </div>
@@ -54,7 +57,8 @@
 
         <clr-dg-row *clrDgItems="let robotType of robotTypes.items" [clrDgItem]="robotType">
             <clr-dg-cell>
-                <clr-icon shape="file-settings" class="is-solid" [ngClass]="{'has-alert': robotType.isDefault}"></clr-icon>
+                <clr-icon shape="file-settings" class="is-solid" [ngClass]="{'has-alert': robotType.isDefault}">
+                </clr-icon>
                 {{robotType.name}}
             </clr-dg-cell>
         </clr-dg-row>
@@ -99,3 +103,32 @@
 <div *ngIf="isInEditor">
     <app-robot-type-editor [robotType]="currentRobotType" (closed)="onClosed($event)"></app-robot-type-editor>
 </div>
+
+<clr-modal [(clrModalOpen)]="importToolboxOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Import Toolbox Definition</h3>
+    <div class="modal-body">
+        <form clrForm>
+            <input type="file" id="file" (change)="loadToolbox($event)">
+        </form>
+        <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{errorMessage}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="importToolboxOpened = false">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="doSendToolbox()" [disabled]="!canSendToolbox">
+            Load
+        </button>
+    </div>
+</clr-modal>

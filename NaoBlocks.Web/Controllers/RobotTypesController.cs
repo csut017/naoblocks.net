@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
+using Generators = NaoBlocks.Core.Generators;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -41,10 +42,11 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.RobotType>> GetRobotType(string id)
+        [HttpGet("export/package/{id}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportPackage(string id)
         {
-            this._logger.LogDebug($"Retrieving robot type: id {id}");
+            this._logger.LogDebug($"Generating package for robot type: {id}");
             var queryable = this.session.Query<RobotType>();
             var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
             if (robotType == null)
@@ -52,7 +54,25 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogDebug("Retrieved robot type");
+            var stream = await Generators.RobotTypePackage.GeneraAsync(robotType, this.session);
+            var contentType = ContentTypes.Xlsx;
+            var fileName = $"RobotType-{robotType.Name}-Package.zip";
+            this._logger.LogDebug($"Generated robot type {robotType.Name} package");
+            return File(stream, contentType, fileName);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Dtos.RobotType>> GetRobotType(string id)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             return Dtos.RobotType.FromModel(robotType);
         }
 

@@ -173,7 +173,8 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList()
         {
-            var excelData = await Generators.RobotsList.Generate(this.session);
+            var package = await Generators.RobotsList.GenerateAsync(this.session);
+            var excelData = package.GetAsByteArray();
             var contentType = ContentTypes.Xlsx;
             var fileName = "Robots-List.xlsx";
             return File(excelData, contentType, fileName);

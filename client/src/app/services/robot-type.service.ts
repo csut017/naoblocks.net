@@ -80,4 +80,17 @@ export class RobotTypeService extends ClientService {
         catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(undefined, msg)))
       );
   }
+
+  storeToolbox(robotType: RobotType, toolbox: File): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox`;
+    this.log('Deleting robot type');
+    return this.http.post<ExecutionResult<any>>(url, toolbox)
+      .pipe(
+        tap(result => {
+          this.log('Deleted robot type');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(undefined, msg)))
+      );
+  }
 }
