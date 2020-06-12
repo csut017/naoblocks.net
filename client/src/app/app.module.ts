@@ -30,6 +30,7 @@ import { UserSettingsEditorComponent } from './user-settings-editor/user-setting
 import { RunSettingsComponent } from './run-settings/run-settings.component';
 import { RobotTypesListComponent } from './robot-types-list/robot-types-list.component';
 import { RobotTypeEditorComponent } from './robot-type-editor/robot-type-editor.component';
+import { UserEditorComponent } from './user-editor/user-editor.component';
 
 @NgModule({
   declarations: [
@@ -55,7 +56,8 @@ import { RobotTypeEditorComponent } from './robot-type-editor/robot-type-editor.
     UserSettingsEditorComponent,
     RunSettingsComponent,
     RobotTypesListComponent,
-    RobotTypeEditorComponent
+    RobotTypeEditorComponent,
+    UserEditorComponent
   ],
   imports: [
     BrowserModule,
