@@ -21,6 +21,10 @@ namespace NaoBlocks.Core.Commands
 
         public UserSettings? Settings { get; set; }
 
+        public int? Age { get; set; }
+
+        public string? Gender { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -68,6 +72,14 @@ namespace NaoBlocks.Core.Commands
                 Settings = this.Settings ?? new UserSettings(),
                 WhenAdded = this.WhenExecuted
             };
+            if (this.Role == UserRole.Student)
+            {
+                user.StudentDetails = new StudentDetails
+                {
+                    Age = this.Age,
+                    Gender = this.Gender
+                };
+            }
             await session.StoreAsync(user).ConfigureAwait(false);
             return this.Result(user);
         }

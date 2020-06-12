@@ -40,6 +40,7 @@ export class StudentService extends ClientService {
       .pipe(
         tap(data => {
           data.id = data.name;
+          data.isFullyLoaded = true;
           this.log(`Retrieved student ${id}`)
         }),
         map(data => new ExecutionResult<Student>(data)),

@@ -25,6 +25,10 @@ namespace NaoBlocks.Core.Commands
 
         public UserSettings? Settings { get; set; }
 
+        public int? Age { get; set; }
+
+        public string? Gender { get; set; }
+
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
@@ -51,6 +55,14 @@ namespace NaoBlocks.Core.Commands
             if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name;
             if (this.HashedPassword != null) this.person.Password = this.HashedPassword;
             if (this.Settings != null) this.person.Settings = this.Settings;
+
+            if (this.person.Role == UserRole.Student)
+            {
+                this.person.StudentDetails ??= new StudentDetails();
+                if (this.Age != null) this.person.StudentDetails.Age = this.Age;
+                if (this.Gender!= null) this.person.StudentDetails.Gender = this.Gender;
+            }
+
             return Task.FromResult(CommandResult.New(this.Number));
         }
     }

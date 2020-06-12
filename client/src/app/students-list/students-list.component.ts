@@ -60,7 +60,12 @@ export class StudentsListComponent implements OnInit {
     this.isInList = false;
     this.isNew = false;
     this.currentStudent = this.selected[0];
+    if (!this.currentStudent.isFullyLoaded) {
+      this.studentService.get(this.currentStudent.id)
+        .subscribe(s => this.currentStudent = s.output);
+    }
   }
+
   doExportList(): void {
     this.downloaderService.download('v1/students/export/list', 'students-list.xlsx');
   }

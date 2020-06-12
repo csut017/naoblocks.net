@@ -99,7 +99,9 @@ namespace NaoBlocks.Web.Controllers
                 Name = student.Name,
                 Password = student.Password,
                 Role = UserRole.Student,
-                Settings = student.Settings
+                Settings = student.Settings,
+                Age = student.Age,
+                Gender = student.Gender
             };
             return await this.commandManager.ExecuteForHttp(command, s => Dtos.Student.FromModel(s, true));
         }
@@ -122,7 +124,9 @@ namespace NaoBlocks.Web.Controllers
                 Name = student.Name,
                 Password = student.Password,
                 Role = UserRole.Student,
-                Settings = student.Settings
+                Settings = student.Settings,
+                Age = student.Age,
+                Gender = student.Gender
             };
             return await this.commandManager.ExecuteForHttp(command);
         }

@@ -20,5 +20,7 @@ namespace NaoBlocks.Core.Models
         public UserSettings Settings { get; set; } = new UserSettings();
 
         public DateTime WhenAdded { get; set; }
+
+        public StudentDetails? StudentDetails { get; set; }
     }
 }
