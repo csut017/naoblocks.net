@@ -28,8 +28,10 @@ namespace NaoBlocks.Core.Generators
             worksheet.Cells[1, 8].Value = "Sensors";
             worksheet.Cells[1, 9].Value = "Variables";
             worksheet.Cells[1, 10].Value = "Tutorial";
+            worksheet.Cells[1, 11].Value = "Age";
+            worksheet.Cells[1, 12].Value = "Gender";
 
-            using (var range = worksheet.Cells[1, 1, 1, 10])
+            using (var range = worksheet.Cells[1, 1, 1, 12])
             {
                 range.Style.Font.Bold = true;
             }
@@ -55,6 +57,8 @@ namespace NaoBlocks.Core.Generators
                     worksheet.Cells[row, 8].Value = student.Settings.Sensors;
                     worksheet.Cells[row, 9].Value = student.Settings.Variables;
                     worksheet.Cells[row, 10].Value = student.Settings.CurrentTutorial;
+                    worksheet.Cells[row, 11].Value = student.StudentDetails?.Age;
+                    worksheet.Cells[row, 12].Value = student.StudentDetails?.Gender;
                 }
 
             }
