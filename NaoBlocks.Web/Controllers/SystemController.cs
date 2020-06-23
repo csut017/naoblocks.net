@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
@@ -76,6 +77,21 @@ namespace NaoBlocks.Web.Controllers
             };
             addresses.Count = addresses.Items.Count();
             return Task.FromResult(new ActionResult<Dtos.ListResult<string>>(addresses));
+        }
+
+        [HttpGet("system/addresses/connect.txt")]
+        [AllowAnonymous]
+        public Task<ActionResult> ClientAddressesFile()
+        {
+            var addresses = ClientAddressList.Get();
+            var data = string.Join(
+                '\n', 
+                addresses.Select(a => a + ",," + (a.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? "yes" : "no")));
+            var file = new FileContentResult(Encoding.UTF8.GetBytes(data), ContentTypes.Txt)
+            {
+                FileDownloadName = "connect.txt"
+            };
+            return Task.FromResult((ActionResult)file);
         }
 
         [HttpGet("system/status")]

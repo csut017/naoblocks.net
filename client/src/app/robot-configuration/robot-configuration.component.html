@@ -1,5 +1,11 @@
 <div class="clr-row">
-    <div class="clr-col">
+    <div class="clr-col" *ngIf="downloading">
+        <span class="spinner spinner-inline">
+            Loading
+        </span>
+        Retrieving addresses, please wait...
+    </div>
+    <div class="clr-col" *ngIf="!downloading">
         <div>
             The following addresses are available:
         </div>
@@ -8,5 +14,8 @@
                 {{address}}
             </li>
         </ul>
+        <div>
+            <a href="{{connectTextUrl}}">Download</a>
+        </div>
     </div>
 </div>

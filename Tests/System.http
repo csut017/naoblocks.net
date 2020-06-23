@@ -18,6 +18,9 @@ GET {{baseURL}}/system/addresses HTTP/1.1
 Content-Type: application/json; charset=utf-8
 ###
 
+GET {{baseURL}}/system/addresses/connect.txt HTTP/1.1
+###
+
 # @name login
 POST {{baseURL}}/session HTTP/1.1
 Content-Type: application/json; charset=utf-8
