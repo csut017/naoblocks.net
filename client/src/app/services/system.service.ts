@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { catchError, tap } from 'rxjs/operators';
 import { SystemVersion } from '../data/system-version';
+import { ResultSet } from '../data/result-set';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +35,15 @@ export class SystemService extends ClientService {
     return this.http.get<SystemVersion>(url).pipe(
       catchError(this.handleError('login', msg => new SystemVersion(msg))),
       tap(_ => this.log('System version retrieved'))
+    );
+  }
+
+  listRobotAddresses(): Observable<ResultSet<string>> {
+    const url = `${environment.apiURL}v1/system/addresses`;
+    this.log('Retrieving robot client addresses');
+    return this.http.get<ResultSet<string>>(url).pipe(
+      catchError(this.handleError('login', msg => new ResultSet<string>(msg))),
+      tap(_ => this.log('Robot client addresses retrieved'))
     );
   }
 }

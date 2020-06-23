@@ -8,6 +8,7 @@ using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -63,6 +64,18 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this._commandManager.ExecuteForHttp(command).ConfigureAwait(false);
+        }
+
+        [HttpGet("system/addresses")]
+        [AllowAnonymous]
+        public Task<ActionResult<Dtos.ListResult<string>>> ClientAddresses()
+        {
+            var addresses = new Dtos.ListResult<string>
+            {
+                Items = ClientAddressList.Get()
+            };
+            addresses.Count = addresses.Items.Count();
+            return Task.FromResult(new ActionResult<Dtos.ListResult<string>>(addresses));
         }
 
         [HttpGet("system/status")]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using NaoBlocks.Web.Helpers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,11 +20,7 @@ namespace NaoBlocks.Web
             var availableInterfaces = NetworkInterface.GetAllNetworkInterfaces()
                 .OrderByDescending(c => c.Speed)
                 .Where(c => c.NetworkInterfaceType != NetworkInterfaceType.Loopback && c.OperationalStatus == OperationalStatus.Up);
-            var addresses = new List<string>
-            {
-                "http://localhost:5000",
-                "https://localhost:5001"
-            };
+            ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
             foreach (var availableInterface in availableInterfaces)
             {
                 var props = availableInterface.GetIPProperties();
@@ -33,14 +30,14 @@ namespace NaoBlocks.Web
                     .ToArray();
                 foreach (var ip4Address in ip4Addresses)
                 {
-                    addresses.Add($"http://{ip4Address}:5000");
+                    ClientAddressList.Add($"http://{ip4Address}:5000");
                 }
             }
 
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls(addresses.ToArray());
+                    webBuilder.UseUrls(ClientAddressList.Get().ToArray());
                     webBuilder.UseStartup<Startup>();
                 });
         }
