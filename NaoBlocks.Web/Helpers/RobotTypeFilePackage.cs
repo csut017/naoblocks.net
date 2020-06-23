@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Helpers
 {
-    public static class RobotTypeFilePackage
+    public static partial class RobotTypeFilePackage
     {
         private const string fileListName = "fileList.txt";
 
@@ -45,6 +46,38 @@ namespace NaoBlocks.Web.Helpers
             var robotTypeListPath = Path.Combine(robotTypePath, fileListName);
             if (File.Exists(robotTypeListPath)) return await File.ReadAllBytesAsync(robotTypeListPath);
             return Array.Empty<byte>();
+        }
+
+        public static Task<FileDetails> RetrieveFileAsync(RobotType robotType, string rootFolder, string file, string etag)
+        {
+            if (robotType == null) throw new ArgumentNullException(nameof(robotType));
+            var robotTypePath = Path.Combine(rootFolder, "packages", robotType.Name);
+            if (!Directory.Exists(robotTypePath)) return Task.FromResult(new FileDetails { StatusCode = HttpStatusCode.NotFound });
+
+            var filePath = Path.Combine(robotTypePath, file);
+            if (!File.Exists(filePath)) return Task.FromResult(new FileDetails { StatusCode = HttpStatusCode.NotFound });
+
+            if (!string.IsNullOrEmpty(etag))
+            {
+                using (var shaHash = SHA256.Create())
+                {
+                    using (var fileToCheck = File.OpenRead(filePath))
+                    {
+                        var fileHash = Convert.ToBase64String(shaHash.ComputeHash(fileToCheck));
+                        if (fileHash.Equals(etag, StringComparison.Ordinal))
+                        {
+                            return Task.FromResult(new FileDetails { StatusCode = HttpStatusCode.NotModified });
+                        }
+                    }
+                }
+            }
+
+            var details = new FileDetails
+            {
+                StatusCode = HttpStatusCode.OK,
+                DataStream = File.OpenRead(filePath)
+            };
+            return Task.FromResult(details);
         }
     }
 }

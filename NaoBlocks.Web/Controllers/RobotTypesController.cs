@@ -10,6 +10,7 @@ using Raven.Client.Documents.Session;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
@@ -49,7 +50,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("{id}/files")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> RetrieveFileList(string id, string? generate)
+        public async Task<ActionResult> RetrievePackageFileList(string id, string? generate)
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
@@ -71,8 +72,35 @@ namespace NaoBlocks.Web.Controllers
                 fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
             }
 
-
             return File(fileList, ContentTypes.Txt, "filelist.txt");
+        }
+
+        [HttpGet("{id}/files/{filename}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> RetrievePackageFile(string id, string filename)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            string etag = string.Empty;
+            if (Request.Headers.ContainsKey("ETag"))
+            {
+                etag = Request.Headers["ETag"].First();
+                if (etag.StartsWith("\"", StringComparison.Ordinal) && etag.EndsWith("\"", StringComparison.Ordinal))
+                {
+                    etag = etag[1..^1];
+                }
+            }
+
+            this._logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
+            var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
+            if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
+            return File(details.DataStream, ContentTypes.Txt, filename);
         }
 
         [HttpGet("export/package/{id}")]

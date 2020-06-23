@@ -271,3 +271,22 @@ Authorization: Bearer {{authToken}}
 
 ###
 
+GET {{baseURL}}/robots/types/Nao/files/communications.py HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+###
+
+GET {{baseURL}}/robots/types/Nao/files/communications2.py HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+###
+
+GET {{baseURL}}/robots/types/Nao/files/communications.py HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+ETag: "xXj21Y97dZnOBg1ste9cHlZ8omiO5WrGCnGMYBBsi1Q="
+
+###
+
