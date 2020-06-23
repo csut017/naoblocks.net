@@ -1,11 +1,11 @@
 <div class="clr-row">
-    <div class="clr-col" *ngIf="downloading">
+    <div class="clr-col" *ngIf="downloadingAddresses">
         <span class="spinner spinner-inline">
             Loading
         </span>
         Retrieving addresses, please wait...
     </div>
-    <div class="clr-col" *ngIf="!downloading">
+    <div class="clr-col" *ngIf="!downloadingAddresses">
         <div>
             The following addresses are available:
         </div>
@@ -17,5 +17,23 @@
         <div>
             <a href="{{connectTextUrl}}">Download</a>
         </div>
+    </div>
+    <div class="clr-col" *ngIf="downloadingRobotTypes">
+        <span class="spinner spinner-inline">
+            Loading
+        </span>
+        Retrieving robot types, please wait...
+    </div>
+    <div class="clr-col" *ngIf="!downloadingRobotTypes">
+        <div>
+            The following robot types are available:
+        </div>
+        <ul class="list">
+            <li *ngFor="let robotType of robotTypes">
+                <a href="{{generateDownloadPackageUrl(robotType)}}">
+                    {{robotType.name}}
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
