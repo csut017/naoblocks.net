@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Core.Generators;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,12 +25,14 @@ namespace NaoBlocks.Web.Controllers
         private readonly ILogger<RobotTypesController> _logger;
         private readonly Commands.ICommandManager commandManager;
         private readonly IAsyncDocumentSession session;
+        private readonly string rootFolder;
 
-        public RobotTypesController(ILogger<RobotTypesController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session)
+        public RobotTypesController(ILogger<RobotTypesController> logger, Commands.ICommandManager commandManager, IAsyncDocumentSession session, IHostingEnvironment hostingEnvironment)
         {
             this._logger = logger;
             this.commandManager = commandManager;
             this.session = session;
+            this.rootFolder = hostingEnvironment.WebRootPath;
         }
 
         [HttpDelete("{id}")]
@@ -40,6 +45,34 @@ namespace NaoBlocks.Web.Controllers
                 Name = id
             };
             return await this.commandManager.ExecuteForHttp(command);
+        }
+
+        [HttpPost("{id}/files")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> RetrieveFileList(string id, string? generate)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            byte[] fileList;
+            if ("full".Equals(generate, StringComparison.OrdinalIgnoreCase))
+            {
+                this._logger.LogInformation($"Generating file list for robot type '{id}'");
+                fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
+            }
+            else
+            {
+                this._logger.LogInformation($"Retrieving file list for robot type '{id}'");
+                fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
+            }
+
+
+            return File(fileList, ContentTypes.Txt, "filelist.txt");
         }
 
         [HttpGet("export/package/{id}")]
