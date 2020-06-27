@@ -1,39 +1,58 @@
-<div class="clr-row">
-    <div class="clr-col" *ngIf="downloadingAddresses">
-        <span class="spinner spinner-inline">
-            Loading
-        </span>
-        Retrieving addresses, please wait...
-    </div>
-    <div class="clr-col" *ngIf="!downloadingAddresses">
-        <div>
-            The following addresses are available:
+<div class="clr-row" *ngIf="!currentRobotType">
+    <div class="clr-col">
+        <div class="card">
+            <div class="card-header">
+                Server Addresses
+            </div>
+            <div class="card-block">
+                <div *ngIf="downloadingAddresses">
+                    <span class="spinner spinner-inline">
+                        Loading
+                    </span>
+                    Retrieving addresses, please wait...
+                </div>
+                <div *ngIf="!downloadingAddresses">
+                    <div>
+                        The following addresses are available:
+                    </div>
+                    <ul class="list">
+                        <li *ngFor="let address of addresses">
+                            {{address}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer" *ngIf="!downloadingAddresses">
+                <a href="{{connectTextUrl}}">Download</a>
+            </div>
         </div>
-        <ul class="list">
-            <li *ngFor="let address of addresses">
-                {{address}}
-            </li>
-        </ul>
-        <div>
-            <a href="{{connectTextUrl}}">Download</a>
-        </div>
     </div>
-    <div class="clr-col" *ngIf="downloadingRobotTypes">
-        <span class="spinner spinner-inline">
-            Loading
-        </span>
-        Retrieving robot types, please wait...
-    </div>
-    <div class="clr-col" *ngIf="!downloadingRobotTypes">
-        <div>
-            The following robot types are available:
+    <div class="clr-col">
+        <div class="card">
+            <div class="card-header">
+                Robot Packages
+            </div>
+            <div class="card-block">
+                <div *ngIf="downloadingRobotTypes">
+                    <span class="spinner spinner-inline">
+                        Loading
+                    </span>
+                    Retrieving robot types, please wait...
+                </div>
+                <div *ngIf="!downloadingRobotTypes">
+                    <div>
+                        The following robot types are available:
+                    </div>
+                    <ul class="list">
+                        <li *ngFor="let robotType of robotTypes">
+                            <a (click)="currentRobotType = robotType" href="javascript://">
+                                {{robotType.name}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <ul class="list">
-            <li *ngFor="let robotType of robotTypes">
-                <a href="{{generateDownloadPackageUrl(robotType)}}">
-                    {{robotType.name}}
-                </a>
-            </li>
-        </ul>
     </div>
 </div>
+<app-robot-package [robotType]="currentRobotType" *ngIf="currentRobotType" (closed)="currentRobotType = undefined"></app-robot-package>

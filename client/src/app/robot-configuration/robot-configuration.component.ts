@@ -16,6 +16,7 @@ export class RobotConfigurationComponent implements OnInit {
   connectTextUrl: string = '';
   downloadingAddresses: boolean = true;
   downloadingRobotTypes: boolean = true;
+  currentRobotType: RobotType;
 
   constructor(private systemService: SystemService,
     private robotTypeService: RobotTypeService) { }

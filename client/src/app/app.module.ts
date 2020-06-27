@@ -32,6 +32,7 @@ import { RobotTypesListComponent } from './robot-types-list/robot-types-list.com
 import { RobotTypeEditorComponent } from './robot-type-editor/robot-type-editor.component';
 import { UserEditorComponent } from './user-editor/user-editor.component';
 import { RobotConfigurationComponent } from './robot-configuration/robot-configuration.component';
+import { RobotPackageComponent } from './robot-package/robot-package.component';
 
 @NgModule({
   declarations: [
@@ -59,7 +60,8 @@ import { RobotConfigurationComponent } from './robot-configuration/robot-configu
     RobotTypesListComponent,
     RobotTypeEditorComponent,
     UserEditorComponent,
-    RobotConfigurationComponent
+    RobotConfigurationComponent,
+    RobotPackageComponent
   ],
   imports: [
     BrowserModule,

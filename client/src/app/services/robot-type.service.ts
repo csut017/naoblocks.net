@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { ClientService } from './client.service';
 import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from './error-handler.service';
@@ -9,6 +9,7 @@ import { ResultSet } from '../data/result-set';
 import { environment } from 'src/environments/environment';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
+import { PackageFile } from '../data/package-file';
 
 @Injectable({
   providedIn: 'root'
@@ -83,7 +84,7 @@ export class RobotTypeService extends ClientService {
 
   storeToolbox(robotType: RobotType, toolbox: File): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox`;
-    this.log('Deleting robot type');
+    this.log(`Storing toolbox for robot type  ${robotType.id}`);
     return this.http.post<ExecutionResult<any>>(url, toolbox)
       .pipe(
         tap(result => {
@@ -91,6 +92,18 @@ export class RobotTypeService extends ClientService {
           result.output = robotType;
         }),
         catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(undefined, msg)))
+      );
+  }
+
+  listPackageFiles(robotType: RobotType): Observable<ResultSet<PackageFile>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/files`;
+    this.log(`Retrieving package list for robot type  ${robotType.id}`);
+    return this.http.get<ResultSet<PackageFile>>(url)
+      .pipe(
+        tap(_ => {
+          this.log(`Fetched package list for robot type  ${robotType.id}`);
+        }),
+        catchError(this.handleError('list', msg => new ResultSet<PackageFile>(msg)))
       );
   }
 }

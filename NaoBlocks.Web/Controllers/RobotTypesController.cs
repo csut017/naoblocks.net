@@ -8,9 +8,11 @@ using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 
 using Commands = NaoBlocks.Core.Commands;
@@ -48,9 +50,10 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        [HttpPost("{id}/files")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> RetrievePackageFileList(string id, string? generate)
+        [HttpGet("{id}/files{format}")]
+        [HttpGet("{id}/files")]
+        [AllowAnonymous]
+        public async Task<ActionResult> RetrievePackageFileList(string id, string? format = ".json")
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
@@ -60,23 +63,48 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            byte[] fileList;
-            if ("full".Equals(generate, StringComparison.OrdinalIgnoreCase))
+            this._logger.LogInformation($"Retrieving file list for robot type '{id}'");
+            var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
+
+            if (format == ".txt")
             {
-                this._logger.LogInformation($"Generating file list for robot type '{id}'");
-                fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
+                return File(fileList, ContentTypes.Txt, "filelist.txt");
             }
-            else
+
+            var data = Encoding.UTF8.GetString(fileList);
+            return new JsonResult(Dtos.ListResult.New( 
+                data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line =>
+                    {
+                        var values = line.Split(',');
+                        return new Dtos.PackageFile
+                        {
+                            Name = values[0],
+                            Hash = values[1]
+                        };
+                    })));
+        }
+
+        [HttpPost("{id}/files")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> GeneratePackageFileList(string id)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
             {
-                this._logger.LogInformation($"Retrieving file list for robot type '{id}'");
-                fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
+                return NotFound();
             }
+
+            this._logger.LogInformation($"Generating file list for robot type '{id}'");
+            var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
 
             return File(fileList, ContentTypes.Txt, "filelist.txt");
         }
 
         [HttpGet("{id}/files/{filename}")]
-        [Authorize(Policy = "Teacher")]
+        [AllowAnonymous]
         public async Task<ActionResult> RetrievePackageFile(string id, string filename)
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
