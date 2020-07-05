@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 })
 export class TeacherHomeComponent extends HomeBase implements OnInit {
 
-  currentView: string = 'students';
+  currentView: string = 'status';
 
   constructor(authenticationService: AuthenticationService,
     router: Router) {

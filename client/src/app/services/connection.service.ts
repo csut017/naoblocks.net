@@ -33,9 +33,13 @@ export enum ClientMessageType {
   RobotError = 503,               // An error that occurred during execution of a program
   Error = 1000,                   // A general error (e.g. message type not recognised)
   NotAuthenticated = 1001,        // The client has not been authenticated
-  Forbidden = 1002,                // The client is not allowed to call the functionality
+  Forbidden = 1002,               // The client is not allowed to call the functionality
+  StartMonitoring = 1100,         // Start monitoring all client changes
+  StopMonitoring = 1101,          // Stop monitoring all client changes
+  ClientAdded = 1102,             // A new client has connected to the system
+  ClientRemoved = 1103,           // An existing client has disconnected
 
-  // These values are client specific codes
+  // These values are client specific codes, they do not exist on the server
   Closed = 5001
 }
 

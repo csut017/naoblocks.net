@@ -37,6 +37,8 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
                 { ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
                 { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
+                { ClientMessageType.StartMonitoring, this.StartMonitoringAllClients },
+                { ClientMessageType.StopMonitoring, this.StopMonitoringAllClients },
             };
             this._hub = hub;
             this._logger = logger;
@@ -224,6 +226,13 @@ namespace NaoBlocks.Web.Communications
                 return;
             }
 
+            var msg = new ClientMessage
+            {
+                Type = ClientMessageType.ClientAdded
+            };
+            msg.Values["ClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
+            msg.Values["Type"] = "Unknown";
+
             if (userSession.IsRobot)
             {
                 client.Robot = await session.LoadAsync<Robot>(userSession.UserId);
@@ -231,6 +240,10 @@ namespace NaoBlocks.Web.Communications
                 {
                     await AddToRobotLogAsync(session, client.Robot.Id, message, "Robot authenticated", false);
                 }
+
+                msg.Values["Type"] = "robot";
+                msg.Values["SubType"] = client?.Robot?.Type?.Name ?? "Unknown";
+                msg.Values["Name"] = client?.Robot?.FriendlyName ?? "Unknown";
             }
             else
             {
@@ -249,8 +262,13 @@ namespace NaoBlocks.Web.Communications
                     UserId = client.User.Id,
                     UserName = client.User.Name
                 });
+
+                msg.Values["Type"] = "user";
+                msg.Values["SubType"] = client?.User?.Role.ToString() ?? "Unknown";
+                msg.Values["Name"] = client?.User?.Name ?? "Unknown";
             }
 
+            client.Hub.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
@@ -403,6 +421,32 @@ namespace NaoBlocks.Web.Communications
                 state ??= "Unknown";
                 await AddToRobotLogAsync(session, client.Robot.Id, message, $"State updated to {state}");
             }
+        }
+
+        private Task StartMonitoringAllClients(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.AddMonitor(client);
+            return Task.CompletedTask;
+        }
+
+        private Task StopMonitoringAllClients(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.RemoveMonitor(client);
+            return Task.CompletedTask;
         }
     }
 }

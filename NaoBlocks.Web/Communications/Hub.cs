@@ -1,6 +1,7 @@
 ﻿using NaoBlocks.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 
@@ -12,34 +13,118 @@ namespace NaoBlocks.Web.Communications
         private readonly ReaderWriterLockSlim _clientsLock = new ReaderWriterLockSlim();
         private long _nextClientId;
 
+        private readonly HashSet<ClientConnection> _monitors = new HashSet<ClientConnection>();
+        private readonly ReaderWriterLockSlim _monitorLock = new ReaderWriterLockSlim();
+
         public void AddClient(ClientConnection? client)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            this._clientsLock.EnterWriteLock();
+            var isLocked = false;
             try
             {
-                client.Id = this._nextClientId++;
-                client.Hub = this;
-                this._clients.Add(client.Id, client);
+                isLocked = this._clientsLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
+                if (isLocked)
+                {
+                    client.Id = this._nextClientId++;
+                    client.Hub = this;
+                    this._clients.Add(client.Id, client);
+                    client.Closed += (o, e) => this.RemoveClient(client);
+                }
+                else
+                {
+                    throw new TimeoutException("Unable to add client");
+                }
             }
             finally
             {
-                this._clientsLock.ExitWriteLock();
+                if (isLocked) this._clientsLock.ExitWriteLock();
             }
+        }
 
-            client.Closed += (o, e) =>
+        private void RemoveClient(ClientConnection? client)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            var isLocked = false;
+            try
             {
-                this._clientsLock.EnterWriteLock();
-                try
+                isLocked = this._clientsLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
+                if (isLocked)
                 {
                     client.Hub = null;
                     this._clients.Remove(client.Id);
+
+                    var msg = new ClientMessage
+                    {
+                        Type = ClientMessageType.ClientRemoved
+                    };
+                    msg.Values["ClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
+                    this.SendToMonitors(msg);
                 }
-                finally
+                else
                 {
-                    this._clientsLock.ExitWriteLock();
+                    throw new TimeoutException("Unable to add client");
                 }
-            };
+            }
+            finally
+            {
+                if (isLocked) this._clientsLock.ExitWriteLock();
+            }
+        }
+
+        public void AddMonitor(ClientConnection client)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+
+            var isLocked = false;
+            try
+            {
+                isLocked = this._monitorLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
+                if (isLocked)
+                {
+                    this._monitors.Add(client);
+                    client.Closed += (o, e) => this.RemoveMonitor(client);
+                }
+                else
+                {
+                    throw new TimeoutException("Unable to add monitor");
+                }
+            }
+            finally
+            {
+                if (isLocked) this._monitorLock.ExitWriteLock();
+            }
+
+            this._clientsLock.EnterReadLock();
+            try
+            {
+                foreach (var existing in this._clients.Values)
+                {
+                    var msg = new ClientMessage
+                    {
+                        Type = ClientMessageType.ClientAdded
+                    };
+                    msg.Values["ClientId"] = existing.Id.ToString(CultureInfo.InvariantCulture);
+                    msg.Values["Type"] = "Unknown";
+                    if (existing.Type == ClientConnectionType.Robot)
+                    {
+                        msg.Values["Type"] = "robot";
+                        msg.Values["SubType"] = existing?.Robot?.Type?.Name ?? "Unknown";
+                        msg.Values["Name"] = existing?.Robot?.FriendlyName ?? "Unknown";
+                    }
+                    else
+                    {
+                        msg.Values["Type"] = "user";
+                        msg.Values["SubType"] = existing?.User?.Role.ToString() ?? "Unknown";
+                        msg.Values["Name"] = existing?.User?.Name ?? "Unknown";
+                    }
+
+                    client.SendMessage(msg);
+                }
+            }
+            finally
+            {
+                this._clientsLock.ExitReadLock();
+            }
         }
 
         public void Dispose()
@@ -77,29 +162,73 @@ namespace NaoBlocks.Web.Communications
             }
         }
 
-        public void SendToAll(ClientMessage message)
+        public void RemoveMonitor(ClientConnection client)
         {
-            this.SendToAllInternal(message, this._clients.Values);
-        }
+            if (client == null) throw new ArgumentNullException(nameof(client));
 
-        public void SendToAll(ClientMessage message, ClientConnectionType clientType)
-        {
-            this.SendToAllInternal(message, this._clients.Values.Where(c => c.Type == clientType));
-        }
-
-        private void SendToAllInternal(ClientMessage message, IEnumerable<ClientConnection> clients)
-        {
-            this._clientsLock.EnterReadLock();
+            var isLocked = false;
             try
             {
-                foreach (var client in clients)
+                isLocked = this._monitorLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
+                if (isLocked)
                 {
-                    client.SendMessage(message);
+                    if (this._monitors.Contains(client)) this._monitors.Remove(client);
+                }
+                else
+                {
+                    throw new TimeoutException("Unable to remove monitor");
                 }
             }
             finally
             {
+                if (isLocked) this._monitorLock.ExitWriteLock();
+            }
+        }
+
+        public void SendToAll(ClientMessage message)
+        {
+            this._clientsLock.EnterReadLock();
+            try
+            {
+                this.SendToAllInternal(message, this._clients.Values);
+            }
+            finally
+            {
                 this._clientsLock.ExitReadLock();
+            }
+        }
+
+        public void SendToAll(ClientMessage message, ClientConnectionType clientType)
+        {
+            this._clientsLock.EnterReadLock();
+            try
+            {
+                this.SendToAllInternal(message, this._clients.Values.Where(c => c.Type == clientType));
+            }
+            finally
+            {
+                this._clientsLock.ExitReadLock();
+            }
+        }
+
+        public void SendToMonitors(ClientMessage message)
+        {
+            this._monitorLock.EnterReadLock();
+            try
+            {
+                this.SendToAllInternal(message, this._monitors);
+            }
+            finally
+            {
+                this._monitorLock.ExitReadLock();
+            }
+        }
+
+        private void SendToAllInternal(ClientMessage message, IEnumerable<ClientConnection> clients)
+        {
+            foreach (var client in clients)
+            {
+                client.SendMessage(message);
             }
         }
     }

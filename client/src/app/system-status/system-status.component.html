@@ -1,77 +1,48 @@
 <div class="clr-row" style="margin-bottom: 1em;">
-    <div class="clr-col-1">
-        <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-secondary" (click)="refreshStatus()">
-                <clr-icon shape="refresh"></clr-icon> Refresh
-            </button>
+    <div class="clr-col">
+        <div *ngIf="!robots.length">
+            <clr-icon shape="info-standard"></clr-icon>
+            There are no robots connected
+        </div>
+        <div class="card" *ngFor="let robot of robots">
+            <div class="card-block">
+                <div class="card-title">
+                    <clr-icon shape="accessibility-2" class="is-solid" style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
+                    <div style="display: inline-block;">
+                        <b>{{robot.name}}</b> <br>
+                        <i>{{robot.subType}}</i>
+                    </div>
+                </div>
+                <div class="card-text">
+                    ...
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-sm btn-link">View</button>
+            </div>
         </div>
     </div>
     <div class="clr-col">
-        <div *ngIf="isLoading">
-            <span class="spinner spinner-inline">
-                [Loading]
-            </span>
-            <span>
-                Loading, please wait...
-            </span>
+        <div *ngIf="!users.length">
+            <clr-icon shape="info-standard"></clr-icon>
+            There are no users connected
         </div>
-        <div class="alert alert-danger" role="alert" *ngIf="status.error">
-            <div class="alert-items">
-                <div class="alert-item static">
-                    <div class="alert-icon-wrapper">
-                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+        <div class="card" *ngFor="let user of users">
+            <div class="card-block">
+                <div class="card-title">
+                    <clr-icon shape="employee" class="is-solid" style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
+                    <div style="display: inline-block;">
+                        <b>{{user.name}}</b> <br>
+                        <i>{{user.subType}}</i>
                     </div>
-                    <span class="alert-text">
-                        {{status.error}}
-                    </span>
                 </div>
+                <div class="card-text">
+                    ...
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-sm btn-link">View</button>
             </div>
         </div>
     </div>
 </div>
-<clr-accordion>
-    <clr-accordion-panel>
-        <clr-accordion-title>
-            Users <span class="badge badge-info">{{status.usersConnected.length}}</span>
-        </clr-accordion-title>
-        <clr-accordion-content *clrIfExpanded>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="left">Name</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let user of status.usersConnected">
-                        <td class="left">{{user.name}}</td>
-                        <td>{{user.status}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </clr-accordion-content>
-    </clr-accordion-panel>
-    <clr-accordion-panel>
-        <clr-accordion-title>
-            Robots <span class="badge badge-info">{{status.robotsConnected.length}}</span>
-        </clr-accordion-title>
-        <clr-accordion-content *clrIfExpanded>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="left">Name</th>
-                        <th>Status</th>
-                        <th>Available</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let robot of status.robotsConnected">
-                        <td class="left">{{robot.machineName}} [{{robot.friendlyName}}]</td>
-                        <td>{{robot.status}}</td>
-                        <td>{{robot.isAvailable ? 'Yes' : 'No'}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </clr-accordion-content>
-    </clr-accordion-panel>
-</clr-accordion>

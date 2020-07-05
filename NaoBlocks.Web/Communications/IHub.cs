@@ -15,5 +15,11 @@ namespace NaoBlocks.Web.Communications
         void SendToAll(ClientMessage message);
 
         void SendToAll(ClientMessage message, ClientConnectionType clientType);
+
+        void SendToMonitors(ClientMessage message);
+
+        void AddMonitor(ClientConnection client);
+
+        void RemoveMonitor(ClientConnection client);
     }
 }

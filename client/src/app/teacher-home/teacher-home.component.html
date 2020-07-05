@@ -43,9 +43,13 @@
             <app-students-list *ngIf="currentView=='students'"></app-students-list>
             <app-robots-list *ngIf="currentView=='robots'"></app-robots-list>
             <app-robot-configuration *ngIf="currentView=='configuration'"></app-robot-configuration>
+            <app-system-status *ngIf="currentView=='status'"></app-system-status>
         </div>
         <nav class="sidenav">
             <section class="sidenav-content">
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='status'" (click)="changeView('status')">
+                    System Dashboard
+                </a>
                 <a href="javascript://" class="nav-link" [class.active]="currentView=='students'" (click)="changeView('students')">
                     Students
                 </a>
