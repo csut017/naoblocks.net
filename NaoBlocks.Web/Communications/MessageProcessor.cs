@@ -123,7 +123,7 @@ namespace NaoBlocks.Web.Communications
             var log = await session.Query<RobotLog>()
                 .FirstOrDefaultAsync(rl => rl.RobotId == robotId && rl.Conversation.ConversationId == conversationId);
             var conversation = await session.Query<Conversation>()
-                .FirstAsync(c => c.ConversationId == conversationId);
+                .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
             if (log == null)
             {
                 log = new RobotLog
@@ -179,7 +179,8 @@ namespace NaoBlocks.Web.Communications
 
             var rnd = new Random();
             var nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
-                .OrderBy(r => rnd.Next())
+                .OrderBy(r => r.Status.LastAllocatedTime)
+                .ThenBy(_ => rnd.Next())
                 .FirstOrDefault(r => r.Status.IsAvailable);
 
             if (nextRobot == null)
@@ -190,6 +191,7 @@ namespace NaoBlocks.Web.Communications
             }
 
             nextRobot.Status.IsAvailable = false;
+            nextRobot.Status.LastAllocatedTime = DateTime.UtcNow;
             nextRobot.AddListener(client);
             var response = GenerateResponse(message, ClientMessageType.RobotAllocated);
             response.Values["robot"] = nextRobot.Id.ToString(CultureInfo.InvariantCulture);
