@@ -17,6 +17,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
 
   users: HubClient[] = [];
   robots: HubClient[] = [];
+  clients: {[key:number]: HubClient} = {};
 
   constructor(private connection: ConnectionService) { }
 
@@ -45,6 +46,8 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         newClient.name = msg.values.Name;
         newClient.type = msg.values.Type;
         newClient.subType = msg.values.SubType;
+        newClient.status = msg.values.state;
+        this.clients[newClient.id] = newClient;
         switch (newClient.type) {
           case "robot":
             this.robots.push(newClient);
@@ -62,6 +65,14 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         let user = this.users.find(r => r.id == oldId);
         if (robot) this.robots = this.robots.filter(r => r.id != oldId);
         if (user) this.users = this.users.filter(r => r.id != oldId);
+        break;
+
+      case ClientMessageType.RobotStateUpdate:
+        const clientId = Number.parseInt(msg.values.SourceId);
+        const state = msg.values.state;
+        let client = this.clients[clientId];
+        if (client) client.status = state;
+        break;
     }
   }
 

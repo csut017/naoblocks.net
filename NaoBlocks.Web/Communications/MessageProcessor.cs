@@ -268,7 +268,7 @@ namespace NaoBlocks.Web.Communications
                 msg.Values["Name"] = client?.User?.Name ?? "Unknown";
             }
 
-            client.Hub.SendToMonitors(msg);
+            client.Hub?.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
@@ -285,6 +285,8 @@ namespace NaoBlocks.Web.Communications
                     }
                 }
                 client.NotifyListeners(msg);
+                PopulateSourceValues(client, msg);
+                client.Hub?.SendToMonitors(msg);
                 if ((client != null) && (client.Robot != null))
                 {
                     await AddToRobotLogAsync(session, client.Robot.Id, message, logDescription);
@@ -415,11 +417,41 @@ namespace NaoBlocks.Web.Communications
                 msg.Values[key] = value;
             }
             client.NotifyListeners(msg);
+            PopulateSourceValues(client, msg);
+            client.Hub?.SendToMonitors(msg);
 
             if (client.Robot != null)
             {
                 state ??= "Unknown";
                 await AddToRobotLogAsync(session, client.Robot.Id, message, $"State updated to {state}");
+            }
+        }
+
+        private static void PopulateSourceValues(ClientConnection client, ClientMessage msg)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            msg.Values["SourceId"] = client.Id.ToString(CultureInfo.InvariantCulture);
+            switch (client.Type)
+            {
+                case ClientConnectionType.Robot:
+                    msg.Values["SourceType"] = "Robot";
+                    if (client.Robot != null)
+                    {
+                        msg.Values["SourceName"] = client.Robot.MachineName;
+                    }
+                    break;
+
+                case ClientConnectionType.User:
+                    msg.Values["SourceType"] = "User";
+                    if (client.User != null)
+                    {
+                        msg.Values["SourceName"] = client.User.Name;
+                    }
+                    break;
+
+                default:
+                    msg.Values["SourceType"] = "Unknown";
+                    break;
             }
         }
 

@@ -3,4 +3,5 @@ export class HubClient {
     name: string;
     type: string;
     subType: string;
+    status: string;
 }

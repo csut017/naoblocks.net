@@ -110,6 +110,7 @@ namespace NaoBlocks.Web.Communications
                         msg.Values["Type"] = "robot";
                         msg.Values["SubType"] = existing?.Robot?.Type?.Name ?? "Unknown";
                         msg.Values["Name"] = existing?.Robot?.FriendlyName ?? "Unknown";
+                        msg.Values["state"] = existing?.Status?.Message ?? "Unknown";
                     }
                     else
                     {
@@ -226,6 +227,7 @@ namespace NaoBlocks.Web.Communications
 
         private void SendToAllInternal(ClientMessage message, IEnumerable<ClientConnection> clients)
         {
+            if (message == null) throw new ArgumentNullException(nameof(message));
             foreach (var client in clients)
             {
                 client.SendMessage(message);
