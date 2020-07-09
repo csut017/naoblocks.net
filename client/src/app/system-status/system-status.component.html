@@ -7,7 +7,8 @@
         <div class="card" *ngFor="let robot of robots">
             <div class="card-block">
                 <div class="card-title">
-                    <clr-icon shape="accessibility-2" class="is-solid" style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
+                    <clr-icon shape="accessibility-2" class="is-solid"
+                        style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
                     <div style="display: inline-block;">
                         <b>{{robot.name}}</b> <br>
                         <i>{{robot.subType}}</i>
@@ -19,7 +20,7 @@
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-sm btn-link">View</button>
+                <button class="btn btn-sm btn-link" (click)="displayMessages(robot)">View Log</button>
             </div>
         </div>
     </div>
@@ -31,18 +32,46 @@
         <div class="card" *ngFor="let user of users">
             <div class="card-block">
                 <div class="card-title">
-                    <clr-icon shape="employee" class="is-solid" style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
+                    <clr-icon [attr.shape]="user.student ? 'user' : 'employee'" class="is-solid"
+                        style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
                     <div style="display: inline-block;">
                         <b>{{user.name}}</b> <br>
                         <i>{{user.subType}}</i>
                     </div>
                 </div>
-                <div class="card-text">
+                <div class="card-text" *ngIf="user.student">
+                    <b>Robot:</b>
+                    {{(user.robot ? user.robot.name : null) || 'None'}}
                 </div>
             </div>
-            <div class="card-footer">
-                <button class="btn btn-sm btn-link">View</button>
+            <div class="card-footer" *ngIf="user.robot">
+                <button class="btn btn-sm btn-link" (click)="displayMessages(user.robot)">View Log</button>
             </div>
         </div>
     </div>
 </div>
+<clr-modal [(clrModalOpen)]="messagesOpen" [clrModalSize]="'lg'">
+    <h3 class="modal-title">
+        Robot Log: {{currentClient ? currentClient.name : ''}}
+    </h3>
+    <div class="modal-body" style="height: 70vh;">
+        <div style="height: 2rem;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="currentClient.messages = []">
+                    <clr-icon shape="trash"></clr-icon> Clear
+                </button>
+            </div>
+        </div>
+        <div style="height: calc(100% - 2rem); overflow-y: auto; border: 1px solid #cccccc;">
+            <div *ngIf="currentClient">
+                <div *ngFor="let message of currentClient.messages" style="margin-left: 0.2rem;">
+                    <clr-icon [attr.shape]="'details'"></clr-icon>
+                    {{message.function}}: {{message.status}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="messagesOpen = false">Close</button>
+    </div>
+</clr-modal>

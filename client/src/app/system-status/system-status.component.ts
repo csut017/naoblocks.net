@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SystemStatus } from '../data/system-status';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
 import { HubClient } from '../data/hub-client';
+import { DebugMessage } from '../data/debug-message';
 
 @Component({
   selector: 'app-system-status',
@@ -14,10 +15,12 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   lastConversationId: number;
   errorMessage: string;
+  messagesOpen: boolean;
+  currentClient: HubClient;
 
   users: HubClient[] = [];
   robots: HubClient[] = [];
-  clients: {[key:number]: HubClient} = {};
+  clients: { [key: number]: HubClient } = {};
 
   constructor(private connection: ConnectionService) { }
 
@@ -29,8 +32,15 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
     this.connection.close();
   }
 
+  displayMessages(client: HubClient) {
+    this.messagesOpen = true;
+    this.currentClient = client;
+  }
+
   processServerMessage(msg: ClientMessage) {
     this.lastConversationId = msg.conversationId;
+    const clientId = Number.parseInt(msg.values.SourceId);
+    let client = this.clients[clientId];
     switch (msg.type) {
       case ClientMessageType.Closed:
         this.errorMessage = 'Connection to the server has been lost';
@@ -54,6 +64,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
             break;
 
           case "user":
+            newClient.student = msg.values.IsStudent == 'yes';
             this.users.push(newClient);
             break;
         }
@@ -67,11 +78,28 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         if (user) this.users = this.users.filter(r => r.id != oldId);
         break;
 
+      case ClientMessageType.RobotAllocated:
+        if (client && msg.values.robot) {
+          const robotId = Number.parseInt(msg.values.robot);
+          client.robot = this.clients[robotId];
+        }
+        break;
+
       case ClientMessageType.RobotStateUpdate:
-        const clientId = Number.parseInt(msg.values.SourceId);
         const state = msg.values.state;
-        let client = this.clients[clientId];
-        if (client) client.status = state;
+        if (client) {
+          client.status = state;
+        }
+        break;
+
+      case ClientMessageType.RobotDebugMessage:
+        if (client) {
+          let debugMsg = new DebugMessage();
+          debugMsg.function = msg.values.function;
+          debugMsg.sourceID = msg.values.sourceID;
+          debugMsg.status = msg.values.status;
+          client.messages.push(debugMsg);
+        }
         break;
     }
   }

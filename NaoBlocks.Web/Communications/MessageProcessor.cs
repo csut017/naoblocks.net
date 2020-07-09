@@ -198,12 +198,17 @@ namespace NaoBlocks.Web.Communications
             var response = GenerateResponse(message, ClientMessageType.RobotAllocated);
             response.Values["robot"] = nextRobot.Id.ToString(CultureInfo.InvariantCulture);
             client.SendMessage(response);
+
+            PopulateSourceValues(client, response);
+            client?.Hub.SendToMonitors(response);
+
             this._logger.LogInformation($"Allocated robot {nextRobot.Id}");
             await AddToRobotLogAsync(session, nextRobot.Robot.Id, message, "Robot allocated to user");
         }
 
         private async Task Authenticate(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
+            if (client == null) throw new ArgumentNullException(nameof(client));
             if (!message.Values.TryGetValue("token", out string? token))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is missing"));
@@ -236,8 +241,9 @@ namespace NaoBlocks.Web.Communications
             if (userSession.IsRobot)
             {
                 client.Robot = await session.LoadAsync<Robot>(userSession.UserId);
-                if (client.Robot != null)
+                if (client?.Robot != null)
                 {
+                    client.Robot.Type = await session.LoadAsync<RobotType>(client.Robot.RobotTypeId);
                     await AddToRobotLogAsync(session, client.Robot.Id, message, "Robot authenticated", false);
                 }
 
@@ -266,6 +272,7 @@ namespace NaoBlocks.Web.Communications
                 msg.Values["Type"] = "user";
                 msg.Values["SubType"] = client?.User?.Role.ToString() ?? "Unknown";
                 msg.Values["Name"] = client?.User?.Name ?? "Unknown";
+                msg.Values["IsStudent"] = (client?.User?.Role ?? UserRole.Student) == UserRole.Student ? "yes" : "no";
             }
 
             client.Hub?.SendToMonitors(msg);
