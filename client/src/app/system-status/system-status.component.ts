@@ -3,6 +3,7 @@ import { SystemStatus } from '../data/system-status';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
 import { HubClient } from '../data/hub-client';
 import { DebugMessage } from '../data/debug-message';
+import { StatusMessage } from '../data/status-message';
 
 @Component({
   selector: 'app-system-status',
@@ -82,7 +83,16 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         if (client && msg.values.robot) {
           const robotId = Number.parseInt(msg.values.robot);
           client.robot = this.clients[robotId];
+          if (client.robot) {
+            client.robot.messages.push(this.generateStatusMsg('assign-user', `Assigned to ${client.name}`));
+            client.robot.user = client;
+          }
         }
+        break;
+
+      case ClientMessageType.ProgramTransferred:
+        client.programId = Number.parseInt(msg.values.ProgramId);
+        client.messages.push(this.generateStatusMsg('install', `Program has been downloaded`));
         break;
 
       case ClientMessageType.RobotStateUpdate:
@@ -101,12 +111,40 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
           client.messages.push(debugMsg);
         }
         break;
+
+      case ClientMessageType.ProgramStarted:
+        client.messages.push(this.generateStatusMsg('play', `Program has started`));
+        break;
+
+      case ClientMessageType.ProgramFinished:
+        client.messages.push(this.generateStatusMsg('check', `Program has finished`));
+        break;
+
+      case ClientMessageType.ProgramStopped:
+        client.messages.push(this.generateStatusMsg('stop', `Program was stopped`));
+        break;
+
+      default:
+        this.log(`Unhandled message type ${msg.type}`);
+        break;
     }
+  }
+
+  private generateStatusMsg(type: string, message: string): StatusMessage {
+    let msg = new StatusMessage();
+    msg.type = type;
+    msg.message = message;
+    return msg;
   }
 
   private generateReply(msg: ClientMessage, type: ClientMessageType): ClientMessage {
     let newMsg = new ClientMessage(type);
     newMsg.conversationId = msg.conversationId;
     return newMsg;
+  }
+
+  private log(message: string) {
+    const msg = `[SystemStatus] ${message}`;
+    console.log(msg);
   }
 }

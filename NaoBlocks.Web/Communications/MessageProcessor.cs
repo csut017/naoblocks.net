@@ -29,11 +29,11 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
                 { ClientMessageType.StopProgram, this.StopProgram },
-                { ClientMessageType.ProgramDownloaded, this.BroadcastMessage(ClientMessageType.ProgramTransferred, "Program transferred") },
+                { ClientMessageType.ProgramDownloaded, this.ProgramDownloaded },
                 { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted, "Program started") },
                 { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished, "Program finished") },
                 { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped, "Program stopped") },
-                { ClientMessageType.RobotDebugMessage, this.BroadcastMessage(ClientMessageType.RobotDebugMessage, "Debug information received", true) },
+                { ClientMessageType.RobotDebugMessage, this.RobotDebugMessage },
                 { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
                 { ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
                 { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
@@ -43,6 +43,19 @@ namespace NaoBlocks.Web.Communications
             this._hub = hub;
             this._logger = logger;
             this._store = store;
+        }
+
+        private async Task ProgramDownloaded(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            var msg = GenerateResponse(message, ClientMessageType.ProgramTransferred);
+            msg.Values["ProgramId"] = client?.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture);
+            client.NotifyListeners(msg);
+            PopulateSourceValues(client, msg);
+            client.Hub?.SendToMonitors(msg);
+            if ((client != null) && (client.Robot != null))
+            {
+                await AddToRobotLogAsync(session, client.Robot.Id, message, "Program transferred");
+            }
         }
 
         private delegate Task TypeProcessor(IAsyncDocumentSession session, ClientConnection client, ClientMessage message);
@@ -283,22 +296,27 @@ namespace NaoBlocks.Web.Communications
         {
             return async (IAsyncDocumentSession session, ClientConnection client, ClientMessage message) =>
             {
-                var msg = GenerateResponse(message, messageType);
-                if (includeValues)
-                {
-                    foreach (var (key, value) in message.Values)
-                    {
-                        msg.Values[key] = value;
-                    }
-                }
-                client.NotifyListeners(msg);
-                PopulateSourceValues(client, msg);
-                client.Hub?.SendToMonitors(msg);
-                if ((client != null) && (client.Robot != null))
-                {
-                    await AddToRobotLogAsync(session, client.Robot.Id, message, logDescription);
-                }
+                await this.DoBroadcastMessage(session, client, message, messageType, logDescription, includeValues);
             };
+        }
+
+        private async Task DoBroadcastMessage(IAsyncDocumentSession session, ClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, bool includeValues)
+        {
+            var msg = GenerateResponse(message, messageType);
+            if (includeValues)
+            {
+                foreach (var (key, value) in message.Values)
+                {
+                    msg.Values[key] = value;
+                }
+            }
+            client.NotifyListeners(msg);
+            PopulateSourceValues(client, msg);
+            client.Hub?.SendToMonitors(msg);
+            if ((client != null) && (client.Robot != null))
+            {
+                await AddToRobotLogAsync(session, client.Robot.Id, message, logDescription);
+            }
         }
 
         private bool RetrieveRobot(ClientConnection client, ClientMessage message, out ClientConnection? robotClient)
@@ -390,6 +408,15 @@ namespace NaoBlocks.Web.Communications
                 return;
             }
 
+            if (!int.TryParse(programId, out int programIdValue)) {
+                client.SendMessage(GenerateErrorResponse(message, "Invalid program ID"));
+                return;
+            }
+
+            robotClient.RobotDetails = new RobotStatus
+            {
+                LastProgramId = programIdValue
+            };
             var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
             clientMessage.Values.Add("program", programId);
             clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
@@ -459,6 +486,18 @@ namespace NaoBlocks.Web.Communications
                 default:
                     msg.Values["SourceType"] = "Unknown";
                     break;
+            }
+        }
+
+        private async Task RobotDebugMessage(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            await this.DoBroadcastMessage(session, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", true);
+            if (client.RobotDetails != null)
+            {
+                if (message.Values.TryGetValue("sourceID", out string? sourceId) && !string.IsNullOrEmpty(sourceId))
+                {
+                    client.RobotDetails.SourceIds.Add(sourceId);
+                }
             }
         }
 

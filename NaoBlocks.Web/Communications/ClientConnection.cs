@@ -37,6 +37,9 @@ namespace NaoBlocks.Web.Communications
         public Robot? Robot { get; set; }
 
         public ClientStatus Status { get; } = new ClientStatus();
+
+        public RobotStatus? RobotDetails { get; set; }
+
         public ClientConnectionType Type { get; private set; }
 
         public User? User { get; set; }

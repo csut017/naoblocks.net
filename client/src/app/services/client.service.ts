@@ -11,7 +11,7 @@ export abstract class ClientService {
 
   constructor(protected errorhandler: ErrorHandlerService) { }
 
-  protected log(message: string, data?: any) {
+  protected log(message: string) {
     const msg = `[${this.serviceName}] ${message}`;
     console.log(msg);
   }

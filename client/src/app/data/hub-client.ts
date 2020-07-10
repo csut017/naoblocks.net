@@ -1,5 +1,4 @@
-import { DebugMessage } from './debug-message';
-import { NumberValueAccessor } from '@angular/forms';
+import { StatusMessage } from './status-message';
 
 export class HubClient {
     id: number;
@@ -12,6 +11,8 @@ export class HubClient {
     robot: HubClient;
     
     // Robot data
+    messages: StatusMessage[] = [];
+    programId: number;
     status: string;
-    messages: DebugMessage[] = [];
+    user: HubClient;
 }
