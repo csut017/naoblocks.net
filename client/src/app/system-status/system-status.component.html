@@ -21,7 +21,8 @@
             </div>
             <div class="card-footer">
                 <button class="btn btn-sm btn-link" (click)="displayMessages(robot)">View Log</button>
-                <button class="btn btn-sm btn-link" (click)="displayProgram(robot)">View Program</button>
+                <button class="btn btn-sm btn-link" (click)="displayProgram(robot)" *ngIf="robot.user && robot.programId">View
+                    Program</button>
             </div>
         </div>
     </div>
@@ -95,7 +96,9 @@
             </div>
         </div>
         <div style="height: calc(100% - 2rem); overflow-y: auto; border: 1px solid #cccccc;">
-            TODO
+            <div style="margin: 0 0.3rem;">
+                <app-program-display [program]="currentProgram" [isLoading]="isProgramLoading"></app-program-display>
+            </div>
         </div>
     </div>
     <div class="modal-footer">

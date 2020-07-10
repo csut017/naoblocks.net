@@ -5,6 +5,7 @@ import { HubClient } from '../data/hub-client';
 import { DebugMessage } from '../data/debug-message';
 import { StatusMessage } from '../data/status-message';
 import { ProgramService } from '../services/program.service';
+import { Compilation } from '../data/compilation';
 
 @Component({
   selector: 'app-system-status',
@@ -19,8 +20,9 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   errorMessage: string;
   messagesOpen: boolean;
   programOpen: boolean;
-  programLoading: boolean;
+  isProgramLoading: boolean;
   currentClient: HubClient;
+  currentProgram: Compilation;
 
   users: HubClient[] = [];
   robots: HubClient[] = [];
@@ -45,10 +47,11 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   displayProgram(client: HubClient) {
     this.programOpen = true;
     this.currentClient = client;
-    this.programLoading = true;
+    this.isProgramLoading = true;
     this.programService.getAST(client.user.name, client.programId.toString())
       .subscribe(result => {
-        this.programLoading = false;
+        this.currentProgram = result.output;
+        this.isProgramLoading = false;
       });
   }
 
@@ -100,6 +103,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
           if (client.robot) {
             client.robot.messages.push(this.generateStatusMsg('assign-user', `Assigned to ${client.name}`));
             client.robot.user = client;
+            client.robot.programId = undefined;
           }
         }
         break;

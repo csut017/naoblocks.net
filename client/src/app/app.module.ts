@@ -33,6 +33,7 @@ import { RobotTypeEditorComponent } from './robot-type-editor/robot-type-editor.
 import { UserEditorComponent } from './user-editor/user-editor.component';
 import { RobotConfigurationComponent } from './robot-configuration/robot-configuration.component';
 import { RobotPackageComponent } from './robot-package/robot-package.component';
+import { ProgramDisplayComponent } from './program-display/program-display.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { RobotPackageComponent } from './robot-package/robot-package.component';
     RobotTypeEditorComponent,
     UserEditorComponent,
     RobotConfigurationComponent,
-    RobotPackageComponent
+    RobotPackageComponent,
+    ProgramDisplayComponent
   ],
   imports: [
     BrowserModule,

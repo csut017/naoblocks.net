@@ -1,0 +1,50 @@
+<div class="alert alert-success" role="alert" *ngIf="isLoading">
+    <div class="alert-items">
+        <div class="alert-item static">
+            <div class="alert-icon-wrapper">
+                <span class="spinner spinner-inline">
+                    Loading...
+                </span>
+            </div>
+            <span class="alert-text">
+                Loading program, please wait...
+            </span>
+        </div>
+    </div>
+</div>
+
+<ng-template #programLine let-node="node">
+    <div>
+        {{node.token.value}}
+        <span *ngIf="!node.arguments && !node.children">
+            ()
+        </span>
+        <span *ngIf="node.arguments">
+            (
+                <span *ngFor="let child of node.arguments; first as isFirst">
+                    <span *ngIf="!isFirst">,</span>
+                    {{formatToken(child.token)}}
+                </span>
+            )
+        </span>
+        <span *ngIf="node.children">
+            {{'{'}}
+        </span>
+    </div>
+    <div *ngIf="node.children" style="margin-left: 1rem;">
+        <ng-template ngFor let-child [ngForOf]="node.children">
+            <ng-template [ngTemplateOutlet]="programLine" [ngTemplateOutletContext]="{node: child}">
+            </ng-template>
+        </ng-template>
+    </div>
+    <div *ngIf="node.children">
+        }
+    </div>
+</ng-template>
+
+<div *ngIf="program && !isLoading">
+    <div *ngFor="let node of program.nodes">
+        <ng-template [ngTemplateOutlet]="programLine" [ngTemplateOutletContext]="{node: node}">
+        </ng-template>
+    </div>
+</div>
