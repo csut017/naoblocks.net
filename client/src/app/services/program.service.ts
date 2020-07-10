@@ -44,7 +44,20 @@ export class ProgramService extends ClientService {
           this.log(`Retrieved program ${id}`)
         }),
         map(data => new ExecutionResult<ProgramFile>(data)),
-        catchError(this.handleError('list', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
+        catchError(this.handleError('get', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
+      );
+  }
+
+  getAST(userName: string, id: string): Observable<ExecutionResult<ProgramFile>> {
+    const url = `${environment.apiURL}v1/code/${userName}/${id}`;
+    this.log(`Retrieving program AST ${id}`);
+    return this.http.get<ProgramFile>(url)
+      .pipe(
+        tap(data => {
+          this.log(`Retrieved program AST ${id}`)
+        }),
+        map(data => new ExecutionResult<ProgramFile>(data)),
+        catchError(this.handleError('getAST', msg => new ExecutionResult<ProgramFile>(undefined, msg)))
       );
   }
 

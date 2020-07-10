@@ -86,7 +86,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet("{user}/{program}")]
-        [Authorize("Robot")]
+        [Authorize(Policy = "TeacherOrRobot")]
         public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CompiledCodeProgram?>>> Get(string user, long program)
         {
             this._logger.LogInformation($"Getting program {program} for {user}");

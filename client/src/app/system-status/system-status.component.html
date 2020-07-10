@@ -21,6 +21,7 @@
             </div>
             <div class="card-footer">
                 <button class="btn btn-sm btn-link" (click)="displayMessages(robot)">View Log</button>
+                <button class="btn btn-sm btn-link" (click)="displayProgram(robot)">View Program</button>
             </div>
         </div>
     </div>
@@ -60,6 +61,9 @@
                 <button type="button" class="btn btn-sm btn-secondary" (click)="currentClient.messages = []">
                     <clr-icon shape="trash"></clr-icon> Clear
                 </button>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="currentClient.messages = []">
+                    <clr-icon shape="window-restore"></clr-icon> Pop-out
+                </button>
             </div>
         </div>
         <div style="height: calc(100% - 2rem); overflow-y: auto; border: 1px solid #cccccc;">
@@ -73,5 +77,28 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="messagesOpen = false">Close</button>
+    </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="programOpen" [clrModalSize]="'lg'">
+    <h3 class="modal-title">
+        Program: {{currentClient ? currentClient.name : ''}}
+    </h3>
+    <div class="modal-body" style="height: 70vh;">
+        <div style="height: 2rem;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="currentClient.messages = []">
+                    <clr-icon shape="trash"></clr-icon> Clear
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="currentClient.messages = []">
+                    <clr-icon shape="window-restore"></clr-icon> Pop-out
+                </button>
+            </div>
+        </div>
+        <div style="height: calc(100% - 2rem); overflow-y: auto; border: 1px solid #cccccc;">
+            TODO
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="programOpen = false">Close</button>
     </div>
 </clr-modal>

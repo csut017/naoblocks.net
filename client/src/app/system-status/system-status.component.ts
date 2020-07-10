@@ -4,6 +4,7 @@ import { ConnectionService, ClientMessage, ClientMessageType } from '../services
 import { HubClient } from '../data/hub-client';
 import { DebugMessage } from '../data/debug-message';
 import { StatusMessage } from '../data/status-message';
+import { ProgramService } from '../services/program.service';
 
 @Component({
   selector: 'app-system-status',
@@ -17,13 +18,16 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   lastConversationId: number;
   errorMessage: string;
   messagesOpen: boolean;
+  programOpen: boolean;
+  programLoading: boolean;
   currentClient: HubClient;
 
   users: HubClient[] = [];
   robots: HubClient[] = [];
   clients: { [key: number]: HubClient } = {};
 
-  constructor(private connection: ConnectionService) { }
+  constructor(private connection: ConnectionService,
+    private programService: ProgramService) { }
 
   ngOnInit() {
     this.connection.start().subscribe(msg => this.processServerMessage(msg));
@@ -36,6 +40,16 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   displayMessages(client: HubClient) {
     this.messagesOpen = true;
     this.currentClient = client;
+  }
+
+  displayProgram(client: HubClient) {
+    this.programOpen = true;
+    this.currentClient = client;
+    this.programLoading = true;
+    this.programService.getAST(client.user.name, client.programId.toString())
+      .subscribe(result => {
+        this.programLoading = false;
+      });
   }
 
   processServerMessage(msg: ClientMessage) {
