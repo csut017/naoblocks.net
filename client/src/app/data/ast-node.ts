@@ -6,4 +6,6 @@ export class RoboLangAstNode {
   children: RoboLangAstNode[];
   arguments: RoboLangAstNode[];
   type: string;
+
+  statusIcon: string;
 }

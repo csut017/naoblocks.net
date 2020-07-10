@@ -15,6 +15,7 @@
 
 <ng-template #programLine let-node="node">
     <div>
+        <clr-icon [attr.shape]="node.statusIcon" class="is-info"></clr-icon>
         {{node.token.value}}
         <span *ngIf="!node.arguments && !node.children">
             ()
@@ -37,13 +38,13 @@
             </ng-template>
         </ng-template>
     </div>
-    <div *ngIf="node.children">
+    <div *ngIf="node.children" style="margin-left: 1rem;">
         }
     </div>
 </ng-template>
 
-<div *ngIf="program && !isLoading">
-    <div *ngFor="let node of program.nodes">
+<div *ngIf="programDetails && !isLoading">
+    <div *ngFor="let node of programDetails.nodes">
         <ng-template [ngTemplateOutlet]="programLine" [ngTemplateOutletContext]="{node: node}">
         </ng-template>
     </div>
