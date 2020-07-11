@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { SystemStatus } from '../data/system-status';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
 import { HubClient } from '../data/hub-client';
@@ -6,6 +6,7 @@ import { DebugMessage } from '../data/debug-message';
 import { StatusMessage } from '../data/status-message';
 import { ProgramService } from '../services/program.service';
 import { Compilation } from '../data/compilation';
+import { ProgramDisplayComponent } from '../program-display/program-display.component';
 
 @Component({
   selector: 'app-system-status',
@@ -13,6 +14,9 @@ import { Compilation } from '../data/compilation';
   styleUrls: ['./system-status.component.scss']
 })
 export class SystemStatusComponent implements OnInit, OnDestroy {
+
+  @ViewChild(ProgramDisplayComponent)
+  private programDisplay: ProgramDisplayComponent;
 
   status: SystemStatus = new SystemStatus();
   isLoading: boolean = false;
@@ -51,6 +55,11 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
     this.programService.getAST(client.user.name, client.programId.toString())
       .subscribe(result => {
         this.currentProgram = result.output;
+        this.programDisplay.loadProgram(this.currentProgram);
+        client.messages.forEach(msg => {
+          let debug = msg as DebugMessage;
+          if (debug && debug.sourceID && (debug.programId == client.programId)) this.programDisplay.updateStatus(debug);
+        });
         this.isProgramLoading = false;
       });
   }
@@ -111,6 +120,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
       case ClientMessageType.ProgramTransferred:
         client.programId = Number.parseInt(msg.values.ProgramId);
         client.messages.push(this.generateStatusMsg('install', `Program has been downloaded`));
+        if (this.programOpen) this.displayProgram(client);
         break;
 
       case ClientMessageType.RobotStateUpdate:
@@ -126,7 +136,10 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
           debugMsg.function = msg.values.function;
           debugMsg.sourceID = msg.values.sourceID;
           debugMsg.status = msg.values.status;
+          debugMsg.programId = client.programId;
           client.messages.push(debugMsg);
+
+          this.programDisplay.updateStatus(debugMsg);
         }
         break;
 

@@ -4,6 +4,7 @@ export class DebugMessage extends StatusMessage {
     function: string;
     sourceID: string;
     status: string;
+    programId: number;
 
     constructor() {
         super();
