@@ -1,7 +1,25 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
     <h3 class="modal-title">About NaoBlocks</h3>
     <div class="modal-body">
-        <p>This is the new version of NaoBlocks.</p>
+        <div style="height: 4rem;">
+            <div>This is the new version of NaoBlocks.</div>
+            <div class="version-information">
+                <span *ngIf="!serverVersion">
+                    <span class="spinner spinner-inline spinner-inverse">
+                        (_)
+                    </span>
+                    <span>
+                        Loading server version...
+                    </span>
+                </span>
+                <span *ngIf="serverVersion">
+                    Server Version {{serverVersion.version}}
+                </span>
+            </div>
+            <div>
+                Client Version {{clientVersion}}
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="opened = false">

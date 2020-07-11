@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using NaoBlocks.Web.Helpers;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 
-[assembly: AssemblyInformationalVersion("1.0.0 [alpha 2]")]
+[assembly: AssemblyInformationalVersion("1.0.0 [alpha 3]")]
 
 namespace NaoBlocks.Web
 {
