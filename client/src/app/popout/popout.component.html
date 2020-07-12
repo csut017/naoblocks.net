@@ -1,0 +1,7 @@
+<div *ngIf="isLoading" class="centered">
+    <span class="spinner">
+        Loading...
+    </span>
+</div>
+<app-log-viewer *ngIf="view=='robotLog'"></app-log-viewer>
+<app-program-display *ngIf="view=='program'"></app-program-display>

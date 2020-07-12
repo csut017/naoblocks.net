@@ -7,7 +7,9 @@ import { StatusMessage } from '../data/status-message';
 import { ProgramService } from '../services/program.service';
 import { Compilation } from '../data/compilation';
 import { ProgramDisplayComponent } from '../program-display/program-display.component';
-
+import { v4 as uuidv4 } from 'uuid';
+import { AuthenticationService } from '../services/authentication.service';
+ 
 @Component({
   selector: 'app-system-status',
   templateUrl: './system-status.component.html',
@@ -33,7 +35,8 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   clients: { [key: number]: HubClient } = {};
 
   constructor(private connection: ConnectionService,
-    private programService: ProgramService) { }
+    private programService: ProgramService,
+    private authenticationService: AuthenticationService) { }
 
   ngOnInit() {
     this.connection.start().subscribe(msg => this.processServerMessage(msg));
@@ -62,6 +65,20 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         });
         this.isProgramLoading = false;
       });
+  }
+
+  openPopout(view: string) {
+    const guid = uuidv4();
+    const encodedGuid = btoa(guid);
+    const baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+    const url = `${baseUrl}/popout/${view}/${encodedGuid}`;
+    const data = {
+      session: this.authenticationService.token,
+      client: this.currentClient.id
+    };
+    localStorage.setItem(guid, JSON.stringify(data));
+    console.log('Opening popout ' + url);
+    window.open(url, '_blank', 'menubar=no,resizable=yes,scrollbars=no,status=no');
   }
 
   processServerMessage(msg: ClientMessage) {

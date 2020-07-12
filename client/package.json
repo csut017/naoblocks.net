@@ -20,15 +20,16 @@
     "@angular/platform-browser-dynamic": "~9.1.1",
     "@angular/router": "~9.1.1",
     "@clr/angular": "^3.1.0",
+    "@clr/core": "^3.0.0",
     "@clr/icons": "3.1.0",
     "@clr/ui": "3.1.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
     "blockly": "git://github.com/google/blockly.git#3.20191014.4",
     "file-saver": "^2.0.2",
     "rxjs": "~6.5.5",
     "tslib": "^1.10.0",
-    "zone.js": "~0.10.2",
-    "@clr/core": "^3.0.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0"
+    "uuid": "^8.2.0",
+    "zone.js": "~0.10.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.1",

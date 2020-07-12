@@ -34,6 +34,8 @@ import { UserEditorComponent } from './user-editor/user-editor.component';
 import { RobotConfigurationComponent } from './robot-configuration/robot-configuration.component';
 import { RobotPackageComponent } from './robot-package/robot-package.component';
 import { ProgramDisplayComponent } from './program-display/program-display.component';
+import { PopoutComponent } from './popout/popout.component';
+import { LogViewerComponent } from './log-viewer/log-viewer.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +65,9 @@ import { ProgramDisplayComponent } from './program-display/program-display.compo
     UserEditorComponent,
     RobotConfigurationComponent,
     RobotPackageComponent,
-    ProgramDisplayComponent
+    ProgramDisplayComponent,
+    PopoutComponent,
+    LogViewerComponent
   ],
   imports: [
     BrowserModule,
