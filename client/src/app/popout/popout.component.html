@@ -3,5 +3,29 @@
         Loading...
     </span>
 </div>
-<app-log-viewer *ngIf="view=='robotLog'"></app-log-viewer>
-<app-program-display *ngIf="view=='program'"></app-program-display>
+<div class="card popout-card" *ngIf="view=='robotLog'">
+    <div class="card-header">
+        Robot Log: {{currentClient ? currentClient.name : ''}}
+    </div>
+    <div class="card-block">
+        <div class="card-text">
+            <app-log-viewer [client]="currentClient"></app-log-viewer>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-sm btn-link" (click)="close()">Close</button>
+    </div>
+</div>
+<div class="card popout-card" *ngIf="view=='program'">
+    <div class="card-header">
+        Program
+    </div>
+    <div class="card-block">
+        <div class="card-text">
+            <app-program-display></app-program-display>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-sm btn-link" (click)="close()">Close</button>
+    </div>
+</div>

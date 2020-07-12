@@ -1,10 +1,10 @@
 <div class="clr-row" style="margin-bottom: 1em;">
     <div class="clr-col">
-        <div *ngIf="!robots.length">
+        <div *ngIf="!processor.robots.length">
             <clr-icon shape="info-standard"></clr-icon>
             There are no robots connected
         </div>
-        <div class="card" *ngFor="let robot of robots">
+        <div class="card" *ngFor="let robot of processor.robots">
             <div class="card-block">
                 <div class="card-title">
                     <clr-icon shape="accessibility-2" class="is-solid"
@@ -27,11 +27,11 @@
         </div>
     </div>
     <div class="clr-col">
-        <div *ngIf="!users.length">
+        <div *ngIf="!processor.users.length">
             <clr-icon shape="info-standard"></clr-icon>
             There are no users connected
         </div>
-        <div class="card" *ngFor="let user of users">
+        <div class="card" *ngFor="let user of processor.users">
             <div class="card-block">
                 <div class="card-title">
                     <clr-icon [attr.shape]="user.student ? 'user' : 'employee'" class="is-solid"
@@ -92,7 +92,7 @@
         </div>
         <div style="height: calc(100% - 2rem); overflow-y: auto; border: 1px solid #cccccc;">
             <div style="margin: 0 0.3rem;">
-                <app-program-display [isLoading]="isProgramLoading"></app-program-display>
+                <app-program-display></app-program-display>
             </div>
         </div>
     </div>

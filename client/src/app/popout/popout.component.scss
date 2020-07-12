@@ -5,3 +5,14 @@
     /* bring your own prefixes */
     transform: translate(-50%, -50%);
   }
+
+  .popout-card {
+    margin: 1rem;
+    width: calc(100vw - 2rem);
+    height: calc(100vh - 2rem);
+
+    .card-text {
+      height: calc(100vh - 8.5rem);
+      overflow-y: auto;
+    }
+  }

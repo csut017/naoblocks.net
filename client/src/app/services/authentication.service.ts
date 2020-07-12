@@ -67,6 +67,11 @@ export class AuthenticationService extends ClientService {
     );
   }
 
+  resume(session: string) {
+    this.token = session;
+    sessionStorage.setItem(this.tokenKeyName, this.token);
+  }
+
   renew(): Observable<login> {
     const url = `${environment.apiURL}v1/session`;
     this.log('Renewing session');
