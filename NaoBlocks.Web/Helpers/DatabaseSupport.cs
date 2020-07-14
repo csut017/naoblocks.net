@@ -1,41 +1,79 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
+using System.IO;
+using System.Linq;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography.X509Certificates;
 
 namespace NaoBlocks.Web.Helpers
 {
     public static class DatabaseSupport
     {
-        public static void AddRavenDb(this IServiceCollection services, AppSettings appSettings)
+        public static void AddRavenDb(this IServiceCollection services, AppSettings appSettings, IWebHostEnvironment env)
         {
             services.AddSingleton(serviceProvider =>
             {
                 var logger = serviceProvider.GetService<ILogger<DatabaseInformation>>();
-                var options = new ServerOptions
+                IDocumentStore store;
+                if ((appSettings.DatabaseOptions == null) || appSettings.DatabaseOptions.UseEmbedded)
                 {
-                    ServerUrl = "http://127.0.0.1:8088"
-                };
-                if (appSettings.DatabaseOptions != null)
-                {
-                    logger.LogInformation("Setting database options");
-                    var dbOpts = appSettings.DatabaseOptions;
-                    if (options.DotNetPath != null)
+                    var options = new ServerOptions
                     {
-                        options.DotNetPath = dbOpts.DotNetPath;
-                        logger.LogInformation($"=> DotNetPath={options.DotNetPath}");
-                    }
-                    if (options.FrameworkVersion != null)
+                        ServerUrl = "http://127.0.0.1:8088"
+                    };
+                    if (appSettings.DatabaseOptions != null)
                     {
-                        options.FrameworkVersion = dbOpts.FrameworkVersion;
-                        logger.LogInformation($"=> FrameworkVersion={options.FrameworkVersion}");
+                        logger.LogInformation("Setting database options");
+                        var dbOpts = appSettings.DatabaseOptions;
+                        if (options.DotNetPath != null)
+                        {
+                            options.DotNetPath = dbOpts.DotNetPath;
+                            logger.LogInformation($"=> DotNetPath={options.DotNetPath}");
+                        }
+                        if (options.FrameworkVersion != null)
+                        {
+                            options.FrameworkVersion = dbOpts.FrameworkVersion;
+                            logger.LogInformation($"=> FrameworkVersion={options.FrameworkVersion}");
+                        }
                     }
-                }
 
-                logger.LogInformation("Starting embedded server");
-                EmbeddedServer.Instance.StartServer(options);
-                var store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
+                    logger.LogInformation($"Embedded database can be accessed on {options.ServerUrl}");
+                    logger.LogInformation("Starting embedded server");
+                    EmbeddedServer.Instance.StartServer(options);
+                    store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
+                }
+                else
+                {
+                    var certPath = appSettings.DatabaseOptions.Certificate ?? "certificate.pfx";
+                    if (!Path.IsPathFullyQualified(certPath) && !certPath.StartsWith("~/"))
+                    {
+                        certPath = Path.Combine(env.ContentRootPath, certPath);
+                    }
+
+                    logger.LogInformation($"Loading certificate from {certPath}");
+                    var bytes = File.ReadAllBytes(certPath);
+                    var cert = new X509Certificate2(bytes); 
+                    logger.LogInformation($"Loaded certificate with subject {cert.Subject} [{cert.Thumbprint}]");
+
+                    var dbName = appSettings.DatabaseOptions.Name ?? "NaoBlocks";
+                    logger.LogInformation($"Connecting to remote RavenDB server:");
+                    foreach (var url in appSettings.DatabaseOptions.Urls)
+                    {
+                        logger.LogInformation($"=> {url}");
+                    }
+                    logger.LogInformation($"Using database {dbName}");
+
+                    store = new DocumentStore
+                    {
+                        Certificate = cert,
+                        Database = dbName,
+                        Urls = appSettings.DatabaseOptions.Urls.ToArray()
+                    };
+                }
 
                 logger.LogInformation("Initialising database store");
                 store.Initialize();
@@ -43,7 +81,6 @@ namespace NaoBlocks.Web.Helpers
                 logger.LogInformation("Generating indexes");
                 IndexCreation.CreateIndexes(typeof(DatabaseSupport).Assembly, store);
 
-                logger.LogInformation($"Embedded database can be access on {options.ServerUrl}");
                 return store;
             });
             services.AddScoped(serviceProvider =>

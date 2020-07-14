@@ -1,3 +1,4 @@
 localhost:5000,one,no
 localhost:5001,one,yes
-192.168.0.4:5000,one,no
+192.168.0.102:5000,one,no
+192.168.0.100:5000,one,no

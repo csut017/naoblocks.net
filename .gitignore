@@ -26,3 +26,6 @@ RavenDB.Mocks/obj/**/*.*
 
 robot/**/*.pyc
 NaoBlocks.Web/wwwroot/**/*.*
+LogFiles/*.txt
+NaoBlocks.Web/Properties/PublishProfiles/* - Web Deploy.pubxml
+NaoBlocks.Web/Properties/PublishProfiles/* - Web Deploy.pubxml.user

@@ -465,7 +465,7 @@ class Engine(object):
         left_foot = self._leftFoot.read()
         right_foot = self._rightFoot.read()
         logger.log('[Engine] Foot buttons (%s,%s)', left_foot, right_foot)
-        if not (left_foot and right_foot):
+        if (left_foot or right_foot):
             logger.log('[Engine] Stopping walk due to foot buttons')
             return True
 

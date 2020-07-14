@@ -18,9 +18,12 @@ namespace NaoBlocks.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            this._env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -89,7 +92,7 @@ namespace NaoBlocks.Web
             var appSettings = appSettingsSection.Get<AppSettings>();
 
             services.AddHealthChecks();
-            services.AddRavenDb(appSettings);
+            services.AddRavenDb(appSettings, this._env);
             services.AddJwtSecurity(appSettings);
 
             services.AddHttpContextAccessor();
