@@ -94,7 +94,9 @@ namespace NaoBlocks.Web.Controllers
                 .FirstOrDefaultAsync(u => u.Name == user);
             if (userDetails == null) return NotFound();
 
-            var programDetails = userDetails.Programs.FirstOrDefault(p => p.Number == program);
+            var programDetails = await session.Query<CodeProgram>()
+                .FirstOrDefaultAsync(p => p.Number == program && p.UserId == userDetails.Name)
+                .ConfigureAwait(false);
             if (programDetails == null) return NotFound();
 
             this._logger.LogInformation("Compiling code");

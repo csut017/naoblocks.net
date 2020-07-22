@@ -10,6 +10,8 @@ namespace NaoBlocks.Core.Models
 
         public long? Number { get; set; }
 
+        public string UserId { get; set; } = string.Empty;
+
         public DateTime WhenAdded { get; set; }
     }
 }

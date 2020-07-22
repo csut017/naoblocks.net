@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
@@ -49,7 +50,7 @@ namespace NaoBlocks.Web.Helpers
                 else
                 {
                     var certPath = appSettings.DatabaseOptions.Certificate ?? "certificate.pfx";
-                    if (!Path.IsPathFullyQualified(certPath) && !certPath.StartsWith("~/"))
+                    if (!Path.IsPathFullyQualified(certPath) && !certPath.StartsWith("~/", StringComparison.InvariantCulture))
                     {
                         certPath = Path.Combine(env.ContentRootPath, certPath);
                     }

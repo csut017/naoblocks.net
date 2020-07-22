@@ -71,7 +71,11 @@ namespace NaoBlocks.Core.Generators
             }
 
             row = 1;
-            foreach (var program in student.Programs)
+            var programs = await session.Query<CodeProgram>()
+                .Where(p => p.UserId == student.Name)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            foreach (var program in programs)
             {
                 row++;
                 worksheet.Cells[row, 1].Value = program.Number;

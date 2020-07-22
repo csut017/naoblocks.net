@@ -51,7 +51,9 @@ namespace NaoBlocks.Web.Controllers
             if (user != currentUser.Name) currentUser = await session.Query<User>().FirstOrDefaultAsync(u => u.Name == user).ConfigureAwait(false);
             if (currentUser == null) return NotFound();
 
-            var program = currentUser.Programs.FirstOrDefault(p => p.Name == id);
+            var program = await session.Query<CodeProgram>()
+                .FirstOrDefaultAsync(p => p.Name == id && p.UserId == currentUser.Name)
+                .ConfigureAwait(false);
             if (program == null)
             {
                 return NotFound();
@@ -78,7 +80,7 @@ namespace NaoBlocks.Web.Controllers
             if (pageSize > 100) pageSize = 100;
 
             this._logger.LogDebug($"Retrieving programs: page {pageNum} with size {pageSize}");
-            var allPrograms = currentUser.Programs.AsQueryable();
+            var allPrograms = session.Query<CodeProgram>().Where(p => p.UserId == currentUser.Name);
             if (type != "all") allPrograms = allPrograms.Where(p => p.Name != null);
             var programs = allPrograms.OrderBy(s => s.Name)
                 .Skip(pageNum * pageSize)

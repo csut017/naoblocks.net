@@ -13,8 +13,6 @@ namespace NaoBlocks.Core.Models
 
         public Password Password { get; set; } = Password.Empty;
 
-        public IList<CodeProgram> Programs { get; } = new List<CodeProgram>();
-
         public UserRole Role { get; set; }
 
         public UserSettings Settings { get; set; } = new UserSettings();

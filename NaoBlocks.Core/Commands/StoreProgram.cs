@@ -61,37 +61,36 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
+        protected async override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             if (this.User == null) throw new InvalidCallOrderException();
 
-            var addProgram = true;
             CodeProgram? program = null;
             if (!string.IsNullOrEmpty(this.Name))
             {
-                program = this.User.Programs
-                    .FirstOrDefault(p => p.Name == this.Name);
+                program = await session.Query<CodeProgram>()
+                    .FirstOrDefaultAsync(p => p.Name == this.Name && p.UserId == this.User.Name)
+                    .ConfigureAwait(false);
                 if (program != null)
                 {
                     program.Code = this.Code ?? string.Empty;
-                    addProgram = false;
                 }
             }
 
-            if (addProgram)
+            if (program == null)
             {
                 program = new CodeProgram
                 {
                     Name = this.Name,
                     Code = this.Code ?? string.Empty,
                     WhenAdded = this.WhenExecuted,
-                    Number = this.User.NextProgramNumber++
+                    Number = this.User.NextProgramNumber++,
+                    UserId = this.User.Name
                 };
-                this.User.Programs.Add(program);
+                await session.StoreAsync(program).ConfigureAwait(false);
             }
-            CommandResult result = this.Result(program);
-            return Task.FromResult(result);
+            return this.Result(program);
         }
     }
 }
