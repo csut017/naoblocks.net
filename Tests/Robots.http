@@ -27,7 +27,11 @@ Authorization: Bearer {{authToken}}
 GET {{baseURL}}/robots?type=nao HTTP/1.1
 Content-Type: application/json; charset=utf-8
 Authorization: Bearer {{authToken}}
+###
 
+GET {{baseURL}}/robots?type=turtlebot HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
 ###
 
 GET {{baseURL}}/robots/r2d2 HTTP/1.1

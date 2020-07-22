@@ -34,7 +34,7 @@ class Communications(object):
         self._conversationId = 0
         self._closing = False
 
-    def start(self, address, pwd=None, verify=True, secure=True):
+    def start(self, address, pwd=None, verify=True, secure=True, name=None):
         self._verify = verify
         self._secure = secure
         self._base_address = address
@@ -55,7 +55,7 @@ class Communications(object):
 
         start_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/session'
         logger.log('[Comms] Authenticating (%s)', start_address)
-        hostname = socket.gethostname()
+        hostname = socket.gethostname() if name is None else name
         logger.log('[Comms] -> user name %s', hostname)
         start_json = json.dumps({'name': hostname, 'password': pwd, 'role': 'robot'})
         headers = {'Content-type': 'application/json'}

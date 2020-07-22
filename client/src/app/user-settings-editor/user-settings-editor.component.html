@@ -1,11 +1,32 @@
 <div style="column-count: 2;">
     <clr-select-container>
         <label>Robot Type</label>
-        <select clrSelect name="robotType" [(ngModel)]="settings.robotType">
+        <select clrSelect name="robotType" [(ngModel)]="settings.robotType" (change)="onRobotTypeChange()">
             <option value="{{robotType.name}}" *ngFor="let robotType of types">{{robotType.name}}</option>
         </select>
         <clr-control-helper>The type of robot to program</clr-control-helper>
     </clr-select-container>
+    <div *ngIf="showAllocation">
+        <clr-toggle-container>
+            <label>Allocation Mode</label>
+            <clr-toggle-wrapper>
+                <input type="checkbox" clrToggle name="default" value="true" [(ngModel)]="interfaces.requireRobot" />
+                <label>Require Robot</label>
+            </clr-toggle-wrapper>
+            <clr-toggle-wrapper>
+                <input type="checkbox" clrToggle name="default" value="true" [(ngModel)]="interfaces.preferRobot" />
+                <label>Prefer Robot</label>
+            </clr-toggle-wrapper>
+            <clr-control-helper>The allocation settings for the student.</clr-control-helper>
+        </clr-toggle-container>
+        <clr-select-container *ngIf="settings.allocationMode">
+            <label>Robot Name</label>
+            <select clrSelect name="robotId" [(ngModel)]="settings.robotId">
+                <option value="{{robot.machineName}}" *ngFor="let robot of robots">{{robot.friendlyName}} [{{robot.machineName}}]</option>
+            </select>
+            <clr-control-helper>The assigned robot for the student.</clr-control-helper>
+        </clr-select-container>
+    </div>
     <div style="break-inside: avoid;">
         <clr-toggle-container>
             <label>Interface Style</label>

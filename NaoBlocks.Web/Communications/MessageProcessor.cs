@@ -192,11 +192,27 @@ namespace NaoBlocks.Web.Communications
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
 
-            var rnd = new Random();
-            var nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
-                .OrderBy(r => r.Status.LastAllocatedTime)
-                .ThenBy(_ => rnd.Next())
-                .FirstOrDefault(r => r.Status.IsAvailable);
+            ClientConnection? nextRobot = null;
+            if ((client.User != null) && (client.User.Settings != null) && (client.User.Settings.AllocationMode > 0))
+            {
+                nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
+                    .FirstOrDefault(r => (r.Robot != null) && (r.Robot.MachineName == client.User.Settings.RobotId) && r.Status.IsAvailable);
+                if ((nextRobot == null) && (client.User.Settings.AllocationMode == 1))
+                {
+                    this._logger.LogInformation($"No robots available for allocation");
+                    client.SendMessage(GenerateResponse(message, ClientMessageType.NoRobotsAvailable));
+                    return;
+                }
+            }
+
+            if (nextRobot == null)
+            {
+                var rnd = new Random();
+                nextRobot = this._hub.GetClients(ClientConnectionType.Robot)
+                    .OrderBy(r => r.Status.LastAllocatedTime)
+                    .ThenBy(_ => rnd.Next())
+                    .FirstOrDefault(r => r.Status.IsAvailable);
+            }
 
             if (nextRobot == null)
             {

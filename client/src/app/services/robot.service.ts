@@ -33,6 +33,19 @@ export class RobotService extends ClientService {
       );
   }
 
+  listType(robotType: string, page: number = 0, size: number = 20): Observable<ResultSet<Robot>> {
+    const url = `${environment.apiURL}v1/robots?page=${page}&size=${size}&type=${robotType}`;
+    this.log(`Listing robots of type ${robotType}`);
+    return this.http.get<ResultSet<Robot>>(url)
+      .pipe(
+        tap(data => {
+          this.log('Fetched robots');
+          if (data.items) data.items.forEach(s => s.id = s.machineName);
+        }),
+        catchError(this.handleError('list', msg => new ResultSet<Robot>(msg)))
+      );
+  }
+
   get(id: string): Observable<ExecutionResult<Robot>> {
     const url = `${environment.apiURL}v1/robots/${id}`;
     this.log(`Retrieving robot ${id}`);

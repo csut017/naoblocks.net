@@ -13,4 +13,6 @@ export class UserSettings {
     currentExercise: number;
 
     robotType: string;
+    robotId: string;
+    allocationMode: number;
 }

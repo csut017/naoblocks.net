@@ -4,6 +4,8 @@ namespace NaoBlocks.Core.Models
 {
     public class UserSettings
     {
+        public int AllocationMode { get; set; }
+
         public bool Conditionals { get; set; }
 
         public int? CurrentExercise { get; set; }
@@ -19,6 +21,8 @@ namespace NaoBlocks.Core.Models
         public string? RobotType { get; set; }
         
         public string? RobotTypeId { get; set; }
+
+        public string? RobotId { get; set; }
 
         public bool Sensors { get; set; }
 

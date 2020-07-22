@@ -5,6 +5,7 @@ using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -66,10 +67,8 @@ namespace NaoBlocks.Web.Controllers
             if (pageSize > 100) pageSize = 100;
 
             this._logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
-            var query = this.session.Query<Robot>()
-                .Include<Robot>(r => r.RobotTypeId)
-                .Statistics(out QueryStatistics stats)
-                .OrderBy(s => s.MachineName);
+            List<Robot> robots;
+            QueryStatistics stats;
             if (!string.IsNullOrEmpty(type))
             {
                 var robotType = await this.session.Query<RobotType>()
@@ -79,12 +78,28 @@ namespace NaoBlocks.Web.Controllers
                     return NotFound();
                 }
 
-                query.Where(r => r.RobotTypeId == robotType.Id);
+                robots = await this.session.Query<Robot>()
+                    .Include<Robot>(r => r.RobotTypeId)
+                    .Statistics(out stats)
+                    .Where(r => r.RobotTypeId == robotType.Id)
+                    .OrderBy(s => s.MachineName)
+                    .Skip(pageNum * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                robots = await this.session.Query<Robot>()
+                    .Include<Robot>(r => r.RobotTypeId)
+                    .Statistics(out stats)
+                    .OrderBy(s => s.MachineName)
+                    .Skip(pageNum * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
             }
 
-            var robots = await query
-                .Skip(pageNum * pageSize)
-                .Take(pageSize).ToListAsync();
             robots.ForEach(async r =>
             {
                 r.Type = string.IsNullOrEmpty(r.RobotTypeId)

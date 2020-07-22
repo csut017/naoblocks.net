@@ -92,6 +92,7 @@ def main():
     parser = argparse.ArgumentParser(description='Start Nao-remote client.')
     parser.add_argument('--server', help='The address of the Nao-remote server')
     parser.add_argument('--port', help='The address of the Nao-remote server')
+    parser.add_argument('--name', help='An alternate name to use as the robot name', default=None)
     parser.add_argument(
         '--password', help='The password to connect to the Nao-remote server')
     parser.add_argument(
@@ -133,7 +134,7 @@ def main():
     connected = False
     if not args.server is None:
         logger.log('[Main] Connecting to %s', server)
-        comms.start(server, pwd, verifySSL)
+        comms.start(server, pwd, verifySSL, name=args.name)
         connected = True
 
     if not connected:
@@ -146,7 +147,7 @@ def main():
                     pwd = row[1]
                     secure = True if len(row) < 3 else row[2] != 'no'
                     logger.log('[Main] Connecting to %s %s', server, ('' if secure else ' [not secure]'))
-                    if comms.start(server, pwd, verifySSL, secure):
+                    if comms.start(server, pwd, verifySSL, secure, name=args.name):
                         connected = True
 
     if not connected:
