@@ -50,6 +50,7 @@ namespace NaoBlocks.Web.Communications
             var msg = GenerateResponse(message, ClientMessageType.ProgramTransferred);
             msg.Values["ProgramId"] = client?.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture);
             client.NotifyListeners(msg);
+            client.LogMessage(msg);
             PopulateSourceValues(client, msg);
             client.Hub?.SendToMonitors(msg);
             if ((client != null) && (client.Robot != null))
@@ -228,6 +229,7 @@ namespace NaoBlocks.Web.Communications
             response.Values["robot"] = nextRobot.Id.ToString(CultureInfo.InvariantCulture);
             client.SendMessage(response);
 
+            client.LogMessage(response);
             PopulateSourceValues(client, response);
             client?.Hub.SendToMonitors(response);
 
@@ -304,6 +306,7 @@ namespace NaoBlocks.Web.Communications
                 msg.Values["IsStudent"] = (client?.User?.Role ?? UserRole.Student) == UserRole.Student ? "yes" : "no";
             }
 
+            client.LogMessage(msg);
             client.Hub?.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
@@ -327,6 +330,7 @@ namespace NaoBlocks.Web.Communications
                 }
             }
             client.NotifyListeners(msg);
+            client.LogMessage(msg);
             PopulateSourceValues(client, msg);
             client.Hub?.SendToMonitors(msg);
             if ((client != null) && (client.Robot != null))
@@ -467,6 +471,7 @@ namespace NaoBlocks.Web.Communications
                 msg.Values[key] = value;
             }
             client.NotifyListeners(msg);
+            client.LogMessage(msg);
             PopulateSourceValues(client, msg);
             client.Hub?.SendToMonitors(msg);
 

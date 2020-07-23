@@ -104,7 +104,7 @@ def main():
     parser.add_argument(
         '--ignoreSSL', help='Ignores any SSL errors - only recommended for test environments', action='store_true')
     parser.add_argument(
-        '--reconnect', help='The number of reconnect attempts to make if a connection is lost', default=10)
+        '--reconnect', help='The number of reconnect attempts to make if a connection is lost', default=25)
     args = parser.parse_args()
 
     server = args.server

@@ -15,13 +15,13 @@ namespace NaoBlocks.Web.Dtos
 
         public static User FromModel(Data.User value)
         {
-            var student = new Student
+            var user = new User
             {
                 Name = value.Name,
                 Role = value.Role.ToString(),
                 WhenAdded = value.WhenAdded
             };
-            return student;
+            return user;
         }
     }
 }

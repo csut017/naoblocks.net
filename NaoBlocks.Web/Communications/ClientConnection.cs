@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -17,7 +18,9 @@ namespace NaoBlocks.Web.Communications
         private readonly IMessageProcessor _messageProcessor;
         private readonly ConcurrentQueue<ClientMessage> _queue = new ConcurrentQueue<ClientMessage>();
         private readonly WebSocket _socket;
-        private IList<ClientConnection> _listeners = new List<ClientConnection>();
+        private readonly IList<ClientConnection> _listeners = new List<ClientConnection>();
+        private readonly IList<ClientMessage> _messageLog = new List<ClientMessage>();
+        private readonly object _messageLogLock = new object();
 
         public ClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
         {
@@ -64,8 +67,32 @@ namespace NaoBlocks.Web.Communications
             GC.SuppressFinalize(this);
         }
 
+        public void LogMessage(ClientMessage message)
+        {
+            lock (this._messageLogLock)
+            {
+                this._messageLog.Add(message.Clone());
+                if (this._messageLog.Count > 100)
+                {
+                    this._messageLog.RemoveAt(0);
+                }
+            }
+        }
+
+        public Task<IReadOnlyCollection<ClientMessage>> GetMessageLogAsync()
+        {
+            var clone = new ClientMessage[this._messageLog.Count];
+            lock (this._messageLogLock)
+            {
+                this._messageLog.CopyTo(clone, 0);
+            }
+            IReadOnlyCollection<ClientMessage> data = new ReadOnlyCollection<ClientMessage>(clone);
+            return Task.FromResult(data);
+        }
+
         public void NotifyListeners(ClientMessage message)
         {
+            if (message == null) throw new ArgumentNullException(nameof(message));
             foreach (var listener in this._listeners)
             {
                 listener.SendMessage(message.Clone());

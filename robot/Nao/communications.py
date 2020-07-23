@@ -107,6 +107,8 @@ class Communications(object):
             # Attempt to reconnect
             if self._connectionCount > 0:
                 delayTime = 2 ** self._connectionCount
+                if delayTime > 60:
+                    delayTime = 60
                 logger.log('[Comms] Pausing for %ds', delayTime)
                 for _ in range(delayTime):
                     time.sleep(1)
