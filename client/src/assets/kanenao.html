@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TopCodes Example</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="canvas">
+      <canvas
+        id="video-canvas"
+        width="640"
+        height="480"
+        style="background: #ddd"
+      ></canvas>
+
+      <div id="display"></div>
+    </div>
+
+    <br />
+
+    <div class="btnArray">
+      <button
+        id="camera-button"
+        onclick="TopCodes.startStopVideoScan('video-canvas')"
+      >
+        Start / Stop
+      </button>
+
+      <button id="start" onClick="snapShot()">Run</button>
+    </div>
+
+    <script src="topcodes.js"></script>
+    <script src="translator.js"></script>
+    <script src="test.code.js"></script>
+
+    <script>
+      let json;
+      let authToken;
+      let robotCode;
+      let socket;
+      let conversationId;
+      let me = {};
+      let programId;
+
+      TopCodes.setVideoFrameCallback("video-canvas", function (jsonString) {
+        json = JSON.parse(jsonString);
+        drawCodes(json.topcodes);
+        //console.log("This is run continuously whenever the camera is running");
+        var filteredArray = filterTopCodeTags(json.topcodes);
+
+        displayBlocks(filteredArray);
+        createRobotCode(filteredArray);
+      });
+
+      function drawCodes(topcodes) {
+        var ctx = document.querySelector("#video-canvas").getContext("2d");
+        ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        for (i = 0; i < topcodes.length; i++) {
+          ctx.beginPath();
+          ctx.arc(
+            topcodes[i].x,
+            topcodes[i].y,
+            topcodes[i].radius,
+            0,
+            Math.PI * 2,
+            true
+          );
+          ctx.fill();
+        }
+      }
+
+      // This function creates the robot code in the proper format.
+      // Code of robot needs boiler plate stuff
+      //  reset()
+      //  start{
+      //    *code here*
+      //  }
+      //  go()
+      function createRobotCode(filteredArray) {
+        let boilerPlateCode = "reset()\nstart{";
+        let boilerPlateCode2 = "";
+        let boilerPlateCode3 = "\n}\ngo()\n";
+        for (var i = 0; i < filteredArray.length; i++) {
+          boilerPlateCode2 =
+            boilerPlateCode2 + `\n${getValue(filteredArray[i].code)}`;
+        }
+
+        let finalCode = boilerPlateCode + boilerPlateCode2 + boilerPlateCode3;
+        robotCode = finalCode;
+        //console.log(robotCode);
+      }
+
+      function displayBlocks(topcodes) {
+        document.getElementById("display").innerHTML = "";
+        for (var i = 0; i < topcodes.length; i++) {
+          document.getElementById("display").innerHTML +=
+            getBlock(topcodes[i].code) + " <br />";
+          // var block = document.createElement("img");
+          // block.src = getBlock(topcodes[i].code);
+          // document.getElementById("display").appendChild(block);
+        }
+      }
+
+      // This function sorts the TopCodes tags from left to right. It looks at the x value to see if one is before the other in sequence.
+      function filterTopCodeTags(topCodeArray) {
+        //return topCodeArray.sort((a, b) => (a.x < b.x ? 1 : -1));
+        let firstCode;
+        let array = new Array();
+        if (topCodeArray.length >= 1) {
+          firstCode = topCodeArray[0];
+
+          for (var i = 0; i < topCodeArray.length; i++) {
+            if (
+              topCodeArray[i].x < firstCode.x + 10 &&
+              topCodeArray[i].x > firstCode.x - 10
+            ) {
+              array.push(topCodeArray[i]);
+            } else {
+              return array;
+            }
+          }
+        }
+
+        return array;
+      }
+
+      function connect() {
+        const url = `ws://localhost:5000/api/v1/connections/user`;
+        console.log("Starting connection");
+
+        conversationId = undefined;
+
+        socket = new WebSocket(url);
+        socket.onclose = function () {
+          console.log("Connection closed");
+          socket = undefined;
+        };
+        socket.onopen = function () {
+          send(Authenticate, {
+            token: authToken,
+          });
+        };
+        socket.onerror = function () {
+          console.error("An error has been received");
+        };
+        socket.onmessage = function (msg) {
+          const data = JSON.parse(msg.data);
+          console.log("Message received");
+          console.log(data);
+          if (data.conversationId) {
+            conversationId = data.conversationId;
+          }
+          startConnection(data);
+        };
+      }
+
+      function startConnection(msg) {
+        const msgType = msg.type || 0;
+        const msgText = messages[msgType];
+        if (msgText) {
+          console.log(msgText);
+        } else {
+          console.log(`An unknown message type [${msgType}] was received`);
+        }
+        switch (msgType) {
+          case Authenticated:
+            send(RequestRobot);
+            break;
+
+          case RobotAllocated:
+            me.assignedRobot = msg.values.robot;
+            console.log(me.assignedRobot);
+            send(TransferProgram, {
+              robot: me.assignedRobot,
+              program: programId, // connection.programId
+            });
+            break;
+
+          case ProgramTransferred:
+            send(StartProgram, {
+              robot: me.assignedRobot,
+              program: programId, // connection.programId
+              opts: JSON.stringify({ delay: 0 }),
+            });
+            break;
+
+          case RobotDebugMessage:
+            console.log(`${msg.values.sourceID}: ${msg.values.status}`);
+            break;
+
+          case ProgramFinished:
+            socket.close();
+            break;
+        }
+      }
+
+      function send(type, data) {
+        let msg = {
+          type: type,
+          values: data,
+        };
+        if (conversationId) msg.conversationId = conversationId;
+        const jsonData = JSON.stringify(msg);
+        socket.send(jsonData);
+      }
+
+      function snapShot() {
+        const url = "http://localhost:5000/api/v1/";
+
+        // const connection = new Connection("localhost:5000");
+
+        //console.log(getValue(json.topcodes[0].code));
+        var opts = {
+          name: "admin",
+          password: "let-me-in",
+        };
+
+        fetch(url + "session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(opts),
+        })
+          // Converting to JSON
+          .then((response) => response.json())
+
+          // Displaying results to console
+          .then((json) => {
+            console.log(json);
+            authToken = json.output.token;
+            console.log(authToken);
+            return json.output.token;
+          })
+          .then((token) => {
+            console.log(robotCode);
+            fetch(url + "code/compile", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+              },
+              //body: JSON.stringify(code),
+              body: JSON.stringify({
+                code: robotCode, //getValue(json.topcodes[0].code) ,
+                store: true,
+              }),
+            })
+              // Converting to JSON
+              .then((response) => response.json())
+
+              // Displaying results to console
+              .then((json) => {
+                console.log(json);
+                programId = json.output.programId;
+                console.log("programId: " + programId);
+              });
+          })
+          .then(connect());
+      }
+    </script>
+  </body>
+</html>
