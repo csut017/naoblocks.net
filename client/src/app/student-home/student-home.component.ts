@@ -21,6 +21,7 @@ import { TutorialService } from '../services/tutorial.service';
 import { Tutorial } from '../data/tutorial';
 import { TutorialExercise } from '../data/tutorial-exercise';
 import { EditorSettings } from '../data/editor-settings';
+import { ChangeViewComponent } from '../change-view/change-view.component';
 
 declare var Blockly: any;
 
@@ -555,11 +556,6 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
           this.userSettingsDisplay.showError(error);
         }
       });
-  }
-
-  canChangeRole(): boolean {
-    return this.authenticationService.canAccess(UserRole.Teacher)
-      || this.authenticationService.canAccess(UserRole.Administrator);
   }
 
   private validateBlocks(): string {

@@ -7,12 +7,14 @@ import { StudentHomeComponent } from './student-home/student-home.component';
 import { TeacherHomeComponent } from './teacher-home/teacher-home.component';
 import { AuthenticationGuardService } from './services/authentication-guard.service';
 import { PopoutComponent } from './popout/popout.component';
+import { TangibleEditorComponent } from './tangible-editor/tangible-editor.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'popout/:view/:id', component: PopoutComponent },
   { path: 'student', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'tangible', component: TangibleEditorComponent, canActivate: [AuthenticationGuardService] },
   { path: 'teacher', component: TeacherHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator', component: AdminHomeComponent, canActivate: [AuthenticationGuardService] },
 ];

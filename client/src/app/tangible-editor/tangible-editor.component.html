@@ -1,0 +1,36 @@
+<div class="main-container">
+    <app-heartbeat></app-heartbeat>
+    <header class="header-4">
+        <div class="branding">
+            <a href="..." class="nav-link">
+                <img src="assets/nao.svg" style="width: 32px; margin-right: 1em;">
+                <span class="title">Kare Nao</span>
+            </a>
+        </div>
+        <div class="header-actions">
+            <clr-dropdown>
+                <button class="nav-text" clrDropdownTrigger aria-label="toggle settings menu">
+                    <clr-icon shape="cog"></clr-icon>
+                    {{currentUser ? currentUser.name : ''}}
+                    <clr-icon shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+                    <a href="javascript://" clrDropdownItem (click)="openChangeRole()" *ngIf="canChangeRole()">Change
+                        Role</a>
+                    <a href="javascript://" clrDropdownItem (click)="openChangeView()" *ngIf="canChangeView()">Change
+                        View</a>
+                    <div class="dropdown-divider" role="separator"></div>
+                    <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
+                    <div class="dropdown-divider" role="separator"></div>
+                    <a href="javascript://" clrDropdownItem (click)="logout()">Log out</a>
+                </clr-dropdown-menu>
+            </clr-dropdown>
+        </div>
+    </header>
+    <div class="content-container">
+        Tangible editor
+    </div>
+    <app-about></app-about>
+    <app-change-role [role]="'Student'"></app-change-role>
+    <app-change-view view="Tangibles"></app-change-view>
+</div>

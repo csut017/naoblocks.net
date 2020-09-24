@@ -36,6 +36,8 @@ import { RobotPackageComponent } from './robot-package/robot-package.component';
 import { ProgramDisplayComponent } from './program-display/program-display.component';
 import { PopoutComponent } from './popout/popout.component';
 import { LogViewerComponent } from './log-viewer/log-viewer.component';
+import { ChangeViewComponent } from './change-view/change-view.component';
+import { TangibleEditorComponent } from './tangible-editor/tangible-editor.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +69,9 @@ import { LogViewerComponent } from './log-viewer/log-viewer.component';
     RobotPackageComponent,
     ProgramDisplayComponent,
     PopoutComponent,
-    LogViewerComponent
+    LogViewerComponent,
+    ChangeViewComponent,
+    TangibleEditorComponent
   ],
   imports: [
     BrowserModule,

@@ -8,12 +8,13 @@
                 You do not have access to this role
             </div>
             <div class="alert-actions">
-                <button class="btn alert-action" (click)="changeRole()">Change Role</button>
+                <button class="btn alert-action" (click)="openChangeRole()">Change Role</button>
             </div>
         </div>
     </div>
 </div>
-<div class="alert alert-app-level alert-danger" role="alert" *ngIf="editorSettings.isLoaded && !editorSettings.isSystemInitialised">
+<div class="alert alert-app-level alert-danger" role="alert"
+    *ngIf="editorSettings.isLoaded && !editorSettings.isSystemInitialised">
     <div class="alert-items">
         <div class="alert-item static">
             <div class="alert-icon-wrapper">
@@ -25,7 +26,8 @@
         </div>
     </div>
 </div>
-<div class="alert alert-app-level alert-warning" role="alert" *ngIf="editorSettings.isLoaded && !editorSettings.user.robotType">
+<div class="alert alert-app-level alert-warning" role="alert"
+    *ngIf="editorSettings.isLoaded && !editorSettings.user.robotType">
     <div class="alert-items">
         <div class="alert-item static">
             <div class="alert-icon-wrapper">
@@ -60,8 +62,10 @@
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
                     <a href="javascript://" clrDropdownItem (click)="showSettings()">Settings</a>
-                    <a href="javascript://" clrDropdownItem (click)="changeRole()" *ngIf="canChangeRole()">Change
+                    <a href="javascript://" clrDropdownItem (click)="openChangeRole()" *ngIf="canChangeRole()">Change
                         Role</a>
+                    <a href="javascript://" clrDropdownItem (click)="openChangeView()" *ngIf="canChangeView()">Change
+                        View</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
                     <div class="dropdown-divider" role="separator"></div>
@@ -264,4 +268,5 @@
             </button>
         </div>
     </clr-modal>
+    <app-change-view view="Blocks"></app-change-view>
 </div>

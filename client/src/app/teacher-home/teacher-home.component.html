@@ -8,7 +8,7 @@
                 You do not have access to this role
             </div>
             <div class="alert-actions">
-                <button class="btn alert-action" (click)="changeRole()">Change Role</button>
+                <button class="btn alert-action" (click)="openChangeRole()">Change Role</button>
             </div>
         </div>
     </div>
@@ -29,7 +29,7 @@
                     <clr-icon shape="caret down"></clr-icon>
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
-                    <a href="javascript://" clrDropdownItem (click)="changeRole()">Change Role</a>
+                    <a href="javascript://" clrDropdownItem (click)="openChangeRole()">Change Role</a>
                     <div class="dropdown-divider" role="separator"></div>
                     <a href="javascript://" clrDropdownItem (click)="about.show()">About</a>
                     <div class="dropdown-divider" role="separator"></div>
