@@ -48,7 +48,7 @@
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
-                                <div id="display" style="display: block; height:480px;">
+                                <div style="display: block; height:480px; overflow: hidden;">
                                     <div style="width: 273px; height: 93px; margin-top: 7px; margin-left: auto; margin-right: auto;" *ngFor="let block of blocks">
                                         <img src="/assets/img/{{block.image}}.png">
                                     </div>
@@ -56,7 +56,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button class="btn btn-sm btn-link">Run</button>
+                            <button class="btn btn-sm btn-link" (click)="executeCode()">Run</button>
                         </div>
                     </div>
                 </div>

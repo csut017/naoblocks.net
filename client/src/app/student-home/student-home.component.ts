@@ -21,20 +21,10 @@ import { TutorialService } from '../services/tutorial.service';
 import { Tutorial } from '../data/tutorial';
 import { TutorialExercise } from '../data/tutorial-exercise';
 import { EditorSettings } from '../data/editor-settings';
+import { ExecutionStatusStep } from '../data/execution-status-step';
+import { IServiceMessageUpdater, ServerMessageProcessorService } from '../services/server-message-processor.service';
 
 declare var Blockly: any;
-
-class executionStatusStep {
-  image: string = 'circle';
-  title: string;
-  description: string;
-  isCurrent: boolean = false;
-
-  constructor(title: string, description: string) {
-    this.title = title;
-    this.description = description;
-  }
-}
 
 class promptSettings {
   open: boolean = false;
@@ -57,38 +47,35 @@ enum userInputMode {
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss']
 })
-export class StudentHomeComponent extends HomeBase implements OnInit {
+export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMessageUpdater {
 
-  workspace: any;
-  sendingToRobot: boolean = false;
-  steps: executionStatusStep[];
-  startMessage: string;
-  isExecuting: boolean = false;
-  isValid: boolean = true;
   canStop: boolean = false;
-  requireEvents: boolean = true;
-  currentUser: User;
-  currentStartStep: number;
-  errorMessage: string;
-  onResize: any;
-  isSidebarOpen: boolean = true;
-  assignedRobot: string;
-  storedProgram: string;
-  invalidBlocks: any[] = [];
-  userInput: promptSettings = new promptSettings();
-  editorSettings: EditorSettings = new EditorSettings();
-  runSettings: RunSettings = new RunSettings();
-  lastConversationId: number;
-  lastHighlightBlock: string;
-  tutorialForm: FormGroup;
-  isTutorialOpen: boolean = true;
-  isTutorialHidden: boolean = true;
   currentTutorial: Tutorial;
+  currentUser: User;
+  editorSettings: EditorSettings = new EditorSettings();
+  errorMessage: string;
+  invalidBlocks: any[] = [];
+  isExecuting: boolean = false;
+  isSidebarOpen: boolean = true;
+  isTutorialHidden: boolean = true;
+  isTutorialOpen: boolean = true;
+  isValid: boolean = true;
+  lastHighlightBlock: string;
+  loadingTutorials: boolean = false;
+  messageProcessor: ServerMessageProcessorService;
+  onResize: any;
+  requireEvents: boolean = true;
+  runSettings: RunSettings = new RunSettings();
+  sendingToRobot: boolean = false;
+  startMessage: string;
+  steps: ExecutionStatusStep[];
+  tutorialForm: FormGroup;
+  tutorialList: Tutorial[];
   tutorialLoading: boolean = false;
   tutorialSelectorOpen: boolean = false;
-  loadingTutorials: boolean = false;
-  tutorialList: Tutorial[];
-
+  userInput: promptSettings = new promptSettings();
+  workspace: any;
+  
   @ViewChild(LoadProgramComponent) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent) saveProgram: SaveProgramComponent;
   @ViewChild(UserSettingsComponent) userSettingsDisplay: UserSettingsComponent;
@@ -321,10 +308,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   doPlay(): void {
+    this.messageProcessor = new ServerMessageProcessorService(this.connection, this, this.runSettings);
     this.initialiseStartingUI();
     let validationResult = this.validateBlocks();
     if (!!validationResult) {
-      this.failStep(0, validationResult);
+      this.onStepFailed(0, validationResult);
       return;
     }
 
@@ -332,119 +320,26 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.programService.compile(code)
       .subscribe(result => {
         if (!result.successful) {
-          this.failStep(0, 'Unable to compile code');
+          this.onStepFailed(0, 'Unable to compile code');
           return;
         }
 
         if (result.output.errors) {
-          this.failStep(0, 'There are errors in the code');
+          this.onStepFailed(0, 'There are errors in the code');
           return;
         }
 
-        this.storedProgram = result.output.programId.toString();
-        this.currentStartStep = 1;
-        this.completeStep(0);
-        this.connection.start().subscribe(msg => this.processServerMessage(msg));
+        this.messageProcessor.storedProgram = result.output.programId.toString();
+        this.messageProcessor.currentStartStep = 1;
+        this.onStepCompleted(0);
+        this.connection.start().subscribe(msg => this.messageProcessor.processServerMessage(msg));
       });
-  }
-
-  changeExecuting(newValue: boolean): void {
-    if (newValue == this.isExecuting) return;
-
-    this.isExecuting = newValue;
-    // this.initialiseWorkspace(this.isExecuting);
-  }
-
-  private generateReply(msg: ClientMessage, type: ClientMessageType): ClientMessage {
-    let newMsg = new ClientMessage(type);
-    newMsg.conversationId = msg.conversationId;
-    return newMsg;
-  }
-
-  processServerMessage(msg: ClientMessage) {
-    this.lastConversationId = msg.conversationId;
-    switch (msg.type) {
-      case ClientMessageType.Closed:
-        if (this.currentStartStep) {
-          this.failStep(this.currentStartStep, 'Connection to server lost');
-        } else if (this.isExecuting) {
-          this.errorMessage = 'Connection to the server has been lost';
-          this.changeExecuting(false);
-        }
-        break;
-
-      case ClientMessageType.Error:
-        if (this.currentStartStep) {
-          let errMsg = msg.values['error'] || 'Unknown';
-          this.failStep(this.currentStartStep, `Server error: ${errMsg}`);
-          this.currentStartStep = undefined;
-          this.connection.close();
-        }
-        break;
-
-      case ClientMessageType.Authenticated:
-        this.connection.send(this.generateReply(msg, ClientMessageType.RequestRobot));
-        break;
-
-      case ClientMessageType.RobotAllocated:
-        this.assignedRobot = msg.values.robot;
-        this.currentStartStep = this.completeStep(this.currentStartStep);
-        let transferCmd = this.generateReply(msg, ClientMessageType.TransferProgram);
-        transferCmd.values['robot'] = this.assignedRobot;
-        transferCmd.values['program'] = this.storedProgram;
-        this.connection.send(transferCmd);
-        break;
-
-      case ClientMessageType.NoRobotsAvailable:
-        this.failStep(this.currentStartStep, 'No robots available');
-        this.currentStartStep = undefined;
-        this.connection.close();
-        break;
-
-      case ClientMessageType.ProgramTransferred:
-        this.currentStartStep = this.completeStep(this.currentStartStep);
-        let startCmd = this.generateReply(msg, ClientMessageType.StartProgram);
-        startCmd.values['robot'] = this.assignedRobot;
-        startCmd.values['program'] = this.storedProgram;
-        startCmd.values['opts'] = JSON.stringify(this.runSettings);
-        this.connection.send(startCmd);
-        break;
-
-      case ClientMessageType.UnableToDownloadProgram:
-        this.failStep(this.currentStartStep, 'Program download failed');
-        this.currentStartStep = undefined;
-        this.connection.close();
-        break;
-
-      case ClientMessageType.ProgramStarted:
-        this.sendingToRobot = false;
-        this.changeExecuting(true);
-        this.currentStartStep = undefined;
-        break;
-
-      case ClientMessageType.ProgramFinished:
-      case ClientMessageType.ProgramStopped:
-        this.changeExecuting(false);
-        this.connection.close();
-        if (this.lastHighlightBlock) {
-          this.workspace.highlightBlock(this.lastHighlightBlock, false);
-          this.lastHighlightBlock = undefined;
-        }
-        break;
-
-      case ClientMessageType.RobotDebugMessage:
-        let sId = msg.values['sourceID'];
-        let action = msg.values['status'];
-        this.lastHighlightBlock = sId;
-        this.workspace.highlightBlock(sId, action === 'start');
-        break;
-    }
   }
 
   doStop(): void {
     let msg = new ClientMessage(ClientMessageType.StopProgram);
-    msg.conversationId = this.lastConversationId;
-    msg.values['robot'] = this.assignedRobot;
+    msg.conversationId = this.messageProcessor.lastConversationId;
+    msg.values['robot'] = this.messageProcessor.assignedRobot;
     this.connection.send(msg);
   }
 
@@ -638,17 +533,25 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   private initialiseStartingUI() {
     this.steps = [
-      new executionStatusStep('Check Program', 'Checks that the program is valid and can run on the robot.'),
-      new executionStatusStep('Select Robot', 'Finds an available robot to run the program on.'),
-      new executionStatusStep('Send to Robot', 'Sends the program to the robot.'),
-      new executionStatusStep('Start Execution', 'Starts the program running on the robot.')
+      new ExecutionStatusStep('Check Program', 'Checks that the program is valid and can run on the robot.'),
+      new ExecutionStatusStep('Select Robot', 'Finds an available robot to run the program on.'),
+      new ExecutionStatusStep('Send to Robot', 'Sends the program to the robot.'),
+      new ExecutionStatusStep('Start Execution', 'Starts the program running on the robot.')
     ];
     this.steps[0].isCurrent = true;
     this.startMessage = undefined;
     this.sendingToRobot = true;
   }
 
-  private completeStep(step: number): number {
+  onCloseConnection(): void {
+    this.connection.close();
+  }
+
+  onErrorOccurred(message: string): void {
+    this.errorMessage = message;
+  }
+
+  onStepCompleted(step: number): number {
     if (step >= this.steps.length) return step;
     this.steps[step].isCurrent = false;
     this.steps[step].image = 'success-standard';
@@ -658,10 +561,30 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     return step;
   }
 
-  private failStep(step: number, reason: string) {
+  onStateUpdate(): void {
+    this.isExecuting = this.messageProcessor.isExecuting;
+  }
+
+  onStepFailed(step: number, reason: string): void {
     this.startMessage = reason;
     if (!this.steps[step]) return;
     this.steps[step].isCurrent = false;
     this.steps[step].image = 'error-standard';
+  }
+
+  onClearHighlight(): void {
+    if (this.lastHighlightBlock) {
+      this.workspace.highlightBlock(this.lastHighlightBlock, false);
+      this.lastHighlightBlock = undefined;
+    }
+  }
+
+  onHighlightBlock(id: string, action: string): void {
+    this.lastHighlightBlock = id;
+    this.workspace.highlightBlock(id, action === 'start');
+  }
+
+  onShowDebug(): void {
+    this.sendingToRobot = false;
   }
 }
