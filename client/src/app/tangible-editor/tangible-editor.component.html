@@ -34,7 +34,7 @@
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
-                                <canvas id="video-canvas" width="640" height="480" style="background: #000; display: block; margin-left: auto; margin-right: auto;">
+                                <canvas #videoCanvas id="video-canvas" width="640" height="480" style="background: #000; display: block; margin-left: auto; margin-right: auto;">
                                 </canvas>
                             </div>
                         </div>
@@ -48,8 +48,10 @@
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
-                                <div id="display" width="640" height="480" style="display: block; margin-left: auto; margin-right: auto;">
-
+                                <div id="display" style="display: block; height:480px;">
+                                    <div style="width: 273px; height: 93px; margin-top: 7px; margin-left: auto; margin-right: auto;" *ngFor="let block of blocks">
+                                        <img src="/assets/img/{{block.image}}.png">
+                                    </div>
                                 </div>
                             </div>
                         </div>
