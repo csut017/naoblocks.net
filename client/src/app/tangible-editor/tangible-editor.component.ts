@@ -6,7 +6,7 @@ import { RunSettings } from '../data/run-settings';
 import { User } from '../data/user';
 import { HomeBase } from '../home-base';
 import { AuthenticationService } from '../services/authentication.service';
-import { ConnectionService } from '../services/connection.service';
+import { ClientMessage, ClientMessageType, ConnectionService } from '../services/connection.service';
 import { ProgramService } from '../services/program.service';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from '../services/server-message-processor.service';
 
@@ -132,6 +132,12 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   executeCode(): void {
+    this.initialiseStartingUI();
+    if (!this.blocks.length) {
+      this.onStepFailed(0, 'There are no blocks in the current program!');
+      return;
+    }
+
     let blockCodes = this.blocks.map(b => b.action);
     let code = "reset()\nstart{\n" +
       blockCodes.join('\n') +
@@ -141,7 +147,6 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     console.groupEnd();
 
     this.messageProcessor = new ServerMessageProcessorService(this.connection, this, this.runSettings);
-    this.initialiseStartingUI();
     this.programService.compile(code)
       .subscribe(result => {
         if (!result.successful) {
@@ -194,9 +199,11 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onErrorOccurred(message: string): void {
+    this.startMessage = message;
   }
 
   onShowDebug(): void {
+    this.sendingToRobot = false;
   }
 
   onStateUpdate(): void {
@@ -207,5 +214,20 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     if (!this.steps[step]) return;
     this.steps[step].isCurrent = false;
     this.steps[step].image = 'error-standard';
+  }
+
+  doCancelSend(): void {
+    if (this.sendingToRobot) {
+      this.sendingToRobot = false;
+      return;
+    }
+    this.doStop();
+  }
+
+  doStop(): void {
+    let msg = new ClientMessage(ClientMessageType.StopProgram);
+    msg.conversationId = this.messageProcessor.lastConversationId;
+    msg.values['robot'] = this.messageProcessor.assignedRobot;
+    this.connection.send(msg);
   }
 }

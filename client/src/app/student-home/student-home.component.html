@@ -188,39 +188,7 @@
     <app-load-program (load)="onLoad($event)"></app-load-program>
     <app-user-settings (save)="onSaveSettings($event)"></app-user-settings>
     <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>
-    <clr-modal [(clrModalOpen)]="sendingToRobot" [clrModalStaticBackdrop]="false" [clrModalClosable]="false"
-        [clrModalSize]="'xl'">
-        <h3 class="modal-title">Starting Program</h3>
-        <div class="modal-body">
-            <ul class="clr-timeline clr-timeline-horizontal">
-                <li class="clr-timeline-step" *ngFor="let step of steps">
-                    <clr-spinner clrMedium *ngIf="step.isCurrent"></clr-spinner>
-                    <clr-icon [attr.shape]="step.image" *ngIf="!step.isCurrent"></clr-icon>
-                    <div class="clr-timeline-step-body">
-                        <span class="clr-timeline-step-title">{{step.title}}</span>
-                        <span class="clr-timeline-step-description">{{step.description}}</span>
-                    </div>
-                </li>
-            </ul>
-            <div class="alert alert-danger" role="alert" *ngIf="startMessage">
-                <div class="alert-items">
-                    <div class="alert-item static">
-                        <div class="alert-icon-wrapper">
-                            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-                        </div>
-                        <span class="alert-text">
-                            {{startMessage}}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-primary" (click)="doCancelSend()">
-                {{startMessage ? 'Close' : 'Cancel'}}
-            </button>
-        </div>
-    </clr-modal>
+    <app-execution-status [isOpen]="sendingToRobot" [steps]="steps" [statusMessage]="startMessage" (onClose)="doCancelSend()"></app-execution-status>
     <clr-modal [(clrModalOpen)]="userInput.open" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
         <div class="modal-body">
             <div *ngIf="!userInput.showValue">
