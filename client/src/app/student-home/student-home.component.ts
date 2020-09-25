@@ -21,7 +21,6 @@ import { TutorialService } from '../services/tutorial.service';
 import { Tutorial } from '../data/tutorial';
 import { TutorialExercise } from '../data/tutorial-exercise';
 import { EditorSettings } from '../data/editor-settings';
-import { ChangeViewComponent } from '../change-view/change-view.component';
 
 declare var Blockly: any;
 

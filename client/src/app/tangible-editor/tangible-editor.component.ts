@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ChangeViewComponent } from '../change-view/change-view.component';
 import { User } from '../data/user';
 import { HomeBase } from '../home-base';
 import { AuthenticationService } from '../services/authentication.service';
+
+declare var TopCodes: any;
 
 @Component({
   selector: 'app-tangible-editor',
@@ -13,6 +14,7 @@ import { AuthenticationService } from '../services/authentication.service';
 export class TangibleEditorComponent extends HomeBase implements OnInit {
 
   currentUser: User;
+  cameraStarted: boolean = false;
 
   constructor(authenticationService: AuthenticationService,
     router: Router) {
@@ -20,5 +22,15 @@ export class TangibleEditorComponent extends HomeBase implements OnInit {
   }
 
   ngOnInit(): void {
+  }
+
+  startCamera(): void {
+    this.cameraStarted = true;
+    TopCodes.startStopVideoScan('video-canvas');
+  }
+
+  stopCamera(): void {
+    this.cameraStarted = false;
+    TopCodes.startStopVideoScan('video-canvas');
   }
 }

@@ -28,7 +28,38 @@
         </div>
     </header>
     <div class="content-container">
-        Tangible editor
+        <div class="content-area">
+            <div class="clr-row">
+                <div class="clr-col-sm-12 clr-col-md-6">
+                    <div class="card">
+                        <div class="card-block">
+                            <div class="card-text">
+                                <canvas id="video-canvas" width="640" height="480" style="background: #000; display: block; margin-left: auto; margin-right: auto;">
+                                </canvas>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-link" *ngIf="!cameraStarted" (click)="startCamera()">Start Camera</button>
+                            <button class="btn btn-sm btn-link" *ngIf="cameraStarted" (click)="stopCamera()">Stop Camera</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="clr-col-sm-12 clr-col-md-6" *ngIf="cameraStarted">
+                    <div class="card">
+                        <div class="card-block">
+                            <div class="card-text">
+                                <div id="display" width="640" height="480" style="display: block; margin-left: auto; margin-right: auto;">
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-link">Run</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <app-about></app-about>
     <app-change-role [role]="'Student'"></app-change-role>

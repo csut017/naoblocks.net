@@ -41,7 +41,8 @@
               "node_modules/blockly/blocks_compressed.js",
               "node_modules/blockly/msg/js/en.js",
               "src/assets/blockly/NaoLang.js",
-              "src/assets/blockly/NaoLang.blocks.js"
+              "src/assets/blockly/NaoLang.blocks.js",
+              "src/assets/topcodes.js"
             ]
           },
           "configurations": {
