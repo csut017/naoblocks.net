@@ -1,16 +1,20 @@
 export class Block {
-    action: string
-    image: string;
     id: string;
+    highlight: boolean = false;
 
-    constructor(image: string, action: string) {
-        this.action = action;
-        this.image = image;
+    constructor(public image: string, 
+        public text: string, 
+        public action: string) {
     }
 
-    generate(id: number): Block {
-        let block = new Block(this.image, this.action);
+    initialise(id: number): Block {
+        let block = new Block(this.image, this.text, this.action);
         block.id = 'b_' + id;
         return block;
+    }
+
+    generateCode(): string {
+        if (!this.id) return this.action;
+        return `[${this.id}]${this.action}`;
     }
 }

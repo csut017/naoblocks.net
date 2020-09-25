@@ -23,6 +23,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   cameraStarted: boolean = false;
   canRun: boolean = false;
   currentUser: User;
+  isRunning: boolean = false;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
   sendingToRobot: boolean = false;
@@ -32,16 +33,16 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   private isInitialised: boolean = false;
   private context: CanvasRenderingContext2D;
   private blockMapping: { [index: number]: Block } = {
-    31: new Block("stand_block", "position('Stand')"),
-    47: new Block("speak_block", "say('hello')"),
-    59: new Block("dance_block", "dance('gangnam', TRUE)"),
-    61: new Block("wave_block", "wave()"),
-    79: new Block("raise_right_arm_block", "point('right','out')"),
-    93: new Block("raise_left_arm_block", "point('left','out')"),
-    109: new Block("look_right_block", "look('right')"),
-    117: new Block("look_left_block", "look('left')"),
-    121: new Block("walk_block", "walk ( 6 , 0 )"),
-    233: new Block("rest_block", "rest ()"),
+    31: new Block("stand_block", "Stand", "position('Stand')"),
+    47: new Block("speak_block", "Kia ora", "say('hello')"),
+    59: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
+    61: new Block("wave_block", "Wave", "wave()"),
+    79: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
+    93: new Block("raise_left_arm_block", "Point Left", "point('left','out')"),
+    109: new Block("look_right_block", "Look Right", "look('right')"),
+    117: new Block("look_left_block", "Look Left", "look('left')"),
+    121: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
+    233: new Block("rest_block", "Rest", "rest ()"),
   };
 
 
@@ -95,7 +96,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
         }
       }
 
-      output.push(defn.generate(number++));
+      output.push(defn.initialise(number++));
       last = tag;
     }
 
@@ -108,6 +109,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       this.isInitialised = true;
       let me = this;
       TopCodes.setVideoFrameCallback("video-canvas", function (jsonString) {
+        if (me.isRunning) return;
         let json = JSON.parse(jsonString);
         me.highlightTags(json.topcodes);
         let blocks = me.generateBlockList(json.topcodes);
@@ -132,13 +134,14 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   executeCode(): void {
+    this.isRunning = true;
     this.initialiseStartingUI();
     if (!this.blocks.length) {
       this.onStepFailed(0, 'There are no blocks in the current program!');
       return;
     }
 
-    let blockCodes = this.blocks.map(b => b.action);
+    let blockCodes = this.blocks.map(b => b.generateCode());
     let code = "reset()\nstart{\n" +
       blockCodes.join('\n') +
       "\n}\ngo()\n";
@@ -179,6 +182,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onClearHighlight(): void {
+    this.blocks.forEach(b => b.highlight = false);
   }
 
   onCloseConnection(): void {
@@ -196,6 +200,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onHighlightBlock(id: string, action: string): void {
+    this.blocks.forEach(b => b.highlight = (action === 'start') && (b.id === id));
   }
 
   onErrorOccurred(message: string): void {
@@ -207,6 +212,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onStateUpdate(): void {
+    this.isRunning = this.messageProcessor.isExecuting;
   }
 
   onStepFailed(step: number, reason: string): void {
