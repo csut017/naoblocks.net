@@ -200,7 +200,8 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onHighlightBlock(id: string, action: string): void {
-    this.blocks.forEach(b => b.highlight = (action === 'start') && (b.id === id));
+    let isStart = (action === 'start');
+    this.blocks.forEach(b => b.highlight = isStart && (b.id === id));
   }
 
   onErrorOccurred(message: string): void {
