@@ -131,7 +131,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     console.log('[TangibleEditorComponent] Stopping camera');
     this.cameraStarted = false;
     TopCodes.startStopVideoScan('video-canvas');
-    setInterval(() => {
+    setTimeout(() => {
       this.context.fillStyle = "#ddd";
       this.context.fillRect(0, 0, 640, 480);
     }, 100);
