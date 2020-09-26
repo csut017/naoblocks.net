@@ -1,5 +1,5 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
-    <h3 class="modal-title">Change Role</h3>
+    <h3 class="modal-title">Change View</h3>
     <div class="modal-body">
         <div *ngFor="let view of views">
             <button class="btn btn-block" (click)="changeView(view)" [disabled]="isCurrent(view)">
