@@ -26,6 +26,8 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   currentUser: User;
   isExecuting: boolean = false;
   isInDebugMode: boolean = false;
+  isInFlippedMode: boolean = false;
+  isProcessing: boolean = false;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
   sendingToRobot: boolean = false;
@@ -63,9 +65,18 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    if ((event.key == 'D') && event.altKey && event.shiftKey) {
-      this.isInDebugMode = !this.isInDebugMode;
-      console.log(`[TangibleEditorComponent] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
+    if (event.altKey && event.shiftKey) {
+      switch (event.key) {
+        case 'D':
+          this.isInDebugMode = !this.isInDebugMode;
+          console.log(`[TangibleEditorComponent] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
+          break;
+
+        case 'F':
+          this.isInFlippedMode = !this.isInFlippedMode;
+          console.log(`[TangibleEditorComponent] ${this.isInFlippedMode ? 'Flipped' : 'Normal'} block order`);
+          break;
+      }
     }
   }
 
@@ -126,10 +137,11 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       this.isInitialised = true;
       let me = this;
       TopCodes.setVideoFrameCallback("video-canvas", function (jsonString) {
-        if (me.isExecuting) return;
+        if (me.isExecuting || this.isProcessing) return;
         let json = JSON.parse(jsonString);
         me.highlightTags(json.topcodes);
         let blocks = me.generateBlockList(json.topcodes);
+        if (me.isInFlippedMode) blocks.reverse();
         me.canRun = !!blocks.length;
         me.blocks = blocks;
       });
@@ -155,9 +167,11 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   doPlay(): void {
+    this.isProcessing = true;
     this.initialiseStartingUI();
     if (!this.blocks.length) {
       this.onStepFailed(0, 'There are no blocks in the current program!');
+      this.isProcessing = false;
       return;
     }
 
@@ -174,11 +188,13 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       .subscribe(result => {
         if (!result.successful) {
           this.onStepFailed(0, 'Unable to compile code');
+          this.isProcessing = false;
           return;
         }
 
         if (result.output.errors) {
           this.onStepFailed(0, 'There are errors in the code');
+          this.isProcessing = false;
           return;
         }
 
@@ -186,6 +202,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
         this.messageProcessor.currentStartStep = 1;
         this.onStepCompleted(0);
         this.connection.start().subscribe(msg => this.messageProcessor.processServerMessage(msg));
+        this.isProcessing = false;
       });
   }
 
