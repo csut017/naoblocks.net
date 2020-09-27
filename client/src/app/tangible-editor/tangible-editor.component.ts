@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Block } from '../data/block';
 import { ExecutionStatusStep } from '../data/execution-status-step';
@@ -18,7 +18,7 @@ declare var TopCodes: any;
   templateUrl: './tangible-editor.component.html',
   styleUrls: ['./tangible-editor.component.scss']
 })
-export class TangibleEditorComponent extends HomeBase implements OnInit, IServiceMessageUpdater, OnDestroy {
+export class TangibleEditorComponent extends HomeBase implements OnInit, IServiceMessageUpdater, OnDestroy, AfterViewInit {
 
   blocks: Block[] = [];
   cameraStarted: boolean = false;
@@ -96,6 +96,10 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
+  }
+
+  ngAfterViewInit(): void {
+    this.startCamera();
   }
 
   ngOnDestroy() {

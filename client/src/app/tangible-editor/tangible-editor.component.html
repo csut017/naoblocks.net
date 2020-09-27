@@ -29,22 +29,13 @@
     </header>
     <div class="content-container">
         <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="sidebarCollapsed">
-            <a clrVerticalNavLink href="javascript://" (click)="startCamera()" [class.disabled]="cameraStarted">
-                <clr-icon clrVerticalNavIcon shape="camera" class="is-solid"></clr-icon>
-                Start Camera
-            </a>
-            <a clrVerticalNavLink href="javascript://" (click)="stopCamera()" [class.disabled]="!cameraStarted">
-                <clr-icon clrVerticalNavIcon shape="uninstall" class="is-solid"></clr-icon>
-                Stop Camera
-            </a>
-            <div class="nav-divider"></div>
             <a clrVerticalNavLink href="javascript://" (click)="doPlay()"
-                [class.disabled]="isExecuting || !cameraStarted">
+                [class.disabled]="isExecuting">
                 <clr-icon clrVerticalNavIcon shape="play" class="is-solid"></clr-icon>
                 Play
             </a>
             <a clrVerticalNavLink href="javascript://" (click)="doStop()"
-                [class.disabled]="!isExecuting || !cameraStarted">
+                [class.disabled]="!isExecuting">
                 <clr-icon clrVerticalNavIcon shape="stop" class="is-solid"></clr-icon>
                 Stop
             </a>
