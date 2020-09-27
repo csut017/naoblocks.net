@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Block } from '../data/block';
 import { ExecutionStatusStep } from '../data/execution-status-step';
@@ -25,6 +25,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   canRun: boolean = false;
   currentUser: User;
   isExecuting: boolean = false;
+  isInDebugMode: boolean = false;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
   sendingToRobot: boolean = false;
@@ -58,6 +59,14 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     private programService: ProgramService,
     private connection: ConnectionService) {
     super(authenticationService, router);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if ((event.key == 'D') && event.altKey && event.shiftKey) {
+      this.isInDebugMode = !this.isInDebugMode;
+      console.log(`[TangibleEditorComponent] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
+    }
   }
 
   ngOnInit(): void {

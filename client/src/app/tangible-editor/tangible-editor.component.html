@@ -56,7 +56,7 @@
         </clr-vertical-nav>
         <div class="content-area">
             <div class="clr-row">
-                <div class="clr-col-2" style="visibility: hidden;">
+                <div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-2': !isInDebugMode, 'hide-from-view': !isInDebugMode}">
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
@@ -68,7 +68,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="clr-col-8">
+                <div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-8': !isInDebugMode}">
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
