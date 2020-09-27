@@ -28,36 +28,58 @@
         </div>
     </header>
     <div class="content-container">
+        <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="sidebarCollapsed">
+            <a clrVerticalNavLink href="javascript://" (click)="startCamera()" [class.disabled]="cameraStarted">
+                <clr-icon clrVerticalNavIcon shape="camera" class="is-solid"></clr-icon>
+                Start Camera
+            </a>
+            <a clrVerticalNavLink href="javascript://" (click)="stopCamera()" [class.disabled]="!cameraStarted">
+                <clr-icon clrVerticalNavIcon shape="uninstall" class="is-solid"></clr-icon>
+                Stop Camera
+            </a>
+            <div class="nav-divider"></div>
+            <a clrVerticalNavLink href="javascript://" (click)="doPlay()"
+                [class.disabled]="isExecuting || !cameraStarted">
+                <clr-icon clrVerticalNavIcon shape="play" class="is-solid"></clr-icon>
+                Play
+            </a>
+            <a clrVerticalNavLink href="javascript://" (click)="doStop()"
+                [class.disabled]="!isExecuting || !cameraStarted">
+                <clr-icon clrVerticalNavIcon shape="stop" class="is-solid"></clr-icon>
+                Stop
+            </a>
+            <div class="nav-divider"></div>
+            <a clrVerticalNavLink href="javascript://" (click)="doChangeSpeed()">
+                <clr-icon clrVerticalNavIcon shape="replay-all"></clr-icon>
+                Change Speed
+            </a>
+        </clr-vertical-nav>
         <div class="content-area">
             <div class="clr-row">
-                <div class="clr-col-sm-12 clr-col-md-6">
+                <div class="clr-col-2" style="visibility: hidden;">
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
-                                <canvas #videoCanvas id="video-canvas" width="640" height="480">
-                                </canvas>
+                                <div style="overflow-x: auto; height: 500px;">
+                                    <canvas #videoCanvas id="video-canvas" width="640" height="480">
+                                    </canvas>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-sm btn-link" *ngIf="!cameraStarted" (click)="startCamera()">Start Camera</button>
-                            <button class="btn btn-sm btn-link" *ngIf="cameraStarted" (click)="stopCamera()">Stop Camera</button>
                         </div>
                     </div>
                 </div>
-                <div class="clr-col-sm-12 clr-col-md-6" *ngIf="cameraStarted">
+                <div class="clr-col-8">
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
-                                <div style="display: block; height:480px; overflow: hidden;">
-                                    <div class="tangible" [ngClass]="{'highlight': block.highlight}" *ngFor="let block of blocks">
+                                <div style="display: block; height:500px; overflow-y: auto;">
+                                    <div class="tangible" [ngClass]="{'highlight': block.highlight}"
+                                        *ngFor="let block of blocks">
                                         <img src="/assets/img/{{block.image}}.png">
                                         <p>{{block.text}}</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-sm btn-link" (click)="executeCode()">Run</button>
                         </div>
                     </div>
                 </div>
@@ -67,5 +89,7 @@
     <app-about></app-about>
     <app-change-role [role]="'Student'"></app-change-role>
     <app-change-view view="Tangibles"></app-change-view>
-    <app-execution-status [isOpen]="sendingToRobot" [steps]="steps" [statusMessage]="startMessage" (onClose)="doCancelSend()"></app-execution-status>
+    <app-execution-status [isOpen]="sendingToRobot" [steps]="steps" [statusMessage]="startMessage"
+        (onClose)="doCancelSend()"></app-execution-status>
+    <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>
 </div>

@@ -5,6 +5,7 @@ import { ExecutionStatusStep } from '../data/execution-status-step';
 import { RunSettings } from '../data/run-settings';
 import { User } from '../data/user';
 import { HomeBase } from '../home-base';
+import { RunSettingsComponent } from '../run-settings/run-settings.component';
 import { AuthenticationService } from '../services/authentication.service';
 import { ClientMessage, ClientMessageType, ConnectionService } from '../services/connection.service';
 import { ProgramService } from '../services/program.service';
@@ -23,10 +24,11 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   cameraStarted: boolean = false;
   canRun: boolean = false;
   currentUser: User;
-  isRunning: boolean = false;
+  isExecuting: boolean = false;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
   sendingToRobot: boolean = false;
+  sidebarCollapsed: boolean = false;
   startMessage: string;
   steps: ExecutionStatusStep[];
 
@@ -34,7 +36,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   private context: CanvasRenderingContext2D;
   private blockMapping: { [index: number]: Block } = {
     31: new Block("stand_block", "Stand", "position('Stand')"),
-    47: new Block("speak_block", "Kia ora", "say('hello')"),
+    47: new Block("wave_block", "Wave", "wave()"),
     59: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
     61: new Block("wave_block", "Wave", "wave()"),
     79: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
@@ -42,10 +44,13 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     109: new Block("look_right_block", "Look Right", "look('right')"),
     117: new Block("look_left_block", "Look Left", "look('left')"),
     121: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
+    157: new Block("stand_block", "Sit", "position('Sit')"),
     233: new Block("rest_block", "Rest", "rest ()"),
+    283: new Block("stand_block", "Lie Down", "position('Lie')"),
   };
 
 
+  @ViewChild(RunSettingsComponent) runSettingsDisplay: RunSettingsComponent;
   @ViewChild('videoCanvas', { static: true }) videoCanvas: ElementRef<HTMLCanvasElement>;
 
   constructor(authenticationService: AuthenticationService,
@@ -58,6 +63,9 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   ngOnInit(): void {
     console.log('[TangibleEditorComponent] retrieving context');
     this.context = this.videoCanvas.nativeElement.getContext('2d');
+
+    this.authenticationService.getCurrentUser()
+      .subscribe(u => this.currentUser = u);
   }
 
   highlightTags(topcodes: any): void {
@@ -109,7 +117,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       this.isInitialised = true;
       let me = this;
       TopCodes.setVideoFrameCallback("video-canvas", function (jsonString) {
-        if (me.isRunning) return;
+        if (me.isExecuting) return;
         let json = JSON.parse(jsonString);
         me.highlightTags(json.topcodes);
         let blocks = me.generateBlockList(json.topcodes);
@@ -137,8 +145,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     }, 100);
   }
 
-  executeCode(): void {
-    this.isRunning = true;
+  doPlay(): void {
     this.initialiseStartingUI();
     if (!this.blocks.length) {
       this.onStepFailed(0, 'There are no blocks in the current program!');
@@ -217,7 +224,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onStateUpdate(): void {
-    this.isRunning = this.messageProcessor.isExecuting;
+    this.isExecuting = this.messageProcessor.isExecuting;
   }
 
   onStepFailed(step: number, reason: string): void {
@@ -233,6 +240,15 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       return;
     }
     this.doStop();
+  }
+
+  doChangeSpeed(): void {
+    this.runSettingsDisplay.show(this.runSettings);
+  }
+
+  onChangeRunSettings(settings: RunSettings): void {
+    this.runSettings = settings;
+    this.runSettingsDisplay.close();
   }
 
   doStop(): void {

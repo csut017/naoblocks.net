@@ -1,3 +1,9 @@
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+    color: #aaaaaa;
+}
+
 .tangible {
     width: 300px;
     height: 95px;
