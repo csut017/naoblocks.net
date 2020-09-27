@@ -40,16 +40,14 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   private blockMapping: { [index: number]: Block } = {
     31: new Block("stand_block", "Stand", "position('Stand')"),
     47: new Block("wave_block", "Wave", "wave()"),
-    59: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
-    61: new Block("wave_block", "Wave", "wave()"),
-    79: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
-    93: new Block("raise_left_arm_block", "Point Left", "point('left','out')"),
-    109: new Block("look_right_block", "Look Right", "look('right')"),
-    117: new Block("look_left_block", "Look Left", "look('left')"),
-    121: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
+    55: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
+    93: new Block("rest_block", "Rest", "rest ()"),
     157: new Block("stand_block", "Sit", "position('Sit')"),
-    233: new Block("rest_block", "Rest", "rest ()"),
+    199: new Block("raise_left_arm_block", "Point Left", "point('left','out')"),
     283: new Block("stand_block", "Lie Down", "position('Lie')"),
+    301: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
+    313: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
+    331: new Block("speak_block", "Kia ora", "say('kia ora')"),
   };
 
 
