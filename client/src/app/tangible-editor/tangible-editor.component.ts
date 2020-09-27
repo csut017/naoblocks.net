@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Block } from '../data/block';
 import { ExecutionStatusStep } from '../data/execution-status-step';
@@ -18,7 +18,7 @@ declare var TopCodes: any;
   templateUrl: './tangible-editor.component.html',
   styleUrls: ['./tangible-editor.component.scss']
 })
-export class TangibleEditorComponent extends HomeBase implements OnInit, IServiceMessageUpdater {
+export class TangibleEditorComponent extends HomeBase implements OnInit, IServiceMessageUpdater, OnDestroy {
 
   blocks: Block[] = [];
   cameraStarted: boolean = false;
@@ -38,16 +38,28 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   private isInitialised: boolean = false;
   private context: CanvasRenderingContext2D;
   private blockMapping: { [index: number]: Block } = {
+    // Both
     31: new Block("stand_block", "Stand", "position('Stand')"),
+    93: new Block("rest_block", "Rest", "rest ()"),
+    313: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
+
+    // Normal
     47: new Block("wave_block", "Wave", "wave()"),
     55: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
-    93: new Block("rest_block", "Rest", "rest ()"),
     157: new Block("stand_block", "Sit", "position('Sit')"),
     199: new Block("raise_left_arm_block", "Point Left", "point('left','out')"),
-    283: new Block("stand_block", "Lie Down", "position('Lie')"),
+    283: new Block("stand_block", "Lie Down", "position('LyingBack')"),
     301: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
-    313: new Block("raise_right_arm_block", "Point Right", "point('right','out')"),
     331: new Block("speak_block", "Kia ora", "say('kia ora')"),
+
+    // Mirrored
+    59: new Block("dance_block", "Dance", "dance('gangnam', TRUE)"),
+    61: new Block("wave_block", "Wave", "wave()"),
+    185: new Block("stand_block", "Sit", "position('Sit')"),
+    227: new Block("raise_left_arm_block", "Point Left", "point('left','out')"),
+    361: new Block("walk_block", "Walk", "walk ( 6 , 0 )"),
+    421: new Block("speak_block", "Kia ora", "say('kia ora')"),
+    433: new Block("stand_block", "Lie Down", "position('LyingBack')"),
   };
 
 
@@ -84,6 +96,10 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
+  }
+
+  ngOnDestroy() {
+    this.stopCamera();
   }
 
   highlightTags(topcodes: any): void {
