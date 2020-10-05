@@ -205,6 +205,10 @@ Blockly.NaoLang.robot_say = function (block) {
     var code = 'say(' + textToSpeak + ')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
+Blockly.NaoLang.robot_kia_ora = function (block) {
+    var code = 'say(\'key or a\')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
 Blockly.NaoLang.robot_turn = function (block) {
     var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
         value_dir = block.getFieldValue('DIR'),
@@ -235,6 +239,14 @@ Blockly.NaoLang.robot_point = function (block) {
         code = 'point(\'' + arm + '\',\'' + dir + '\')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
+Blockly.NaoLang.robot_point_left = function (block) {
+    var code = 'point(\'LEFT\',\'OUT\')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
+Blockly.NaoLang.robot_point_right = function (block) {
+    var code = 'point(\'RIGHT\',\'OUT\')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
 
 // Robot dances
 Blockly.NaoLang.robot_gangnam = function (block) {
@@ -250,6 +262,10 @@ Blockly.NaoLang.robot_macaranna = function (block) {
 Blockly.NaoLang.robot_taichi = function (block) {
     var music = block.getFieldValue('MUSIC'),
         code = 'dance(\'taichi\', ' + music + ')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
+Blockly.NaoLang.robot_dance = function (block) {
+    var code = 'dance(\'gangnam\', TRUE)\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
 
