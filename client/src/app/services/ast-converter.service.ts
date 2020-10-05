@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { RoboLangAstNode } from '../data/ast-node';
 
+declare var Blockly: any;
+
+export enum AstConversionMode {
+  Default,
+  Simplified,
+  Tangible
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,12 +56,15 @@ export class AstConverterService {
     'Colour': ['colour_picker', 'COLOUR']
   };
 
+  private mode: AstConversionMode = AstConversionMode.Default;
+
   constructor() { }
 
-  convert(ast: RoboLangAstNode[], requireEvents: boolean): HTMLElement {
+  convert(ast: RoboLangAstNode[], requireEvents: boolean, mode: AstConversionMode): HTMLElement {
     let xml: HTMLElement = document.createElement('xml'),
       environ: GeneratorEnvironment = new GeneratorEnvironment(),
       block: HTMLElement;
+    this.mode = mode;
 
     if (requireEvents) {
       ast.shift();
@@ -72,7 +83,7 @@ export class AstConverterService {
 
   private generateDanceBlock(): nodeGenerator {
     const that = this;
-    return function(elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
+    return function (elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
       var dfn = new BlockDefinition(
         'robot_' + elem.arguments[0].token.value,
         that.generateField('MUSIC', elem.arguments[1].token.value));
@@ -150,11 +161,22 @@ export class AstConverterService {
       say = new BlockDefinition('robot_posture_and_say',
         [this.generateField('POSTURE'),
         this.generateValue('TEXT')]);
+    let simpleBlocks: { [id: string]: IBlockDefinition } = {};
+    Blockly.NaoLang.Postures.forEach(function (posture) {
+      let blockDef = new BlockDefinition('robot_posture_' + posture[1]);
+      simpleBlocks[posture[1]] = blockDef;
+    });
     return function (elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
-      if (elem.arguments && elem.arguments.length && (elem.arguments.length > 1)) {
-        say.populate(node, elem, environ);
+      if (this.mode == AstConversionMode.Default) {
+        if (elem.arguments && elem.arguments.length && (elem.arguments.length > 1)) {
+          say.populate(node, elem, environ);
+        } else {
+          def.populate(node, elem, environ);
+        }
       } else {
-        def.populate(node, elem, environ);
+        let posture = elem.arguments[0].token.value,
+          blockDef = simpleBlocks[posture];
+        blockDef.populate(node, elem, environ);
       }
     };
   }
@@ -164,11 +186,22 @@ export class AstConverterService {
       say = new BlockDefinition('robot_action_and_say',
         [this.generateField('ACTION', action),
         this.generateValue('TEXT')]);
+    let simpleBlocks: { [id: string]: IBlockDefinition } = {};
+    Blockly.NaoLang.Actions.forEach(function (action) {
+      let blockDef = new BlockDefinition('robot_action_' + action[1]);
+      simpleBlocks[action[1]] = blockDef;
+    });
     return function (elem: RoboLangAstNode, node: HTMLElement, environ: GeneratorEnvironment): void {
-      if (elem.arguments && elem.arguments.length) {
-        say.populate(node, elem, environ);
+      if (this.mode == AstConversionMode.Default) {
+        if (elem.arguments && elem.arguments.length) {
+          say.populate(node, elem, environ);
+        } else {
+          def.populate(node, elem, environ);
+        }
       } else {
-        def.populate(node, elem, environ);
+        let action = elem.token.value,
+          blockDef = simpleBlocks[action];
+        blockDef.populate(node, elem, environ);
       }
     };
   }

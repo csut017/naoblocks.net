@@ -9,7 +9,7 @@ import { Student } from '../data/student';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { saveAs } from 'file-saver';
 import { LoadProgramComponent } from '../load-program/load-program.component';
-import { AstConverterService } from '../services/ast-converter.service';
+import { AstConversionMode, AstConverterService } from '../services/ast-converter.service';
 import { ConnectionService, ClientMessage, ClientMessageType } from '../services/connection.service';
 import { UserSettings } from '../data/user-settings';
 import { SettingsService } from '../services/settings.service';
@@ -355,7 +355,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
         if (result.successful) {
           console.groupCollapsed('Converting to XML');
           try {
-            let xml = this.astConverter.convert(result.output.nodes, this.requireEvents);
+            let conversionMode = AstConversionMode.Default;
+            if (this.editorSettings.user.simple) {
+              conversionMode = AstConversionMode.Simplified;
+            }
+
+            let xml = this.astConverter.convert(result.output.nodes, this.requireEvents, conversionMode);
             this.loadIntoWorkspace(xml);
             console.log(xml);
             this.loadProgram.close();
