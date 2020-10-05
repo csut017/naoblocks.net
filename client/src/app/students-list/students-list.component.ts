@@ -99,11 +99,6 @@ export class StudentsListComponent implements OnInit {
         } else {
           this.errorMessage = undefined;
         }
-
-        this.students.items = this.students
-          .items
-          .filter(el => !successful.includes(el));
-        this.students.count -= successful.length;
       });
   }
 
