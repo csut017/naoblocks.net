@@ -7,7 +7,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 
-[assembly: AssemblyInformationalVersion("1.0.0 [alpha 3]")]
+[assembly: AssemblyInformationalVersion("1.0.0 [alpha 4]")]
 
 namespace NaoBlocks.Web
 {
