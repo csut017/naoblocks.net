@@ -82,15 +82,16 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogDebug($"Retrieving programs: page {pageNum} with size {pageSize}");
             var allPrograms = session.Query<CodeProgram>().Where(p => p.UserId == currentUser.Name);
             if (type != "all") allPrograms = allPrograms.Where(p => p.Name != null);
-            var programs = allPrograms.OrderBy(s => s.Name)
+            var programs = await allPrograms.OrderBy(s => s.Name)
                 .Skip(pageNum * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync()
+                .ConfigureAwait(false);
             var count = programs.Count;
             this._logger.LogDebug($"Retrieved {count} programs");
             var result = new Dtos.ListResult<Dtos.CodeProgram>
             {
-                Count = allPrograms.Count(),
+                Count = await allPrograms.CountAsync().ConfigureAwait(false),
                 Page = pageNum,
                 Items = programs.Select(Dtos.CodeProgram.FromModel).Where(p => p != null)
             };
