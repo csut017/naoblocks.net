@@ -1,4 +1,5 @@
-﻿using Raven.Client.Documents;
+﻿using Microsoft.Extensions.Logging;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,14 @@ namespace NaoBlocks.Core.Commands
         private readonly IAsyncDocumentSession session;
         private readonly IDocumentStore store;
 
-        public CommandManager(IDocumentStore store, IAsyncDocumentSession session)
+        public CommandManager(IDocumentStore store, IAsyncDocumentSession session, ILogger<CommandManager> logger)
         {
             this.store = store;
             this.session = session;
+            this.Logger = logger;
         }
+
+        public ILogger Logger { get; private set; }
 
         public async Task<CommandResult> ApplyAsync(CommandBase? command)
         {

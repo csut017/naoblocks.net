@@ -92,6 +92,7 @@ namespace NaoBlocks.Web.Controllers
                 var toolbox = Generators.UserToolbox.Generate(user, robotType);
                 return new Dtos.EditorSettings
                 {
+                    CanConfigure = !string.IsNullOrEmpty(user.CustomToolbox),
                     IsSystemInitialised = true,
                     User = settings ?? user.Settings,
                     Toolbox = toolbox

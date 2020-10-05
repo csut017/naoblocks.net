@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -25,17 +26,17 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"Name is required for a tutorial"));
+                errors.Add(this.GenerateError($"Name is required for a tutorial"));
             }
 
             if (string.IsNullOrWhiteSpace(this.Category))
             {
-                errors.Add(this.Error($"Category is required for a tutorial"));
+                errors.Add(this.GenerateError($"Category is required for a tutorial"));
             }
 
             if (this.Exercises.Count == 0)
             {
-                errors.Add(this.Error($"At least one exercise is required for a tutorial"));
+                errors.Add(this.GenerateError($"At least one exercise is required for a tutorial"));
             }
             else
             {
@@ -45,23 +46,23 @@ namespace NaoBlocks.Core.Commands
                     ++pos;
                     if (string.IsNullOrWhiteSpace(exercise.Name))
                     {
-                        errors.Add(this.Error($"Name is missing for exercise #{pos}"));
+                        errors.Add(this.GenerateError($"Name is missing for exercise #{pos}"));
                     }
 
                     if (exercise.Lines.Count == 0)
                     {
-                        errors.Add(this.Error($"Exercise #{pos} does not have any lines"));
+                        errors.Add(this.GenerateError($"Exercise #{pos} does not have any lines"));
                     }
                     else if (!exercise.Lines.Any(l => !string.IsNullOrWhiteSpace(l.Message)))
                     {
-                        errors.Add(this.Error($"Exercise #{pos} does not have any non-blank lines"));
+                        errors.Add(this.GenerateError($"Exercise #{pos} does not have any non-blank lines"));
                     }
                 }
             }
 
             if (!errors.Any() && await session.Query<Tutorial>().AnyAsync(t => t.Name == this.Name && t.Category == this.Category).ConfigureAwait(false))
             {
-                errors.Add(this.Error($"Tutorial with name '{this.Name}' already exists in '{this.Category}'"));
+                errors.Add(this.GenerateError($"Tutorial with name '{this.Name}' already exists in '{this.Category}'"));
             }
 
             return errors.AsEnumerable();

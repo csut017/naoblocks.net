@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -28,12 +29,12 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"User name is required"));
+                errors.Add(this.GenerateError($"User name is required"));
             }
 
             if (this.Password == null)
             {
-                errors.Add(this.Error("Password is required"));
+                errors.Add(this.GenerateError("Password is required"));
             }
 
             if (!errors.Any())
@@ -43,11 +44,11 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (user == null)
                 {
-                    errors.Add(this.Error("Unknown or invalid user"));
+                    errors.Add(this.GenerateError("Unknown or invalid user"));
                 }
                 else if ((user.Password != null) && !user.Password.Verify(this.Password))
                 {
-                    errors.Add(this.Error("Unknown or invalid user"));
+                    errors.Add(this.GenerateError("Unknown or invalid user"));
                 }
                 else
                 {

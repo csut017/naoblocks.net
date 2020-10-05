@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using NaoBlocks.Parser;
 using Raven.Client.Documents.Session;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Code))
             {
-                errors.Add(this.Error("No code to compile"));
+                errors.Add(this.GenerateError("No code to compile"));
             }
 
             return Task.FromResult(errors.AsEnumerable());

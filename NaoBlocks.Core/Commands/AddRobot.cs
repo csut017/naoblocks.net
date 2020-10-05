@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -29,7 +30,7 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
             {
-                errors.Add(this.Error($"Machine name is required for a robot"));
+                errors.Add(this.GenerateError($"Machine name is required for a robot"));
             }
 
             if (string.IsNullOrWhiteSpace(this.FriendlyName))
@@ -39,14 +40,14 @@ namespace NaoBlocks.Core.Commands
 
             if (string.IsNullOrWhiteSpace(this.Type))
             {
-                errors.Add(this.Error($"Type is required for a robot"));
+                errors.Add(this.GenerateError($"Type is required for a robot"));
             }
 
             if (!errors.Any())
             {
                 if (await session.Query<Robot>().AnyAsync(s => s.MachineName == this.MachineName).ConfigureAwait(false))
                 {
-                    errors.Add(this.Error($"Robot with name {this.MachineName} already exists"));
+                    errors.Add(this.GenerateError($"Robot with name {this.MachineName} already exists"));
                 }
 
                 this.RobotType = await session.Query<RobotType>()
@@ -54,7 +55,7 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (this.RobotType == null)
                 {
-                    errors.Add(this.Error($"Unknown robot type {this.Type}"));
+                    errors.Add(this.GenerateError($"Unknown robot type {this.Type}"));
                 }
             }
 

@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -19,7 +20,7 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.UserId))
             {
-                errors.Add(this.Error($"User ID is required"));
+                errors.Add(this.GenerateError($"User ID is required"));
             }
 
             return Task.FromResult(errors.AsEnumerable());

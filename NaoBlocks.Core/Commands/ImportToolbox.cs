@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -27,11 +28,11 @@ namespace NaoBlocks.Core.Commands
             this.robotType = await session.Query<RobotType>()
                                         .FirstOrDefaultAsync(u => u.Name == this.Name)
                                         .ConfigureAwait(false);
-            if (this.robotType == null) errors.Add(this.Error($"Robot type {this.Name} does not exist"));
+            if (this.robotType == null) errors.Add(this.GenerateError($"Robot type {this.Name} does not exist"));
 
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"Definition is required"));
+                errors.Add(this.GenerateError($"Definition is required"));
             }
             else {
                 try
@@ -41,7 +42,7 @@ namespace NaoBlocks.Core.Commands
                 catch (Exception ex)
                 {
                     this.document = null;
-                    errors.Add(this.Error($"Unable to load definition: {ex.Message}"));
+                    errors.Add(this.GenerateError($"Unable to load definition: {ex.Message}"));
                 }
             }
 

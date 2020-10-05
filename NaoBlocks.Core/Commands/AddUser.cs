@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -35,17 +36,17 @@ namespace NaoBlocks.Core.Commands
             if (this.Role == UserRole.Unknown)
             {
                 roleName = "User";
-                errors.Add(this.Error($"Role is unknown or missing"));
+                errors.Add(this.GenerateError($"Role is unknown or missing"));
             }
 
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"{roleName} name is required"));
+                errors.Add(this.GenerateError($"{roleName} name is required"));
             }
 
             if (this.Password == null)
             {
-                errors.Add(this.Error("Password is required"));
+                errors.Add(this.GenerateError("Password is required"));
             }
             else
             {
@@ -55,7 +56,7 @@ namespace NaoBlocks.Core.Commands
 
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))
             {
-                errors.Add(this.Error($"{roleName} with name {this.Name} already exists"));
+                errors.Add(this.GenerateError($"{roleName} with name {this.Name} already exists"));
             }
 
             return errors.AsEnumerable();

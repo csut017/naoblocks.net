@@ -41,7 +41,11 @@ export class StudentsListComponent implements OnInit {
       .subscribe(results => {
         let successful = results.filter(r => r.successful).map(r => r.output);
         let failed = results.filter(r => !r.successful);
-        this.message = `Deleted ${successful.length} students`;
+        if (successful.length !== 0) {
+          this.message = `Deleted ${successful.length} students`;
+        } else {
+          this.message = undefined;
+        }
         if (failed.length !== 0) {
           this.errorMessage = `Failed to delete ${failed.length} students`;
         } else {
@@ -49,8 +53,8 @@ export class StudentsListComponent implements OnInit {
         }
 
         this.students.items = this.students
-            .items
-            .filter(el => !successful.includes(el));
+          .items
+          .filter(el => !successful.includes(el));
         this.students.count -= successful.length;
       });
   }
@@ -67,17 +71,40 @@ export class StudentsListComponent implements OnInit {
   }
 
   doExportList(): void {
-    this.downloaderService.download('v1/students/export/list', 'students-list.xlsx');
+    this.downloaderService.download('v1/students/export', 'students-list.xlsx');
   }
 
   doExportDetails() {
-    this.selected.forEach(s => 
-      this.downloaderService.download(`v1/students/${s.id}/export/details`, `student-${s.id}-details.xlsx`));
+    this.selected.forEach(s =>
+      this.downloaderService.download(`v1/students/${s.id}/export`, `student-${s.id}-details.xlsx`));
   }
 
   doExportLogs() {
-    this.selected.forEach(s => 
-      this.downloaderService.download(`v1/students/${s.id}/export/logs`, `student-${s.id}-logs.xlsx`));
+    this.selected.forEach(s =>
+      this.downloaderService.download(`v1/students/${s.id}/logs/export`, `student-${s.id}-logs.xlsx`));
+  }
+
+  doClearLogs() {
+    forkJoin(this.selected.map(s => this.studentService.clearLog(s)))
+      .subscribe(results => {
+        let successful = results.filter(r => r.successful).map(r => r.output);
+        let failed = results.filter(r => !r.successful);
+        if (successful.length !== 0) {
+          this.message = `Cleared logs for ${successful.length} students`;
+        } else {
+          this.message = undefined;
+        }
+        if (failed.length !== 0) {
+          this.errorMessage = `Failed to clear logs for ${failed.length} students`;
+        } else {
+          this.errorMessage = undefined;
+        }
+
+        this.students.items = this.students
+          .items
+          .filter(el => !successful.includes(el));
+        this.students.count -= successful.length;
+      });
   }
 
   onClosed(saved: boolean) {

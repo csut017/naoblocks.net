@@ -69,6 +69,17 @@ Content-Type: text/plain
 Authorization: Bearer {{authToken}}
 
 <toolbox>
+  <category name="Blocks" colour="290" tags="blocks">
+    <block type="robot_posture_Stand"></block>
+    <block type="robot_posture_Sit"></block>
+    <block type="robot_posture_LyingBack"></block>
+    <block type="robot_action_wave"></block>
+    <block type="robot_dance"></block>
+    <block type="robot_rest"></block>
+    <block type="robot_point_left"></block>
+    <block type="robot_point_right"></block>
+    <block type="robot_kia_ora"></block>
+  </category>
   <category name="Robot Events" colour="290" tags="events">
     <block type="robot_on_start"></block>
     <block type="robot_on_button"></block>

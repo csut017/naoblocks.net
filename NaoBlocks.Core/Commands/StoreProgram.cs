@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -29,19 +30,19 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Code))
             {
-                errors.Add(this.Error($"Code is required for storing a program"));
+                errors.Add(this.GenerateError($"Code is required for storing a program"));
             }
 
             if (this.RequireName && string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"Name is required for storing a program"));
+                errors.Add(this.GenerateError($"Name is required for storing a program"));
             }
 
             if (this.User == null)
             {
                 if (string.IsNullOrWhiteSpace(this.UserId))
                 {
-                    errors.Add(this.Error($"UserID is required for storing a program"));
+                    errors.Add(this.GenerateError($"UserID is required for storing a program"));
                 }
 
                 if (!errors.Any())
@@ -49,7 +50,7 @@ namespace NaoBlocks.Core.Commands
                     this.User = await session.Query<User>().FirstOrDefaultAsync(u => u.Id == this.UserId).ConfigureAwait(false);
                     if (this.User == null)
                     {
-                        errors.Add(this.Error($"User does not exist"));
+                        errors.Add(this.GenerateError($"User does not exist"));
                     }
                 }
             }

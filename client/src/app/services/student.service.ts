@@ -77,7 +77,20 @@ export class StudentService extends ClientService {
           this.log('Deleted student');
           result.output = student;
         }),
-        catchError(this.handleError('saveExisting', msg => new ExecutionResult<Student>(undefined, msg)))
+        catchError(this.handleError('delete', msg => new ExecutionResult<Student>(undefined, msg)))
+      );
+  }
+
+  clearLog(student: Student): Observable<ExecutionResult<Student>> {
+    const url = `${environment.apiURL}v1/students/${student.id}/logs`;
+    this.log('Deleting student logs');
+    return this.http.delete<ExecutionResult<Student>>(url)
+      .pipe(
+        tap(result => {
+          this.log('Deleted student logs');
+          result.output = student;
+        }),
+        catchError(this.handleError('clearLog', msg => new ExecutionResult<Student>(undefined, msg)))
       );
   }
 }

@@ -30,6 +30,19 @@
                     </clr-dropdown-menu>
                 </clr-dropdown>
             </div>
+            <div class="btn-group">
+                <clr-dropdown>
+                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger>
+                        Clear
+                        <clr-icon shape="caret down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                        <button type="button" (click)="doClearLogs()" clrDropdownItem [disabled]="selected.length === 0">
+                            Logs
+                        </button>
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
         </clr-dg-action-bar>
 
         <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>

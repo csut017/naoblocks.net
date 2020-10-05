@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -19,12 +20,12 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
             {
-                errors.Add(this.Error($"Machine name is required for a robot"));
+                errors.Add(this.GenerateError($"Machine name is required for a robot"));
             }
 
             if (!errors.Any() && await session.Query<Robot>().AnyAsync(s => s.MachineName == this.MachineName).ConfigureAwait(false))
             {
-                errors.Add(this.Error($"Robot with name {this.MachineName} already exists"));
+                errors.Add(this.GenerateError($"Robot with name {this.MachineName} already exists"));
             }
 
             return errors.AsEnumerable();

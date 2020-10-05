@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -37,7 +38,7 @@ namespace NaoBlocks.Core.Commands
                                         .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
                                         .ConfigureAwait(false);
             var roleName = this.Role == UserRole.Unknown ? "User" : this.Role.ToString();
-            if (this.person == null) errors.Add(this.Error($"{roleName} {this.CurrentName} does not exist"));
+            if (this.person == null) errors.Add(this.GenerateError($"{roleName} {this.CurrentName} does not exist"));
 
             if (this.Password != null)
             {

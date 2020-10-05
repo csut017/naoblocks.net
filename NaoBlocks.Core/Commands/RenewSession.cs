@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -23,7 +24,7 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.UserId))
             {
-                errors.Add(this.Error($"User ID is required"));
+                errors.Add(this.GenerateError($"User ID is required"));
             }
 
             if (!errors.Any())
@@ -33,7 +34,7 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (this.Session == null)
                 {
-                    errors.Add(this.Error("User does not have a current session"));
+                    errors.Add(this.GenerateError("User does not have a current session"));
                 }
             }
 

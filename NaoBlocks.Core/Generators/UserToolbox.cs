@@ -16,15 +16,21 @@ namespace NaoBlocks.Core.Generators
 
             // Generate the list of options
             var options = new List<string>();
-            if (user.Settings.Conditionals) options.Add("conditionals");
-            if (user.Settings.Dances) options.Add("dances");
-            if (user.Settings.Events) options.Add("events");
-            if (user.Settings.Loops) options.Add("loops");
-            if (user.Settings.Sensors) options.Add("sensors");
-            if (user.Settings.Tutorials) options.Add("tutorials");
-            if (user.Settings.Variables) options.Add("variables");
-            if (user.Settings.Simple) options.Add("simple");
-            if (!user.Settings.Simple) options.Add("default");
+            if (string.IsNullOrEmpty(user.CustomToolbox))
+            {
+                if (user.Settings.Conditionals) options.Add("conditionals");
+                if (user.Settings.Dances) options.Add("dances");
+                if (user.Settings.Events) options.Add("events");
+                if (user.Settings.Loops) options.Add("loops");
+                if (user.Settings.Sensors) options.Add("sensors");
+                if (user.Settings.Tutorials) options.Add("tutorials");
+                if (user.Settings.Variables) options.Add("variables");
+                if (user.Settings.Simple) options.Add("simple");
+                if (!user.Settings.Simple) options.Add("default");
+            } else
+            {
+                options.AddRange(user.CustomToolbox.Split(',').Select(tag => tag.Trim()).Where(tag => !string.IsNullOrEmpty(tag)));
+            }
 
             // Determine the categories to include
             var categories = new Dictionary<string, ToolboxCategory>();

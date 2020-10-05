@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -26,7 +27,7 @@ namespace NaoBlocks.Core.Commands
             this.robotType = await session.Query<RobotType>()
                                         .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
                                         .ConfigureAwait(false);
-            if (this.robotType == null) errors.Add(this.Error($"Robot type {this.CurrentName} does not exist"));
+            if (this.robotType == null) errors.Add(this.GenerateError($"Robot type {this.CurrentName} does not exist"));
 
             return errors.AsEnumerable();
         }

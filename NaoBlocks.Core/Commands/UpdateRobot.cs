@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -34,7 +35,7 @@ namespace NaoBlocks.Core.Commands
             this.robot = await session.Query<Robot>()
                                         .FirstOrDefaultAsync(u => u.MachineName == this.CurrentMachineName)
                                         .ConfigureAwait(false);
-            if (this.robot == null) errors.Add(this.Error($"Robot {this.CurrentMachineName} does not exist"));
+            if (this.robot == null) errors.Add(this.GenerateError($"Robot {this.CurrentMachineName} does not exist"));
 
             if (this.Password != null)
             {
@@ -49,7 +50,7 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (this.RobotType == null)
                 {
-                    errors.Add(this.Error($"Unknown robot type {this.Type}"));
+                    errors.Add(this.GenerateError($"Unknown robot type {this.Type}"));
                 }
             }
 

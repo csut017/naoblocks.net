@@ -1,6 +1,6 @@
 var blocks = [{
     "type": "robot_action",
-    "message0": "do %1",
+    "message0": "Do %1",
     "args0": [{
         "type": "field_dropdown",
         "name": "ACTION",
@@ -13,7 +13,7 @@ var blocks = [{
     "tooltip": "Performs an action and returns to the previous position."
 }, {
     "type": "robot_action_and_say",
-    "message0": "do %1 and say %2",
+    "message0": "Do %1 and say %2",
     "args0": [{
         "type": "field_dropdown",
         "name": "ACTION",
@@ -31,7 +31,7 @@ var blocks = [{
     "tooltip": "Performs an action and returns to the previous position."
 }, {
     "type": "robot_change_chest",
-    "message0": "change chest to %1",
+    "message0": "Change chest to %1",
     "args0": [{
         "type": "input_value",
         "name": "COLOUR"
@@ -43,7 +43,7 @@ var blocks = [{
     "tooltip": "Changes the colour of the robot's chest."
 }, {
     "type": "robot_change_eye",
-    "message0": "change %1 eye(s) to %2",
+    "message0": "Change %1 eye(s) to %2",
     "args0": [{
         "type": "field_dropdown",
         "name": "EYE",
@@ -80,7 +80,7 @@ var blocks = [{
     "tooltip": "Retrieves whether a head sensor is touched"
 }, {
     "type": "robot_sensor_sonar",
-    "message0": "distance to %1 front",
+    "message0": "Distance to %1 front",
     "args0": [{
         "type": "field_dropdown",
         "name": "SENSOR",
@@ -94,13 +94,13 @@ var blocks = [{
     "tooltip": "Retrieves the distance to the front of the root on a side"
 }, {
     "type": "robot_sensor_battery",
-    "message0": "battery charge",
+    "message0": "Battery charge",
     "output": null,
     "colour": 85,
     "tooltip": "Retrieves the current charge level of the battery"
 }, {
     "type": "robot_last_word",
-    "message0": "last word recognised",
+    "message0": "Last word recognised",
     "output": null,
     "colour": 85,
     "tooltip": "Retrieves the last word recognised"
@@ -147,7 +147,7 @@ var blocks = [{
     "tooltip": "Changes the colour of the robot's eyes."
 }, {
     "type": "robot_on_button",
-    "message0": "when %1 pressed",
+    "message0": "When %1 pressed",
     "args0": [{
         "type": "field_dropdown",
         "name": "BUTTON",
@@ -158,7 +158,7 @@ var blocks = [{
             ["Chest", "chest"],
         ]
     }],
-    "message1": "do %1",
+    "message1": "Do %1",
     "args1": [{
         "type": "input_statement",
         "name": "ACTION"
@@ -168,7 +168,7 @@ var blocks = [{
     "tooltip": "Starts the block when a button is touched."
 }, {
     "type": "robot_on_start",
-    "message0": "on start",
+    "message0": "On start",
     "message1": "do %1",
     "args1": [{
         "type": "input_statement",
@@ -179,7 +179,7 @@ var blocks = [{
     "helpUrl": ""
 }, {
     "type": "robot_on_recognised",
-    "message0": "on word recognised",
+    "message0": "On word recognised",
     "message1": "do %1",
     "args1": [{
         "type": "input_statement",
@@ -190,7 +190,7 @@ var blocks = [{
     "helpUrl": ""
 }, {
     "type": "robot_play_audio",
-    "message0": "play audio %1",
+    "message0": "Play audio %1",
     "args0": [{
         "type": "field_dropdown",
         "name": "AUDIO",
@@ -204,7 +204,7 @@ var blocks = [{
     "tooltip": "Puts the robot in a safe resting position."
 }, {
     "type": "robot_posture",
-    "message0": "move to %1",
+    "message0": "Move to %1",
     "args0": [{
         "type": "field_dropdown",
         "name": "POSTURE",
@@ -217,7 +217,7 @@ var blocks = [{
     "tooltip": "Moves to the specified position."
 }, {
     "type": "robot_posture_and_say",
-    "message0": "move to %1 and say %2",
+    "message0": "Move to %1 and say %2",
     "args0": [{
         "type": "field_dropdown",
         "name": "POSTURE",
@@ -235,7 +235,7 @@ var blocks = [{
     "tooltip": "Moves to the specified position."
 }, {
     "type": "robot_look",
-    "message0": "look %1",
+    "message0": "Look %1",
     "args0": [{
         "type": "field_dropdown",
         "name": "DIR",
@@ -252,7 +252,7 @@ var blocks = [{
     "tooltip": "Moves the robot's head to look in the direction."
 }, {
     "type": "robot_point",
-    "message0": "point %1 arm %2",
+    "message0": "Point %1 arm %2",
     "args0": [{
         "type": "field_dropdown",
         "name": "ARM",
@@ -276,8 +276,22 @@ var blocks = [{
     "colour": 65,
     "tooltip": "Moves one of the robot's arms to point in the direction."
 }, {
+    "type": "robot_point_left",
+    "message0": "Point left",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Points the robot's left arm."
+}, {
+    "type": "robot_point_right",
+    "message0": "Point right",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Points the robot's right arm."
+}, {
     "type": "robot_gangnam",
-    "message0": "gangnam (music %1)",
+    "message0": "Gangnam (music %1)",
     "args0": [{
         "type": "field_dropdown",
         "name": "MUSIC",
@@ -292,8 +306,15 @@ var blocks = [{
     "colour": 65,
     "tooltip": "Performs the gangnam dance."
 }, {
+    "type": "robot_dance",
+    "message0": "Dance",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Performs the gangnam dance."
+}, {
     "type": "robot_macaranna",
-    "message0": "macaranna (music %1)",
+    "message0": "Macaranna (music %1)",
     "args0": [{
         "type": "field_dropdown",
         "name": "MUSIC",
@@ -309,7 +330,7 @@ var blocks = [{
     "tooltip": "Performs the macaranna dance."
 }, {
     "type": "robot_taichi",
-    "message0": "tai chi (music %1)",
+    "message0": "Tai chi (music %1)",
     "args0": [{
         "type": "field_dropdown",
         "name": "MUSIC",
@@ -325,7 +346,7 @@ var blocks = [{
     "tooltip": "Performs a tai chi dance."
 }, {
     "type": "robot_record_audio",
-    "message0": "record audio for %1s",
+    "message0": "Record audio for %1s",
     "args0": [{
         "type": "input_value",
         "check": "Number",
@@ -337,14 +358,14 @@ var blocks = [{
     "tooltip": "Records some audio."
 }, {
     "type": "robot_rest",
-    "message0": "rest",
+    "message0": "Rest",
     "nextStatement": null,
     "previousStatement": null,
     "colour": 65,
     "tooltip": "Puts the robot in a safe resting position."
 }, {
     "type": "robot_wait",
-    "message0": "wait for %1s",
+    "message0": "Wait for %1s",
     "args0": [{
         "type": "input_value",
         "check": "Number",
@@ -356,7 +377,7 @@ var blocks = [{
     "tooltip": "Puts the robot in a safe resting position."
 }, {
     "type": "robot_say",
-    "message0": "say %1",
+    "message0": "Say %1",
     "args0": [{
         "type": "input_value",
         "name": "TEXT"
@@ -367,8 +388,15 @@ var blocks = [{
     "colour": 65,
     "tooltip": "Speak the specified text."
 }, {
+    "type": "robot_kia_ora",
+    "message0": "Say 'Kia ora'",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Say kia ora."
+}, {
     "type": "text_concat",
-    "message0": "append %1 to %2",
+    "message0": "Append %1 to %2",
     "args0": [{
         "type": "input_value",
         "name": "TEXT"
@@ -384,7 +412,7 @@ var blocks = [{
     "tooltip": "Append text to a variable."
 }, {
     "type": "robot_move",
-    "message0": "move forward %1s seconds",
+    "message0": "Move forward %1s seconds",
     "args0": [{
         "type": "input_value",
         "check": "Number",
@@ -398,7 +426,7 @@ var blocks = [{
     "tooltip": "Moves forward for the duration."
 }, {
     "type": "robot_turn",
-    "message0": "turn %1 for %2 seconds",
+    "message0": "Turn %1 for %2 seconds",
     "args0": [{
         "type": "field_dropdown",
         "name": "DIR",
@@ -418,7 +446,7 @@ var blocks = [{
     "tooltip": "Turns for the duration."
 }, {
     "type": "robot_walk",
-    "message0": "walk forward %1s, sideways %2s",
+    "message0": "Walk forward %1s, sideways %2s",
     "args0": [{
         "type": "input_value",
         "check": "Number",

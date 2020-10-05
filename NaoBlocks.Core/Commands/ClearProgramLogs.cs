@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NaoBlocks.Core.Commands
 {
-    public class DeleteUser
+    public class ClearProgramLogs
         : CommandBase
     {
         private User? person;
@@ -27,12 +27,30 @@ namespace NaoBlocks.Core.Commands
             return errors.AsEnumerable();
         }
 
-        protected override Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
+        protected override async Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
+            if (this.person == null) throw new InvalidOperationException("ValidateAsync must be called first");
 
-            session.Delete(this.person);
-            return Task.FromResult(CommandResult.New(this.Number));
+            var programs = await session.Query<CodeProgram>()
+                .Where(cp => cp.UserId == this.person.Name && string.IsNullOrEmpty(cp.Name))
+                .ToListAsync()
+                .ConfigureAwait(false);
+            foreach (var program in programs)
+            {
+                session.Delete(program);
+            }
+
+            var logs = await session.Query<RobotLog>()
+                .Where(rl => rl.Conversation.UserId == this.person.Id)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            foreach (var log in logs)
+            {
+                session.Delete(log);
+            }
+
+            return CommandResult.New(this.Number);
         }
     }
 }

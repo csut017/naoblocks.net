@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
@@ -23,12 +24,12 @@ namespace NaoBlocks.Core.Commands
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.Error($"Name is required to delete a tutorial"));
+                errors.Add(this.GenerateError($"Name is required to delete a tutorial"));
             }
 
             if (string.IsNullOrWhiteSpace(this.Category))
             {
-                errors.Add(this.Error($"Category is required to delete a tutorial"));
+                errors.Add(this.GenerateError($"Category is required to delete a tutorial"));
             }
 
             if (!errors.Any())
@@ -36,7 +37,7 @@ namespace NaoBlocks.Core.Commands
                 this.tutorial = await session.Query<Tutorial>()
                                             .FirstOrDefaultAsync(t => t.Name == this.Name && t.Category == this.Category)
                                             .ConfigureAwait(false);
-                if (this.tutorial == null) errors.Add(this.Error($"Tutorial '{this.Name}' does not exist in '{this.Category}'"));
+                if (this.tutorial == null) errors.Add(this.GenerateError($"Tutorial '{this.Name}' does not exist in '{this.Category}'"));
             }
 
             return errors.AsEnumerable();

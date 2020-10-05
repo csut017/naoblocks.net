@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Core.Commands.Helpers;
+using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -26,7 +27,7 @@ namespace NaoBlocks.Core.Commands
 
             if (this.Settings == null)
             {
-                errors.Add(this.Error($"Settings are required"));
+                errors.Add(this.GenerateError($"Settings are required"));
             }
             else
             {
@@ -37,7 +38,7 @@ namespace NaoBlocks.Core.Commands
                         .ConfigureAwait(false);
                     if (robotType == null)
                     {
-                        errors.Add(this.Error($"Unknown robot type {this.Settings.RobotType}"));
+                        errors.Add(this.GenerateError($"Unknown robot type {this.Settings.RobotType}"));
                     }
                     else
                     {
@@ -50,7 +51,7 @@ namespace NaoBlocks.Core.Commands
             {
                 if (string.IsNullOrWhiteSpace(this.UserId))
                 {
-                    errors.Add(this.Error($"UserID is required for storing settings"));
+                    errors.Add(this.GenerateError($"UserID is required for storing settings"));
                 }
 
                 if (!errors.Any())
@@ -58,7 +59,7 @@ namespace NaoBlocks.Core.Commands
                     this.User = await session.Query<User>().FirstOrDefaultAsync(u => u.Id == this.UserId).ConfigureAwait(false);
                     if (this.User == null)
                     {
-                        errors.Add(this.Error($"User does not exist"));
+                        errors.Add(this.GenerateError($"User does not exist"));
                     }
                 }
             }

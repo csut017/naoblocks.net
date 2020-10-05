@@ -131,7 +131,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        [HttpGet("export/list")]
+        [HttpGet("export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList()
         {
@@ -141,7 +141,7 @@ namespace NaoBlocks.Web.Controllers
             return File(excelData, contentType, fileName);
         }
 
-        [HttpGet("{id}/export/details")]
+        [HttpGet("{id}/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportDetails(string? id)
         {
@@ -167,7 +167,7 @@ namespace NaoBlocks.Web.Controllers
             return File(excelData, contentType, fileName);
         }
 
-        [HttpGet("{id}/export/logs")]
+        [HttpGet("{id}/logs/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportLogs(string? id)
         {
@@ -191,6 +191,19 @@ namespace NaoBlocks.Web.Controllers
             var contentType = ContentTypes.Xlsx;
             var fileName = "Students-List.xlsx";
             return File(excelData, contentType, fileName);
+        }
+
+        [HttpDelete("{id}/logs")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> ClearLogs(string? id)
+        {
+            this._logger.LogInformation($"Clearing logs for student '{id}'");
+            var command = new Commands.ClearProgramLogs
+            {
+                Name = id,
+                Role = UserRole.Student
+            };
+            return await this.commandManager.ExecuteForHttp(command);
         }
     }
 }

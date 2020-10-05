@@ -56,11 +56,6 @@ namespace NaoBlocks.Core.Commands
 
         protected abstract Task<CommandResult> DoApplyAsync(IAsyncDocumentSession? session);
 
-        protected CommandError Error(string error)
-        {
-            return new CommandError(this.Number, error);
-        }
-
         protected virtual CommandResult Result()
         {
             return new CommandResult(this.Number);
