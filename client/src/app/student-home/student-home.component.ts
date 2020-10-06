@@ -23,6 +23,7 @@ import { TutorialExercise } from '../data/tutorial-exercise';
 import { EditorSettings } from '../data/editor-settings';
 import { ExecutionStatusStep } from '../data/execution-status-step';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from '../services/server-message-processor.service';
+import { SnapshotService } from '../services/snapshot.service';
 
 declare var Blockly: any;
 
@@ -54,9 +55,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   currentUser: User;
   editorSettings: EditorSettings = new EditorSettings();
   errorMessage: string;
+  hasChanged: boolean = false;
   invalidBlocks: any[] = [];
   isExecuting: boolean = false;
   isSidebarOpen: boolean = true;
+  isStoringState: boolean = false;
   isTutorialHidden: boolean = true;
   isTutorialOpen: boolean = true;
   isValid: boolean = true;
@@ -75,7 +78,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   tutorialSelectorOpen: boolean = false;
   userInput: promptSettings = new promptSettings();
   workspace: any;
-  
+
   @ViewChild(LoadProgramComponent) loadProgram: LoadProgramComponent;
   @ViewChild(SaveProgramComponent) saveProgram: SaveProgramComponent;
   @ViewChild(UserSettingsComponent) userSettingsDisplay: UserSettingsComponent;
@@ -88,6 +91,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
     private astConverter: AstConverterService,
     private connection: ConnectionService,
     private settingsService: SettingsService,
+    private snapshotService: SnapshotService,
     private formBuilder: FormBuilder,
     private tutorialService: TutorialService) {
     super(authenticationService, router);
@@ -114,6 +118,25 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
       });
 
     this.initialiseWorkspace();
+    setInterval(() => this.storeState(), 10000);
+  }
+
+  storeState(): void {
+    if (!this.hasChanged || this.isStoringState) return;
+
+    console.log(`[StudentHome] Storing snapshot`);
+    let state = this.generateCode(false);
+    this.isStoringState = true;
+    this.snapshotService.store(state, 'StudentHome', {
+      'isValid': this.isValid ? 'yes' : 'no'
+    })
+      .subscribe(s => {
+        this.isStoringState = false;
+        if (s.successful) {
+          this.hasChanged = false;
+          console.log(`[StudentHome] Snapshot stored`);
+        }
+      });
   }
 
   markTutorialComplete(): void {
@@ -255,12 +278,14 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
 
   validateWorkspace(event?: any): void {
     if (this.workspace.isDragging()) return;
-    console.log('[StudentHome] Validating');
     var validate = !event ||
       (event.type == Blockly.Events.CREATE) ||
       (event.type == Blockly.Events.MOVE) ||
       (event.type == Blockly.Events.DELETE);
     if (!validate) return;
+
+    console.log('[StudentHome] Validating');
+    this.hasChanged = true;
 
     this.invalidBlocks.forEach(function (block) {
       if (block.rendered) block.setWarningText(null);
