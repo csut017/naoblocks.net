@@ -24,8 +24,9 @@
         </div>
         <div class="header-actions">
             <clr-dropdown>
-                <button class="nav-icon" clrDropdownTrigger aria-label="toggle settings menu">
+                <button class="nav-text" clrDropdownTrigger aria-label="toggle settings menu">
                     <clr-icon shape="cog"></clr-icon>
+                    {{currentUser ? currentUser.name : ''}}
                     <clr-icon shape="caret down"></clr-icon>
                 </button>
                 <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">

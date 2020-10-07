@@ -52,7 +52,6 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
 
   canStop: boolean = false;
   currentTutorial: Tutorial;
-  currentUser: User;
   editorSettings: EditorSettings = new EditorSettings();
   errorMessage: string;
   hasChanged: boolean = false;
@@ -100,8 +99,6 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
 
   ngOnInit() {
     this.checkAccess(UserRole.Student);
-    this.authenticationService.getCurrentUser()
-      .subscribe(u => this.currentUser = u);
     this.tutorialLoading = true;
     this.settingsService.get()
       .subscribe(s => {

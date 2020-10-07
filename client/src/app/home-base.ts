@@ -5,6 +5,7 @@ import { ChangeRoleComponent } from './change-role/change-role.component';
 import { ViewChild, Directive } from '@angular/core';
 import { AboutComponent } from './about/about.component';
 import { ChangeViewComponent } from './change-view/change-view.component';
+import { User } from './data/user';
 
 @Directive()
 export class HomeBase {
@@ -14,6 +15,7 @@ export class HomeBase {
     @ViewChild(ChangeViewComponent) viewSelector: ChangeViewComponent;
 
     hasAccess: boolean;
+    currentUser: User;
 
     constructor(protected authenticationService: AuthenticationService,
         protected router: Router) {
@@ -26,6 +28,8 @@ export class HomeBase {
 
     checkAccess(role: UserRole) {
         this.hasAccess = this.authenticationService.canAccess(role);
+        this.authenticationService.getCurrentUser()
+            .subscribe(u => this.currentUser = u);
     }
 
     openChangeRole(): void {
