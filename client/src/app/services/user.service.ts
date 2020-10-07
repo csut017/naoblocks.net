@@ -80,4 +80,30 @@ export class UserService  extends ClientService {
         catchError(this.handleError('saveExisting', msg => new ExecutionResult<User>(undefined, msg)))
       );
   }
+
+  clearLog(user: User): Observable<ExecutionResult<User>> {
+    const url = `${environment.apiURL}v1/students/${user.id}/logs`;
+    this.log('Deleting user logs');
+    return this.http.delete<ExecutionResult<User>>(url)
+      .pipe(
+        tap(result => {
+          this.log('Deleted user logs');
+          result.output = user;
+        }),
+        catchError(this.handleError('clearLog', msg => new ExecutionResult<User>(undefined, msg)))
+      );
+  }
+
+  clearSnapshot(user: User): Observable<ExecutionResult<User>> {
+    const url = `${environment.apiURL}v1/students/${user.id}/snapshots`;
+    this.log('Deleting user snapshots');
+    return this.http.delete<ExecutionResult<User>>(url)
+      .pipe(
+        tap(result => {
+          this.log('Deleted user snapshots');
+          result.output = user;
+        }),
+        catchError(this.handleError('clearSnapshot', msg => new ExecutionResult<User>(undefined, msg)))
+      );
+  }
 }

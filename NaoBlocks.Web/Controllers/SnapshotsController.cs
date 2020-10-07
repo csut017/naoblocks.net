@@ -52,14 +52,18 @@ namespace NaoBlocks.Web.Controllers
                 UserId = currentUser.Id,
                 State = value.State
             };
-            foreach (var subValue in value.Values)
+            if (value.Values != null)
             {
-                command.Values.Add(new SnapshotValue
+                foreach (var subValue in value.Values)
                 {
-                    Name = subValue.Name,
-                    Value = subValue.Value
-                });
+                    command.Values.Add(new SnapshotValue
+                    {
+                        Name = subValue.Name,
+                        Value = subValue.Value
+                    });
+                }
             }
+
             return await this.commandManager.ExecuteForHttp(command, v => Dtos.Snapshot.FromModel(v) ?? new Dtos.Snapshot());
         }
     }

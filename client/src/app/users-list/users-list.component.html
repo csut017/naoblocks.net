@@ -24,16 +24,43 @@
                         <button type="button" (click)="doExportList()" clrDropdownItem>
                             List
                         </button>
+                        <div class="dropdown-divider" role="separator"></div>
+                        <button type="button" (click)="doExportDetails()" clrDropdownItem [disabled]="selected.length === 0">Details</button>
+                        <button type="button" (click)="doExportLogs()" clrDropdownItem [disabled]="selected.length === 0">Logs</button>
+                        <button type="button" (click)="doExportSnapshots()" clrDropdownItem [disabled]="selected.length === 0">Snapshots</button>
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
+
+            <div class="btn-group">
+                <clr-dropdown>
+                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger>
+                        Clear
+                        <clr-icon shape="caret down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                        <button type="button" (click)="doClearLogs()" clrDropdownItem [disabled]="selected.length === 0">
+                            Logs
+                        </button>
+                        <button type="button" (click)="doClearSnapshots()" clrDropdownItem [disabled]="selected.length === 0">
+                            Snapshots
+                        </button>
                     </clr-dropdown-menu>
                 </clr-dropdown>
             </div>
         </clr-dg-action-bar>
 
+        <clr-dg-column class="narrow-column"></clr-dg-column>
         <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
+        <clr-dg-column [clrDgField]="'role'">Role</clr-dg-column>
         <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let user of users.items" [clrDgItem]="user">
+            <clr-dg-cell class="narrow-column">
+                <clr-icon shape="error-standard" class="is-error" *ngIf="user.hasError"></clr-icon>
+            </clr-dg-cell>
             <clr-dg-cell>{{user.name}}</clr-dg-cell>
+            <clr-dg-cell>{{user.role}}</clr-dg-cell>
             <clr-dg-cell>{{user.whenAdded | date}}</clr-dg-cell>
         </clr-dg-row>
 

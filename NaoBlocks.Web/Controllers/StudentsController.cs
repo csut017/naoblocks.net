@@ -180,14 +180,40 @@ namespace NaoBlocks.Web.Controllers
             }
 
             var student = await this.session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == id && u.Role == UserRole.Student);
+                                            .FirstOrDefaultAsync(u => u.Name == id);
             if (student == null)
             {
                 return NotFound();
             }
 
-            this._logger.LogDebug($"Generating details for {student.Name}");
+            this._logger.LogDebug($"Exporting logs for {student.Name}");
             var excelData = await Generators.StudentLogs.GenerateAsync(this.session, student);
+            var contentType = ContentTypes.Xlsx;
+            var fileName = "Students-List.xlsx";
+            return File(excelData, contentType, fileName);
+        }
+
+        [HttpGet("{id}/snapshots/export")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportSnapshots(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student details"
+                });
+            }
+
+            var student = await this.session.Query<User>()
+                                            .FirstOrDefaultAsync(u => u.Name == id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Exporting snapshots for {student.Name}");
+            var excelData = await Generators.StudentSnapshots.GenerateAsync(this.session, student);
             var contentType = ContentTypes.Xlsx;
             var fileName = "Students-List.xlsx";
             return File(excelData, contentType, fileName);
@@ -200,8 +226,19 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Clearing logs for student '{id}'");
             var command = new Commands.ClearProgramLogs
             {
-                Name = id,
-                Role = UserRole.Student
+                Name = id
+            };
+            return await this.commandManager.ExecuteForHttp(command);
+        }
+
+        [HttpDelete("{id}/snapshots")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> ClearSnapshots(string? id)
+        {
+            this._logger.LogInformation($"Clearing snapshots for student '{id}'");
+            var command = new Commands.ClearSnapshots
+            {
+                Name = id
             };
             return await this.commandManager.ExecuteForHttp(command);
         }

@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '../data/user';
 import { ResultSet } from '../data/result-set';
 import { FileDownloaderService } from '../services/file-downloader.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { UserService } from '../services/user.service';
+import { ExecutionResult } from '../data/execution-result';
 
 @Component({
   selector: 'app-users-list',
@@ -68,6 +69,58 @@ export class UsersListComponent implements OnInit {
 
   doExportList(): void {
     this.downloaderService.download('v1/users/export/list', 'users-list.xlsx');
+  }
+
+  doExportDetails() {
+    this.selected.forEach(s =>
+      this.downloaderService.download(`v1/students/${s.id}/export`, `student-${s.id}-details.xlsx`));
+  }
+
+  doExportLogs() {
+    this.selected.forEach(s =>
+      this.downloaderService.download(`v1/students/${s.id}/logs/export`, `student-${s.id}-logs.xlsx`));
+  }
+
+  doExportSnapshots() {
+    this.selected.forEach(s =>
+      this.downloaderService.download(`v1/students/${s.id}/snapshots/export`, `student-${s.id}-snapshots.xlsx`));
+  }
+
+  private applyActionToSelected(action: (u: User) => Observable<ExecutionResult<User>>, onSuccess:(count: number) => string, onFailure:(count:number) => string): void {
+    let userMap: { [index: string]: User} = {};
+    this.selected.forEach(u => userMap[u.id] = u);
+    forkJoin(this.selected.map(s => action(s)))
+      .subscribe(results => {
+        this.selected.forEach(u => u.hasError = true);
+        results.filter(r => !!r.output)
+          .forEach(r => userMap[r.output.id].hasError = !r.successful);
+        let successful = results.filter(r => r.successful).map(r => r.output);
+        let failed = results.filter(r => !r.successful);
+        if (successful.length !== 0) {
+          this.message = onSuccess(successful.length);
+        } else {
+          this.message = undefined;
+        }
+        if (failed.length !== 0) {
+          this.errorMessage = onFailure(failed.length);
+        } else {
+          this.errorMessage = undefined;
+        }
+      });
+  }
+
+  doClearLogs() {
+    this.applyActionToSelected(
+      u => this.userService.clearLog(u), 
+      c => `Cleared logs for ${c} users`, 
+      c => `Failed to clear logs for ${c} users`)
+  }
+
+  doClearSnapshots() {
+    this.applyActionToSelected(
+      u => this.userService.clearSnapshot(u), 
+      c => `Cleared snapshots for ${c} users`, 
+      c => `Failed to clear snapshots for ${c} users`)
   }
 
   onClosed(saved: boolean) {
