@@ -53,7 +53,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved user");
-            return Dtos.User.FromModel(user);
+            return Dtos.User.FromModel(user, true);
         }
 
         [HttpGet]

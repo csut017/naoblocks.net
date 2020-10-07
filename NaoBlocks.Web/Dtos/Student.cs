@@ -5,8 +5,6 @@ namespace NaoBlocks.Web.Dtos
 {
     public class Student : User
     {
-        public Data.UserSettings? Settings { get; set; }
-
         public int? Age { get; set; }
 
         public string Gender { get; set; } = "Unknown";
