@@ -13,8 +13,8 @@ export class Block {
         return block;
     }
 
-    generateCode(): string {
-        if (!this.id) return this.action;
+    generateCode(forRobot: boolean): string {
+        if (!forRobot || !this.id) return this.action;
         return `[${this.id}]${this.action}`;
     }
 }

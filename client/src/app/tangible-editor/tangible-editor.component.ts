@@ -10,6 +10,7 @@ import { AuthenticationService } from '../services/authentication.service';
 import { ClientMessage, ClientMessageType, ConnectionService } from '../services/connection.service';
 import { ProgramService } from '../services/program.service';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from '../services/server-message-processor.service';
+import { SnapshotService } from '../services/snapshot.service';
 
 declare var TopCodes: any;
 
@@ -28,6 +29,8 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   isInDebugMode: boolean = false;
   isInFlippedMode: boolean = false;
   isProcessing: boolean = false;
+  isStoringState: boolean = false;
+  lastState: string;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
   sendingToRobot: boolean = false;
@@ -68,6 +71,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
+    private snapshotService: SnapshotService,
     private programService: ProgramService,
     private connection: ConnectionService) {
     super(authenticationService, router);
@@ -79,23 +83,42 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       switch (event.key) {
         case 'D':
           this.isInDebugMode = !this.isInDebugMode;
-          console.log(`[TangibleEditorComponent] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
+          console.log(`[TangibleEditor] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
           break;
 
         case 'F':
           this.isInFlippedMode = !this.isInFlippedMode;
-          console.log(`[TangibleEditorComponent] ${this.isInFlippedMode ? 'Flipped' : 'Normal'} block order`);
+          console.log(`[TangibleEditor] ${this.isInFlippedMode ? 'Flipped' : 'Normal'} block order`);
           break;
       }
     }
   }
 
   ngOnInit(): void {
-    console.log('[TangibleEditorComponent] retrieving context');
+    console.log('[TangibleEditor] retrieving context');
     this.context = this.videoCanvas.nativeElement.getContext('2d');
 
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
+    this.lastState = this.generateCode();
+    setInterval(() => this.storeState(), 10000);
+  }
+
+  storeState(): void {
+    let state = this.generateCode(false);
+    if (state == this.lastState) return;
+
+    console.log(`[TangibleEditor] Storing snapshot`);
+    this.isStoringState = true;
+    this.snapshotService.store(state, 'TangibleEditor', {
+    })
+      .subscribe(s => {
+        this.isStoringState = false;
+        if (s.successful) {
+          this.lastState = state;
+          console.log(`[TangibleEditor] Snapshot stored`);
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -130,7 +153,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       // Filter the tags: only include those tags with a mapping and are close to the previous x position
       let defn = this.blockMapping[tag.code];
       if (!defn) {
-        console.groupCollapsed('[TangibleEditorComponent] Unknown tag');
+        console.groupCollapsed('[TangibleEditor] Unknown tag');
         console.log(tag.code);
         console.groupEnd();
         continue;
@@ -151,7 +174,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
   startCamera(): void {
     if (!this.isInitialised) {
-      console.log('[TangibleEditorComponent] Initialising callback');
+      console.log('[TangibleEditor] Initialising callback');
       this.isInitialised = true;
       let me = this;
       TopCodes.setVideoFrameCallback("video-canvas", function (jsonString) {
@@ -167,7 +190,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
     if (this.cameraStarted) return;
 
-    console.log('[TangibleEditorComponent] Starting camera');
+    console.log('[TangibleEditor] Starting camera');
     this.cameraStarted = true;
     TopCodes.startStopVideoScan('video-canvas');
   }
@@ -175,13 +198,26 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   stopCamera(): void {
     if (!this.cameraStarted) return;
 
-    console.log('[TangibleEditorComponent] Stopping camera');
+    console.log('[TangibleEditor] Stopping camera');
     this.cameraStarted = false;
     TopCodes.startStopVideoScan('video-canvas');
     setTimeout(() => {
       this.context.fillStyle = "#ddd";
       this.context.fillRect(0, 0, 640, 480);
     }, 100);
+  }
+
+  private generateCode(forRobot: boolean): string {
+    let blockCodes = this.blocks.map(b => b.generateCode(forRobot));
+    let code = "reset()\nstart{\n" +
+      blockCodes.join('\n') +
+      "\n}\ngo()\n";
+
+    console.groupCollapsed('[TangibleEditor] Generated code');
+    console.log(code);
+    console.groupEnd();
+
+    return code;
   }
 
   doPlay(): void {
@@ -193,14 +229,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       return;
     }
 
-    let blockCodes = this.blocks.map(b => b.generateCode());
-    let code = "reset()\nstart{\n" +
-      blockCodes.join('\n') +
-      "\n}\ngo()\n";
-    console.groupCollapsed('[TangibleEditorComponent] Generated code');
-    console.log(code);
-    console.groupEnd();
-
+    let code = this.generateCode(true);
     this.messageProcessor = new ServerMessageProcessorService(this.connection, this, this.runSettings);
     this.programService.compile(code)
       .subscribe(result => {
