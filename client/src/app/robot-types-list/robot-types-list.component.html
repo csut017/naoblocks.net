@@ -44,7 +44,8 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                        <button type="button" (click)="doImportPackage()" clrDropdownItem>Package</button>
+                        <button type="button" (click)="doImportPackage()" clrDropdownItem
+                            [disabled]="selected.length === 0">Package</button>
                         <div class="dropdown-divider" role="separator"></div>
                         <button type="button" (click)="doImportToolbox()" clrDropdownItem
                             [disabled]="selected.length === 0">Toolbox</button>
@@ -61,7 +62,7 @@
                 </clr-icon>
                 <span class="can-edit" (click)="doEdit(robotType)">
                     {{robotType.name}}
-                </span>                
+                </span>
             </clr-dg-cell>
         </clr-dg-row>
 
@@ -110,7 +111,7 @@
     <h3 class="modal-title">Import Toolbox Definition</h3>
     <div class="modal-body">
         <form clrForm>
-            <input type="file" id="file" (change)="loadToolbox($event)">
+            TODO
         </form>
         <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
             <div class="alert-items">
@@ -129,7 +130,42 @@
         <button type="button" class="btn" (click)="importToolboxOpened = false">
             Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="doSendToolbox()" [disabled]="!canSendToolbox">
+        <button type="button" class="btn btn-primary" (click)="doSendToolbox()">
+            Load
+        </button>
+    </div>
+</clr-modal>
+
+<clr-modal [(clrModalOpen)]="importPackageOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+    <h3 class="modal-title">Import Robot Type Package Files</h3>
+    <div class="modal-body">
+        <form clrForm>
+            <div class="dropzone">
+                <input type="file" #packageDropRef id="packageDropRef" multiple (change)="fileBrowseHandler($event.target.files)" />
+                <clr-icon shape="upload" size="100"></clr-icon>
+                <h3>Drag files for upload here</h3>
+                <h3>or</h3>
+                <label for="packageDropRef" class="btn btn-success">Browse for files</label>
+            </div>
+        </form>
+        <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        {{errorMessage}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="importPackageOpened = false">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="doSendPackage()">
             Load
         </button>
     </div>

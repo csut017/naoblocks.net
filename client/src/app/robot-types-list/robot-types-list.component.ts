@@ -23,8 +23,7 @@ export class RobotTypesListComponent implements OnInit {
   errorMessage: string;
 
   importToolboxOpened: boolean = false;
-  canSendToolbox: boolean = false;
-  toolboxToUpload: any;
+  importPackageOpened: boolean = false;
 
   constructor(private robotTypeService: RobotTypeService,
     private downloaderService: FileDownloaderService) { }
@@ -87,32 +86,28 @@ export class RobotTypesListComponent implements OnInit {
   }
 
   doImportPackage(): void {
+    this.errorMessage = undefined;
+    this.importPackageOpened = true;
+  }
+
+  doSendPackage(): void {
 
   }
 
   doImportToolbox(): void {
+    this.errorMessage = undefined;
     this.importToolboxOpened = true;
   }
 
   doSendToolbox(): void {
-    this.importToolboxOpened = false;
-    this.selected.forEach(rt => {
-      this.robotTypeService.storeToolbox(rt, this.toolboxToUpload)
-        .subscribe(result => {
-          alert(result.successful ? 'Successful' : 'Failed');
-        });
-    });
-  }
-
-  loadToolbox(fileInput: any): void {
-    if (fileInput.target.files && fileInput.target.files[0]) {
-      this.canSendToolbox = true;
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.toolboxToUpload = e.target.result;
-      };
-      reader.readAsText(fileInput.target.files[0]);
-    }
+    // TODO
+    // this.importToolboxOpened = false;
+    // this.selected.forEach(rt => {
+    //   this.robotTypeService.storeToolbox(rt, this.toolboxToUpload)
+    //     .subscribe(result => {
+    //       alert(result.successful ? 'Successful' : 'Failed');
+    //     });
+    // });
   }
 
   onClosed(saved: boolean) {
@@ -140,6 +135,10 @@ export class RobotTypesListComponent implements OnInit {
         this.robotTypes = data;
         this.isLoading = false;
       });
+  }
+
+  fileBrowseHandler(): void {
+    
   }
 
 }
