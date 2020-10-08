@@ -25,8 +25,9 @@ export class RobotTypesListComponent implements OnInit {
   message: string;
   errorMessage: string;
 
-  importToolboxOpened: boolean = false;
-  importPackageOpened: boolean = false;
+  importWindowAction: () => void;
+  importWindowOpened: boolean = false;
+  importWindowTitle: string;
   files: any[] = [];
   uploadProgress: number = 0;
   uploadProgressEnd: number = 0;
@@ -91,7 +92,7 @@ export class RobotTypesListComponent implements OnInit {
       return;
     }
 
-    this.importPackageOpened = false;
+    this.importWindowOpened = false;
   }
 
   doExportPackage(): void {
@@ -104,7 +105,9 @@ export class RobotTypesListComponent implements OnInit {
 
   doImportPackage(): void {
     this.errorMessage = undefined;
-    this.importPackageOpened = true;
+    this.importWindowOpened = true;
+    this.importWindowTitle = 'Import Robot Type Package Files';
+    this.importWindowAction = this.doSendPackage;
     this.isUploadCompleted = false;
     this.isUploadCancelling = false;
     this.files = [];
@@ -136,7 +139,6 @@ export class RobotTypesListComponent implements OnInit {
           const data = e.target.result;
           forkJoin(this.selected.map(rt => this.robotTypeService.uploadPackageFile(rt, file.name, data)))
             .subscribe(results => {
-              this.uploadStatus = `Uploaded ${file.name}`;
               emitter.emit(pos + 1);
             });
 
@@ -161,19 +163,55 @@ export class RobotTypesListComponent implements OnInit {
 
   doImportToolbox(): void {
     this.errorMessage = undefined;
-    this.importToolboxOpened = true;
+    this.importWindowOpened = true;
+    this.importWindowTitle = 'Import Toolbox Definition';
+    this.importWindowAction = this.doSendToolbox;
+    this.isUploadCompleted = false;
+    this.isUploadCancelling = false;
     this.files = [];
   }
 
   doSendToolbox(): void {
-    // TODO
-    // this.importToolboxOpened = false;
-    // this.selected.forEach(rt => {
-    //   this.robotTypeService.storeToolbox(rt, this.toolboxToUpload)
-    //     .subscribe(result => {
-    //       alert(result.successful ? 'Successful' : 'Failed');
-    //     });
-    // });
+    this.isUploading = true;
+    this.uploadState = 0;
+    this.uploadProgress = 0;
+    this.uploadProgressEnd = this.files.length;
+    let emitter = new EventEmitter<number>();
+    emitter.subscribe((pos: number) => {
+      this.uploadProgress = pos;
+      if (this.isUploadCancelling) {
+        this.uploadStatus = `Cancelled toolbox upload`;
+        this.uploadState = 2;
+        this.isUploading = false;
+        this.isUploadCompleted = true;
+        this.uploadProgress = this.uploadProgressEnd;
+      }
+
+      if (pos < this.files.length) {
+        const file = this.files[pos];
+        this.uploadStatus = `Uploading ${file.name}...`;
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          console.log('[RobotTypesList] Read toolbox file');
+          const data = e.target.result;
+          forkJoin(this.selected.map(rt => this.robotTypeService.storeToolbox(rt, data)))
+            .subscribe(results => {
+              emitter.emit(pos + 1);
+            });
+
+        };
+        console.log('[RobotTypesList] Reading toolbox file');
+        reader.readAsText(file);
+      } else {
+        this.uploadStatus = `Completed toolbox upload`;
+        this.uploadState = 2;
+        this.isUploading = false;
+        this.isUploadCompleted = true;
+        this.uploadProgress = pos + 1;
+      }
+    });
+    emitter.emit(0);
   }
 
   onClosed(saved: boolean) {

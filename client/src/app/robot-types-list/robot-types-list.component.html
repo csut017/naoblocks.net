@@ -107,37 +107,8 @@
     <app-robot-type-editor [robotType]="currentRobotType" (closed)="onClosed($event)"></app-robot-type-editor>
 </div>
 
-<clr-modal [(clrModalOpen)]="importToolboxOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'xl'">
-    <h3 class="modal-title">Import Toolbox Definition</h3>
-    <div class="modal-body">
-        <form clrForm>
-            TODO
-        </form>
-        <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
-            <div class="alert-items">
-                <div class="alert-item static">
-                    <div class="alert-icon-wrapper">
-                        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-                    </div>
-                    <span class="alert-text">
-                        {{errorMessage}}
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn" (click)="importToolboxOpened = false">
-            Cancel
-        </button>
-        <button type="button" class="btn btn-primary" (click)="doSendToolbox()">
-            Load
-        </button>
-    </div>
-</clr-modal>
-
-<clr-modal [(clrModalOpen)]="importPackageOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'xl'" [clrModalClosable]="false">
-    <h3 class="modal-title">Import Robot Type Package Files</h3>
+<clr-modal [(clrModalOpen)]="importWindowOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'xl'" [clrModalClosable]="false">
+    <h3 class="modal-title">{{importWindowTitle}}</h3>
     <div class="modal-body">
         <form clrForm>
             <div class="clr-row">
@@ -198,10 +169,10 @@
         <button type="button" class="btn" (click)="cancelUpload()" *ngIf="!isUploadCompleted">
             Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="doSendPackage()" [disabled]="isUploading" *ngIf="!isUploadCompleted">
+        <button type="button" class="btn btn-primary" (click)="importWindowAction()" [disabled]="isUploading" *ngIf="!isUploadCompleted">
             Upload
         </button>
-        <button type="button" class="btn" (click)="importPackageOpened = false" *ngIf="isUploadCompleted">
+        <button type="button" class="btn" (click)="importWindowOpened = false" *ngIf="isUploadCompleted">
             Close
         </button>
     </div>

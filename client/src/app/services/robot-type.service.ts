@@ -82,7 +82,7 @@ export class RobotTypeService extends ClientService {
       );
   }
 
-  storeToolbox(robotType: RobotType, toolbox: File): Observable<ExecutionResult<any>> {
+  storeToolbox(robotType: RobotType, toolbox: string): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox`;
     this.log(`Storing toolbox for robot type  ${robotType.id}`);
     return this.http.post<ExecutionResult<any>>(url, toolbox)
