@@ -174,16 +174,19 @@ namespace NaoBlocks.Web.Controllers
             return await this._commandManager.ExecuteForHttp(command, result => new Dtos.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
         }
 
+        [HttpGet("system/qrcode")]
         [HttpGet("system/qrcode/{address}")]
         [AllowAnonymous]
-        public ActionResult GenerateQRCode(string address)
+        public async Task<ActionResult> GenerateQRCode(string? address)
         {
             if (string.IsNullOrEmpty(address))
             {
-                return BadRequest(new {
-                    Error = "Missing address to encode"
-                });
+                var config = await this._session.Query<SystemValues>()
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
+                address = config?.DefaultAddress ?? string.Empty;
             }
+
             var decodedAddress = HttpUtility.UrlDecode(address);
             this._logger.LogInformation("Generating QR code");
             using var generator = new QRCodeGenerator();
