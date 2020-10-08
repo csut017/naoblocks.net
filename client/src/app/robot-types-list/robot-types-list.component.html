@@ -59,7 +59,9 @@
             <clr-dg-cell>
                 <clr-icon shape="file-settings" class="is-solid" [ngClass]="{'has-alert': robotType.isDefault}">
                 </clr-icon>
-                {{robotType.name}}
+                <span class="can-edit" (click)="doEdit(robotType)">
+                    {{robotType.name}}
+                </span>                
             </clr-dg-cell>
         </clr-dg-row>
 

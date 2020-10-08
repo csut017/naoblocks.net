@@ -63,11 +63,11 @@ export class RobotTypesListComponent implements OnInit {
       });
   }
 
-  doEdit(): void {
+  doEdit(typeToEdit?: RobotType): void {
     this.isInEditor = true;
     this.isInList = false;
     this.isNew = false;
-    this.currentRobotType = this.selected[0];
+    this.currentRobotType = typeToEdit || this.selected[0];
   }
 
   doExportList(): void {
