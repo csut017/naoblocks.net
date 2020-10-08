@@ -16,7 +16,6 @@ import { BlockSet } from '../data/block-set';
   providedIn: 'root'
 })
 export class RobotTypeService extends ClientService {
-
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
     super(errorHandler);
@@ -89,15 +88,15 @@ export class RobotTypeService extends ClientService {
     return this.http.post<ExecutionResult<any>>(url, toolbox)
       .pipe(
         tap(result => {
-          this.log('Deleted robot type');
+          this.log('Stored toolbox');
           result.output = robotType;
         }),
-        catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('storeToolbox', msg => new ExecutionResult<RobotType>(undefined, msg)))
       );
   }
 
   listPackageFiles(robotType: RobotType): Observable<ResultSet<PackageFile>> {
-    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/files`;
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package`;
     this.log(`Retrieving package list for robot type  ${robotType.id}`);
     return this.http.get<ResultSet<PackageFile>>(url)
       .pipe(
@@ -105,6 +104,36 @@ export class RobotTypeService extends ClientService {
           this.log(`Fetched package list for robot type  ${robotType.id}`);
         }),
         catchError(this.handleError('listPackageFiles', msg => new ResultSet<PackageFile>(msg)))
+      );
+  }
+
+  generatePackageList(robotType: RobotType): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package`;
+    this.log(`Generating package list for robot type  ${robotType.id}`);
+    return this.http.post<ExecutionResult<any>>(url, {})
+      .pipe(
+        tap(result => {
+          this.log(`Generated package list for robot type  ${robotType.id}`);
+          result.output = robotType;
+        }),
+        catchError(this.handleError('generatePackageList', msg => new ExecutionResult<RobotType>(undefined, msg)))
+      );
+  }
+
+  uploadPackageFile(robotType: RobotType, filename: string, data: string): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package/files`;
+    this.log(`Uploading package file for robot type  ${robotType.id}`);
+    const fileData = {
+      name: filename,
+      value: data
+    };
+    return this.http.post<ExecutionResult<any>>(url, fileData)
+      .pipe(
+        tap(result => {
+          this.log('Uploaded package file');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('uploadPackageFile', msg => new ExecutionResult<RobotType>(undefined, msg)))
       );
   }
 

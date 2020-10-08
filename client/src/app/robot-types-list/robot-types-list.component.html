@@ -141,7 +141,7 @@
     <div class="modal-body">
         <form clrForm>
             <div class="clr-row">
-                <div class="clr-col" *ngIf="!isUploading">
+                <div class="clr-col" *ngIf="!isUploading && !isUploadCompleted">
                     <div class="dropzone" appDragAndDrop (fileDropped)="fileBrowseHandler($event)">
                         <input type="file" #packageDropRef id="packageDropRef" multiple
                             (change)="fileBrowseHandler($event.target.files)" />
@@ -150,15 +150,6 @@
                         <h3>or</h3>
                         <label for="packageDropRef" class="btn btn-success">Browse for files</label>
                     </div>
-                </div>
-                <div class="clr-col" *ngIf="isUploading">
-                    <h3>
-                        <clr-icon class="upload-status-icon" size="24" shape="upload-cloud" *ngIf="uploadState==0"></clr-icon>
-                        <clr-icon class="upload-status-icon" size="24" shape="form" *ngIf="uploadState==1"></clr-icon>
-                        <clr-icon class="upload-status-icon" size="24" shape="success-standard" *ngIf="uploadState==2"></clr-icon>
-                        {{uploadStatus}}
-                    </h3>
-                    <clr-progress-bar [clrValue]="uploadProgress" [clrMax]="uploadProgressEnd"></clr-progress-bar>
                 </div>
                 <div class="clr-col">
                     <div class="files-list">
@@ -173,11 +164,20 @@
                                 </p>
                             </div>
                             <button type="button" class="btn btn-icon btn-warning" aria-label="warning"
-                                (click)="deleteFile(i)" title="Remove file" [disabled]="isUploading">
+                                (click)="deleteFile(i)" title="Remove file" [disabled]="isUploading || isUploadCompleted">
                                 <clr-icon shape="trash"></clr-icon>
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="clr-col" *ngIf="isUploading || isUploadCompleted">
+                    <h3>
+                        <clr-icon class="upload-status-icon" size="24" shape="upload-cloud" *ngIf="uploadState==0"></clr-icon>
+                        <clr-icon class="upload-status-icon" size="24" shape="form" *ngIf="uploadState==1"></clr-icon>
+                        <clr-icon class="upload-status-icon" size="24" shape="success-standard" *ngIf="uploadState==2"></clr-icon>
+                        {{uploadStatus}}
+                    </h3>
+                    <clr-progress-bar [clrValue]="uploadProgress" [clrMax]="uploadProgressEnd"></clr-progress-bar>
                 </div>
             </div>
         </form>
@@ -195,11 +195,14 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn" (click)="importPackageOpened = false" [disabled]="isUploading">
+        <button type="button" class="btn" (click)="cancelUpload()" *ngIf="!isUploadCompleted">
             Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="doSendPackage()">
+        <button type="button" class="btn btn-primary" (click)="doSendPackage()" [disabled]="isUploading" *ngIf="!isUploadCompleted">
             Upload
+        </button>
+        <button type="button" class="btn" (click)="importPackageOpened = false" *ngIf="isUploadCompleted">
+            Close
         </button>
     </div>
 </clr-modal>

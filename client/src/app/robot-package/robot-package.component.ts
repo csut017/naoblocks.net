@@ -21,7 +21,7 @@ export class RobotPackageComponent implements OnInit {
   constructor(private robotTypeService: RobotTypeService) { }
 
   ngOnInit() {
-    this.downloadPackageUrl = `${environment.apiURL}v1/robots/types/${this.robotType.id}/files.txt`;
+    this.downloadPackageUrl = `${environment.apiURL}v1/robots/types/${this.robotType.id}/package.txt`;
     this.robotTypeService.listPackageFiles(this.robotType)
       .subscribe(files => {
         this.files = files.items;
@@ -35,7 +35,7 @@ export class RobotPackageComponent implements OnInit {
 
   generateDownloadLink(file: PackageFile): string {
     const fileName = encodeURIComponent(file.name);
-    return `${environment.apiURL}v1/robots/types/${this.robotType.id}/files/${fileName}`;
+    return `${environment.apiURL}v1/robots/types/${this.robotType.id}/package/${fileName}`;
   }
 
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Generators;
@@ -50,8 +51,8 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        [HttpGet("{id}/files{format}")]
-        [HttpGet("{id}/files")]
+        [HttpGet("{id}/package{format}")]
+        [HttpGet("{id}/package")]
         [AllowAnonymous]
         public async Task<ActionResult> RetrievePackageFileList(string id, string? format = ".json")
         {
@@ -85,8 +86,8 @@ namespace NaoBlocks.Web.Controllers
                     })));
         }
 
-        [HttpPost("{id}/files")]
-        [Authorize(Policy = "Teacher")]
+        [HttpPost("{id}/package")]
+        [Authorize(Policy = "Administrator")]
         public async Task<ActionResult> GeneratePackageFileList(string id)
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
@@ -103,7 +104,27 @@ namespace NaoBlocks.Web.Controllers
             return File(fileList, ContentTypes.Txt, "filelist.txt");
         }
 
-        [HttpGet("{id}/files/{filename}")]
+        [HttpPost("{id}/package/files")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> UploadPackageFile(string id, NamedValue file)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogInformation($"Uploading package file for robot type '{id}'");
+            var filename = Path.GetFileName(file.Name);
+            this._logger.LogInformation($"Uploading '{filename}'");
+            await RobotTypeFilePackage.StorePackageFile(robotType, this.rootFolder, filename, file.Value);
+        
+            return new Dtos.ExecutionResult();
+        }
+
+        [HttpGet("{id}/package/{filename}")]
         [AllowAnonymous]
         public async Task<ActionResult> RetrievePackageFile(string id, string filename)
         {

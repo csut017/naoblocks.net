@@ -16,6 +16,8 @@ export class RobotTypesListComponent implements OnInit {
   isInList: boolean = true;
   isInEditor: boolean = false;
   isNew: boolean = false;
+  isUploadCancelling: boolean = false;
+  isUploadCompleted: boolean = false;
   isUploading: boolean = false;
   selected: RobotType[] = [];
   robotTypes: ResultSet<RobotType> = new ResultSet<RobotType>();
@@ -83,6 +85,15 @@ export class RobotTypesListComponent implements OnInit {
 
   }
 
+  cancelUpload(): void {
+    if (this.isUploading) {
+      this.isUploadCancelling = true;
+      return;
+    }
+
+    this.importPackageOpened = false;
+  }
+
   doExportPackage(): void {
     this.selected.forEach(rt =>
       this.downloaderService.download(
@@ -94,6 +105,8 @@ export class RobotTypesListComponent implements OnInit {
   doImportPackage(): void {
     this.errorMessage = undefined;
     this.importPackageOpened = true;
+    this.isUploadCompleted = false;
+    this.isUploadCancelling = false;
     this.files = [];
   }
 
@@ -105,12 +118,42 @@ export class RobotTypesListComponent implements OnInit {
     let emitter = new EventEmitter<number>();
     emitter.subscribe((pos: number) => {
       this.uploadProgress = pos;
+      if (this.isUploadCancelling) {
+        this.uploadStatus = `Cancelled package upload`;
+        this.uploadState = 2;
+        this.isUploading = false;
+        this.isUploadCompleted = true;
+        this.uploadProgress = this.uploadProgressEnd;
+      }
+
       if (pos < this.files.length) {
-        this.uploadStatus = `Uploading ${this.files[pos].name}`;
-        emitter.emit(pos + 1);
+        const file = this.files[pos];
+        this.uploadStatus = `Uploading ${file.name}...`;
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          console.log('[RobotTypesList] Read package file');
+          const data = e.target.result;
+          forkJoin(this.selected.map(rt => this.robotTypeService.uploadPackageFile(rt, file.name, data)))
+            .subscribe(results => {
+              this.uploadStatus = `Uploaded ${file.name}`;
+              emitter.emit(pos + 1);
+            });
+
+        };
+        console.log('[RobotTypesList] Reading package file');
+        reader.readAsText(file);
       } else {
-        this.uploadStatus = `Generating package list`;
+        this.uploadStatus = `Generating package list...`;
         this.uploadState = 1;
+        forkJoin(this.selected.map(rt => this.robotTypeService.generatePackageList(rt)))
+          .subscribe(results => {
+            this.uploadStatus = `Completed package upload`;
+            this.uploadState = 2;
+            this.isUploading = false;
+            this.isUploadCompleted = true;
+            this.uploadProgress = pos + 1;
+          });
       }
     });
     emitter.emit(0);
