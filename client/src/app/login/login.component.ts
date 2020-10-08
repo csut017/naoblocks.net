@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthenticationService } from '../services/authentication.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { SystemService } from '../services/system.service';
 import { SystemVersion } from '../data/system-version';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginComponent implements OnInit {
   userrole: string = 'Student';
   version: SystemVersion;
   loggingIn: boolean = false;
+  qrCodeAddress: string;
 
   loginError: string;
 
@@ -26,6 +28,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.systemService.getVersion()
       .subscribe(v => this.version = v);
+    this.qrCodeAddress = `${environment.apiURL}v1/system/qrcode`;
   }
 
   onSubmit() {
