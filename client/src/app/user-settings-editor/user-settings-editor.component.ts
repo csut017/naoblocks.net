@@ -4,6 +4,7 @@ import { RobotTypeService } from '../services/robot-type.service';
 import { RobotType } from '../data/robot-type';
 import { RobotService } from '../services/robot.service';
 import { Robot } from '../data/robot';
+import { BlockSet } from '../data/block-set';
 
 class InterfaceHelper {
   allocationChanged: EventEmitter<number> = new EventEmitter<number>();
@@ -65,7 +66,10 @@ export class UserSettingsEditorComponent implements OnInit {
   interfaces: InterfaceHelper;
   types: RobotType[] = [];
   robots: Robot[] = [];
+  configurationMode: number = 1;
+  blockSets: BlockSet[] = [];
   @Input() showAllocation: boolean = false;
+  @Input() showConfiguration: boolean = true;
 
   private lastAllocation: number = 0;
   private lastRobotType: string = '';
@@ -79,6 +83,7 @@ export class UserSettingsEditorComponent implements OnInit {
     this._settings = value;
     this.interfaces = new InterfaceHelper(this.settings);
     this.interfaces.allocationChanged.subscribe(_ => this.onRobotTypeChange());
+    this.configurationMode = !!value.customBlockSet ? 2 : 1;
   }
 
   constructor(private robotTypeService: RobotTypeService,
@@ -102,6 +107,11 @@ export class UserSettingsEditorComponent implements OnInit {
             this.robots = data.items;
           })
       }
+
+      this.robotTypeService.listBlockSets(this.lastRobotType)
+        .subscribe(r => {
+          this.blockSets = r.items;
+        });
     }
   }
 

@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
+import { BlockSet } from '../data/block-set';
 
 @Injectable({
   providedIn: 'root'
@@ -103,7 +104,19 @@ export class RobotTypeService extends ClientService {
         tap(_ => {
           this.log(`Fetched package list for robot type  ${robotType.id}`);
         }),
-        catchError(this.handleError('list', msg => new ResultSet<PackageFile>(msg)))
+        catchError(this.handleError('listPackageFiles', msg => new ResultSet<PackageFile>(msg)))
+      );
+  }
+
+  listBlockSets(robotTypeId: string): Observable<ResultSet<BlockSet>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotTypeId}/blocksets`;
+    this.log(`Retrieving block sets for robot type  ${robotTypeId}`);
+    return this.http.get<ResultSet<BlockSet>>(url)
+      .pipe(
+        tap(_ => {
+          this.log(`Fetched block sets for robot type  ${robotTypeId}`);
+        }),
+        catchError(this.handleError('listBlockSets', msg => new ResultSet<BlockSet>(msg)))
       );
   }
 }

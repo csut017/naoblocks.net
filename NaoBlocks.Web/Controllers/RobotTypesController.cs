@@ -131,6 +131,45 @@ namespace NaoBlocks.Web.Controllers
             return File(details.DataStream, ContentTypes.Txt, filename);
         }
 
+        [HttpPost("{id}/blocksets")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<Dtos.ExecutionResult>> AddBlockSet(string id, NamedValue? value)
+        {
+            if (value == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing blockset details"
+                });
+            }
+
+            this._logger.LogInformation($"Adding new blockset for '{id}'");
+            var command = new Commands.AddBlockSet
+            {
+                Name = value.Name,
+                RobotType = id,
+                Categories = value.Value
+            };
+            return await this.commandManager.ExecuteForHttp(command);
+        }
+
+        [HttpGet("{id}/blocksets")]
+        public async Task<ActionResult<Dtos.ListResult<NamedValue>>> GetBlockSets(string id)
+        {
+            this._logger.LogDebug($"Retrieving blocksets for {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            var sets = robotType.BlockSets.Select(bs => new NamedValue { Name = bs.Name, Value = bs.BlockCategories }).AsEnumerable();
+            return Dtos.ListResult.New(sets);
+        }
+
+
         [HttpGet("export/package/{id}")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportPackage(string id)

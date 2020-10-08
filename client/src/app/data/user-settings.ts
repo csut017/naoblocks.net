@@ -15,4 +15,6 @@ export class UserSettings {
     robotType: string;
     robotId: string;
     allocationMode: number;
+
+    customBlockSet: string;
 }

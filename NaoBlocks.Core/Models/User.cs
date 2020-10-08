@@ -4,8 +4,6 @@ namespace NaoBlocks.Core.Models
 {
     public class User
     {
-        public string? CustomToolbox { get; set; }
-
         public string? Id { get; set; }
 
         public string Name { get; set; } = string.Empty;

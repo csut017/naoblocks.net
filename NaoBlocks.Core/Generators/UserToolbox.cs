@@ -16,7 +16,7 @@ namespace NaoBlocks.Core.Generators
 
             // Generate the list of options
             var options = new List<string>();
-            if (string.IsNullOrEmpty(user.CustomToolbox))
+            if (string.IsNullOrEmpty(user.Settings.CustomBlockSet))
             {
                 if (user.Settings.Conditionals) options.Add("conditionals");
                 if (user.Settings.Dances) options.Add("dances");
@@ -29,7 +29,7 @@ namespace NaoBlocks.Core.Generators
                 if (!user.Settings.Simple) options.Add("default");
             } else
             {
-                options.AddRange(user.CustomToolbox.Split(',').Select(tag => tag.Trim()).Where(tag => !string.IsNullOrEmpty(tag)));
+                options.AddRange(user.Settings.CustomBlockSet.Split(',').Select(tag => tag.Trim()).Where(tag => !string.IsNullOrEmpty(tag)));
             }
 
             // Determine the categories to include

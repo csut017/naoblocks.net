@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input } from '@angular/core';
 import { UserSettings } from '../data/user-settings';
 
 @Component({
@@ -12,6 +12,7 @@ export class UserSettingsComponent {
   settings: UserSettings = new UserSettings();
   errorMessage: string;
 
+  @Input() showConfiguration: boolean = true;
   @Output() save = new EventEmitter<UserSettings>();
 
   constructor() { }

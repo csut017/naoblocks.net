@@ -22,7 +22,7 @@ namespace NaoBlocks.Core.Commands
 
         public string? UserId { get; set; }
 
-        public IList<SnapshotValue> Values { get; } = new List<SnapshotValue>();
+        public IList<NamedValue> Values { get; } = new List<NamedValue>();
 
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IAsyncDocumentSession? session)
         {

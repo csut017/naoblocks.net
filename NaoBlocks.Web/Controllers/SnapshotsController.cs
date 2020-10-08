@@ -56,7 +56,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 foreach (var subValue in value.Values)
                 {
-                    command.Values.Add(new SnapshotValue
+                    command.Values.Add(new NamedValue
                     {
                         Name = subValue.Name,
                         Value = subValue.Value

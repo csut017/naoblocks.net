@@ -186,7 +186,7 @@
     <app-change-role [role]="'Student'"></app-change-role>
     <app-save-program (save)="onSave($event)"></app-save-program>
     <app-load-program (load)="onLoad($event)"></app-load-program>
-    <app-user-settings (save)="onSaveSettings($event)"></app-user-settings>
+    <app-user-settings [showConfiguration]="editorSettings.canConfigure" (save)="onSaveSettings($event)"></app-user-settings>
     <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>
     <app-execution-status [isOpen]="sendingToRobot" [steps]="steps" [statusMessage]="startMessage" (onClose)="doCancelSend()"></app-execution-status>
     <clr-modal [(clrModalOpen)]="userInput.open" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">

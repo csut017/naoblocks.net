@@ -1,9 +1,9 @@
 ﻿namespace NaoBlocks.Core.Models
 {
-    public class SnapshotValue
+    public class BlockSet
     {
         public string Name { get; set; } = string.Empty;
 
-        public string? Value { get; set; }
+        public string BlockCategories { get; set; } = string.Empty;
     }
 }

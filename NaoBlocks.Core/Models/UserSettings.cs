@@ -12,6 +12,8 @@ namespace NaoBlocks.Core.Models
 
         public string? CurrentTutorial { get; set; }
 
+        public string? CustomBlockSet { get; set; }
+
         public bool Dances { get; set; }
 
         public bool Events { get; set; }

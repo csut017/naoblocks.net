@@ -19,5 +19,7 @@ namespace NaoBlocks.Core.Models
         public DateTime WhenAdded { get; set; }
 
         public IList<ToolboxCategory> Toolbox { get; private set; } = new List<ToolboxCategory>();
+
+        public IList<BlockSet> BlockSets { get; private set; } = new List<BlockSet>();
     }
 }

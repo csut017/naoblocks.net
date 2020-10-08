@@ -15,7 +15,7 @@ namespace NaoBlocks.Web.Dtos
 
         public DateTime WhenAdded { get; set; } = DateTime.UtcNow;
 
-        public IList<Data.SnapshotValue>? Values { get; set; }
+        public IList<Data.NamedValue>? Values { get; set; }
 
         public static Snapshot? FromModel(Data.Snapshot? value)
         {
@@ -30,7 +30,7 @@ namespace NaoBlocks.Web.Dtos
 
             if (value.Values.Any())
             {
-                snapshot.Values = new List<Data.SnapshotValue>(value.Values);
+                snapshot.Values = new List<Data.NamedValue>(value.Values);
             }
 
             return snapshot;
