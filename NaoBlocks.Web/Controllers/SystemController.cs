@@ -140,6 +140,40 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
+        [HttpGet("system/config")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Dtos.SiteConfiguration>> GetSiteConfiguration()
+        {
+            this._logger.LogInformation($"retrieving site configuration");
+            var settings = await this._session.Query<SystemValues>()
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+            return new Dtos.SiteConfiguration
+            {
+                DefaultAddress = settings?.DefaultAddress
+            };
+        }
+
+        [HttpPost("system/siteAddress")]
+        [Authorize("Administrator")]
+        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration config)
+        {
+            if (config == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing configuration settings"
+                });
+            }
+
+            this._logger.LogInformation($"Updating default site address to '{config.DefaultAddress}'");
+            var command = new Commands.StoreDefaultAddress
+            {
+                Address = config.DefaultAddress
+            };
+            return await this._commandManager.ExecuteForHttp(command, result => new Dtos.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
+        }
+
         [HttpGet("system/qrcode/{address}")]
         [AllowAnonymous]
         public ActionResult GenerateQRCode(string address)

@@ -50,6 +50,8 @@ export class RobotConfigurationComponent implements OnInit {
     if (!this.canConfigureAddresses) return;
     this.addresses.forEach(a => a.isDefault = false);
     address.isDefault = true;
+    this.systemService.setDefaultAddress(address.url)
+      .subscribe(result => {});
   }
 
   showQRCode(address: SiteAddress): void {

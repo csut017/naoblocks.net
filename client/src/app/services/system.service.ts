@@ -43,7 +43,7 @@ export class SystemService extends ClientService {
     const url = `${environment.apiURL}v1/system/addresses`;
     this.log('Retrieving robot client addresses');
     return this.http.get<ResultSet<string>>(url).pipe(
-      catchError(this.handleError('login', msg => new ResultSet<string>(msg))),
+      catchError(this.handleError('listRobotAddresses', msg => new ResultSet<string>(msg))),
       tap(_ => this.log('Robot client addresses retrieved')),
       map(data => {
         let converted = new ResultSet<SiteAddress>(data.errorMsg);
@@ -52,6 +52,18 @@ export class SystemService extends ClientService {
         converted.items = data.items.map(i => new SiteAddress(i));
         return converted;
       })
+    );
+  }
+
+  setDefaultAddress(address: string): Observable<ResultSet<any>> {
+    const url = `${environment.apiURL}v1/system/siteAddress`;
+    this.log('Setting default site address');
+    let data = {
+      defaultAddress: address
+    };
+    return this.http.post<ResultSet<any>>(url, data).pipe(
+      catchError(this.handleError('setDefaultAddress', msg => new ResultSet<any>(msg))),
+      tap(_ => this.log('Set default site address'))
     );
   }
 }
