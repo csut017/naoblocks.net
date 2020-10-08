@@ -100,7 +100,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
     this.authenticationService.getCurrentUser()
       .subscribe(u => this.currentUser = u);
-    this.lastState = this.generateCode();
+    this.lastState = this.generateCode(false);
     setInterval(() => this.storeState(), 10000);
   }
 
