@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit } from '@angular/core';
 import { ResultSet } from '../data/result-set';
 import { FileDownloaderService } from '../services/file-downloader.service';
 import { forkJoin } from 'rxjs';
@@ -16,6 +16,7 @@ export class RobotTypesListComponent implements OnInit {
   isInList: boolean = true;
   isInEditor: boolean = false;
   isNew: boolean = false;
+  isUploading: boolean = false;
   selected: RobotType[] = [];
   robotTypes: ResultSet<RobotType> = new ResultSet<RobotType>();
   currentRobotType: RobotType;
@@ -24,6 +25,11 @@ export class RobotTypesListComponent implements OnInit {
 
   importToolboxOpened: boolean = false;
   importPackageOpened: boolean = false;
+  files: any[] = [];
+  uploadProgress: number = 0;
+  uploadProgressEnd: number = 0;
+  uploadState: number = 0;
+  uploadStatus: string = '...';
 
   constructor(private robotTypeService: RobotTypeService,
     private downloaderService: FileDownloaderService) { }
@@ -88,15 +94,32 @@ export class RobotTypesListComponent implements OnInit {
   doImportPackage(): void {
     this.errorMessage = undefined;
     this.importPackageOpened = true;
+    this.files = [];
   }
 
   doSendPackage(): void {
-
+    this.isUploading = true;
+    this.uploadState = 0;
+    this.uploadProgress = 0;
+    this.uploadProgressEnd = this.files.length + 1;
+    let emitter = new EventEmitter<number>();
+    emitter.subscribe((pos: number) => {
+      this.uploadProgress = pos;
+      if (pos < this.files.length) {
+        this.uploadStatus = `Uploading ${this.files[pos].name}`;
+        emitter.emit(pos + 1);
+      } else {
+        this.uploadStatus = `Generating package list`;
+        this.uploadState = 1;
+      }
+    });
+    emitter.emit(0);
   }
 
   doImportToolbox(): void {
     this.errorMessage = undefined;
     this.importToolboxOpened = true;
+    this.files = [];
   }
 
   doSendToolbox(): void {
@@ -137,8 +160,24 @@ export class RobotTypesListComponent implements OnInit {
       });
   }
 
-  fileBrowseHandler(): void {
-    
+  fileBrowseHandler($event): void {
+    for (const file of $event) {
+      this.files.push(file);
+    }
   }
 
+  deleteFile(index: number) {
+    this.files.splice(index, 1);
+  }
+
+  formatBytes(bytes: number, decimals: number = 2): string {
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
+    const k = 1024;
+    const dm = decimals <= 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  }
 }

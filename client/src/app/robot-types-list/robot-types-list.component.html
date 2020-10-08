@@ -107,7 +107,7 @@
     <app-robot-type-editor [robotType]="currentRobotType" (closed)="onClosed($event)"></app-robot-type-editor>
 </div>
 
-<clr-modal [(clrModalOpen)]="importToolboxOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="importToolboxOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'xl'">
     <h3 class="modal-title">Import Toolbox Definition</h3>
     <div class="modal-body">
         <form clrForm>
@@ -136,16 +136,49 @@
     </div>
 </clr-modal>
 
-<clr-modal [(clrModalOpen)]="importPackageOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="importPackageOpened" [clrModalStaticBackdrop]="false" [clrModalSize]="'xl'" [clrModalClosable]="false">
     <h3 class="modal-title">Import Robot Type Package Files</h3>
     <div class="modal-body">
         <form clrForm>
-            <div class="dropzone">
-                <input type="file" #packageDropRef id="packageDropRef" multiple (change)="fileBrowseHandler($event.target.files)" />
-                <clr-icon shape="upload" size="100"></clr-icon>
-                <h3>Drag files for upload here</h3>
-                <h3>or</h3>
-                <label for="packageDropRef" class="btn btn-success">Browse for files</label>
+            <div class="clr-row">
+                <div class="clr-col" *ngIf="!isUploading">
+                    <div class="dropzone" appDragAndDrop (fileDropped)="fileBrowseHandler($event)">
+                        <input type="file" #packageDropRef id="packageDropRef" multiple
+                            (change)="fileBrowseHandler($event.target.files)" />
+                        <clr-icon shape="upload-cloud" size="100"></clr-icon>
+                        <h3>Drag files for upload here</h3>
+                        <h3>or</h3>
+                        <label for="packageDropRef" class="btn btn-success">Browse for files</label>
+                    </div>
+                </div>
+                <div class="clr-col" *ngIf="isUploading">
+                    <h3>
+                        <clr-icon class="upload-status-icon" size="24" shape="upload-cloud" *ngIf="uploadState==0"></clr-icon>
+                        <clr-icon class="upload-status-icon" size="24" shape="form" *ngIf="uploadState==1"></clr-icon>
+                        <clr-icon class="upload-status-icon" size="24" shape="success-standard" *ngIf="uploadState==2"></clr-icon>
+                        {{uploadStatus}}
+                    </h3>
+                    <clr-progress-bar [clrValue]="uploadProgress" [clrMax]="uploadProgressEnd"></clr-progress-bar>
+                </div>
+                <div class="clr-col">
+                    <div class="files-list">
+                        <div class="single-file" *ngFor="let file of files; let i = index">
+                            <clr-icon shape="file" size="48" style="margin-right: 8px;"></clr-icon>
+                            <div class="info">
+                                <h4 class="name">
+                                    {{ file?.name }}
+                                </h4>
+                                <p class="size">
+                                    {{ formatBytes(file?.size) }}
+                                </p>
+                            </div>
+                            <button type="button" class="btn btn-icon btn-warning" aria-label="warning"
+                                (click)="deleteFile(i)" title="Remove file" [disabled]="isUploading">
+                                <clr-icon shape="trash"></clr-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
         <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
@@ -162,11 +195,11 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn" (click)="importPackageOpened = false">
+        <button type="button" class="btn" (click)="importPackageOpened = false" [disabled]="isUploading">
             Cancel
         </button>
         <button type="button" class="btn btn-primary" (click)="doSendPackage()">
-            Load
+            Upload
         </button>
     </div>
 </clr-modal>

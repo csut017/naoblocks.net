@@ -39,6 +39,7 @@ import { LogViewerComponent } from './log-viewer/log-viewer.component';
 import { ChangeViewComponent } from './change-view/change-view.component';
 import { TangibleEditorComponent } from './tangible-editor/tangible-editor.component';
 import { ExecutionStatusComponent } from './execution-status/execution-status.component';
+import { DragAndDropDirective } from './drag-and-drop.directive';
 
 @NgModule({
   declarations: [
@@ -73,7 +74,8 @@ import { ExecutionStatusComponent } from './execution-status/execution-status.co
     LogViewerComponent,
     ChangeViewComponent,
     TangibleEditorComponent,
-    ExecutionStatusComponent
+    ExecutionStatusComponent,
+    DragAndDropDirective
   ],
   imports: [
     BrowserModule,

@@ -3,11 +3,11 @@
 }
 
 .dropzone {
-    width: 60%;
+    width: 80%;
     height: 280px;
     padding: 2rem;
     text-align: center;
-    border: dashed 1px #979797;
+    border: dashed 1px #666;
     position: relative;
     margin: 0 auto;
 
@@ -27,3 +27,55 @@
         margin: 6px;
     }
 }
+
+.file-over {
+    background-color: #ccc;
+}
+
+.files-list {
+    height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .single-file {
+      display: flex;
+      padding: 0.5rem;
+      justify-content: space-between;
+      align-items: center;
+      border: dashed 1px #ccc;
+      margin-bottom: 1rem;
+  
+      button {
+        margin-left: 0.5rem;
+        cursor: pointer;
+        align-self: flex-end;
+      }
+  
+  
+      display: flex;
+      flex-grow: 1;
+  
+      .name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000;
+        margin: 0;
+      }
+  
+      .size {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+        margin: 0;
+        margin-bottom: 0.25rem;
+      }
+  
+      .info {
+        width: 100%
+      }
+    }
+  }
+
+  .upload-status-icon {
+      margin: 3px;
+  }
