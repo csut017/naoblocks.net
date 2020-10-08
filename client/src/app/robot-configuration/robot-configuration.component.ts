@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { SystemService } from '../services/system.service';
 import { environment } from 'src/environments/environment';
 import { RobotTypeService } from '../services/robot-type.service';
 import { RobotType } from '../data/robot-type';
+import { SiteAddress } from '../data/site-address';
 
 @Component({
   selector: 'app-robot-configuration',
@@ -11,12 +12,17 @@ import { RobotType } from '../data/robot-type';
 })
 export class RobotConfigurationComponent implements OnInit {
 
-  addresses: string[] = [];
+  addresses: SiteAddress[] = [];
   robotTypes: RobotType[] = [];
   connectTextUrl: string = '';
   downloadingAddresses: boolean = true;
   downloadingRobotTypes: boolean = true;
   currentRobotType: RobotType;
+  addressQRCode: string = '';
+  isQRCodeWindowOpen: boolean = false;
+  selectedAddress: SiteAddress = new SiteAddress();
+
+  @Input() canConfigureAddresses: boolean = false;
 
   constructor(private systemService: SystemService,
     private robotTypeService: RobotTypeService) { }
@@ -40,4 +46,15 @@ export class RobotConfigurationComponent implements OnInit {
     return url;
   }
 
+  setDefault(address: SiteAddress) : void {
+    if (!this.canConfigureAddresses) return;
+    this.addresses.forEach(a => a.isDefault = false);
+    address.isDefault = true;
+  }
+
+  showQRCode(address: SiteAddress): void {
+    this.isQRCodeWindowOpen = true;
+    this.selectedAddress = address;
+    this.addressQRCode = `${environment.apiURL}v1/system/qrcode/${encodeURIComponent(address.url)}`;
+  }
 }

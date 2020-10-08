@@ -4,15 +4,18 @@ using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
+using QRCoder;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Web;
 using Commands = NaoBlocks.Core.Commands;
 
 namespace NaoBlocks.Web.Controllers
@@ -135,6 +138,27 @@ namespace NaoBlocks.Web.Controllers
                     ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                     ?.InformationalVersion
             };
+        }
+
+        [HttpGet("system/qrcode/{address}")]
+        [AllowAnonymous]
+        public ActionResult GenerateQRCode(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+            {
+                return BadRequest(new {
+                    Error = "Missing address to encode"
+                });
+            }
+            var decodedAddress = HttpUtility.UrlDecode(address);
+            this._logger.LogInformation("Generating QR code");
+            using var generator = new QRCodeGenerator();
+            var codeData = generator.CreateQrCode(decodedAddress, QRCodeGenerator.ECCLevel.Q);
+            using var code = new QRCode(codeData);
+            var image = code.GetGraphic(20);
+            using var stream = new MemoryStream();
+            image.Save(stream, ImageFormat.Png);
+            return File(stream.ToArray(), ContentTypes.Png);
         }
 
         [HttpGet("whoami")]

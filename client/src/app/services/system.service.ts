@@ -5,9 +5,10 @@ import { HttpClient } from '@angular/common/http';
 import { ErrorHandlerService } from './error-handler.service';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { SystemVersion } from '../data/system-version';
 import { ResultSet } from '../data/result-set';
+import { SiteAddress } from '../data/site-address';
 
 @Injectable({
   providedIn: 'root'
@@ -38,12 +39,19 @@ export class SystemService extends ClientService {
     );
   }
 
-  listRobotAddresses(): Observable<ResultSet<string>> {
+  listRobotAddresses(): Observable<ResultSet<SiteAddress>> {
     const url = `${environment.apiURL}v1/system/addresses`;
     this.log('Retrieving robot client addresses');
     return this.http.get<ResultSet<string>>(url).pipe(
       catchError(this.handleError('login', msg => new ResultSet<string>(msg))),
-      tap(_ => this.log('Robot client addresses retrieved'))
+      tap(_ => this.log('Robot client addresses retrieved')),
+      map(data => {
+        let converted = new ResultSet<SiteAddress>(data.errorMsg);
+        converted.count = data.count;
+        converted.page = data.page;
+        converted.items = data.items.map(i => new SiteAddress(i));
+        return converted;
+      })
     );
   }
 }
