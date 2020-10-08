@@ -56,11 +56,11 @@ export class UsersListComponent implements OnInit {
       });
   }
 
-  doEdit() {
+  doEdit(userToEdit?: User) {
     this.isInEditor = true;
     this.isInList = false;
     this.isNew = false;
-    this.currentUser = this.selected[0];
+    this.currentUser = userToEdit || this.selected[0];
     if (!this.currentUser.isFullyLoaded) {
       this.userService.get(this.currentUser.id)
         .subscribe(s => this.currentUser = s.output);

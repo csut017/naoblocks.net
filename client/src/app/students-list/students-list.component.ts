@@ -59,11 +59,11 @@ export class StudentsListComponent implements OnInit {
       });
   }
 
-  doEdit() {
+  doEdit(studentToEdit?: Student) {
     this.isInEditor = true;
     this.isInList = false;
     this.isNew = false;
-    this.currentStudent = this.selected[0];
+    this.currentStudent = studentToEdit || this.selected[0];
     if (!this.currentStudent.isFullyLoaded) {
       this.studentService.get(this.currentStudent.id)
         .subscribe(s => this.currentStudent = s.output);

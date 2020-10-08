@@ -49,7 +49,7 @@
         <clr-dg-column [clrDgField]="'whenAdded'">When Added</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let student of students.items" [clrDgItem]="student">
-            <clr-dg-cell>{{student.name}}</clr-dg-cell>
+            <clr-dg-cell><span class="can-edit" (click)="doEdit(student)">{{student.name}}</span></clr-dg-cell>
             <clr-dg-cell>{{student.whenAdded | date}}</clr-dg-cell>
         </clr-dg-row>
 
