@@ -240,11 +240,11 @@ Blockly.NaoLang.robot_point = function (block) {
     return Blockly.NaoLang.generatePrefix() + code;
 };
 Blockly.NaoLang.robot_point_left = function (block) {
-    var code = 'point(\'LEFT\',\'OUT\')\n';
+    var code = 'point(\'left\',\'out\')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
 Blockly.NaoLang.robot_point_right = function (block) {
-    var code = 'point(\'RIGHT\',\'OUT\')\n';
+    var code = 'point(\'right\',\'out\')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
 
