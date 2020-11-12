@@ -21,6 +21,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   status: SystemStatus = new SystemStatus();
   isLoading: boolean = false;
   messagesOpen: boolean;
+  alertsOpen: boolean;
   programOpen: boolean;
   currentClient: HubClient;
 
@@ -38,6 +39,7 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
     this.processor.debugMessageReceived.subscribe((msg: DebugMessage) => this.programDisplay.updateStatus(msg));
     this.connection.start().subscribe(msg => this.processor.processServerMessage(msg));
   }
+
   displayProgram(client: HubClient) {
     this.currentClient = client;
     this.programOpen = true;
@@ -50,6 +52,11 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
 
   displayMessages(client: HubClient) {
     this.messagesOpen = true;
+    this.currentClient = client;
+  }
+
+  displayAlerts(client: HubClient) {
+    this.alertsOpen = true;
     this.currentClient = client;
   }
 

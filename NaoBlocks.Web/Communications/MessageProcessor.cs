@@ -39,6 +39,8 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
                 { ClientMessageType.StartMonitoring, this.StartMonitoringAllClients },
                 { ClientMessageType.StopMonitoring, this.StopMonitoringAllClients },
+                { ClientMessageType.AlertsRequest, this.HandleAlertsRequest},
+                { ClientMessageType.AlertBroadcast, this.HandleBroadcastAlert }
             };
             this._hub = hub;
             this._logger = logger;
@@ -48,7 +50,7 @@ namespace NaoBlocks.Web.Communications
         private async Task ProgramDownloaded(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
             var msg = GenerateResponse(message, ClientMessageType.ProgramTransferred);
-            msg.Values["ProgramId"] = client?.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture);
+            msg.Values["ProgramId"] = client?.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture) ?? "0";
             client.NotifyListeners(msg);
             client.LogMessage(msg);
             PopulateSourceValues(client, msg);
@@ -420,7 +422,7 @@ namespace NaoBlocks.Web.Communications
         private async Task TransferProgramToRobot(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient) || (robotClient == null)) return;
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
@@ -480,6 +482,51 @@ namespace NaoBlocks.Web.Communications
                 state ??= "Unknown";
                 await AddToRobotLogAsync(session, client.Robot.Id, message, $"State updated to {state}");
             }
+        }
+
+        private Task HandleAlertsRequest(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient) || (robotClient == null)) return Task.CompletedTask;
+
+            foreach (var alert in robotClient.Notifications)
+            {
+                var broadcast = new ClientMessage(ClientMessageType.AlertBroadcast, new
+                {
+                    id = alert.Id,
+                    message = alert.Message,
+                    severity = alert.Severity
+                });
+                PopulateSourceValues(robotClient, broadcast);
+                client.SendMessage(broadcast);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Task HandleBroadcastAlert(IAsyncDocumentSession session, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return Task.CompletedTask;
+
+            var alert = new NotificationAlert
+            {
+                Id = int.TryParse(message.Values.TryGetValue("id", out string? value) ? value : "-1", out int idValue) ? idValue : -1,
+                Message = message.Values.TryGetValue("message", out string? msg) ? msg : string.Empty,
+                Severity = message.Values.TryGetValue("severity", out string? severity) ? severity : "info",
+                WhenAdded = DateTime.UtcNow
+            };
+
+            client.Notifications.Add(alert);
+            if (client.Notifications.Count > 20) client.Notifications.RemoveAt(0);
+
+            var broadcast = new ClientMessage(ClientMessageType.AlertBroadcast, new {
+                id = alert.Id,
+                message = alert.Message,
+                severity = alert.Severity
+            });
+            PopulateSourceValues(client, broadcast);
+            client.Hub?.SendToMonitors(broadcast);
+            return Task.CompletedTask;
         }
 
         private static void PopulateSourceValues(ClientConnection client, ClientMessage msg)

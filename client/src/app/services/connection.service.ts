@@ -38,6 +38,8 @@ export enum ClientMessageType {
   StopMonitoring = 1101,          // Stop monitoring all client changes
   ClientAdded = 1102,             // A new client has connected to the system
   ClientRemoved = 1103,           // An existing client has disconnected
+  AlertsRequest = 1200,           // Requests all current notifications on the robot
+  AlertBroadcast = 1201,          // An alert is being broadcast to all listeners
 
   // These values are client specific codes, they do not exist on the server
   Closed = 5001

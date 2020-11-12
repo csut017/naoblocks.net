@@ -147,6 +147,16 @@ r.say("Hello world").goToPosture(Robot.STAND).wait() '''
         notifications = self._notifications.notifications()
         return [Notification(n, self) for n in notifications]
 
+    def getNotification(self, id):
+        ''' Returns a notification on the robot. '''
+        self._log('Retrieving notification %d' % (id, ))
+        notification = self._notifications.notification(id)
+        return Notification(notification, self)
+
+    def addNotification(self, message, severity='info'):
+        self._log('Adding notification "%s" [%s]' % (message, severity))
+        self._notifications.add({"message": message, "severity": severity, "removeOnRead": True})
+
     def getPosture(self):
         ''' Retrieves the current posture family. '''
         return self._posture.getPostureFamily()

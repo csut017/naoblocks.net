@@ -1,3 +1,4 @@
+import { NotificationAlert } from './notification-alert';
 import { StatusMessage } from './status-message';
 
 export class HubClient {
@@ -15,4 +16,7 @@ export class HubClient {
     programId: number;
     status: string;
     user: HubClient;
+
+    notifications: NotificationAlert[] = [];
+    hasNotifications: boolean = false;
 }

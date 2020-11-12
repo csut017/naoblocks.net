@@ -49,6 +49,8 @@ class NaoRemoteModule(ALModule):
                                 "NaoRemote", "onRearTouchDetected")
         memory.subscribeToEvent("ChestButtonPressed",
                                 "NaoRemote", "onChestButtonDetected")
+        memory.subscribeToEvent("notificationAdded", 
+                                "NaoRemote", "onNotificationAdded")
         logger.log('[Module] Subscribed to all events')
 
     def _unregisterEvents(self):
@@ -57,6 +59,11 @@ class NaoRemoteModule(ALModule):
         memory.unsubscribeToEvent("RearTactilTouched", "NaoRemote")
         memory.unsubscribeToEvent("ChestButtonPressed", "NaoRemote")
         logger.log('[Module] Unsubscribed from all events')
+
+    def onNotificationAdded(self, type, id):
+        """ This will be called when a notification is added. """
+        logger.log('[Module] Notification added')
+        self._comms.broadcastEvent(id)
 
     def onMiddleTouchDetected(self, *args):
         """ This will be called each time the middle head button is pushed. """
@@ -67,7 +74,7 @@ class NaoRemoteModule(ALModule):
 
     def onChestButtonDetected(self, *args):
         """ This will be called each time the middle head button is pushed. """
-        logger.log('[Module] Chest button tactile touched')
+        logger.log('[Module] Chest button pressed')
         self._unregisterEvents()
         self._comms.trigger('chest')
         self._registerEvents()
@@ -147,7 +154,7 @@ def main():
                     pwd = row[1]
                     secure = True if len(row) < 3 else row[2] != 'no'
                     logger.log('[Main] Connecting to %s %s', server, ('' if secure else ' [not secure]'))
-                    if comms.start(server, pwd, verifySSL, secure, name=args.name):
+                    if comms.start(server, pwd, verifySSL, secure, args.name):
                         connected = True
 
     if not connected:

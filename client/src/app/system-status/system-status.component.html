@@ -7,7 +7,7 @@
         <div class="card" *ngFor="let robot of processor.robots">
             <div class="card-block">
                 <div class="card-title">
-                    <clr-icon shape="accessibility-2" class="is-solid"
+                    <clr-icon shape="talk-bubbles" [ngClass]="{'is-solid': true, 'has-badge': robot.hasNotifications}"
                         style="width: 48px; height: 48px; margin-top: -1rem; margin-right: 0.5rem;"></clr-icon>
                     <div style="display: inline-block;">
                         <b>{{robot.name}}</b> <br>
@@ -21,6 +21,7 @@
             </div>
             <div class="card-footer">
                 <button class="btn btn-sm btn-link" (click)="displayMessages(robot)">View Log</button>
+                <button class="btn btn-sm btn-link" (click)="displayAlerts(robot)" *ngIf="robot.hasNotifications">View Alerts</button>
                 <button class="btn btn-sm btn-link" (click)="displayProgram(robot)" *ngIf="robot.user && robot.programId">View
                     Program</button>
             </div>
@@ -95,5 +96,22 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="programOpen = false">Close</button>
+    </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="alertsOpen" [clrModalSize]="'lg'">
+    <h3 class="modal-title">
+        Alerts: {{currentClient ? currentClient.name : ''}}
+    </h3>
+    <div class="modal-body" style="height: 70vh;" *ngIf="currentClient">
+        <div *ngFor="let notification of currentClient.notifications">
+            <clr-icon shape="info-standard" class="is-info" *ngIf="notification.severity=='info'"></clr-icon>
+            <clr-icon shape="warning-standard" class="is-error" *ngIf="notification.severity=='error' || notification.severity=='warning'"></clr-icon>
+            <span style="margin-left: 0.2rem;">
+            {{notification.message}}
+        </span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="alertsOpen = false">Close</button>
     </div>
 </clr-modal>

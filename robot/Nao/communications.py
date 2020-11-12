@@ -12,13 +12,15 @@ import websocket
 from engine import Engine
 import logger
 
+try:
+    from robot import Robot
+except ImportError:
+    Robot = RobotMock
+
 logging.basicConfig()
 
 class Communications(object):
     '''The communications interface. '''
-
-    _engine = None
-    _ws = None
 
     def __init__(self,  use_robot=True, reconnectAttempts = None):
         ''' Initialises the communications. '''
@@ -33,6 +35,8 @@ class Communications(object):
         self._secure = True
         self._conversationId = 0
         self._closing = False
+        self._engine = None
+        self._ws = None
 
     def start(self, address, pwd=None, verify=True, secure=True, name=None):
         self._verify = verify
@@ -127,6 +131,15 @@ class Communications(object):
     def trigger(self, block_name, value=None):
         ''' Triggers a block in the engine. '''
         self._engine.trigger(block_name, value)
+
+    def broadcastEvent(self, id):
+        if self._use_robot:
+            logger.log('[Comms] Broadcasting notification %d', id)
+            r = Robot('127.0.0.1')
+            n = r.getNotification(id)
+            self.send(1201, {'id': id, 'message': n.message, 'severity': n.severity})
+        else:
+            logger.log('[Comms] Not connected to robot, skipping notification %d', id)
 
     def _execute_code(self, data):
         logger.log('[Comms] Running code')

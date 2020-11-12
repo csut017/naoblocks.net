@@ -3,10 +3,11 @@ import { HubClient } from '../data/hub-client';
 import { DebugMessage } from '../data/debug-message';
 import { StatusMessage } from '../data/status-message';
 import { EventEmitter } from '@angular/core';
+import { NotificationAlert } from '../data/notification-alert';
 
 export class MessageProcessor {
 
-    constructor(private connection: ConnectionService) {        
+    constructor(private connection: ConnectionService) {
     }
 
     lastConversationId: number;
@@ -44,6 +45,11 @@ export class MessageProcessor {
                 switch (newClient.type) {
                     case "robot":
                         this.robots.push(newClient);
+                        let getAlertsMsg = new ClientMessage(ClientMessageType.AlertsRequest);
+                        getAlertsMsg.values = {
+                            'robot': newClient.id.toString()
+                        };
+                        this.connection.send(getAlertsMsg);
                         break;
 
                     case "user":
@@ -109,6 +115,14 @@ export class MessageProcessor {
 
             case ClientMessageType.ProgramStopped:
                 client.messages.push(this.generateStatusMsg('stop', `Program was stopped`));
+                break;
+
+            case ClientMessageType.AlertBroadcast:
+                let alert = new NotificationAlert();
+                alert.message = msg.values.message;
+                alert.severity = msg.values.severity;
+                client.notifications.push(alert);
+                client.hasNotifications = true;
                 break;
 
             default:

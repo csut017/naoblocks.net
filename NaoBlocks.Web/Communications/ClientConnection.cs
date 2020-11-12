@@ -43,6 +43,8 @@ namespace NaoBlocks.Web.Communications
 
         public RobotStatus? RobotDetails { get; set; }
 
+        public IList<NotificationAlert> Notifications { get; } = new List<NotificationAlert>();
+
         public ClientConnectionType Type { get; private set; }
 
         public User? User { get; set; }

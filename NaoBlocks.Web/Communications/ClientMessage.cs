@@ -14,6 +14,21 @@ namespace NaoBlocks.Web.Communications
 
         public IDictionary<string, string> Values { get; } = new Dictionary<string, string>();
 
+        public ClientMessage()
+        {
+        }
+
+        public ClientMessage(ClientMessageType type, object? values = null)
+        {
+            this.Type = type;
+            if (values == null) return;
+            foreach (var prop in values.GetType().GetProperties())
+            {
+                var value = prop.GetValue(values);
+                if (value != null) this.Values[prop.Name] = value.ToString();
+            }
+        }
+
         public static ClientMessage FromArray(byte[] data)
         {
             var json = Encoding.UTF8.GetString(data);
