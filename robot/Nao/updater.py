@@ -1,3 +1,4 @@
+import argparse
 import base64
 import hashlib
 import os
@@ -8,7 +9,7 @@ import requests
 BUF_SIZE = 65536
 
 def log(message, *args):
-    print('[LAUNCH] ' + message % args)
+    print('[Updater] ' + message % args)
 
 def generateFileHash(filepath):
     sha = hashlib.sha256()
@@ -25,7 +26,6 @@ def retrieveFileList(server, is_secure, verify = True):
     log('Downloading file list (%s)', address)
     try:
         response = requests.get(address, timeout=10, verify=verify)
-        log('Received response')
         lines = response.text.splitlines(False)
         log('%d files received', len(lines))
         return lines
@@ -61,7 +61,6 @@ def downloadFile(file, target, server, is_secure, prefix = '/api/v1/robots/types
     log('Downloading file from %s', address)
     try:
         response = requests.get(address, timeout=10, verify=verify)
-        log('Received response')
         with open(target, 'wb') as f:
             f.write(response.content)
         log('Successfully downloaded %s', file)
@@ -115,10 +114,26 @@ def downloadConnections(path, server, is_secure, verify = True):
         return False
     return True
 
-server = 'localhost:5000'
-path = generateFolder()
-if path != False:
-    if downloadAllFiles(path, server, False) and downloadConnections(path, server, False):
-        log('Successfully downloaded all required files')
-    else:
-        log('!! Unable to download all required files !!')
+def main():
+    """ Main entry point. """
+    parser = argparse.ArgumentParser(description='Start Nao-remote updater.')
+    parser.add_argument('--server', help='The address of the Nao-remote server', required=True)
+    parser.add_argument('--port', help='The address of the Nao-remote server')
+    parser.add_argument('--noSSL', help='Turns on or off SSL connection', action='store_false')
+    parser.add_argument(
+        '--ignoreSSL', help='Ignores any SSL errors - only recommended for test environments', action='store_false')
+    args = parser.parse_args()
+
+    server = args.server
+    if (args.port is not None) and (args.port != ''):
+        server = server + ':' + args.port
+
+    path = generateFolder()
+    if path != False:
+        if downloadAllFiles(path, server, args.noSSL, args.ignoreSSL) and downloadConnections(path, server, args.noSSL, args.ignoreSSL):
+            log('Successfully downloaded all required files')
+        else:
+            log('!! Unable to download all required files !!')
+
+if __name__ == "__main__":
+    main()
