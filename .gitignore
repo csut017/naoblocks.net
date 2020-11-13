@@ -29,3 +29,4 @@ NaoBlocks.Web/wwwroot/**/*.*
 LogFiles/*.txt
 NaoBlocks.Web/Properties/PublishProfiles/* - Web Deploy.pubxml
 NaoBlocks.Web/Properties/PublishProfiles/* - Web Deploy.pubxml.user
+robot/Nao/launch/**/*.*
