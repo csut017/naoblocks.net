@@ -26,6 +26,7 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "blockly": "git://github.com/google/blockly.git#3.20191014.4",
     "file-saver": "^2.0.2",
+    "pdfmake": "^0.1.68",
     "rxjs": "~6.6.3",
     "tslib": "^2.0.0",
     "uuid": "^8.2.0",

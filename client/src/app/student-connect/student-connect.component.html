@@ -1,3 +1,15 @@
 <div class="centre">
-    <img [src]="qrCodeAddress" class="qr-code">
+    <img [src]="qrCodeAddress" class="qr-code" id="qrCode" crossorigin="anonymous">
+</div>
+<div>
+    <button *ngIf="!generating" type="button" class="btn btn-primary" (click)="download()" style="width: 10rem;">
+        <clr-icon shape="download"></clr-icon>
+        Download
+    </button>
+    <div *ngIf="generating" class="btn" style="width: 10rem;">
+        <span class="spinner spinner-inline">
+            (_)
+        </span>
+        Downloading...
+    </div>
 </div>
