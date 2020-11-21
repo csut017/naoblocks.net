@@ -42,6 +42,7 @@
     </header>
     <div class="content-container">
         <div class="content-area">
+            <app-student-connect *ngIf="currentView=='connect'"></app-student-connect>
             <app-students-list *ngIf="currentView=='students'"></app-students-list>
             <app-robots-list *ngIf="currentView=='robots'"></app-robots-list>
             <app-robot-configuration *ngIf="currentView=='configuration'"></app-robot-configuration>
@@ -49,6 +50,9 @@
         </div>
         <nav class="sidenav">
             <section class="sidenav-content">
+                <a href="javascript://" class="nav-link" [class.active]="currentView=='connect'" (click)="changeView('connect')">
+                    Student Connect
+                </a>
                 <a href="javascript://" class="nav-link" [class.active]="currentView=='status'" (click)="changeView('status')">
                     System Dashboard
                 </a>

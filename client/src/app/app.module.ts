@@ -40,6 +40,7 @@ import { ChangeViewComponent } from './change-view/change-view.component';
 import { TangibleEditorComponent } from './tangible-editor/tangible-editor.component';
 import { ExecutionStatusComponent } from './execution-status/execution-status.component';
 import { DragAndDropDirective } from './drag-and-drop.directive';
+import { StudentConnectComponent } from './student-connect/student-connect.component';
 
 @NgModule({
   declarations: [
@@ -75,7 +76,8 @@ import { DragAndDropDirective } from './drag-and-drop.directive';
     ChangeViewComponent,
     TangibleEditorComponent,
     ExecutionStatusComponent,
-    DragAndDropDirective
+    DragAndDropDirective,
+    StudentConnectComponent
   ],
   imports: [
     BrowserModule,
