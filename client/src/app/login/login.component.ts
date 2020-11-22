@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthenticationService } from '../services/authentication.service';
+import { AuthenticationService, login } from '../services/authentication.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SystemService } from '../services/system.service';
 import { SystemVersion } from '../data/system-version';
@@ -36,15 +36,7 @@ export class LoginComponent implements OnInit {
         console.log(`Validating login key: ${params.key}`);
         this.loggingIn = true;
         this.authenticationService.loginViaToken(params.key)
-          .subscribe(data => {
-            this.loggingIn = false;
-            if (data.successful) {
-              this.loginError = null;
-              this.router.navigateByUrl(this.userrole.toLowerCase());
-            } else {
-              this.loginError = data.msg;
-            }
-          });
+          .subscribe(data => this.handleLogin(data));
       });
   }
 
@@ -53,16 +45,18 @@ export class LoginComponent implements OnInit {
       console.log('Logging in');
       this.loggingIn = true;
       this.authenticationService.login(this.username, this.password, this.userrole)
-        .subscribe(data => {
-          this.loggingIn = false;
-          if (data.successful) {
-            this.loginError = null;
-            this.router.navigateByUrl(this.userrole.toLowerCase());
-          } else {
-            this.loginError = data.msg;
-          }
-        });
+      .subscribe(data => this.handleLogin(data));
     }
   }
 
+  private handleLogin(data: login) {
+    this.loggingIn = false;
+    if (data.successful) {
+      this.loginError = null;
+      const view = data.output.view || 'student';
+      this.router.navigateByUrl(view.toLowerCase());
+    } else {
+      this.loginError = data.msg;
+    }
+  }
 }

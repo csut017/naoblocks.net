@@ -7,15 +7,16 @@ import { ErrorHandlerService } from './error-handler.service';
 import { ClientService } from './client.service';
 import { User } from '../data/user';
 
-interface login {
+export interface login {
   successful: boolean,
   msg: string,
   output?: loginToken
 }
 
-interface loginToken {
+export interface loginToken {
   role: string,
-  token: string
+  token: string,
+  view: string
 }
 
 export enum UserRole {
