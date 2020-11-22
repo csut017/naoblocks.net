@@ -44,13 +44,25 @@ export class AuthenticationService extends ClientService {
   token: string = '';
 
   login(username: string, password: string, role: string): Observable<login> {
-    const url = `${environment.apiURL}v1/session`;
-    this.log('Logging in');
-    return this.http.post<login>(url, {
+    const opts = {
       'name': username,
       'password': password,
       'role': role
-    }).pipe(
+    };
+    return this.doLogin(opts);
+  }
+
+  loginViaToken(token: string): Observable<login>{
+    const opts = {
+      'token': token
+    };
+    return this.doLogin(opts);
+  }
+
+  private doLogin(opts: any) {
+    const url = `${environment.apiURL}v1/session`;
+    this.log('Logging in');
+    return this.http.post<login>(url, opts).pipe(
       catchError(this.handleError('login', this.generateErrorResult)),
       tap(data => {
         if (data.successful && data.output) {

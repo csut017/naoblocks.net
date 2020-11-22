@@ -145,6 +145,13 @@ namespace NaoBlocks.Web.Controllers
                     Name = user.Name
                 };
             }
+            else if (!string.IsNullOrEmpty(user.Token))
+            {
+                command = new Commands.StartUserSessionViaToken
+                {
+                    Token = user.Token
+                };
+            }
             else
             {
                 command = new Commands.StartUserSession

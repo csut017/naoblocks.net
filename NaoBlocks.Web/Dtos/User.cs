@@ -15,6 +15,8 @@ namespace NaoBlocks.Web.Dtos
 
         public DateTime? WhenAdded { get; set; }
 
+        public string? Token { get; set; }
+
         public static User FromModel(Data.User value, bool includeDetails = false)
         {
             if (value == null) return null;
