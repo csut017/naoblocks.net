@@ -13,6 +13,10 @@
                     [disabled]="selected.length === 0">
                     <clr-icon shape="close"></clr-icon> Delete
                 </button>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="generateQRCode()"
+                    [disabled]="selected.length !== 1">
+                    <clr-icon shape="qr-code"></clr-icon> QR Code
+                </button>
             </div>
             <div class="btn-group">
                 <clr-dropdown>
@@ -93,3 +97,15 @@
 <div *ngIf="isInEditor">
     <app-student-editor [student]="currentStudent" (closed)="onClosed($event)"></app-student-editor>
 </div>
+
+<clr-modal [(clrModalOpen)]="qrcodeOpen" [clrModalStaticBackdrop]="false" [clrModalClosable]="true" [clrModalSize]="'xl'">
+    <h3 class="modal-title">QR Code for {{currentStudent ? currentStudent.name : ''}}</h3>
+    <div class="modal-body">
+        <img [src]="qrCodeAddress" class="qr-code">
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" (click)="qrcodeOpen=false">
+            Close
+        </button>
+    </div>
+</clr-modal>

@@ -21,6 +21,8 @@ export class StudentsListComponent implements OnInit {
   currentStudent: Student;
   message: string;
   errorMessage: string;
+  qrcodeOpen: boolean = false;
+  qrCodeAddress: string;
 
   constructor(private studentService: StudentService,
     private downloaderService: FileDownloaderService) { }
@@ -82,6 +84,12 @@ export class StudentsListComponent implements OnInit {
   doExportLogs() {
     this.selected.forEach(s =>
       this.downloaderService.download(`v1/students/${s.id}/logs/export`, `student-${s.id}-logs.xlsx`));
+  }
+
+  generateQRCode(studentToGenerate?: Student) {
+    this.qrcodeOpen = true;
+    this.currentStudent = studentToGenerate || this.selected[0];
+    this.qrCodeAddress = this.studentService.qrCode(this.currentStudent);
   }
 
   doClearLogs() {

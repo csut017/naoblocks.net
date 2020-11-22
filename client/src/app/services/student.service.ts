@@ -81,6 +81,12 @@ export class StudentService extends ClientService {
       );
   }
 
+  qrCode(student: Student): string {
+    const url = `${environment.apiURL}v1/students/${student.id}/qrcode`;
+    this.log(`Generated URL for QR code: ${url}`);
+    return url;
+  }
+
   clearLog(student: Student): Observable<ExecutionResult<Student>> {
     const url = `${environment.apiURL}v1/students/${student.id}/logs`;
     this.log('Deleting student logs');

@@ -19,5 +19,7 @@ namespace NaoBlocks.Core.Models
         public DateTime WhenAdded { get; set; }
 
         public StudentDetails? StudentDetails { get; set; }
+
+        public string? LoginToken { get; set; }
     }
 }

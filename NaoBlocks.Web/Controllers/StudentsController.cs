@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
+using QRCoder;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
+using System;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Web;
 using Commands = NaoBlocks.Core.Commands;
 using Generators = NaoBlocks.Core.Generators;
 
@@ -54,6 +58,42 @@ namespace NaoBlocks.Web.Controllers
 
             this._logger.LogDebug("Retrieved student");
             return Dtos.Student.FromModel(student, true);
+        }
+
+        [HttpGet("{id}/qrcode")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetStudentQRCode(string id, string? force)
+        {
+            this._logger.LogDebug($"Generating login token for {id}");
+            var command = new Commands.GenerateLoginToken
+            {
+                Name = id,
+                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
+            };
+            var result = await this.commandManager.ExecuteForHttp(command, i => i);
+            if (result?.Value?.Successful != true)
+            {
+                return result.Result;
+            }
+
+            var student = result.Value.Output;
+            this._logger.LogDebug("Login token generated");
+
+            var config = await this.session.Query<SystemValues>()
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+            var address = config?.DefaultAddress ?? string.Empty;
+            this._logger.LogDebug("Retrieved system address");
+
+            var fullAddress = address + "/login?key=" + HttpUtility.UrlEncode(student.LoginToken);
+            this._logger.LogInformation($"Generating QR code for {fullAddress}");
+            using var generator = new QRCodeGenerator();
+            var codeData = generator.CreateQrCode(fullAddress, QRCodeGenerator.ECCLevel.Q);
+            using var code = new QRCode(codeData);
+            var image = code.GetGraphic(20);
+            using var stream = new MemoryStream();
+            image.Save(stream, ImageFormat.Png);
+            return File(stream.ToArray(), ContentTypes.Png);
         }
 
         [HttpGet]
