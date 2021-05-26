@@ -41,6 +41,8 @@ import { TangibleEditorComponent } from './tangible-editor/tangible-editor.compo
 import { ExecutionStatusComponent } from './execution-status/execution-status.component';
 import { DragAndDropDirective } from './drag-and-drop.directive';
 import { StudentConnectComponent } from './student-connect/student-connect.component';
+import { LandingComponent } from './landing/landing.component';
+import { SystemInitialisationComponent } from './system-initialisation/system-initialisation.component';
 
 @NgModule({
   declarations: [
@@ -77,7 +79,9 @@ import { StudentConnectComponent } from './student-connect/student-connect.compo
     TangibleEditorComponent,
     ExecutionStatusComponent,
     DragAndDropDirective,
-    StudentConnectComponent
+    StudentConnectComponent,
+    LandingComponent,
+    SystemInitialisationComponent
   ],
   imports: [
     BrowserModule,

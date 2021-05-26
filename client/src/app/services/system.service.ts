@@ -73,7 +73,20 @@ export class SystemService extends ClientService {
     };
     return this.http.post<ResultSet<any>>(url, data).pipe(
       catchError(this.handleError('setDefaultAddress', msg => new ResultSet<any>(msg))),
-      tap(_ => this.log('Set default site address'))
+      tap(_ => this.log('Set default site address response received'))
+    );
+  }
+
+  initialise(adminPassword: string): Observable<SystemVersion> {
+    const url = `${environment.apiURL}v1/system/initialise`;
+    this.log('Initialising application');
+    let data = {
+      name: 'admin',
+      password: adminPassword
+    };
+    return this.http.post<SystemVersion>(url, data).pipe(
+      catchError(this.handleError('initialise', msg => new SystemVersion(msg))),
+      tap(_ => this.log('System initialisation response received'))
     );
   }
 }

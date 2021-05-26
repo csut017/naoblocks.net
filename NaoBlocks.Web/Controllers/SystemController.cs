@@ -129,14 +129,19 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpGet("version")]
         [AllowAnonymous]
-        public ActionResult<object> Version()
+        public async Task<ActionResult<object>> Version()
         {
-            this._logger.LogInformation("Retrieving system version number");
+            var isInitialised = await this._session.Query<User>()
+                .AnyAsync()
+                .ConfigureAwait(false);
+
+           this._logger.LogInformation("Retrieving system version number");
             return new
             {
                 Version = Assembly.GetEntryAssembly()
                     ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                    ?.InformationalVersion
+                    ?.InformationalVersion,
+                Status = isInitialised ? null : "pending"
             };
         }
 

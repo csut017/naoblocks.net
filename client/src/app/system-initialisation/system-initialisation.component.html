@@ -1,0 +1,16 @@
+<div class="page-centre">
+    <form clrForm clrLayout="vertical">
+        <clr-input-container>
+            <label>Password</label>
+            <input clrInput type="text" [(ngModel)]="password" name="password" />
+        </clr-input-container>
+
+        <div class="btn-group" style="margin-top: 1em;">
+            <button class="btn btn-primary" (click)="doSave()">Save</button>
+        </div>
+    </form>
+
+    <div class="error active" *ngIf="error">
+        {{error}}
+    </div>
+</div>

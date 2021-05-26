@@ -1,5 +1,6 @@
 export class SystemVersion {
     version: string;
+    status: string;
     error: string;
 
     constructor(error?: string) {

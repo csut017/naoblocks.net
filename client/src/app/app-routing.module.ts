@@ -8,10 +8,13 @@ import { TeacherHomeComponent } from './teacher-home/teacher-home.component';
 import { AuthenticationGuardService } from './services/authentication-guard.service';
 import { PopoutComponent } from './popout/popout.component';
 import { TangibleEditorComponent } from './tangible-editor/tangible-editor.component';
+import { LandingComponent } from './landing/landing.component';
+import { SystemInitialisationComponent } from './system-initialisation/system-initialisation.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'initialisation', component: SystemInitialisationComponent },
   { path: 'popout/:view/:id', component: PopoutComponent },
   { path: 'student', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'tangible', component: TangibleEditorComponent, canActivate: [AuthenticationGuardService] },
