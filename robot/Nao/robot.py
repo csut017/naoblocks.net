@@ -347,10 +347,10 @@ If the argument is True, then the animations are set to contextual (2), if False
             y_direction = MAX_SPEED
         if y_direction < -MAX_SPEED:
             y_direction = -MAX_SPEED
-        if theta > 0.5:
-            theta = 0.5
-        if theta < -0.5:
-            theta = -0.5
+        if theta > 90:
+            theta = 90
+        if theta < -90:
+            theta = -90
         self._prepare()
         self._log('Starting walk (%f, %f, %f)' %
                   (x_direction, y_direction, theta))
