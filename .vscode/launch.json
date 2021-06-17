@@ -14,7 +14,7 @@
                 "--test",
                 "--ignoreSSL"
             ],
-            "cwd": "${workspaceFolder}/robot"
+            "cwd": "${workspaceFolder}/robot/Nao"
         }
     ]
 }

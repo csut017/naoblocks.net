@@ -258,6 +258,7 @@ class Engine(object):
             'loop': EngineFunction(self._loop),
             'while': EngineFunction(self._while),
             'variable': EngineFunction(self._define_variable),
+            'function': EngineFunction(self._define_function),
             'addTo':  EngineFunction(self._add_to_variable),
             'if': EngineFunction(self._check_if_condition),
             'elseif': EngineFunction(self._check_if_condition),
@@ -610,6 +611,37 @@ class Engine(object):
         logger.log('[Engine] Setting variable ' + name + ' to ' + str(value))
         self._variables[name] = value
         self._change_state(name, value)
+
+    def _define_function(self, state):
+        ''' Define a new function. This function will not allow replacing existing functions (as this could be dangerous!) '''
+        name = state.ast['arguments'][0]['token']['value']
+
+        try:
+            func = self._functions[name]
+            if func is None:
+                # This shouldn't be possible, but check just in case
+                raise KeyError()
+
+            self._error('Function ' + name + ' already exists - cannot add')
+        except KeyError:
+            # Add a wrapper around the AST and add it to the functions table
+            logger.log('[Engine] Defining new function ' + name)
+            try:
+                children = state.ast['children']
+            except KeyError:
+                # This doesn't make sense, but allow for functions with no children (an empty function)
+                children = []
+            self._functions[name] = EngineFunction(self._execute_custom_function(name, children))
+
+    def _execute_custom_function(self, name, ast):
+        ''' Generates a closure to execute a custom function. '''
+        def _execute_function(state):
+            ''' Executes each AST block in the function definition. '''
+            logger.log('[Engine] Executing function ' + name)
+            self._execute(ast, state)
+            logger.log('[Engine] function ' + name + ' completed')
+
+        return _execute_function
 
     def _add_to_variable(self, state):
         ''' Increases a variable. '''

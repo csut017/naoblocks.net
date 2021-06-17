@@ -146,16 +146,19 @@ def main():
 
     if not connected:
         logger.log('[Main] Attempting to connect using connect.txt')
-        with open('connect.txt', 'r') as conn_file:
-            rdr = csv.reader(conn_file)
-            for row in rdr:
-                if not connected:
-                    server = row[0]
-                    pwd = row[1]
-                    secure = True if len(row) < 3 else row[2] != 'no'
-                    logger.log('[Main] Connecting to %s %s', server, ('' if secure else ' [not secure]'))
-                    if comms.start(server, pwd, verifySSL, secure, args.name):
-                        connected = True
+        try:
+            with open('connect.txt', 'r') as conn_file:
+                rdr = csv.reader(conn_file)
+                for row in rdr:
+                    if not connected:
+                        server = row[0]
+                        pwd = row[1]
+                        secure = True if len(row) < 3 else row[2] != 'no'
+                        logger.log('[Main] Connecting to %s %s', server, ('' if secure else ' [not secure]'))
+                        if comms.start(server, pwd, verifySSL, secure, args.name):
+                            connected = True
+        except IOError:
+            logger.log('[Main] Cannot find connect.txt')
 
     if not connected:
         logger.log('[Main] Unable to connect')
@@ -166,7 +169,7 @@ def main():
 
 
 def shutdown():
-    logger.log('[Main] Shutting down')
+    print('[Main] Shutting down')
 
 if __name__ == "__main__":
     atexit.register(shutdown)

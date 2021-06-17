@@ -30,3 +30,12 @@ Authorization: Bearer {{authToken}}
   "code": "reset()\nstart{\nposition('Stand', 'abc')\n}\ngo()\n"
 }
 ###
+
+POST {{baseURL}}/code/compile HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+{
+  "code": "reset()\nstart{\nfunction('helloWorld'){\nsay('Hello world')\nhelloWorld()\n}\n}\ngo()\n"
+}
+###

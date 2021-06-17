@@ -15,6 +15,7 @@ import logger
 try:
     from robot import Robot
 except ImportError:
+    from noRobot import RobotMock
     Robot = RobotMock
 
 logging.basicConfig()
