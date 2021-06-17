@@ -4,7 +4,7 @@
         <div class="branding">
             <a href="..." class="nav-link">
                 <img src="assets/nao.svg" style="width: 32px; margin-right: 1em;">
-                <span class="title">Kare Nao</span>
+                <span class="title">NaoBlocks</span>
             </a>
         </div>
         <div class="header-actions">
@@ -47,28 +47,12 @@
         </clr-vertical-nav>
         <div class="content-area">
             <div class="clr-row">
-                <div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-2': !isInDebugMode, 'hide-from-view': !isInDebugMode}">
+                <div class="clr-col">
                     <div class="card">
                         <div class="card-block">
                             <div class="card-text">
                                 <div style="overflow-x: auto; height: 500px;">
-                                    <canvas #videoCanvas id="video-canvas" width="640" height="480">
-                                    </canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-8': !isInDebugMode}">
-                    <div class="card">
-                        <div class="card-block">
-                            <div class="card-text">
-                                <div class="tile-display">
-                                    <div class="tangible" [ngClass]="{'highlight': block.highlight}"
-                                        *ngFor="let block of blocks">
-                                        <img src="/assets/img/{{block.image}}.png">
-                                        <p>{{block.text}}</p>
-                                    </div>
+                                    <textarea clrTextarea [(ngModel)]="code" style="width: 50vw; height: 50vh;"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +63,7 @@
     </div>
     <app-about></app-about>
     <app-change-role [role]="'Student'"></app-change-role>
-    <app-change-view view="Tangibles"></app-change-view>
+    <app-change-view view="Text Editor"></app-change-view>
     <app-execution-status [isOpen]="startupStatus.sendingToRobot" [steps]="startupStatus.steps" [statusMessage]="startupStatus.startMessage"
         (onClose)="doCancelSend()"></app-execution-status>
     <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>

@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
 export class ChangeViewComponent implements OnInit {
 
   @Input() view: string;
-  views: string[] = ['Blocks', 'Tangibles'];
-  viewRoutes: {[index: string]: string} = {'Blocks': 'student', 'Tangibles': 'tangible'};
+  views: string[] = ['Blocks', 'Tangibles', 'Text Editor'];
+  viewRoutes: {[index: string]: string} = {'Blocks': 'student', 'Tangibles': 'tangible', 'Text Editor': 'texteditor'};
   opened: boolean;
 
   constructor(private router: Router) { }

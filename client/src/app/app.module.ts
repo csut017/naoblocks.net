@@ -43,6 +43,7 @@ import { DragAndDropDirective } from './drag-and-drop.directive';
 import { StudentConnectComponent } from './student-connect/student-connect.component';
 import { LandingComponent } from './landing/landing.component';
 import { SystemInitialisationComponent } from './system-initialisation/system-initialisation.component';
+import { TextEditorComponent } from './text-editor/text-editor.component';
 
 @NgModule({
   declarations: [
@@ -81,7 +82,8 @@ import { SystemInitialisationComponent } from './system-initialisation/system-in
     DragAndDropDirective,
     StudentConnectComponent,
     LandingComponent,
-    SystemInitialisationComponent
+    SystemInitialisationComponent,
+    TextEditorComponent
   ],
   imports: [
     BrowserModule,

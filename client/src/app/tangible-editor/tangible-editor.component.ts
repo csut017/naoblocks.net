@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Block } from '../data/block';
 import { ExecutionStatusStep } from '../data/execution-status-step';
 import { RunSettings } from '../data/run-settings';
+import { StartupStatusTracker } from '../data/startup-status-tracker';
 import { User } from '../data/user';
 import { HomeBase } from '../home-base';
 import { RunSettingsComponent } from '../run-settings/run-settings.component';
@@ -33,10 +34,8 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   lastState: string;
   messageProcessor: ServerMessageProcessorService;
   runSettings: RunSettings = new RunSettings();
-  sendingToRobot: boolean = false;
   sidebarCollapsed: boolean = false;
-  startMessage: string;
-  steps: ExecutionStatusStep[];
+  startupStatus: StartupStatusTracker = new StartupStatusTracker();
 
   private isInitialised: boolean = false;
   private context: CanvasRenderingContext2D;
@@ -64,7 +63,6 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
     421: new Block("speak_block", "Kia ora", "say('kia ora')"),
     433: new Block("stand_block", "Lie Down", "position('LyingBack')"),
   };
-
 
   @ViewChild(RunSettingsComponent) runSettingsDisplay: RunSettingsComponent;
   @ViewChild('videoCanvas', { static: true }) videoCanvas: ElementRef<HTMLCanvasElement>;
@@ -222,7 +220,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
 
   doPlay(): void {
     this.isProcessing = true;
-    this.initialiseStartingUI();
+    this.startupStatus.initialise();
     if (!this.blocks.length) {
       this.onStepFailed(0, 'There are no blocks in the current program!');
       this.isProcessing = false;
@@ -253,18 +251,6 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
       });
   }
 
-  private initialiseStartingUI() {
-    this.steps = [
-      new ExecutionStatusStep('Check Program', 'Checks that the program is valid and can run on the robot.'),
-      new ExecutionStatusStep('Select Robot', 'Finds an available robot to run the program on.'),
-      new ExecutionStatusStep('Send to Robot', 'Sends the program to the robot.'),
-      new ExecutionStatusStep('Start Execution', 'Starts the program running on the robot.')
-    ];
-    this.steps[0].isCurrent = true;
-    this.startMessage = undefined;
-    this.sendingToRobot = true;
-  }
-
   onClearHighlight(): void {
     this.blocks.forEach(b => b.highlight = false);
   }
@@ -274,13 +260,7 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onStepCompleted(step: number): number {
-    if (step >= this.steps.length) return step;
-    this.steps[step].isCurrent = false;
-    this.steps[step].image = 'success-standard';
-
-    if (++step >= this.steps.length) return step;
-    this.steps[step].isCurrent = true;
-    return step;
+    return this.startupStatus.completeStep(step);
   }
 
   onHighlightBlock(id: string, action: string): void {
@@ -289,11 +269,11 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onErrorOccurred(message: string): void {
-    this.startMessage = message;
+    this.startupStatus.startMessage = message;
   }
 
   onShowDebug(): void {
-    this.sendingToRobot = false;
+    this.startupStatus.sendingToRobot = false;
   }
 
   onStateUpdate(): void {
@@ -301,18 +281,13 @@ export class TangibleEditorComponent extends HomeBase implements OnInit, IServic
   }
 
   onStepFailed(step: number, reason: string): void {
-    this.startMessage = reason;
-    if (!this.steps[step]) return;
-    this.steps[step].isCurrent = false;
-    this.steps[step].image = 'error-standard';
+    this.startupStatus.failStep(step, reason);
   }
 
   doCancelSend(): void {
-    if (this.sendingToRobot) {
-      this.sendingToRobot = false;
-      return;
+    if (this.startupStatus.cancel()) {
+      this.doStop();
     }
-    this.doStop();
   }
 
   doChangeSpeed(): void {

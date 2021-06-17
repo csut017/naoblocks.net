@@ -24,6 +24,7 @@ import { EditorSettings } from '../data/editor-settings';
 import { ExecutionStatusStep } from '../data/execution-status-step';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from '../services/server-message-processor.service';
 import { SnapshotService } from '../services/snapshot.service';
+import { StartupStatusTracker } from '../data/startup-status-tracker';
 
 declare var Blockly: any;
 
@@ -68,9 +69,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   onResize: any;
   requireEvents: boolean = true;
   runSettings: RunSettings = new RunSettings();
-  sendingToRobot: boolean = false;
-  startMessage: string;
-  steps: ExecutionStatusStep[];
+  startupStatus: StartupStatusTracker = new StartupStatusTracker();
   tutorialForm: FormGroup;
   tutorialList: Tutorial[];
   tutorialLoading: boolean = false;
@@ -308,11 +307,9 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   }
 
   doCancelSend(): void {
-    if (this.sendingToRobot) {
-      this.sendingToRobot = false;
-      return;
+    if (this.startupStatus.cancel()) {
+      this.doStop();
     }
-    this.doStop();
   }
 
   doChangeSpeed(): void {
@@ -331,7 +328,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
 
   doPlay(): void {
     this.messageProcessor = new ServerMessageProcessorService(this.connection, this, this.runSettings);
-    this.initialiseStartingUI();
+    this.startupStatus.initialise();
     let validationResult = this.validateBlocks();
     if (!!validationResult) {
       this.onStepFailed(0, validationResult);
@@ -558,18 +555,6 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
     }
   }
 
-  private initialiseStartingUI() {
-    this.steps = [
-      new ExecutionStatusStep('Check Program', 'Checks that the program is valid and can run on the robot.'),
-      new ExecutionStatusStep('Select Robot', 'Finds an available robot to run the program on.'),
-      new ExecutionStatusStep('Send to Robot', 'Sends the program to the robot.'),
-      new ExecutionStatusStep('Start Execution', 'Starts the program running on the robot.')
-    ];
-    this.steps[0].isCurrent = true;
-    this.startMessage = undefined;
-    this.sendingToRobot = true;
-  }
-
   onCloseConnection(): void {
     this.connection.close();
   }
@@ -579,13 +564,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   }
 
   onStepCompleted(step: number): number {
-    if (step >= this.steps.length) return step;
-    this.steps[step].isCurrent = false;
-    this.steps[step].image = 'success-standard';
-
-    if (++step >= this.steps.length) return step;
-    this.steps[step].isCurrent = true;
-    return step;
+    return this.startupStatus.completeStep(step);
   }
 
   onStateUpdate(): void {
@@ -593,10 +572,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   }
 
   onStepFailed(step: number, reason: string): void {
-    this.startMessage = reason;
-    if (!this.steps[step]) return;
-    this.steps[step].isCurrent = false;
-    this.steps[step].image = 'error-standard';
+    this.startupStatus.failStep(step, reason);
   }
 
   onClearHighlight(): void {
@@ -612,6 +588,6 @@ export class StudentHomeComponent extends HomeBase implements OnInit, IServiceMe
   }
 
   onShowDebug(): void {
-    this.sendingToRobot = false;
+    this.startupStatus.sendingToRobot = false;
   }
 }

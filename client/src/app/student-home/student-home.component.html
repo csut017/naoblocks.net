@@ -188,7 +188,7 @@
     <app-load-program (load)="onLoad($event)"></app-load-program>
     <app-user-settings [showConfiguration]="editorSettings.canConfigure" (save)="onSaveSettings($event)"></app-user-settings>
     <app-run-settings (updated)="onChangeRunSettings($event)"></app-run-settings>
-    <app-execution-status [isOpen]="sendingToRobot" [steps]="steps" [statusMessage]="startMessage" (onClose)="doCancelSend()"></app-execution-status>
+    <app-execution-status [isOpen]="startupStatus.sendingToRobot" [steps]="startupStatus.steps" [statusMessage]="startupStatus.startMessage" (onClose)="doCancelSend()"></app-execution-status>
     <clr-modal [(clrModalOpen)]="userInput.open" [clrModalStaticBackdrop]="false" [clrModalClosable]="false">
         <div class="modal-body">
             <div *ngIf="!userInput.showValue">
