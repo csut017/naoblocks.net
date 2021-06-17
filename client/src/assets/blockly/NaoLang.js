@@ -43,6 +43,24 @@ Blockly.NaoLang.Postures = [
     ["Lie on Back", "LyingBack"]
 ];
 
+// Define the 3D directions
+Blockly.NaoLang.Directions3D = [
+    ["Forward", "FORWARD"],
+    ["Left", "LEFT"],
+    ["Right", "RIGHT"],
+    ["Backward", "BACKWARD"],
+    ["Up", "UP"],
+    ["Down", "DOWN"]
+];
+
+// Define the 2D directions
+Blockly.NaoLang.Directions2D = [
+    ["Forward", "FORWARD"],
+    ["Left", "LEFT"],
+    ["Right", "RIGHT"],
+    ["Backward", "BACKWARD"]
+];
+
 // Define the standard actions
 Blockly.NaoLang.Actions = [
     ["Wave", "wave"],
@@ -132,6 +150,24 @@ Blockly.NaoLang['robot_last_word'] = function (block) {
 };
 
 // Robot actions
+Blockly.NaoLang.drone_flip = function (block) {
+    var dir = block.getFieldValue('DIRECTION');
+    return Blockly.NaoLang.generatePrefix() + 'flip(' + dir + ')\n';
+};
+Blockly.NaoLang.drone_fly = function (block) {
+    var dist = Blockly.NaoLang.valueToCode(block, 'DISTANCE', Blockly.NaoLang.ORDER_ATOMIC),
+        dir = block.getFieldValue('DIRECTION');
+    return Blockly.NaoLang.generatePrefix() + 'fly(' + dir + ', ' + dist + ')\n';
+};
+Blockly.NaoLang.drone_land = function (block) {
+    return Blockly.NaoLang.generatePrefix() + 'land()\n';
+};
+Blockly.NaoLang.drone_stop = function (block) {
+    return Blockly.NaoLang.generatePrefix() + 'stop()\n';
+};
+Blockly.NaoLang.drone_takeoff = function (block) {
+    return Blockly.NaoLang.generatePrefix() + 'takeoff()\n';
+};
 Blockly.NaoLang.robot_action = function (block) {
     var code = block.getFieldValue('ACTION');
     return Blockly.NaoLang.generatePrefix() + code + '()\n';

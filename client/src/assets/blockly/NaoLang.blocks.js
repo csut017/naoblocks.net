@@ -1,4 +1,55 @@
 var blocks = [{
+    "type": "drone_flip",
+    "message0": "Flip %1",
+    "args0": [{
+        "type": "field_dropdown",
+        "name": "DIRECTION",
+        "options": Blockly.NaoLang.Directions2D
+    }],
+    "inputsInline": true,
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Tells the drone to flip in a direction."
+}, {
+    "type": "drone_fly",
+    "message0": "Fly %1 %2 cm",
+    "args0": [{
+        "type": "field_dropdown",
+        "name": "DIRECTION",
+        "options": Blockly.NaoLang.Directions3D
+    }, {
+        "type": "input_value",
+        "check": "Number",
+        "name": "DISTANCE"
+    }],
+    "inputsInline": true,
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Tells the drone to fly in a direction for a certain distance."
+}, {
+    "type": "drone_land",
+    "message0": "Land",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Tells the drone to land."
+}, {
+    "type": "drone_stop",
+    "message0": "Stop",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Tells the drone to stop in position and hover."
+}, {
+    "type": "drone_takeoff",
+    "message0": "Takeoff",
+    "nextStatement": null,
+    "previousStatement": null,
+    "colour": 65,
+    "tooltip": "Tells the drone to take off."
+}, {
     "type": "robot_action",
     "message0": "Do %1",
     "args0": [{
@@ -491,6 +542,7 @@ blocks.forEach(function (block) {
     console.log('[NaoLang] Defining ' + block.type);
     Blockly.Blocks[block.type] = {
         init: function () {
+            console.log('[NaoLang] Initialising ' + block.type);
             this.jsonInit(block);
             var thisBlock = this;
             this.setTooltip(function () {

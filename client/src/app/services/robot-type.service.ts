@@ -138,6 +138,11 @@ export class RobotTypeService extends ClientService {
   }
 
   listBlockSets(robotTypeId: string): Observable<ResultSet<BlockSet>> {
+    if (!robotTypeId) {
+      return new Observable(subscriber => {
+        subscriber.next(new ResultSet<BlockSet>('Robot type not set'));
+      });
+    }
     const url = `${environment.apiURL}v1/robots/types/${robotTypeId}/blocksets`;
     this.log(`Retrieving block sets for robot type  ${robotTypeId}`);
     return this.http.get<ResultSet<BlockSet>>(url)
