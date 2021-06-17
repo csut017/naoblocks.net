@@ -637,9 +637,9 @@ class Engine(object):
         ''' Generates a closure to execute a custom function. '''
         def _execute_function(state):
             ''' Executes each AST block in the function definition. '''
-            logger.log('[Engine] Executing function ' + name)
+            logger.log('[Engine] Executing custom function "' + name + '"')
             self._execute(ast, state)
-            logger.log('[Engine] function ' + name + ' completed')
+            logger.log('[Engine] Custom function "' + name + '" completed')
 
         return _execute_function
 
