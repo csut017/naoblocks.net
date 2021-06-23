@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+""" Nao robot client
+
+This client runs directly on a Nao robot and handles program
+execution on the robot.
+"""
+
 import argparse
 import atexit
 import csv
-import sys
-import time
-
-import websocket
     
 from noRobot import RobotMock
 from communications import Communications
@@ -96,12 +98,12 @@ class NaoRemoteModule(ALModule):
 
 def main():
     """ Main entry point. """
-    parser = argparse.ArgumentParser(description='Start Nao-remote client.')
-    parser.add_argument('--server', help='The address of the Nao-remote server')
-    parser.add_argument('--port', help='The address of the Nao-remote server')
+    parser = argparse.ArgumentParser(description='Start Nao robot client.')
+    parser.add_argument('--server', help='The address of the NaoBlocks server')
+    parser.add_argument('--port', help='The address of the NaoBlocks server')
     parser.add_argument('--name', help='An alternate name to use as the robot name', default=None)
     parser.add_argument(
-        '--password', help='The password to connect to the Nao-remote server')
+        '--password', help='The password to connect to the NaoBlocks server')
     parser.add_argument(
         '--pip', help='Parent broker port: the IP address or your robot', default='127.0.0.1')
     parser.add_argument(
