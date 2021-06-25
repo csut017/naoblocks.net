@@ -27,6 +27,13 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument("-p", "--password", help="The password for connecting to the server.")
     return parser
 
+def on_program_received(scanner: aruco_client.Scanner):
+    def on_received(program):
+        logger.info('Received program')
+        scanner.stop()
+
+    return on_received
+
 def main():
     parser = init_argparse()
     args = parser.parse_args()
@@ -53,7 +60,15 @@ def main():
 
     if connected:
         scanner = aruco_client.Scanner()
-        scanner.run(show_window=True)
+        scanner.build_dictionary(
+            aruco_client.BlockDefinition(10, 'Turn Left', 'turn_left', 'turn(LEFT, 3'),
+            aruco_client.BlockDefinition(20, 'Turn Right', 'turn_right', 'turn(RIGHT, 3'),
+            aruco_client.BlockDefinition(30, 'Rest', 'rest', 'rest()'),
+        )
+        scanner.run(show_window=True).subscribe(
+            on_next = on_program_received(scanner)
+        )
+        scanner.wait()
 
 if __name__ == "__main__":
     main()

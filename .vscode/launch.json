@@ -18,6 +18,23 @@
             "python": "C:\\Python27\\python.exe"
         },
         {
+            "name": "Aruco [Python 3.9]",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args":[
+                "-s",
+                "localhost:5000",
+                "-u",
+                "admin",
+                "-p",
+                "let-me-in"
+            ],
+            "cwd": "${fileWorkspaceFolder}",
+            "python": "C:\\Users\\csut017\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
+        },
+        {
             "name": "Python 3.9",
             "type": "python",
             "request": "launch",
