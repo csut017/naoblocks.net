@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Nao [Python 2.7]",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -14,7 +14,17 @@
                 "--test",
                 "--ignoreSSL"
             ],
-            "cwd": "${workspaceFolder}/robot/Nao"
+            "cwd": "${workspaceFolder}/robot/Nao",
+            "python": "C:\\Python27\\python.exe"
+        },
+        {
+            "name": "Python 3.9",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${fileWorkspaceFolder}",
+            "python": "C:\\Users\\csut017\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
         }
     ]
 }
