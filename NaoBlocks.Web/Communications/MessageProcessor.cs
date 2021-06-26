@@ -217,7 +217,7 @@ namespace NaoBlocks.Web.Communications
                     .FirstOrDefault(r => r.Status.IsAvailable);
             }
 
-            if (nextRobot == null)
+            if (nextRobot?.Robot == null)
             {
                 this._logger.LogInformation($"No robots available for allocation");
                 client.SendMessage(GenerateResponse(message, ClientMessageType.NoRobotsAvailable));

@@ -3,17 +3,10 @@ import cv2.aruco as aruco
 import logging
 import threading
 
-from common import ClassLogger
+from common import BlockDefinition, ClassLogger
 from rx.subject import Subject
 
 logger = logging.getLogger(__name__)
-
-class BlockDefinition(object):
-    def __init__(self, id, name, image = None, code = None) -> None:
-        self.id = id
-        self.name = name
-        self.image = image
-        self.code = code
 
 class ScannedBlock(object):
     def __init__(self, corners, id) -> None:
@@ -38,7 +31,7 @@ class Scanner(object):
         self._thread = None
         self._stopping_lock = threading.Lock()
 
-    def build_dictionary(self, *definitions):
+    def build_dictionary(self, *definitions: list[BlockDefinition]):
         dictionary = {}
         for definition in definitions:
             dictionary[definition.id] = definition
@@ -49,13 +42,13 @@ class Scanner(object):
         with self._stopping_lock:
             self._is_stopping = True
 
-    def run(self, camera = 0, show_window = False, dictionary = None):
+    def run(self, camera = 0, show_window = False, show_id = False, dictionary = None):
         if not dictionary is None:
             self._dictionary = dictionary
 
         subject = Subject()
         self._is_stopping = False
-        self._thread = threading.Thread(target=self._run_internal, daemon=True, args=(camera, show_window, subject))
+        self._thread = threading.Thread(target=self._run_internal, daemon=True, args=(camera, show_window, show_id, subject))
         self._thread.start()
         return subject
 
@@ -65,25 +58,28 @@ class Scanner(object):
     def wait(self) -> None:
         self._thread.join()
 
-    def _run_internal(self, camera, show_window, subject: Subject):
+    def _run_internal(self, camera, show_window, show_id, subject: Subject):
         self._logger.info('Starting camera')
         cap = cv2.VideoCapture(camera)
         self._logger.info('Camera started')
 
         keyPressed = -1
         cancel = False
-        last_program = ''
         while not cancel and keyPressed == -1:
             _, img = cap.read()
             blocks = self._find_markers(img)
+            if show_id:
+                for block in blocks:
+                    text = str(block.aruco_id)
+                    colour = (0, 0, 0)
+                    size = cv2.getTextSize(text, cv2.FONT_HERSHEY_PLAIN, 1.0, 1)
+                    org = (int(block.middle[0] - size[0][0] / 2), int(block.middle[1] - size[0][1] / 2))
+                    cv2.putText(img, text, org, cv2.FONT_HERSHEY_PLAIN, 1.0, colour)
             if show_window:
                 cv2.imshow("Image", img)
                 keyPressed = cv2.waitKey(50)
 
-            program = ':'.join((str(b.definition.id) for b in blocks if not b.definition is None))
-            if last_program != program:
-                subject.on_next(blocks)
-
+            subject.on_next(blocks)
             with self._stopping_lock:
                 cancel = self._is_stopping
 
@@ -91,7 +87,7 @@ class Scanner(object):
             cv2.destroyAllWindows()
         subject.on_completed()
 
-    def _find_markers(self, img):
+    def _find_markers(self, img) -> list[ScannedBlock]:
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
         params = aruco.DetectorParameters_create()

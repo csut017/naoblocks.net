@@ -139,6 +139,9 @@ class Exector(object):
 
         return self._subject
 
+    def wait(self) -> None:
+        self._thread.join()
+
     def _message_processor(self):
         self._logger.debug('Starting message processing loop')
 
