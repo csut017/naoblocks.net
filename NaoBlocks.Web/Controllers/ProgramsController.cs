@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -29,7 +30,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         //[HttpDelete("{id}")]
-        //public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id, string? user)
+        //public async Task<ActionResult<ExecutionResult>> Delete(string id, string? user)
         //{
         //    this._logger.LogInformation($"Deleting program '{id}'");
         //    var command = new DeleteProgramCommand
@@ -64,7 +65,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Dtos.ListResult<Dtos.CodeProgram>>> GetPrograms(int? page, int? size, string? user, string? type)
+        public async Task<ActionResult<ListResult<Dtos.CodeProgram>>> GetPrograms(int? page, int? size, string? user, string? type)
         {
             var currentUser = await this.LoadUser(session);
             if (currentUser == null) return Unauthorized();
@@ -89,7 +90,7 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             var count = programs.Count;
             this._logger.LogDebug($"Retrieved {count} programs");
-            var result = new Dtos.ListResult<Dtos.CodeProgram>
+            var result = new ListResult<Dtos.CodeProgram>
             {
                 Count = await allPrograms.CountAsync().ConfigureAwait(false),
                 Page = pageNum,
@@ -99,7 +100,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CodeProgram>>> Post(Dtos.CodeProgram program, string? user)
+        public async Task<ActionResult<ExecutionResult<Dtos.CodeProgram>>> Post(Dtos.CodeProgram program, string? user)
         {
             var currentUser = await this.LoadUser(session);
             if (currentUser == null) return Unauthorized();

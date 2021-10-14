@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Dtos;
@@ -24,10 +25,10 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet("{type}")]
-        public ActionResult<ListResult<Client>> List(ClientConnectionType type)
+        public ActionResult<ListResult<HubClient>> List(ClientConnectionType type)
         {
             this._logger.LogDebug($"Listing connections");
-            return ListResult.New(this._hub.GetClients(type).Where(c => c != null).Select(Client.FromModel));
+            return ListResult.New(this._hub.GetClients(type).Where(c => c != null).Select(HubClient.FromModel));
         }
 
         [HttpGet("{id}/logs")]

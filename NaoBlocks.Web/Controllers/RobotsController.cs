@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -32,7 +33,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting robot '{id}'");
             var command = new Commands.DeleteRobot
@@ -60,7 +61,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Dtos.ListResult<Dtos.Robot>>> GetRobots(int? page, int? size, string? type)
+        public async Task<ActionResult<ListResult<Dtos.Robot>>> GetRobots(int? page, int? size, string? type)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -108,7 +109,7 @@ namespace NaoBlocks.Web.Controllers
             });
             var count = robots.Count;
             this._logger.LogDebug($"Retrieved {count} robots");
-            var result = new Dtos.ListResult<Dtos.Robot>
+            var result = new ListResult<Dtos.Robot>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -119,7 +120,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)
+        public async Task<ActionResult<ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)
         {
             if (robot == null)
             {
@@ -142,7 +143,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Robot? robot)
+        public async Task<ActionResult<ExecutionResult>> Put(string? id, Dtos.Robot? robot)
         {
             if ((robot == null) || string.IsNullOrEmpty(id))
             {
@@ -166,7 +167,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Robot>>> Register(Dtos.Robot robot)
+        public async Task<ActionResult<ExecutionResult<Dtos.Robot>>> Register(Dtos.Robot robot)
         {
             if (robot == null)
             {

@@ -1,0 +1,27 @@
+@baseURL = https://localhost:5001/api/v1
+
+GET {{baseURL}}/remote/unknown/start HTTP/1.1
+Content-Type: text/plain; charset=utf-8
+
+###
+
+GET {{baseURL}}/remote/mbot2/start HTTP/1.1
+Content-Type: text/plain; charset=utf-8
+
+###
+
+GET {{baseURL}}/remote/mbot2/start?password=one HTTP/1.1
+Content-Type: text/plain; charset=utf-8
+
+###
+
+GET {{baseURL}}/remote/mbot2/check HTTP/1.1
+Content-Type: text/plain; charset=utf-8
+
+###
+
+GET {{baseURL}}/remote/mbot2/stop HTTP/1.1
+Content-Type: text/plain; charset=utf-8
+
+###
+

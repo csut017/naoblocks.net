@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Commands.Helpers;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Core.Commands.Helpers;
 using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;

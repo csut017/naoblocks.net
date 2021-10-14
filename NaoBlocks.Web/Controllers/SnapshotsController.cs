@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -32,7 +33,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Snapshot>>> Post(Dtos.Snapshot value)
+        public async Task<ActionResult<ExecutionResult<Dtos.Snapshot>>> Post(Dtos.Snapshot value)
         {
             if (value == null)
             {

@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Core.Commands
+﻿namespace NaoBlocks.Common
 {
     public class CommandError
     {

@@ -3,7 +3,7 @@ using NaoBlocks.Web.Communications;
 
 namespace NaoBlocks.Web.Dtos
 {
-    public class Client
+    public class HubClient
     {
         public ClientStatus? Status { get; set; }
 
@@ -17,11 +17,11 @@ namespace NaoBlocks.Web.Dtos
 
         public User? User { get; set; }
 
-        public static Client? FromModel(ClientConnection? value)
+        public static HubClient? FromModel(ClientConnection? value)
         {
             if (value == null) return null;
 
-            return new Client
+            return new HubClient
             {
                 Id = value.Id,
                 IsClosing = value.IsClosing,

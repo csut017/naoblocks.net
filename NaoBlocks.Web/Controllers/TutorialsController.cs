@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -31,7 +32,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpDelete("{category}/{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string category, string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string category, string id)
         {
             this._logger.LogInformation($"Deleting tutorial '{id}' in '{ category}'");
             var command = new Commands.DeleteTutorial
@@ -58,13 +59,13 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.Tutorial>> GetTutorials(int? page, int? size)
+        public async Task<ListResult<Dtos.Tutorial>> GetTutorials(int? page, int? size)
         {
             return await GenerateList(this.session.Query<Tutorial>(), page, size);
         }
 
         [HttpGet("{category}")]
-        public async Task<Dtos.ListResult<Dtos.Tutorial>> GetTutorialsForCategory(string category, int? page, int? size)
+        public async Task<ListResult<Dtos.Tutorial>> GetTutorialsForCategory(string category, int? page, int? size)
         {
             IRavenQueryable<Tutorial> query = this.session.Query<Tutorial>()
                 .Where(t => t.Category == category);
@@ -73,7 +74,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Tutorial>>> Post(Dtos.Tutorial tutorial)
+        public async Task<ActionResult<ExecutionResult<Dtos.Tutorial>>> Post(Dtos.Tutorial tutorial)
         {
             if (tutorial == null)
             {
@@ -101,7 +102,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command, t => Dtos.Tutorial.FromModel(t));
         }
 
-        private async Task<Dtos.ListResult<Dtos.Tutorial>> GenerateList(IRavenQueryable<Tutorial> query, int? page, int? size)
+        private async Task<ListResult<Dtos.Tutorial>> GenerateList(IRavenQueryable<Tutorial> query, int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -116,7 +117,7 @@ namespace NaoBlocks.Web.Controllers
                 .ToListAsync();
             var count = tutorials.Count;
             this._logger.LogDebug($"Retrieved {count} tutorials");
-            var result = new Dtos.ListResult<Dtos.Tutorial>
+            var result = new ListResult<Dtos.Tutorial>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -127,7 +128,7 @@ namespace NaoBlocks.Web.Controllers
 
         //[HttpPut("{category}/{id}")]
         //[Authorize(Policy = "Teacher")]
-        //public async Task<ActionResult<Dtos.ExecutionResult>> Put(string category, string id? id, Dtos.Tutorial? tutorial)
+        //public async Task<ActionResult<ExecutionResult>> Put(string category, string id? id, Dtos.Tutorial? tutorial)
         //{
         //    if ((tutorial == null) || string.IsNullOrEmpty(id))
         //    {

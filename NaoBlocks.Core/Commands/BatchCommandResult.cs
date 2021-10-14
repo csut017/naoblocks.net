@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NaoBlocks.Common;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NaoBlocks.Core.Commands

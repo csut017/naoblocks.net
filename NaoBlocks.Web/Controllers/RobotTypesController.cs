@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Generators;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
@@ -41,7 +42,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting robot type '{id}'");
             var command = new Commands.DeleteRobotType
@@ -73,7 +74,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             var data = Encoding.UTF8.GetString(fileList);
-            return new JsonResult(Dtos.ListResult.New( 
+            return new JsonResult(ListResult.New( 
                 data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(line =>
                     {
@@ -106,7 +107,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("{id}/package/files")]
         [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> UploadPackageFile(string id, NamedValue file)
+        public async Task<ActionResult<ExecutionResult>> UploadPackageFile(string id, NamedValue file)
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
@@ -121,7 +122,7 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Uploading '{filename}'");
             await RobotTypeFilePackage.StorePackageFile(robotType, this.rootFolder, filename, file.Value);
         
-            return new Dtos.ExecutionResult();
+            return new ExecutionResult();
         }
 
         [HttpGet("{id}/package/{filename}")]
@@ -154,7 +155,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("{id}/blocksets")]
         [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> AddBlockSet(string id, NamedValue? value)
+        public async Task<ActionResult<ExecutionResult>> AddBlockSet(string id, NamedValue? value)
         {
             if (value == null)
             {
@@ -175,7 +176,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet("{id}/blocksets")]
-        public async Task<ActionResult<Dtos.ListResult<NamedValue>>> GetBlockSets(string id)
+        public async Task<ActionResult<ListResult<NamedValue>>> GetBlockSets(string id)
         {
             this._logger.LogDebug($"Retrieving blocksets for {id}");
             var queryable = this.session.Query<RobotType>();
@@ -187,7 +188,7 @@ namespace NaoBlocks.Web.Controllers
 
             this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             var sets = robotType.BlockSets.Select(bs => new NamedValue { Name = bs.Name, Value = bs.BlockCategories }).AsEnumerable();
-            return Dtos.ListResult.New(sets);
+            return ListResult.New(sets);
         }
 
 
@@ -226,7 +227,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.RobotType>> GetRobotTypes(int? page, int? size)
+        public async Task<ListResult<Dtos.RobotType>> GetRobotTypes(int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -241,7 +242,7 @@ namespace NaoBlocks.Web.Controllers
                                              .ToListAsync();
             var count = robotTypes.Count;
             this._logger.LogDebug($"Retrieved {count} robot types");
-            var result = new Dtos.ListResult<Dtos.RobotType>
+            var result = new ListResult<Dtos.RobotType>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -252,7 +253,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.RobotType>>> Post(Dtos.RobotType robotType)
+        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> Post(Dtos.RobotType robotType)
         {
             if (robotType == null)
             {
@@ -273,7 +274,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("{id}/toolbox")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.RobotType>>> ImportToolbox(string? id)
+        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> ImportToolbox(string? id)
         {
             var xml = string.Empty;
             using (var reader = new StreamReader(this.Request.Body))
@@ -300,7 +301,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.RobotType>>> Put(string? id, Dtos.RobotType? robotType)
+        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> Put(string? id, Dtos.RobotType? robotType)
         {
             if ((robotType == null) || string.IsNullOrEmpty(id))
             {

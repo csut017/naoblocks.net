@@ -12,7 +12,7 @@ export class ClientMessage {
 }
 
 export enum ClientMessageType {
-  // These values are copied from ClientMessageType.cs in NaoBlocks.Web
+  // These values are copied from ClientMessageType.cs in NaoBlocks.Common
   Authenticate = 1,               // Send the client credentials to the server
   Authenticated = 2,              // Credentials are valid
   RequestRobot = 11,              // Request a robot to run a program on

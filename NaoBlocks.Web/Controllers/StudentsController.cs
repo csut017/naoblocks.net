@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using QRCoder;
@@ -34,7 +35,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting student '{id}'");
             var command = new Commands.DeleteUser
@@ -97,7 +98,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.Student>> GetStudents(int? page, int? size)
+        public async Task<ListResult<Dtos.Student>> GetStudents(int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -113,7 +114,7 @@ namespace NaoBlocks.Web.Controllers
                                              .ToListAsync();
             var count = students.Count;
             this._logger.LogDebug($"Retrieved {count} students");
-            var result = new Dtos.ListResult<Dtos.Student>
+            var result = new ListResult<Dtos.Student>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -123,7 +124,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Student>>> Post(Dtos.Student student)
+        public async Task<ActionResult<ExecutionResult<Dtos.Student>>> Post(Dtos.Student student)
         {
             if (student == null)
             {
@@ -147,7 +148,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.Student? student)
+        public async Task<ActionResult<ExecutionResult>> Put(string? id, Dtos.Student? student)
         {
             if ((student == null) || string.IsNullOrEmpty(id))
             {
@@ -261,7 +262,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpDelete("{id}/logs")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> ClearLogs(string? id)
+        public async Task<ActionResult<ExecutionResult>> ClearLogs(string? id)
         {
             this._logger.LogInformation($"Clearing logs for student '{id}'");
             var command = new Commands.ClearProgramLogs
@@ -273,7 +274,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpDelete("{id}/snapshots")]
         [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> ClearSnapshots(string? id)
+        public async Task<ActionResult<ExecutionResult>> ClearSnapshots(string? id)
         {
             this._logger.LogInformation($"Clearing snapshots for student '{id}'");
             var command = new Commands.ClearSnapshots

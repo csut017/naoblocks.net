@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;

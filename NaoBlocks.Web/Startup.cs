@@ -101,6 +101,7 @@ namespace NaoBlocks.Web
 
             services.AddScoped<ICommandManager, CommandManager>();
             services.AddSingleton<IHub, Hub>();
+            services.AddSingleton<IRemoteStore, RemoteStore>();
             services.AddTransient<IMessageProcessor, MessageProcessor>();
         }
 

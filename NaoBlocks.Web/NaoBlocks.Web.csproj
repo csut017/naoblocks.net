@@ -27,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NaoBlocks.Client\NaoBlocks.Client.csproj" />
+    <ProjectReference Include="..\NaoBlocks.Common\NaoBlocks.Common.csproj" />
     <ProjectReference Include="..\NaoBlocks.Core\NaoBlocks.Core.csproj" />
     <ProjectReference Include="..\NaoBlocks.Parser\NaoBlocks.Parser.csproj" />
   </ItemGroup>

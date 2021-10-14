@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Core.Commands.Helpers
+﻿using NaoBlocks.Common;
+
+namespace NaoBlocks.Core.Commands.Helpers
 {
     static class CommandErrorHelper
     {

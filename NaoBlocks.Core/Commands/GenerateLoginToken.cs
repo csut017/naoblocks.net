@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Commands.Helpers;
 using NaoBlocks.Core.Models;
 using Raven.Client.Documents;

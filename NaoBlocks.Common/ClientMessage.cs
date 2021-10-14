@@ -1,10 +1,9 @@
-﻿using NaoBlocks.Core.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NaoBlocks.Web.Communications
+namespace NaoBlocks.Common
 {
     public class ClientMessage
     {

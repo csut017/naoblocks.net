@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
@@ -41,7 +42,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("system/initialise")]
         [AllowAnonymous]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Initialise(Dtos.User? administrator)
+        public async Task<ActionResult<ExecutionResult>> Initialise(Dtos.User? administrator)
         {
             if (administrator is null) throw new ArgumentNullException(nameof(administrator));
 
@@ -52,10 +53,10 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             if (hasUsers)
             {
-                return new BadRequestObjectResult(new Dtos.ExecutionResult
+                return new BadRequestObjectResult(new ExecutionResult
                 {
                     ValidationErrors = new[] {
-                        new Commands.CommandError(0, "System already initialised")
+                        new CommandError(0, "System already initialised")
                     }
                 }); ;
             }
@@ -72,14 +73,14 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpGet("system/addresses")]
         [AllowAnonymous]
-        public Task<ActionResult<Dtos.ListResult<string>>> ClientAddresses()
+        public Task<ActionResult<ListResult<string>>> ClientAddresses()
         {
-            var addresses = new Dtos.ListResult<string>
+            var addresses = new ListResult<string>
             {
                 Items = ClientAddressList.Get()
             };
             addresses.Count = addresses.Items.Count();
-            return Task.FromResult(new ActionResult<Dtos.ListResult<string>>(addresses));
+            return Task.FromResult(new ActionResult<ListResult<string>>(addresses));
         }
 
         [HttpGet("system/addresses/connect.txt")]
@@ -136,7 +137,7 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
 
            this._logger.LogInformation("Retrieving system version number");
-            return new
+            return new VersionInformation
             {
                 Version = Assembly.GetEntryAssembly()
                     ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
@@ -161,7 +162,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("system/siteAddress")]
         [Authorize("Administrator")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration config)
+        public async Task<ActionResult<ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration config)
         {
             if (config == null)
             {

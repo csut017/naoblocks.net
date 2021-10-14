@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Core.Models
+﻿namespace NaoBlocks.Common
 {
     public enum ClientMessageType
     {

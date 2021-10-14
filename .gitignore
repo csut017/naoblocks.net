@@ -1,4 +1,10 @@
 .vs/**/*.*
+NaoBlocks.Common/bin/**/*.*
+NaoBlocks.Common/obj/**/*.*
+NaoBlocks.Client/bin/**/*.*
+NaoBlocks.Client/obj/**/*.*
+NaoBlocks.Client.Console/bin/**/*.*
+NaoBlocks.Client.Console/obj/**/*.*
 NaoBlocks.Core/bin/**/*.*
 NaoBlocks.Core/obj/**/*.*
 NaoBlocks.Core.Tests/bin/**/*.*

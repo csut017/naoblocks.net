@@ -8,5 +8,7 @@ namespace NaoBlocks.Web.Helpers
         public AppDatabaseOptions? DatabaseOptions { get; set; }
 
         public string? JwtSecret { get; set; }
+
+        public string? InternalAddress { get; set; }
     }
 }

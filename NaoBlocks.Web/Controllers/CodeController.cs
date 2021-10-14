@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -31,7 +32,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("compile")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CompiledCodeProgram?>>> Compile(Dtos.CodeProgram codeToCompile)
+        public async Task<ActionResult<ExecutionResult<Dtos.CompiledCodeProgram?>>> Compile(Dtos.CodeProgram codeToCompile)
         {
             if (codeToCompile == null)
             {
@@ -87,7 +88,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpGet("{user}/{program}")]
         [Authorize(Policy = "TeacherOrRobot")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.CompiledCodeProgram?>>> Get(string user, long program)
+        public async Task<ActionResult<ExecutionResult<Dtos.CompiledCodeProgram?>>> Get(string user, long program)
         {
             this._logger.LogInformation($"Getting program {program} for {user}");
             var userDetails = await this.session.Query<User>()

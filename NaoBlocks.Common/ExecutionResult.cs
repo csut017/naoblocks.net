@@ -1,8 +1,7 @@
-﻿using NaoBlocks.Core.Commands;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace NaoBlocks.Web.Dtos
+namespace NaoBlocks.Common
 {
     public class ExecutionResult
     {

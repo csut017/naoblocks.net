@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace NaoBlocks.Web.Dtos
+namespace NaoBlocks.Common
 {
-    public class Session
+    public class TokenSession
     {
         public DateTime Expires { get; set; } = DateTime.MinValue;
 

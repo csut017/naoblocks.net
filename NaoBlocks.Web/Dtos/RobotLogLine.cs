@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaoBlocks.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Data = NaoBlocks.Core.Models;
@@ -9,7 +10,7 @@ namespace NaoBlocks.Web.Dtos
     {
         public string Description { get; set; } = string.Empty;
 
-        public Data.ClientMessageType SourceMessageType { get; set; }
+        public ClientMessageType SourceMessageType { get; set; }
 
         public IDictionary<string, string>? Values { get; private set; }
 

@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Commands.Helpers;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Core.Commands.Helpers;
 using NaoBlocks.Core.Models;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
@@ -42,11 +43,11 @@ namespace NaoBlocks.Core.Commands
                     .ConfigureAwait(false);
                 if (robot == null)
                 {
-                    errors.Add(this.GenerateError("Unknown or invalid robot"));
+                    errors.Add(this.GenerateError("Unknown robot"));
                 }
                 else if ((robot.Password != null) && !robot.Password.Verify(this.Password))
                 {
-                    errors.Add(this.GenerateError("Unknown or invalid robot"));
+                    errors.Add(this.GenerateError("Invalid robot - passwords do not match"));
                 }
                 else
                 {

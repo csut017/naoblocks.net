@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Indexes;
 using Raven.Client.Documents;
@@ -52,7 +53,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.RobotLog>> GetLogs(string robotId, int? page, int? size)
+        public async Task<ListResult<Dtos.RobotLog>> GetLogs(string robotId, int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -69,7 +70,7 @@ namespace NaoBlocks.Web.Controllers
                                              .ToListAsync();
             var count = logs.Count;
             this._logger.LogDebug($"Retrieved {count} logs");
-            var result = new Dtos.ListResult<Dtos.RobotLog>
+            var result = new ListResult<Dtos.RobotLog>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,

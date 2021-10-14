@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Commands;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace NaoBlocks.Web.Helpers
 {
     public static class CommandExecutor
     {
-        public static async Task<ActionResult<Dtos.ExecutionResult>> ExecuteForHttp(this ICommandManager commandManager, CommandBase command)
+        public static async Task<ActionResult<ExecutionResult>> ExecuteForHttp(this ICommandManager commandManager, CommandBase command)
         {
             if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -21,7 +22,7 @@ namespace NaoBlocks.Web.Helpers
             if (errors.Any())
             {
                 LogValidationFailure(commandManager, command, errors);
-                return new BadRequestObjectResult(new Dtos.ExecutionResult
+                return new BadRequestObjectResult(new ExecutionResult
                 {
                     ValidationErrors = errors
                 });
@@ -32,7 +33,7 @@ namespace NaoBlocks.Web.Helpers
             if (!result.WasSuccessful)
             {
                 LogExecutionFailure(commandManager, command, result);
-                return new ObjectResult(new Dtos.ExecutionResult
+                return new ObjectResult(new ExecutionResult
                 {
                     ExecutionErrors = result.ToErrors() ?? Array.Empty<CommandError>()
                 })
@@ -43,7 +44,7 @@ namespace NaoBlocks.Web.Helpers
 
             await commandManager.CommitAsync();
             commandManager.Logger.LogInformation($"Executed {command.GetType().Name} successfully");
-            return new Dtos.ExecutionResult();
+            return new ExecutionResult();
         }
 
         private static void LogExecutionFailure(ICommandManager commandManager, CommandBase command, CommandResult? result)
@@ -64,7 +65,7 @@ namespace NaoBlocks.Web.Helpers
             }
         }
 
-        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn?, TOut> mapper)
+        public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn?, TOut> mapper)
             where TIn : class
         {
             if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));
@@ -76,7 +77,7 @@ namespace NaoBlocks.Web.Helpers
             if (errors.Any())
             {
                 LogValidationFailure(commandManager, command, errors);
-                return new BadRequestObjectResult(new Dtos.ExecutionResult<TOut>
+                return new BadRequestObjectResult(new ExecutionResult<TOut>
                 {
                     ValidationErrors = errors
                 });
@@ -87,7 +88,7 @@ namespace NaoBlocks.Web.Helpers
             if (!rawResult.WasSuccessful)
             {
                 LogExecutionFailure(commandManager, command, rawResult);
-                return new ObjectResult(new Dtos.ExecutionResult<TOut>
+                return new ObjectResult(new ExecutionResult<TOut>
                 {
                     ExecutionErrors = rawResult.ToErrors() ?? Array.Empty<CommandError>()
                 })
@@ -102,10 +103,10 @@ namespace NaoBlocks.Web.Helpers
             commandManager.Logger.LogDebug($"Mapping from {typeof(TIn).Name} to {typeof(TOut).Name}");
             var result = rawResult.As<TIn>();
             var output = mapper(result.Output);
-            return Dtos.ExecutionResult.New(output);
+            return ExecutionResult.New(output);
         }
 
-        public static async Task<ActionResult<Dtos.ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn?, Task<TOut>> mapper)
+        public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this ICommandManager commandManager, CommandBase<TIn> command, Func<TIn?, Task<TOut>> mapper)
             where TIn : class
         {
             if (commandManager == null) throw new ArgumentNullException(nameof(commandManager));
@@ -117,7 +118,7 @@ namespace NaoBlocks.Web.Helpers
             if (errors.Any())
             {
                 LogValidationFailure(commandManager, command, errors);
-                return new BadRequestObjectResult(new Dtos.ExecutionResult<TOut>
+                return new BadRequestObjectResult(new ExecutionResult<TOut>
                 {
                     ValidationErrors = errors
                 });
@@ -128,7 +129,7 @@ namespace NaoBlocks.Web.Helpers
             if (!rawResult.WasSuccessful)
             {
                 LogExecutionFailure(commandManager, command, rawResult);
-                return new ObjectResult(new Dtos.ExecutionResult<TOut>
+                return new ObjectResult(new ExecutionResult<TOut>
                 {
                     ExecutionErrors = rawResult.ToErrors() ?? Array.Empty<CommandError>()
                 })
@@ -143,7 +144,7 @@ namespace NaoBlocks.Web.Helpers
             commandManager.Logger.LogDebug($"Mapping from {typeof(TIn).Name} to {typeof(TOut).Name}");
             var result = rawResult.As<TIn>();
             var output = await mapper(result.Output);
-            return Dtos.ExecutionResult.New(output);
+            return ExecutionResult.New(output);
         }
     }
 }

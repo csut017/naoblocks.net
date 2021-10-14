@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Core.Models;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using System;

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -44,7 +45,7 @@ namespace NaoBlocks.Web.Controllers
             set;
         } = () => DateTime.UtcNow;
 
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete()
+        public async Task<ActionResult<ExecutionResult>> Delete()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
@@ -125,7 +126,7 @@ namespace NaoBlocks.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> Post(Dtos.User? user)
+        public async Task<ActionResult<ExecutionResult<Common.TokenSession>>> Post(Dtos.User? user)
         {
             if (user == null)
             {
@@ -165,7 +166,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("settings")]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.EditorSettings>>> PostSettings(Dtos.EditorSettings settings)
+        public async Task<ActionResult<ExecutionResult<Dtos.EditorSettings>>> PostSettings(Dtos.EditorSettings settings)
         {
             if (settings == null)
             {
@@ -193,7 +194,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Put()
+        public async Task<ActionResult<ExecutionResult>> Put()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
@@ -202,7 +203,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.commandManager.ExecuteForHttp(command);
         }
 
-        private async Task<ActionResult<Dtos.ExecutionResult<Dtos.Session>>> ApplyCommand(Commands.CommandBase command)
+        private async Task<ActionResult<ExecutionResult<Common.TokenSession>>> ApplyCommand(Commands.CommandBase command)
         {
             var errors = await commandManager.ValidateAsync(command).ConfigureAwait(false);
             if (errors.Any())
@@ -212,16 +213,16 @@ namespace NaoBlocks.Web.Controllers
                     this._logger.LogInformation(error.Error);
                 }
 
-                return new BadRequestObjectResult(new Dtos.ExecutionResult<Dtos.Session>
+                return new BadRequestObjectResult(new ExecutionResult<Common.TokenSession>
                 {
-                    ValidationErrors = new[] { new Commands.CommandError(0, "Unable to validate session details") }
+                    ValidationErrors = new[] { new CommandError(0, "Unable to validate session details") }
                 });
             }
 
             var rawResult = (await commandManager.ApplyAsync(command).ConfigureAwait(false));
             if (!rawResult.WasSuccessful)
             {
-                return new ObjectResult(new Dtos.ExecutionResult<Dtos.Session>
+                return new ObjectResult(new ExecutionResult<Common.TokenSession>
                 {
                     ExecutionErrors = rawResult.ToErrors()
                 })
@@ -255,7 +256,7 @@ namespace NaoBlocks.Web.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             await commandManager.CommitAsync().ConfigureAwait(false);
-            return Dtos.ExecutionResult.New(new Dtos.Session
+            return ExecutionResult.New(new Common.TokenSession
             {
                 Token = tokenHandler.WriteToken(token),
                 Expires = expiry,

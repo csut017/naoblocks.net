@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaoBlocks.Common;
+using System;
 using System.Collections.Generic;
 
 namespace NaoBlocks.Core.Models

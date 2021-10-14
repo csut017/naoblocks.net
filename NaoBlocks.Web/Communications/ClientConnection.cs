@@ -1,5 +1,5 @@
-﻿using NaoBlocks.Core.Models;
-using Newtonsoft.Json;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -124,8 +124,7 @@ namespace NaoBlocks.Web.Communications
 
                     if (message != null)
                     {
-                        var json = Encoding.UTF8.GetString(message.ToArray());
-                        var msg = JsonConvert.DeserializeObject<ClientMessage>(json);
+                        var msg = ClientMessage.FromArray(message.ToArray());
                         await this._messageProcessor.ProcessAsync(this, msg);
                     }
                 }

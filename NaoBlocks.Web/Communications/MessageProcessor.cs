@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
@@ -257,7 +258,7 @@ namespace NaoBlocks.Web.Communications
                 return;
             }
 
-            var userSession = await session.LoadAsync<Session>(sessionId.Value);
+            var userSession = await session.LoadAsync<Core.Models.Session>(sessionId.Value);
             if ((userSession == null) || (userSession.WhenExpires < DateTime.UtcNow))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Session is invalid"));

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -17,6 +17,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RavenDB.Mocks", "RavenDB.Mo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Web.Tests", "NaoBlocks.Web.Tests\NaoBlocks.Web.Tests.csproj", "{501C8751-E4F0-42CD-9177-0A19C3E85998}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client", "NaoBlocks.Client\NaoBlocks.Client.csproj", "{2357B1EC-B278-4AC6-8211-607EAE836742}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Common", "NaoBlocks.Common\NaoBlocks.Common.csproj", "{BD0B9E45-7EA1-45D3-BDA4-E09B32B70C99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Console", "NaoBlocks.Client.Console\NaoBlocks.Client.Console.csproj", "{022ED45D-39EC-402F-A48A-6FD341213F65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +53,18 @@ Global
 		{501C8751-E4F0-42CD-9177-0A19C3E85998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{501C8751-E4F0-42CD-9177-0A19C3E85998}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{501C8751-E4F0-42CD-9177-0A19C3E85998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2357B1EC-B278-4AC6-8211-607EAE836742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2357B1EC-B278-4AC6-8211-607EAE836742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2357B1EC-B278-4AC6-8211-607EAE836742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2357B1EC-B278-4AC6-8211-607EAE836742}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD0B9E45-7EA1-45D3-BDA4-E09B32B70C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD0B9E45-7EA1-45D3-BDA4-E09B32B70C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD0B9E45-7EA1-45D3-BDA4-E09B32B70C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD0B9E45-7EA1-45D3-BDA4-E09B32B70C99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{022ED45D-39EC-402F-A48A-6FD341213F65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{022ED45D-39EC-402F-A48A-6FD341213F65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{022ED45D-39EC-402F-A48A-6FD341213F65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{022ED45D-39EC-402F-A48A-6FD341213F65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

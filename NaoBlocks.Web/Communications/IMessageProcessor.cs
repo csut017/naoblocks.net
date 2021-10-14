@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using NaoBlocks.Common;
+using System.Threading.Tasks;
 
 namespace NaoBlocks.Web.Communications
 {

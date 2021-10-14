@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -31,7 +32,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting user '{id}'");
             var command = new Commands.DeleteUser
@@ -57,7 +58,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.User>> GetUsers(int? page, int? size)
+        public async Task<ListResult<Dtos.User>> GetUsers(int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -72,7 +73,7 @@ namespace NaoBlocks.Web.Controllers
                                             .ToListAsync();
             var count = users.Count;
             this._logger.LogDebug($"Retrieved {count} users");
-            var result = new Dtos.ListResult<Dtos.User>
+            var result = new ListResult<Dtos.User>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -82,7 +83,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.User>>> Post(Dtos.User user)
+        public async Task<ActionResult<ExecutionResult<Dtos.User>>> Post(Dtos.User user)
         {
             if (user == null)
             {
@@ -108,7 +109,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Put(string? id, Dtos.User? user)
+        public async Task<ActionResult<ExecutionResult>> Put(string? id, Dtos.User? user)
         {
             if ((user == null) || string.IsNullOrEmpty(id))
             {

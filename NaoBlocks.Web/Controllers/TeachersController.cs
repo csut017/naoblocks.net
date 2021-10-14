@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NaoBlocks.Common;
 using NaoBlocks.Core.Models;
 using NaoBlocks.Web.Helpers;
 using Raven.Client.Documents;
@@ -29,7 +30,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Dtos.ExecutionResult>> Delete(string id)
+        public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
             this._logger.LogInformation($"Deleting teacher '{id}'");
             var command = new Commands.DeleteUser
@@ -56,7 +57,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<Dtos.ListResult<Dtos.Teacher>> GetTeachers(int? page, int? size)
+        public async Task<ListResult<Dtos.Teacher>> GetTeachers(int? page, int? size)
         {
             var pageSize = size ?? 25;
             var pageNum = page ?? 0;
@@ -72,7 +73,7 @@ namespace NaoBlocks.Web.Controllers
                                              .ToListAsync();
             var count = teachers.Count;
             this._logger.LogDebug($"Retrieved {count} teachers");
-            var result = new Dtos.ListResult<Dtos.Teacher>
+            var result = new ListResult<Dtos.Teacher>
             {
                 Count = stats.TotalResults,
                 Page = pageNum,
@@ -82,7 +83,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Dtos.ExecutionResult<Dtos.Teacher>>> Post(Dtos.Teacher teacher)
+        public async Task<ActionResult<ExecutionResult<Dtos.Teacher>>> Post(Dtos.Teacher teacher)
         {
             if (teacher == null)
             {
