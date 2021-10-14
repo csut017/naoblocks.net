@@ -50,6 +50,68 @@ var blocks = [{
     "colour": 65,
     "tooltip": "Tells the drone to take off."
 }, {
+    "type": "robot_move_direction",
+    "message0": "Move %1 for %2 seconds",
+    "args0": [{
+        "type": "field_dropdown",
+        "name": "DIR",
+        "options": [
+            ["Forward", "FORWARD"],
+            ["Backwards", "BACK"]
+        ]
+    },{
+        "type": "input_value",
+        "check": "Number",
+        "name": "SECONDS"
+    }],
+    "inputsInline": true,
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Moves the robot in a direction for a specified time"
+}, {
+    "type": "robot_turn_direction",
+    "message0": "Turn %1 for %2 seconds",
+    "args0": [{
+        "type": "field_dropdown",
+        "name": "DIR",
+        "options": [
+            ["Left", "LEFT"],
+            ["Right", "RIGHT"]
+        ]
+    },{
+        "type": "input_value",
+        "check": "Number",
+        "name": "SECONDS"
+    }],
+    "inputsInline": true,
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Turns the robot in a direction for a specified time"
+}, {
+    "type": "robot_change_led",
+    "message0": "Change %1 LED to %2",
+    "args0": [{
+        "type": "field_dropdown",
+        "name": "LED",
+        "options": [
+            ["Both", "BOTH"],
+            ["Left", "LEFT"],
+            ["Right", "RIGHT"]
+        ]
+    },
+    {
+        "type": "input_value",
+        "name": "COLOUR"
+    }
+    ],
+    "inputsInline": true,
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Changes the colour of the robot's LEDs."
+}, {
     "type": "robot_action",
     "message0": "Do %1",
     "args0": [{

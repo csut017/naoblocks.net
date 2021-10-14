@@ -193,6 +193,24 @@ Blockly.NaoLang.robot_hand = function (block) {
         code = 'changeHand(\'' + value_action.toLowerCase() + '\',\'' + value_hand.toLowerCase() + '\')\n';
     return Blockly.NaoLang.generatePrefix() + code;
 };
+Blockly.NaoLang.robot_turn_direction = function (block) {
+    var value_dir = block.getFieldValue('DIR'),
+        value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
+        code = 'turnDirection(' + value_dir + ',' + value_time + ')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
+Blockly.NaoLang.robot_move_direction = function (block) {
+    var value_dir = block.getFieldValue('DIR'),
+    value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),
+        code = 'moveDirection(' + value_dir + ',' + value_time + ')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
+Blockly.NaoLang.robot_change_led = function (block) {
+    var value_led = block.getFieldValue('LED'),
+        value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC),
+        code = 'changeLEDColour(' + value_led + ', ' + value_colour + ')\n';
+    return Blockly.NaoLang.generatePrefix() + code;
+};
 Blockly.NaoLang.robot_play_audio = function (block) {
     var audio = block.getFieldValue('AUDIO'),
         code = 'audio(\'' + audio + '\')\n';
