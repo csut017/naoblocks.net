@@ -1,8 +1,11 @@
 ﻿using NaoBlocks.Common;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -17,15 +20,22 @@ namespace NaoBlocks.Client
     public class Connection : IDisposable
     {
         public const int receiveBufferSize = 8192;
-
+        private readonly string address;
+        private readonly string password;
+        private readonly bool useSecure;
+        private readonly string robotName;
         private CancellationTokenSource cancellation;
         private ClientWebSocket webSocket;
         private string token = string.Empty;
         private Subject<ClientMessage> messageReceived = new Subject<ClientMessage>();
 
-        public Connection()
+        public Connection(string address, string password, bool useSecure = true, string robotName = null)
         {
             this.OnMessageReceived = this.messageReceived.AsObservable();
+            this.address = address;
+            this.password = password;
+            this.useSecure = useSecure;
+            this.robotName = robotName;
         }
 
         ~Connection()
@@ -33,7 +43,7 @@ namespace NaoBlocks.Client
             this.Dispose(false);
         }
 
-        public async Task ConnectAsync(string address, string pwd, bool secure = true, string name = null)
+        public async Task ConnectAsync()
         {
             // Make sure we can connect
             if (this.webSocket != null)
@@ -45,7 +55,7 @@ namespace NaoBlocks.Client
             // Get the server version first
             using (var httpClient = new HttpClient())
             {
-                var versionAddress = (secure ? "https" : "http") + "://" + address + "/api/v1/version";
+                var versionAddress = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/version";
                 var response = await httpClient.GetAsync(versionAddress);
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadAsStringAsync();
@@ -53,11 +63,11 @@ namespace NaoBlocks.Client
                 this.ServerVersion = versionInfo.Version;
 
                 // Then authenticate
-                var loginAddress = (secure ? "https" : "http") + "://" + address + "/api/v1/session";
+                var loginAddress = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/session";
                 var req = new
                 {
-                    name = name ?? Environment.MachineName,
-                    password = pwd,
+                    name = this.robotName ?? Environment.MachineName,
+                    password = password,
                     role = "robot"
                 };
                 response = await httpClient.PostAsJsonAsync(loginAddress, req);
@@ -76,7 +86,7 @@ namespace NaoBlocks.Client
             this.webSocket = new ClientWebSocket();
             if (this.cancellation != null) this.cancellation.Dispose();
             this.cancellation = new CancellationTokenSource();
-            var socketAddress = (secure ? "wss" : "ws") + "://" + address + "/api/v1/connections/robot";
+            var socketAddress = $"{(this.useSecure ? "wss" : "ws")}://{this.address}/api/v1/connections/robot";
             await this.webSocket.ConnectAsync(new Uri(socketAddress), this.cancellation.Token);
             await Task.Factory.StartNew(this.ReceiveLoop, this.cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
@@ -92,6 +102,32 @@ namespace NaoBlocks.Client
             }
 
             this.CleanUpAfterDisconnect();
+        }
+
+        public async Task<AstNode[]> RetrieveCodeAsync(ClientMessage message)
+        {
+            if (message.Type != ClientMessageType.DownloadProgram)
+            {
+                return new AstNode[0];
+            }
+
+            var userID = message.Values["user"];
+            var programID = message.Values["program"];
+            return await this.RetrieveCodeAsync(userID, programID);
+        }
+
+        public async Task<AstNode[]> RetrieveCodeAsync(string userID, string programID)
+        {
+            using (var client = new HttpClient())
+            {
+                var address = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/code/{userID}/{programID}";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.token);
+                var response = await client.GetAsync(address);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var program = JsonConvert.DeserializeObject<ExecutionResult<CompiledCodeProgram>>(json);
+                return program.Output.Nodes.ToArray();
+            }
         }
 
         private async Task ReceiveLoop()

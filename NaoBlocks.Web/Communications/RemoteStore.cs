@@ -55,10 +55,10 @@ namespace NaoBlocks.Web.Communications
             }
 
             var settings = this.appSettings.Value;
-            var client = new Connection();
+            var client = new Connection(settings.InternalAddress, password, true, robot);
             try
             {
-                await client.ConnectAsync(settings.InternalAddress, password, true, robot);
+                await client.ConnectAsync();
                 this.connections.Add(robot, new ClientWrapper(client));
                 return client.ServerVersion;
             }

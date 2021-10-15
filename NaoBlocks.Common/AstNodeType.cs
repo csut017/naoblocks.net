@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Parser
+﻿namespace NaoBlocks.Common
 {
     public enum AstNodeType
     {

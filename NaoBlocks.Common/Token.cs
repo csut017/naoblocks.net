@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NaoBlocks.Parser
+namespace NaoBlocks.Common
 {
     public class Token
     {
+        public Token()
+        {
+        }
+
         public Token(TokenType type, string value)
         {
             this.Type = type;

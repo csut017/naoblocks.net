@@ -1,6 +1,4 @@
-﻿using Data = NaoBlocks.Parser;
-
-namespace NaoBlocks.Web.Dtos
+﻿namespace NaoBlocks.Web.Dtos
 {
     public class Token
     {
@@ -17,7 +15,7 @@ namespace NaoBlocks.Web.Dtos
 
         public string Value { get; set; } = string.Empty;
 
-        public static Token? FromModel(Data.Token? value)
+        public static Token? FromModel(Common.Token? value)
         {
             return value == null ? null : new Token
             {

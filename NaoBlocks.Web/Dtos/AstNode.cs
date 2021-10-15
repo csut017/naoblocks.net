@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using Data = NaoBlocks.Parser;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -22,7 +21,7 @@ namespace NaoBlocks.Web.Dtos
 
         public string Type { get; set; } = string.Empty;
 
-        public static AstNode? FromModel(Data.AstNode? value)
+        public static AstNode? FromModel(Common.AstNode? value)
         {
             if (value == null) return null;
             var model = new AstNode

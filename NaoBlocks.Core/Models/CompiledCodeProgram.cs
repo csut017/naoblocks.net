@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Parser;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;

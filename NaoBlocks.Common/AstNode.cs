@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace NaoBlocks.Parser
+namespace NaoBlocks.Common
 {
     public class AstNode
     {
@@ -55,12 +55,26 @@ namespace NaoBlocks.Parser
 
             if (this.Arguments?.Any() == true)
             {
-                output.Append("(" + string.Join(",", this.Arguments.Select(arg => arg.ToString(options))) + ")");
+                if (options.ExcludeArguments)
+                {
+                    output.Append("()");
+                }
+                else
+                {
+                    output.Append("(" + string.Join(",", this.Arguments.Select(arg => arg.ToString(options))) + ")");
+                }
             }
 
             if (this.Children?.Any() == true)
             {
-                output.Append("{" + string.Join(",", this.Children.Select(arg => arg.ToString(options))) + "}");
+                if (options.ExcludeChildren)
+                {
+                    output.Append("{}");
+                }
+                else
+                {
+                    output.Append("{" + string.Join(",", this.Children.Select(arg => arg.ToString(options))) + "}");
+                }
             }
 
             return output.ToString();
@@ -71,7 +85,7 @@ namespace NaoBlocks.Parser
             return this.ToString(new DisplayOptions
             {
                 IncludeSourceIDs = false,
-                IncludeTokenTypes = false
+                IncludeTokenTypes = false                
             });
         }
 
@@ -80,6 +94,10 @@ namespace NaoBlocks.Parser
             public bool IncludeSourceIDs { get; set; }
 
             public bool IncludeTokenTypes { get; set; }
+
+            public bool ExcludeArguments { get; set; }
+
+            public bool ExcludeChildren { get; set; }
         }
     }
 }

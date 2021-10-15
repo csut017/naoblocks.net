@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Parser
+﻿using NaoBlocks.Common;
+
+namespace NaoBlocks.Parser
 {
     public class ParseError
     {
