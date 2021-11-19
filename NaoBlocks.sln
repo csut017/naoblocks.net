@@ -5,9 +5,17 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Web", "Server\NaoBlocks.Web\NaoBlocks.Web.csproj", "{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Common", "Common\NaoBlocks.Common\NaoBlocks.Common.csproj", "{5236B44D-625E-4EBB-8329-827E1A4D44F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Common", "Common\NaoBlocks.Common\NaoBlocks.Common.csproj", "{5236B44D-625E-4EBB-8329-827E1A4D44F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Common.Tests", "Tests\NaoBlocks.Common.Tests\NaoBlocks.Common.Tests.csproj", "{D0E78C64-0856-4A08-B9C5-79E14BAC4821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Common.Tests", "Tests\NaoBlocks.Common.Tests\NaoBlocks.Common.Tests.csproj", "{D0E78C64-0856-4A08-B9C5-79E14BAC4821}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Parser", "Common\NaoBlocks.Parser\NaoBlocks.Parser.csproj", "{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{BA31CEE3-5837-47A7-8657-B73973E79334}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BB37E9F0-B8EF-41CB-9184-2C64D20A0671}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Parser.Tests", "Tests\NaoBlocks.Parser.Tests\NaoBlocks.Parser.Tests.csproj", "{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +35,23 @@ Global
 		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5236B44D-625E-4EBB-8329-827E1A4D44F6} = {BA31CEE3-5837-47A7-8657-B73973E79334}
+		{D0E78C64-0856-4A08-B9C5-79E14BAC4821} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
+		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1} = {BA31CEE3-5837-47A7-8657-B73973E79334}
+		{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {486CBC41-CBAA-4E40-87BA-40F08D5DACAD}

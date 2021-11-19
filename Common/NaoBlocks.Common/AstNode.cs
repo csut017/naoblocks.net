@@ -57,16 +57,16 @@ namespace NaoBlocks.Common
             var output = new StringBuilder();
             if (options.IncludeSourceIDs && !string.IsNullOrEmpty(this.SourceId))
             {
-                output.Append("[[" + this.SourceId + "]");
+                output.Append($"[{SourceId}]");
             }
 
-            output.Append(this.Type.ToString() + ":" + this.Token.Value);
+            output.Append($"{Type}:{Token.Value}");
             if (options.IncludeTokenTypes)
             {
-                output.Append("[:" + this.Token.Type.ToString().ToUpperInvariant() + "]");
+                output.Append($"=>{Token.Type.ToString().ToUpperInvariant()}");
             }
 
-            if (this.Arguments?.Any() == true)
+            if (this.Arguments.Any() == true)
             {
                 if (options.ExcludeArguments)
                 {
@@ -78,7 +78,7 @@ namespace NaoBlocks.Common
                 }
             }
 
-            if (this.Children?.Any() == true)
+            if (this.Children.Any() == true)
             {
                 if (options.ExcludeChildren)
                 {

@@ -61,5 +61,57 @@ namespace NaoBlocks.Common.Tests
             };
             Assert.Equal(expected, node.ToString(opts));
         }
+
+        [Theory]
+        [InlineData(true, true, "Function:Test(Constant:123){Function:Child}")]
+        [InlineData(false, true, "Function:Test(){Function:Child}")]
+        [InlineData(true, false, "Function:Test(Constant:123){}")]
+        [InlineData(false, false, "Function:Test(){}")]
+        public void ToStringHandlesArgumentsAndChildren(bool includeArgs, bool boolIncludeChildren, string expected)
+        {
+            var node = new AstNode(AstNodeType.Function,
+                new Token(TokenType.Identifier, "Test"),
+                string.Empty);
+            node.Arguments.Add(new AstNode(AstNodeType.Constant, new Token(TokenType.Number, numberValue), string.Empty));
+            node.Children.Add(new AstNode(AstNodeType.Function, new Token(TokenType.Identifier, "Child"), string.Empty));
+            var opts = new AstNode.DisplayOptions
+            {
+                ExcludeChildren = !boolIncludeChildren,
+                ExcludeArguments = !includeArgs
+            };
+            Assert.Equal(expected, node.ToString(opts));
+        }
+
+        [Theory]
+        [InlineData(true, "[ID1]Function:Test(Constant:123)")]
+        [InlineData(false, "Function:Test(Constant:123)")]
+        public void ToStringHandlesSourceID(bool include, string expected)
+        {
+            var node = new AstNode(AstNodeType.Function,
+                new Token(TokenType.Identifier, "Test"),
+                sourceIdValue);
+            node.Arguments.Add(new AstNode(AstNodeType.Constant, new Token(TokenType.Number, numberValue), string.Empty));
+            var opts = new AstNode.DisplayOptions
+            {
+                IncludeSourceIDs = include
+            };
+            Assert.Equal(expected, node.ToString(opts));
+        }
+
+        [Theory]
+        [InlineData(true, "Function:Test=>IDENTIFIER(Constant:123=>NUMBER)")]
+        [InlineData(false, "Function:Test(Constant:123)")]
+        public void ToStringHandlesTokenType(bool include, string expected)
+        {
+            var node = new AstNode(AstNodeType.Function,
+                new Token(TokenType.Identifier, "Test"),
+                string.Empty);
+            node.Arguments.Add(new AstNode(AstNodeType.Constant, new Token(TokenType.Number, numberValue), string.Empty));
+            var opts = new AstNode.DisplayOptions
+            {
+                IncludeTokenTypes = include
+            };
+            Assert.Equal(expected, node.ToString(opts));
+        }
     }
 }
