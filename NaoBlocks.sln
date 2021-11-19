@@ -3,7 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Web", "Server\NaoBlocks.Web\NaoBlocks.Web.csproj", "{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Common", "Common\NaoBlocks.Common\NaoBlocks.Common.csproj", "{5236B44D-625E-4EBB-8329-827E1A4D44F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Common.Tests", "Tests\NaoBlocks.Common.Tests\NaoBlocks.Common.Tests.csproj", "{D0E78C64-0856-4A08-B9C5-79E14BAC4821}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5236B44D-625E-4EBB-8329-827E1A4D44F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5236B44D-625E-4EBB-8329-827E1A4D44F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5236B44D-625E-4EBB-8329-827E1A4D44F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5236B44D-625E-4EBB-8329-827E1A4D44F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0E78C64-0856-4A08-B9C5-79E14BAC4821}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
