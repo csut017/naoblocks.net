@@ -188,6 +188,10 @@ namespace NaoBlocks.Parser
             return new Token(type, value, this._lineNumber, this._lastTokenStart);
         }
 
+        /// <summary>
+        /// Reads the next <see cref="Token"/> from the input source.
+        /// </summary>
+        /// <returns>The next available <see cref="Token"/>.</returns>
         public async Task<Token> ReadAsync()
         {
             this._lastTokenStart = this._linePosition - (this._hasChar ? 1 : 0);

@@ -44,6 +44,14 @@
         }
 
         /// <summary>
+        /// An empty <see cref="Token"/> instance.
+        /// </summary>
+        public static Token Empty 
+        { 
+            get { return new Token(TokenType.Empty, string.Empty); }
+        }
+
+        /// <summary>
         /// The type of token.
         /// </summary>
         public TokenType Type { get; set; }
