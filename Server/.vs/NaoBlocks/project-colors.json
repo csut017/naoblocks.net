@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "552b5121-67e9-4036-abc2-536a4528e695": {
+      "ProjectGuid": "552b5121-67e9-4036-abc2-536a4528e695",
+      "DisplayName": "NaoBlocks.Web",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}

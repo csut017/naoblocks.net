@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
-  <include file="$(find naoblocks_client)/launch/client_only.launch" />
-</launch>
