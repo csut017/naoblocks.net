@@ -40,5 +40,13 @@ namespace NaoBlocks.Common.Tests
             var token = new Token(type, value);
             Assert.Equal(expected, token.ToString());
         }
+
+        [Fact]
+        public void EmptyReturnsAnEmptyToken()
+        {
+            var empty = Token.Empty;
+            Assert.Equal(TokenType.Empty, empty.Type);
+            Assert.Empty(empty.Value);
+        }
     }
 }

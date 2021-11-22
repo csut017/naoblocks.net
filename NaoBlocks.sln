@@ -9,13 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Common", "Common\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Common.Tests", "Tests\NaoBlocks.Common.Tests\NaoBlocks.Common.Tests.csproj", "{D0E78C64-0856-4A08-B9C5-79E14BAC4821}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Parser", "Common\NaoBlocks.Parser\NaoBlocks.Parser.csproj", "{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Parser", "Common\NaoBlocks.Parser\NaoBlocks.Parser.csproj", "{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{BA31CEE3-5837-47A7-8657-B73973E79334}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BB37E9F0-B8EF-41CB-9184-2C64D20A0671}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Parser.Tests", "Tests\NaoBlocks.Parser.Tests\NaoBlocks.Parser.Tests.csproj", "{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Parser.Tests", "Tests\NaoBlocks.Parser.Tests\NaoBlocks.Parser.Tests.csproj", "{4DB652B0-EF0E-4508-9DF2-2D24AD9DE726}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{5C41FF87-0F4C-4E69-82CE-A25FFA4F9657}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{0DDD93A5-6157-4343-A05D-2BDBC9F3D89A} = {5C41FF87-0F4C-4E69-82CE-A25FFA4F9657}
 		{5236B44D-625E-4EBB-8329-827E1A4D44F6} = {BA31CEE3-5837-47A7-8657-B73973E79334}
 		{D0E78C64-0856-4A08-B9C5-79E14BAC4821} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 		{F7FBF9CF-80DD-4A31-8154-AF28C2C89BC1} = {BA31CEE3-5837-47A7-8657-B73973E79334}
