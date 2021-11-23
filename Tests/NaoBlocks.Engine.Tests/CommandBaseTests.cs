@@ -60,5 +60,14 @@ namespace NaoBlocks.Engine.Tests
             var result = await command.ValidateAsync(sessionMock.Object);
             Assert.Empty(result);
         }
+
+        [Fact]
+        public async Task DefaultRestoreWorks()
+        {
+            var command = new FakeCommand();
+            var sessionMock = new Mock<IDatabaseSession>();
+            var result = await command.RestoreAsync(sessionMock.Object);
+            Assert.Empty(result);
+        }
     }
 }

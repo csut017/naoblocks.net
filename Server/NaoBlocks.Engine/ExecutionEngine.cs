@@ -68,6 +68,29 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Restores a command from the database.
+        /// </summary>
+        /// <param name="command">The command to restore.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        /// <remarks>
+        /// If errors is empty, then the command is assumed to be restored.
+        /// </remarks>
+        public async Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)
+        {
+            var errors = await command.RestoreAsync(this.session);
+            if (errors.Any())
+            {
+                this.Logger.LogWarning("Unable to restore command");
+            }
+            else
+            {
+                this.Logger.LogInformation("Command restored");
+            }
+
+            return errors;
+        }
+
+        /// <summary>
         /// Validates a command.
         /// </summary>
         /// <param name="command">The command to validate.</param>

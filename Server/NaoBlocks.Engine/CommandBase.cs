@@ -81,6 +81,16 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Attempts to restore the command from a saved state.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>The errors from restoring the state. Empty if there are no errors.</returns>
+        public virtual Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            return Task.FromResult(new List<CommandError>().AsEnumerable());
+        }
+
+        /// <summary>
         /// Performs the actual execution. This method must be implemented in all derived classes.
         /// </summary>
         /// <param name="session">The database session to use.</param>
@@ -101,7 +111,7 @@ namespace NaoBlocks.Engine
         /// </summary>
         /// <param name="error">The error message.</param>
         /// <returns>The new <see cref="CommandError"/> instance.</returns>
-        protected CommandError GenerateError(string error)
+        internal protected CommandError GenerateError(string error)
         {
             return new CommandError(this.Number, error);
         }

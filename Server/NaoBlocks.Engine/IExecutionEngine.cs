@@ -26,6 +26,16 @@ namespace NaoBlocks.Engine
         Task CommitAsync();
 
         /// <summary>
+        /// Restores a command from the database.
+        /// </summary>
+        /// <param name="command">The command to restore.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        /// <remarks>
+        /// If errors is empty, then the command is assumed to be restored.
+        /// </remarks>
+        Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command);
+
+        /// <summary>
         /// Validates a command.
         /// </summary>
         /// <param name="command">The command to validate.</param>
