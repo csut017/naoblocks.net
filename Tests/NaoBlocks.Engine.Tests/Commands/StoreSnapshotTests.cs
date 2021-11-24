@@ -1,29 +1,30 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
+using Raven.TestDriver;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class StoreProgramTests : DatabaseHelper
+    public class StoreSnapshotTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
         {
-            var command = new StoreProgram();
+            var command = new StoreSnapshot();
             var engine = new FakeEngine();
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Code is required for storing a program", "User name is required" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "State is required", "Username is required" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
         public async Task ValidatePassesChecks()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
                 UserName = "Bob",
-                Code = "go{}"
+                State = "go{}"
             };
             using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
             using var session = store.OpenAsyncSession();
@@ -32,34 +33,13 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Empty(errors);
         }
 
-        [Theory]
-        [InlineData(false, null)]
-        [InlineData(false, "Wha")]
-        [InlineData(true, null, "Name is required for storing a program")]
-        [InlineData(true, "Wha")]
-        public async Task ValidateChecksForName(bool requireName, string? name, params string[] expectedErrors)
-        {
-            var command = new StoreProgram
-            {
-                UserName = "Bob",
-                Code = "go{}",
-                RequireName = requireName,
-                Name = name
-            };
-            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.ValidateAsync(command);
-            Assert.Equal(expectedErrors, FakeEngine.GetErrors(errors));
-        }
-
         [Fact]
         public async Task ValidateChecksForExistingUser()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
                 UserName = "Bob",
-                Code = "go{}"
+                State = "go{}"
             };
             using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
@@ -71,10 +51,9 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task RestoreFailsIfUserIsMissing()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
-                UserName = "Bob",
-                Code = "go{}"
+                UserName = "Bob"
             };
             using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
@@ -86,10 +65,9 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task RestoreReloadsUser()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
-                UserName = "Bob",
-                Code = "go{}"
+                UserName = "Bob"
             };
             using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
 
@@ -100,12 +78,12 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ExecuteSavesProgram()
+        public async Task ExecuteSavesSnapshot()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
                 UserName = "Bob",
-                Code = "go{}"
+                State = "go{}"
             };
             using var store = InitialiseDatabase(new User { Name = "Bob", Id = "Tahi" });
 
@@ -114,30 +92,32 @@ namespace NaoBlocks.Engine.Tests.Commands
                 var engine = new FakeEngine(session);
                 await engine.RestoreAsync(command);
                 var result = await engine.ExecuteAsync(command);
-                Assert.True(result.WasSuccessful);
+                Assert.True(result.WasSuccessful, "Command was not successful");
                 await engine.CommitAsync();
                 Assert.True(engine.DatabaseSession.StoreCalled, "An expected call to store was not made");
             }
 
             using var verifySession = store.OpenSession();
-            var program = verifySession.Query<CodeProgram>().FirstOrDefault();
-            Assert.NotNull(program);
-            Assert.Equal("Tahi", program!.UserId);
-            Assert.Equal("go{}", program!.Code);
+            var snapshot = verifySession.Query<Snapshot>().FirstOrDefault();
+            Assert.NotNull(snapshot);
+            Assert.Equal("Tahi", snapshot!.UserId);
+            Assert.Equal("go{}", snapshot!.State);
         }
 
-        [Fact]
-        public async Task ExecuteUpdatesExistingProgram()
+        [Theory]
+        [InlineData(null, "Unknown")]
+        [InlineData("", "Unknown")]
+        [InlineData(" ", "Unknown")]
+        [InlineData("Application", "Application")]
+        public async Task ExecuteHandlesSource(string source, string expected)
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
+                Source = source,
                 UserName = "Bob",
-                Name = "Wha",
-                Code = "rest()"
+                State = "go{}"
             };
-            using var store = InitialiseDatabase(
-                new User { Name = "Bob", Id = "Tahi" },
-                new CodeProgram { Code = "go{}", Name = "Wha", UserId = "Tahi" });
+            using var store = InitialiseDatabase(new User { Name = "Bob", Id = "Tahi" });
 
             using (var session = store.OpenAsyncSession())
             {
@@ -146,48 +126,49 @@ namespace NaoBlocks.Engine.Tests.Commands
                 var result = await engine.ExecuteAsync(command);
                 Assert.True(result.WasSuccessful, "Command was not successful");
                 await engine.CommitAsync();
-                Assert.False(engine.DatabaseSession.StoreCalled, "An unexpected call to store was made");
+                Assert.True(engine.DatabaseSession.StoreCalled, "An expected call to store was not made");
             }
 
             using var verifySession = store.OpenSession();
-            var program = verifySession.Query<CodeProgram>().FirstOrDefault();
-            Assert.NotNull(program);
-            Assert.Equal("rest()", program!.Code);
+            var snapshot = verifySession.Query<Snapshot>().FirstOrDefault();
+            Assert.NotNull(snapshot);
+            Assert.Equal(expected, snapshot!.Source);
         }
 
         [Fact]
-        public async Task ExecuteTrimsWhitespaceFromName()
+        public async Task ExecuteHandlesValues()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
                 UserName = "Bob",
-                Name = " Rua ",
-                Code = "go{}"
+                State = "go{}"
             };
-            using var store = InitialiseDatabase(new User { Name = "Bob" });
+            command.Values.Add(new NamedValue { Name = "Tahi", Value = "Rua" });
+            using var store = InitialiseDatabase(new User { Name = "Bob", Id = "Tahi" });
 
             using (var session = store.OpenAsyncSession())
             {
                 var engine = new FakeEngine(session);
                 await engine.RestoreAsync(command);
                 var result = await engine.ExecuteAsync(command);
-                Assert.True(result.WasSuccessful);
+                Assert.True(result.WasSuccessful, "Command was not successful");
                 await engine.CommitAsync();
+                Assert.True(engine.DatabaseSession.StoreCalled, "An expected call to store was not made");
             }
 
             using var verifySession = store.OpenSession();
-            var program = verifySession.Query<CodeProgram>().FirstOrDefault();
-            Assert.NotNull(program);
-            Assert.Equal("Rua", program!.Name);
+            var snapshot = verifySession.Query<Snapshot>().FirstOrDefault();
+            Assert.NotNull(snapshot);
+            Assert.Equal(new[] { "Tahi" }, snapshot!.Values.Select(v => v.Name).ToArray());
+            Assert.Equal(new[] { "Rua" }, snapshot!.Values.Select(v => v.Value).ToArray());
         }
 
         [Fact]
         public async Task ExecuteChecksInitialState()
         {
-            var command = new StoreProgram
+            var command = new StoreSnapshot
             {
-                UserName = "Bob",
-                Code = "go{}"
+                UserName = "Bob"
             };
             var engine = new FakeEngine();
             var result = await engine.ExecuteAsync(command);

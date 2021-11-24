@@ -1,12 +1,11 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
-using Raven.TestDriver;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class AddUserTests : RavenTestDriver
+    public class AddUserTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
@@ -26,12 +25,8 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = "Bob",
                 Password = "1234"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.Student });
+
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -47,7 +42,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = "Bob",
                 Password = "1234"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -63,7 +58,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = "Bob",
                 Password = "1234"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             await engine.ValidateAsync(command);

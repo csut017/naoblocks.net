@@ -1,12 +1,11 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
-using Raven.TestDriver;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class DeleteRobotTests : RavenTestDriver
+    public class DeleteRobotTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
@@ -24,12 +23,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 Name = "Whero Iti"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new Robot { MachineName = "Whero Iti" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new Robot { MachineName = "Whero Iti" });
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -43,7 +37,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 Name = "Whero Iti"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -58,12 +52,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = "Whero Iti",
             };
 
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new Robot { MachineName = "Whero Iti" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new Robot { MachineName = "Whero Iti" });
 
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
@@ -94,7 +83,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 Name = "Whero Iti"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
@@ -108,12 +97,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 Name = "Whero Iti"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new Robot { MachineName = "Whero Iti" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new Robot { MachineName = "Whero Iti" });
 
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);

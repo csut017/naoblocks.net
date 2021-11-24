@@ -1,13 +1,12 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
-using Raven.TestDriver;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class UpdateRobotTypeTests : RavenTestDriver
+    public class UpdateRobotTypeTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
@@ -25,12 +24,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new RobotType { Name = "Bobbot" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new RobotType { Name = "Bobbot" });
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -44,7 +38,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -58,7 +52,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
@@ -72,12 +66,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new RobotType { Name = "Bobbot" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new RobotType { Name = "Bobbot" });
 
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
@@ -93,12 +82,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = "BillBot",
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new RobotType { Name = "Bobbot" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new RobotType { Name = "Bobbot" });
 
             using (var session = store.OpenAsyncSession())
             {
@@ -122,12 +106,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Name = " BillBot ",
                 CurrentName = "Bobbot"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new RobotType { Name = "Bobbot" });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new RobotType { Name = "Bobbot" });
 
             using (var session = store.OpenAsyncSession())
             {

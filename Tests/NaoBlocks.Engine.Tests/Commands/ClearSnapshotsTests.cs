@@ -6,25 +6,25 @@ using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class UpdateRobotTests : DatabaseHelper
+    public class ClearSnapshotsTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
         {
-            var command = new UpdateRobot();
+            var command = new ClearSnapshots();
             var engine = new FakeEngine();
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Machine name is required" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Username is required" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
         public async Task ValidatePassesChecks()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                MachineName = "mihīni"
+                UserName = "Bob"
             };
-            using var store = InitialiseDatabase(new Robot { MachineName = "mihīni" });
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -32,57 +32,41 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateHashesPassword()
+        public async Task ValidateChecksForExistingUser()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                Password = "1234"
-            };
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            await engine.ValidateAsync(command);
-            Assert.Null(command.Password);
-            Assert.NotNull(command.HashedPassword);
-            Assert.True(command.HashedPassword!.Verify("1234"));
-        }
-
-        [Fact]
-        public async Task ValidateChecksForExistingRobot()
-        {
-            var command = new UpdateRobot
-            {
-                MachineName = "mihīni"
+                UserName = "Bob"
             };
             using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Robot mihīni does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task RestoreFailsIfRobotIsMissing()
+        public async Task RestoreFailsIfUserIsMissing()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                MachineName = "mihīni"
+                UserName = "Bob"
             };
             using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
-            Assert.Equal(new[] { "Robot mihīni does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task RestoreReloadsRobot()
+        public async Task RestoreReloadsUser()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                MachineName = "mihīni"
+                UserName = "Bob"
             };
-            using var store = InitialiseDatabase(new Robot { MachineName = "mihīni" });
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
 
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
@@ -91,20 +75,15 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ExecuteSavesRobot()
+        public async Task ExecuteClearsSnapshot()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                MachineName = "mihīni",
-                FriendlyName = "Whero",
-                HashedPassword = Password.New("7890")
+                UserName = "Bob"
             };
-            using var store = InitialiseDatabase();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new Robot { MachineName = "mihīni", FriendlyName = "Whero Iti", Password = Password.New("1234") });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(
+                new User { Name = "Bob", Id = "Tahi" },
+                new Snapshot { UserId = "Tahi" });
 
             using (var session = store.OpenAsyncSession())
             {
@@ -113,20 +92,20 @@ namespace NaoBlocks.Engine.Tests.Commands
                 var result = await engine.ExecuteAsync(command);
                 Assert.True(result.WasSuccessful, "Command was not successful");
                 await engine.CommitAsync();
+                Assert.True(engine.DatabaseSession.DeletedCalled, "An expected call to store was not made");
             }
 
             using var verifySession = store.OpenSession();
-            var robot = verifySession.Query<Robot>().First();
-            Assert.Equal("Whero", robot.FriendlyName);
-            Assert.True(robot.Password.Verify("7890"));
+            var snapshots = verifySession.Query<Snapshot>().ToArray();
+            Assert.Empty(snapshots);
         }
 
         [Fact]
         public async Task ExecuteChecksInitialState()
         {
-            var command = new UpdateRobot
+            var command = new ClearSnapshots
             {
-                MachineName = "mihīni"
+                UserName = "Bob"
             };
             var engine = new FakeEngine();
             var result = await engine.ExecuteAsync(command);

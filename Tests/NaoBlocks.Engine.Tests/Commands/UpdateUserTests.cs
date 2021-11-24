@@ -1,13 +1,12 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
-using Raven.TestDriver;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class UpdateUserTests : RavenTestDriver
+    public class UpdateUserTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
@@ -26,12 +25,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Role = UserRole.Student,
                 CurrentName = "Bob"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.Student });
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -47,7 +41,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 CurrentName = "Bob",
                 Password = "1234"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             await engine.ValidateAsync(command);
@@ -64,7 +58,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Role = UserRole.Student,
                 CurrentName = "Bob"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
@@ -79,7 +73,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Role = UserRole.Student,
                 CurrentName = "Bob"
             };
-            using var store = GetDocumentStore();
+            using var store = InitialiseDatabase();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
@@ -94,12 +88,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Role = UserRole.Student,
                 CurrentName = "Bob"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.Student });
 
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
@@ -116,12 +105,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 CurrentName = "Bob",
                 HashedPassword = Password.New("7890")
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { Name = "Bob", Password = Password.New("1234") });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new User { Name = "Bob", Password = Password.New("1234") });
 
             using (var session = store.OpenAsyncSession())
             {
@@ -147,12 +131,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 CurrentName = "Bob",
                 HashedPassword = Password.New("7890")
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { Name = "Bob", Password = Password.New("1234") });
-                initSession.SaveChanges();
-            }
+            using var store = InitialiseDatabase(new User { Name = "Bob", Password = Password.New("1234") });
 
             using (var session = store.OpenAsyncSession())
             {
@@ -179,10 +158,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 Age = 10,
                 Gender = "Female"
             };
-            using var store = GetDocumentStore();
-            using (var initSession = store.OpenSession())
-            {
-                initSession.Store(new User { 
+            using var store = InitialiseDatabase(new User { 
                     Name = "Bob", 
                     Role = UserRole.Student, 
                     StudentDetails = new StudentDetails
@@ -191,8 +167,6 @@ namespace NaoBlocks.Engine.Tests.Commands
                         Gender = "Male"
                     }
                 });
-                initSession.SaveChanges();
-            }
 
             using (var session = store.OpenAsyncSession())
             {
