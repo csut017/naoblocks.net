@@ -1,6 +1,6 @@
 .vs/**/*.*
 **/obj/**/*.*
 **/bin/**/*.*
-Tests/*/coverage.cobertura.xml
+Tests/**/coverage.cobertura.xml
 Tests/*/coveragereport/*.*
 Tests/Coverage/*.*

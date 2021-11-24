@@ -7,29 +7,28 @@ using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class UpdateUserTests : RavenTestDriver
+    public class SetDefaultRobotTypeTests : RavenTestDriver
     {
         [Fact]
         public async Task ValidationChecksInputs()
         {
-            var command = new UpdateUser();
+            var command = new SetDefaultRobotType();
             var engine = new FakeEngine();
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Current name is required" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type name is required" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
         public async Task ValidatePassesChecks()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Role = UserRole.Student,
-                CurrentName = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
             using var session = store.OpenAsyncSession();
@@ -39,65 +38,44 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateHashesPassword()
+        public async Task ValidateChecksForExistingRobotType()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Role = UserRole.Student,
-                CurrentName = "Bob",
-                Password = "1234"
-            };
-            using var store = GetDocumentStore();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            await engine.ValidateAsync(command);
-            Assert.Null(command.Password);
-            Assert.NotNull(command.HashedPassword);
-            Assert.True(command.HashedPassword.Verify("1234"));
-        }
-
-        [Fact]
-        public async Task ValidateChecksForExistingUser()
-        {
-            var command = new UpdateUser
-            {
-                Role = UserRole.Student,
-                CurrentName = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Student Bob does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type Bobbot does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task RestoreFailsIfUserIsMissing()
+        public async Task RestoreFailsIfRobotTypeIsMissing()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Role = UserRole.Student,
-                CurrentName = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
-            Assert.Equal(new[] { "Student Bob does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type Bobbot does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task RestoreReloadsUser()
+        public async Task RestoreReloadsRobotType()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Role = UserRole.Student,
-                CurrentName = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
 
@@ -108,18 +86,16 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ExecuteSavesUser()
+        public async Task ExecuteSetsDefaultRobotType()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Name = "Bill",
-                CurrentName = "Bob",
-                HashedPassword = Password.New("7890")
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Password = Password.New("1234") });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
 
@@ -133,24 +109,21 @@ namespace NaoBlocks.Engine.Tests.Commands
             }
 
             using var verifySession = store.OpenSession();
-            var user = verifySession.Query<User>().First();
-            Assert.Equal("Bill", user.Name);
-            Assert.True(user.Password.Verify("7890"));
+            var robotType = verifySession.Query<RobotType>().First();
+            Assert.True(robotType.IsDefault);
         }
 
         [Fact]
-        public async Task ExecuteTrimsWhitespaceFromName()
+        public async Task ExecuteIgnoresIfAlreadyDefault()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Name = " Bill ",
-                CurrentName = "Bob",
-                HashedPassword = Password.New("7890")
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Password = Password.New("1234") });
+                initSession.Store(new RobotType { Name = "Bobbot", IsDefault = true });
                 initSession.SaveChanges();
             }
 
@@ -164,33 +137,22 @@ namespace NaoBlocks.Engine.Tests.Commands
             }
 
             using var verifySession = store.OpenSession();
-            var user = verifySession.Query<User>().First();
-            Assert.Equal("Bill", user.Name);
+            var robotType = verifySession.Query<RobotType>().First();
+            Assert.True(robotType.IsDefault);
         }
 
         [Fact]
-        public async Task ExecuteUpdatesStudentDemographic()
+        public async Task ExecuteClearsPreviousDefault()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Name = " Bill ",
-                CurrentName = "Bob",
-                Role = UserRole.Student,
-                Age = 10,
-                Gender = "Female"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { 
-                    Name = "Bob", 
-                    Role = UserRole.Student, 
-                    StudentDetails = new StudentDetails
-                    {
-                        Age = 9,
-                        Gender = "Male"
-                    }
-                });
+                initSession.Store(new RobotType { Name = "Bobbot" });
+                initSession.Store(new RobotType { Name = "Billbot", IsDefault = true });
                 initSession.SaveChanges();
             }
 
@@ -204,18 +166,18 @@ namespace NaoBlocks.Engine.Tests.Commands
             }
 
             using var verifySession = store.OpenSession();
-            var user = verifySession.Query<User>().First();
-            Assert.Equal(10, user.StudentDetails?.Age);
-            Assert.Equal("Female", user.StudentDetails?.Gender);
+            var robotType = verifySession.Query<RobotType>().First(rt => rt.Name == "Bobbot");
+            Assert.True(robotType.IsDefault);
+            robotType = verifySession.Query<RobotType>().First(rt => rt.Name == "Billbot");
+            Assert.False(robotType.IsDefault);
         }
 
         [Fact]
         public async Task ExecuteChecksInitialState()
         {
-            var command = new UpdateUser
+            var command = new SetDefaultRobotType
             {
-                Name = " Bob ",
-                Role = UserRole.Teacher
+                Name = "Bobbot"
             };
             var engine = new FakeEngine();
             var result = await engine.ExecuteAsync(command);

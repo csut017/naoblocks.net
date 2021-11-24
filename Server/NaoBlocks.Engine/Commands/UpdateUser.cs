@@ -1,11 +1,13 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Commands
 {
+    /// <summary>
+    /// A command to update a user.
+    /// </summary>
     public class UpdateUser
-        : CommandBase
+        : UserCommandBase
     {
         private User? person;
 
@@ -65,36 +67,14 @@ namespace NaoBlocks.Engine.Commands
 
             if (!errors.Any())
             {
-                this.person = await session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
-                                            .ConfigureAwait(false);
-                var roleName = this.Role == UserRole.Unknown ? "User" : this.Role.ToString();
-                if (this.person == null) errors.Add(this.GenerateError($"{roleName} {this.CurrentName} does not exist"));
-
-                if (this.Password != null)
-                {
-                    this.HashedPassword = Data.Password.New(this.Password);
-                    this.Password = null;
-                }
+                this.person = await this.ValidateAndRetrieveUser(session, this.CurrentName, this.Role, errors).ConfigureAwait(false);
             }
 
-            return errors.AsEnumerable();
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-
-            this.person = await session.Query<User>()
-                                        .FirstOrDefaultAsync(u => u.Name == this.CurrentName)
-                                        .ConfigureAwait(false);
-            var roleName = this.Role == UserRole.Unknown ? "User" : this.Role.ToString();
-            if (this.person == null) errors.Add(this.GenerateError($"{roleName} {this.CurrentName} does not exist"));
+            if (this.Password != null)
+            {
+                this.HashedPassword = Data.Password.New(this.Password);
+                this.Password = null;
+            }
 
             return errors.AsEnumerable();
         }
@@ -107,19 +87,31 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            if (this.person == null) throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
-            if (!string.IsNullOrEmpty(this.Name) && (this.Name != this.person.Name)) this.person.Name = this.Name.Trim();
-            if (this.HashedPassword != null) this.person.Password = this.HashedPassword;
-            if (this.Settings != null) this.person.Settings = this.Settings;
+            this.ValidateExecutionState(this.person);
+            if (!string.IsNullOrWhiteSpace(this.Name) && (this.Name != this.person!.Name)) this.person.Name = this.Name.Trim();
+            if (this.HashedPassword != null) this.person!.Password = this.HashedPassword;
+            if (this.Settings != null) this.person!.Settings = this.Settings;
 
-            if (this.person.Role == UserRole.Student)
+            if (this.person!.Role == UserRole.Student)
             {
                 this.person.StudentDetails ??= new StudentDetails();
                 if (this.Age != null) this.person.StudentDetails.Age = this.Age;
                 if (this.Gender != null) this.person.StudentDetails.Gender = this.Gender;
             }
 
-            return Task.FromResult(CommandResult.New(this.Number));
+            return Task.FromResult(CommandResult.New(this.Number, this.person));
+        }
+
+        /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.person = await this.ValidateAndRetrieveUser(session, this.CurrentName, this.Role, errors).ConfigureAwait(false);
+            return errors.AsEnumerable();
         }
     }
 }

@@ -111,9 +111,19 @@ namespace NaoBlocks.Engine
         /// </summary>
         /// <param name="error">The error message.</param>
         /// <returns>The new <see cref="CommandError"/> instance.</returns>
-        internal protected CommandError GenerateError(string error)
+        protected CommandError GenerateError(string error)
         {
             return new CommandError(this.Number, error);
+        }
+
+        /// <summary>
+        /// Validates that a state object has been set prior to execution.
+        /// </summary>
+        /// <param name="state">The state object to check.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the state variable is null.</exception>
+        protected void ValidateExecutionState(object? state)
+        {
+            if (state == null) throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
         }
     }
 

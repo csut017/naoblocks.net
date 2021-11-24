@@ -6,29 +6,28 @@ using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class DeleteUserTests : RavenTestDriver
+    public class DeleteRobotTypeTests : RavenTestDriver
     {
         [Fact]
         public async Task ValidationChecksInputs()
         {
-            var command = new DeleteUser();
+            var command = new DeleteRobotType();
             var engine = new FakeEngine();
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "User name is required" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type name is required" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
         public async Task ValidatePassesChecks()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
-                Role = UserRole.Student,
-                Name = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
             using var session = store.OpenAsyncSession();
@@ -38,33 +37,51 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateChecksForExistingUser()
+        public async Task ValidateChecksForRobots()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
-                Role = UserRole.Student,
-                Name = "Bob"
+                Name = "Bobbot"
+            };
+            using var store = GetDocumentStore();
+            using (var initSession = store.OpenSession())
+            {
+                initSession.Store(new RobotType { Name = "Bobbot", Id = "robot-123" });
+                initSession.Store(new Robot { RobotTypeId = "robot-123" });
+                initSession.SaveChanges();
+            }
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "Robot type Bobbot has robot instances" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task ValidateChecksForExistingRobotType()
+        {
+            var command = new DeleteRobotType
+            {
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Student Bob does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type Bobbot does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task ExecuteDeletesUser()
+        public async Task ExecuteDeletesRobotType()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
-                Name = "Bob",
-                Role = UserRole.Teacher
+                Name = "Bobbot",
             };
 
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob" });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
 
@@ -80,10 +97,9 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ExecuteChecksInitialState()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
                 Name = " Bob ",
-                Role = UserRole.Teacher
             };
             var engine = new FakeEngine();
             var result = await engine.ExecuteAsync(command);
@@ -92,32 +108,30 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task RestoreFailsIfUserIsMissing()
+        public async Task RestoreFailsIfRobotTypeIsMissing()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
-                Role = UserRole.Student,
-                Name = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
-            Assert.Equal(new[] { "Student Bob does not exist" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Robot type Bobbot does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task RestoreReloadsUser()
+        public async Task RestoreReloadsRobotType()
         {
-            var command = new DeleteUser
+            var command = new DeleteRobotType
             {
-                Role = UserRole.Student,
-                Name = "Bob"
+                Name = "Bobbot"
             };
             using var store = GetDocumentStore();
             using (var initSession = store.OpenSession())
             {
-                initSession.Store(new User { Name = "Bob", Role = UserRole.Student });
+                initSession.Store(new RobotType { Name = "Bobbot" });
                 initSession.SaveChanges();
             }
 
