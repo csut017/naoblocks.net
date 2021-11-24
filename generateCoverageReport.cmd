@@ -1,2 +1,3 @@
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
-reportgenerator -reports:Tests\*\coverage.cobertura.xml -targetdir:Tests\Coverage
+del /s /q coverage.cobertura.xml
+dotnet test --collect:"XPlat Code Coverage"
+reportgenerator -reports:Tests\*\TestResults\*\coverage.cobertura.xml -targetdir:Tests\Coverage
