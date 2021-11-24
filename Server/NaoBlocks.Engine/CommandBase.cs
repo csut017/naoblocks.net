@@ -126,23 +126,4 @@ namespace NaoBlocks.Engine
             if (state == null) throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
         }
     }
-
-    /// <summary>
-    /// A <see cref="CommandBase"/> that returns a data result.
-    /// </summary>
-    /// <typeparam name="T">The type of data.</typeparam>
-    public abstract class CommandBase<T>
-        : CommandBase
-        where T : class
-    {
-        /// <summary>
-        /// Allows a derived class to set the result.
-        /// </summary>
-        /// <param name="value">The new result.</param>
-        /// <returns>A <see cref="CommandResult{T}"/> containing the result data.</returns>
-        protected CommandResult<T> Result(T value)
-        {
-            return new CommandResult<T>(this.Number, value);
-        }
-    }
 }

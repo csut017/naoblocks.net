@@ -53,7 +53,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             await engine.ValidateAsync(command);
             Assert.Null(command.Password);
             Assert.NotNull(command.HashedPassword);
-            Assert.True(command.HashedPassword.Verify("1234"));
+            Assert.True(command.HashedPassword!.Verify("1234"));
         }
 
         [Fact]

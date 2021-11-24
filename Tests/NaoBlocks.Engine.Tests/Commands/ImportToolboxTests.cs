@@ -116,7 +116,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 Name = "Bobbot",
                 Definition = "<toolbox>" +
-                        "<category name=\"one\">" +
+                        "<category name=\"one\" order=\"2\" colour=\"1\">" +
                             "<block type=\"two\">three</block>" +
                         "</category>" +
                     "</toolbox>"
@@ -141,8 +141,42 @@ namespace NaoBlocks.Engine.Tests.Commands
             var robotType = verifySession.Query<RobotType>().First();
             var toolboxCount = robotType!.Toolbox.Count();
             Assert.Equal(1, toolboxCount);
-            var categoryCount = robotType!.Toolbox.Select(tb => tb.Blocks.Count).Sum(tb => tb);
-            Assert.Equal(1, categoryCount);
+            var blockCount = robotType!.Toolbox.Select(tb => tb.Blocks.Count).Sum(tb => tb);
+            Assert.Equal(1, blockCount);
+        }
+
+        [Fact]
+        public async Task ExecuteSplitsTags()
+        {
+            var command = new ImportToolbox
+            {
+                Name = "Bobbot",
+                Definition = "<toolbox>" +
+                        "<category tags=\"tahi,rua,toru\">" +
+                            "<block>three</block>" +
+                        "</category>" +
+                    "</toolbox>"
+            };
+            using var store = GetDocumentStore();
+            using (var initSession = store.OpenSession())
+            {
+                initSession.Store(new RobotType { Name = "Bobbot" });
+                initSession.SaveChanges();
+            }
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful);
+                await engine.CommitAsync();
+            }
+
+            using var verifySession = store.OpenSession();
+            var robotType = verifySession.Query<RobotType>().First();
+            var tagCount = robotType!.Toolbox.Select(tb => tb.Tags.Count).Sum(tb => tb);
+            Assert.Equal(3, tagCount);
         }
 
         [Fact]

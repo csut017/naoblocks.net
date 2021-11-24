@@ -6,7 +6,7 @@ namespace NaoBlocks.Engine.Commands
     /// A batch of commands that need to execute together.
     /// </summary>
     public class Batch
-        : CommandBase<IEnumerable<CommandResult>>
+        : CommandBase
     {
         /// <summary>
         /// Initialise a new <see cref="Batch"/> instance.

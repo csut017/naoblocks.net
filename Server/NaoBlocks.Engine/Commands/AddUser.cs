@@ -8,7 +8,7 @@ namespace NaoBlocks.Engine.Commands
     /// Command for adding a new user.
     /// </summary>
     public class AddUser
-        : CommandBase<User>
+        : CommandBase
     {
         /// <summary>
         /// Gets or sets the user's hashed password.
@@ -108,7 +108,7 @@ namespace NaoBlocks.Engine.Commands
                 };
             }
             await session.StoreAsync(user).ConfigureAwait(false);
-            return this.Result(user);
+            return CommandResult.New(this.Number, user);
         }
     }
 }

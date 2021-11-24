@@ -8,7 +8,7 @@ namespace NaoBlocks.Engine.Commands
     /// A command for compiling code.
     /// </summary>
     public class CompileCode
-        : CommandBase<CompiledCodeProgram>
+        : CommandBase
     {
         /// <summary>
         /// The code to execute.
@@ -40,7 +40,7 @@ namespace NaoBlocks.Engine.Commands
         {
             var parser = CodeParser.New(this.Code ?? string.Empty);
             var parseResult = await parser.ParseAsync().ConfigureAwait(false);
-            return this.Result(new CompiledCodeProgram(parseResult));
+            return CommandResult.New(this.Number, new CompiledCodeProgram(parseResult));
         }
     }
 }

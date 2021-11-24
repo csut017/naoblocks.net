@@ -28,6 +28,11 @@
         /// <summary>
         /// The user's role is unknown.
         /// </summary>
-        Unknown
+        Unknown,
+
+        /// <summary>
+        /// A generic user (specific role unknown.)
+        /// </summary>
+        User
     }
 }

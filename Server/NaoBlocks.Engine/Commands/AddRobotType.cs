@@ -8,7 +8,7 @@ namespace NaoBlocks.Engine.Commands
     /// Command for adding a new robot type.
     /// </summary>
     public class AddRobotType
-        : CommandBase<RobotType>
+        : CommandBase
     {
         /// <summary>
         /// Gets or sets the name of the robot type.
@@ -51,7 +51,7 @@ namespace NaoBlocks.Engine.Commands
             };
 
             await session.StoreAsync(robot).ConfigureAwait(false);
-            return this.Result(robot);
+            return CommandResult.New(this.Number, robot);
         }
     }
 }
