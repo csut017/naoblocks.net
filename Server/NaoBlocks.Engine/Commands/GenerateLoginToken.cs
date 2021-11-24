@@ -62,7 +62,7 @@ namespace NaoBlocks.Engine.Commands
         }
 
         /// <summary>
-        /// Returns the session token.
+        /// Sets the session token.
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
