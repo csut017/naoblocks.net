@@ -98,15 +98,6 @@ namespace NaoBlocks.Engine
         protected abstract Task<CommandResult> DoExecuteAsync(IDatabaseSession session);
 
         /// <summary>
-        /// Generates a new result.
-        /// </summary>
-        /// <returns>The new <see cref="CommandResult"/> instance.</returns> 
-        protected virtual CommandResult GenerateResult()
-        {
-            return new CommandResult(this.Number);
-        }
-
-        /// <summary>
         /// Generates an error.
         /// </summary>
         /// <param name="error">The error message.</param>

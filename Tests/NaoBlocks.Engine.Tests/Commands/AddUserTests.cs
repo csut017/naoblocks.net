@@ -55,7 +55,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateHashesPassowrd()
+        public async Task ValidateHashesPassword()
         {
             var command = new AddUser
             {

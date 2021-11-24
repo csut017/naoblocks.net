@@ -5,52 +5,39 @@ using Raven.Client.Documents;
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
-    /// A command to delete a robot type.
+    /// A command to delete a robot.
     /// </summary>
-    public class DeleteRobotType
-        : RobotTypeCommandBase
+    public class DeleteRobot
+        : RobotCommandBase
     {
-        private RobotType? robotType;
+        private Robot? robot;
 
         /// <summary>
-        /// Gets or sets the robot type name.
+        /// Gets or sets the robot name.
         /// </summary>
         public string? Name { get; set; }
 
         /// <summary>
-        /// Validates that the robot type exists.
+        /// Validates that the robot exists.
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>Any valdiation errors.</returns>
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
-
-            if (!errors.Any() && (this.robotType != null))
-            {
-                var hasRobots = await session.Query<Robot>()
-                    .AnyAsync(r => r.RobotTypeId == this.robotType.Id)
-                    .ConfigureAwait(false);
-
-                if (hasRobots)
-                {
-                    errors.Add(this.GenerateError($"Robot type {this.Name} has robot instances"));
-                }
-            }
-
+            this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors).ConfigureAwait(false);
             return errors.AsEnumerable();
         }
 
         /// <summary>
-        /// Deletes the robot type.
+        /// Deletes the robot.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.robotType);
-            session.Delete(this.robotType);
+            this.ValidateExecutionState(this.robot);
+            session.Delete(this.robot);
             return Task.FromResult(CommandResult.New(this.Number));
         }
 
@@ -62,7 +49,7 @@ namespace NaoBlocks.Engine.Commands
         public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors).ConfigureAwait(false);
             return errors.AsEnumerable();
         }
     }
