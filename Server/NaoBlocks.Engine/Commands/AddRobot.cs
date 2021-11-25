@@ -38,6 +38,11 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         public string? Type { get; set; }
 
+        /// <summary>
+        /// Validates the robot details.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during validation.</returns>
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
