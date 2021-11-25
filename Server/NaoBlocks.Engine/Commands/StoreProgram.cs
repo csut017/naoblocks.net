@@ -82,7 +82,7 @@ namespace NaoBlocks.Engine.Commands
                     .ConfigureAwait(false);
                 if (program != null)
                 {
-                    program.Code = this.Code ?? string.Empty;
+                    program.Code = this.Code!;
                 }
             }
 
@@ -91,7 +91,7 @@ namespace NaoBlocks.Engine.Commands
                 program = new CodeProgram
                 {
                     Name = name,
-                    Code = this.Code ?? string.Empty,
+                    Code = this.Code!,
                     WhenAdded = this.WhenExecuted,
                     Number = this.user!.NextProgramNumber++,
                     UserId = this.user.Id!

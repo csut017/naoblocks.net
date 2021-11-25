@@ -56,6 +56,14 @@ namespace NaoBlocks.Engine.Tests.Data
         }
 
         [Fact]
+        public void VerifyHandlesNull()
+        {
+            var password = new Password();
+            password.Encrypt("go-away");
+            Assert.False(password.Verify(null));
+        }
+
+        [Fact]
         public void VerifyPassesWithCorrectPassword()
         {
             var password = new Password();

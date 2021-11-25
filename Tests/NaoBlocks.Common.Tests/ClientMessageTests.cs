@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Xunit;
 
 namespace NaoBlocks.Common.Tests
@@ -68,6 +69,15 @@ namespace NaoBlocks.Common.Tests
             var buffer = Encoding.UTF8.GetBytes("{\"type\":11,\"values\":{}}");
             var msg = ClientMessage.FromArray(buffer);
             Assert.Equal(ClientMessageType.RequestRobot, msg.Type);
+        }
+
+        [Theory]
+        [InlineData(new byte[0])]
+        [InlineData(new byte[] { 32 })]
+        public void FromArrayChecksArrayLength(byte[] data)
+        {
+            Assert.Throws<ArgumentException>(() =>
+                ClientMessage.FromArray(data));
         }
     }
 }

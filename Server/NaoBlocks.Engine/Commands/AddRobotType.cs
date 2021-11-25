@@ -45,7 +45,7 @@ namespace NaoBlocks.Engine.Commands
         {
             var robot = new RobotType
             {
-                Name = (this.Name ?? "<Unknown>").Trim(),
+                Name = this.Name!.Trim(),
                 IsDefault = false,
                 WhenAdded = this.WhenExecuted
             };

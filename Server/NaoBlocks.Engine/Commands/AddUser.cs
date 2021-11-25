@@ -93,7 +93,7 @@ namespace NaoBlocks.Engine.Commands
         {
             var user = new User
             {
-                Name = this.Name?.Trim() ?? "<Unknown>",
+                Name = this.Name!.Trim(),
                 Role = this.Role,
                 Password = this.HashedPassword,
                 Settings = this.Settings ?? new UserSettings(),

@@ -22,7 +22,6 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>Any errors that occurred during validation.</returns>
         public override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
         {
-            if (session == null) throw new ArgumentNullException(nameof(session));
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Address))
             {
@@ -49,7 +48,7 @@ namespace NaoBlocks.Engine.Commands
                 await session.StoreAsync(settings).ConfigureAwait(false);
             }
 
-            settings.DefaultAddress = this.Address ?? string.Empty;
+            settings.DefaultAddress = this.Address!;
             return CommandResult.New(this.Number, settings);
         }
     }

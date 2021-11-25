@@ -128,6 +128,19 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ExecuteChecksInitialState()
+        {
+            var command = new ClearProgramLogs
+            {
+                UserName = "Bob"
+            };
+            var engine = new FakeEngine();
+            var result = await engine.ExecuteAsync(command);
+            Assert.False(result.WasSuccessful);
+            Assert.Equal("Unexpected error: Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync", result.Error);
+        }
+
+        [Fact]
         public async Task RestoreFailsIfRobotTypeIsMissing()
         {
             var command = new AddRobot

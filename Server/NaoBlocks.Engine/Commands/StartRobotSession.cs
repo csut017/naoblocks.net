@@ -58,7 +58,7 @@ namespace NaoBlocks.Engine.Commands
                 {
                     errors.Add(this.GenerateError("Unknown or invalid robot"));
                 }
-                else if ((robot.Password != null) && !robot.Password.Verify(this.Password))
+                else if (!robot.Password.Verify(this.Password))
                 {
                     errors.Add(this.GenerateError("Unknown or invalid robot"));
                 }
@@ -81,7 +81,7 @@ namespace NaoBlocks.Engine.Commands
         {
             ValidateExecutionState(this.RobotId);
             var now = this.WhenExecuted;
-            var robotId = this.RobotId ?? "<Unknown>";
+            var robotId = this.RobotId!;
             var existing = await session.Query<Session>()
                 .FirstOrDefaultAsync(us => us.UserId == robotId && us.WhenExpires > now)
                 .ConfigureAwait(false);

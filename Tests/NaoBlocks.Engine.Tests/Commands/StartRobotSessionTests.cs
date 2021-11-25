@@ -34,7 +34,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateChecksForUser()
+        public async Task ValidateChecksForRobot()
         {
             var command = new StartRobotSession
             {

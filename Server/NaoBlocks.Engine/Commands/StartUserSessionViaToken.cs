@@ -75,7 +75,7 @@ namespace NaoBlocks.Engine.Commands
         {
             ValidateExecutionState(this.UserId);
             var now = this.WhenExecuted;
-            var userId = this.UserId ?? "<Unknown>";
+            var userId = this.UserId!;
             var existing = await session.Query<Session>()
                 .FirstOrDefaultAsync(us => us.UserId == userId && us.WhenExpires > now)
                 .ConfigureAwait(false);

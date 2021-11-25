@@ -38,7 +38,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            var parser = CodeParser.New(this.Code ?? string.Empty);
+            var parser = CodeParser.New(this.Code!);
             var parseResult = await parser.ParseAsync().ConfigureAwait(false);
             return CommandResult.New(this.Number, new CompiledCodeProgram(parseResult));
         }

@@ -49,8 +49,8 @@ namespace NaoBlocks.Engine.Commands
         {
             var robot = new Robot
             {
-                MachineName = this.MachineName ?? "<Unknown>",
-                FriendlyName = this.MachineName ?? "<Unknown>",
+                MachineName = this.MachineName!,
+                FriendlyName = this.MachineName!,
                 IsInitialised = false,
                 WhenAdded = this.WhenExecuted
             };

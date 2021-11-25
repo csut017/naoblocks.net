@@ -98,6 +98,34 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Equal("BillBot", robotType.Name);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("Bobbot")]
+        public async Task ExecuteSkipsChangingName(string? newName)
+        {
+            var command = new UpdateRobotType
+            {
+                Name = newName,
+                CurrentName = "Bobbot"
+            };
+            using var store = InitialiseDatabase(new RobotType { Name = "Bobbot" });
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful);
+                await engine.CommitAsync();
+            }
+
+            using var verifySession = store.OpenSession();
+            var robotType = verifySession.Query<RobotType>().First();
+            Assert.Equal("Bobbot", robotType.Name);
+        }
+
         [Fact]
         public async Task ExecuteTrimsWhitespaceFromName()
         {

@@ -65,13 +65,13 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            ValidateExecutionState(this.user);
+            ValidateExecutionState(this.user?.Id);
             var snapshot = new Snapshot
             {
                 Source = string.IsNullOrWhiteSpace(this.Source) ? "Unknown" : this.Source,
-                State = this.State ?? string.Empty,
+                State = this.State!,
                 User = this.user,
-                UserId = this.user!.Id ?? String.Empty,
+                UserId = this.user!.Id!,
                 WhenAdded = this.WhenExecuted
             };
             foreach (var value in this.Values)

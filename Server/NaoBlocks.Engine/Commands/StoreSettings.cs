@@ -75,7 +75,7 @@ namespace NaoBlocks.Engine.Commands
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
             ValidateExecutionState(this.user);
-            var settingsToStore = this.Settings ?? new UserSettings();
+            var settingsToStore = this.Settings!;
             this.user!.Settings = settingsToStore;
             return Task.FromResult(CommandResult.New(this.Number, settingsToStore));
         }

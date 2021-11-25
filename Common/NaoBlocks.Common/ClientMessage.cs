@@ -57,8 +57,9 @@ namespace NaoBlocks.Common
         /// </remarks>
         public static ClientMessage FromArray(byte[] data)
         {
+            if (data.Length < 2) throw new ArgumentException("Insufficient data to deserialize", nameof(data));
             var json = Encoding.UTF8.GetString(data);
-            return JsonConvert.DeserializeObject<ClientMessage>(json) ?? new ClientMessage();
+            return JsonConvert.DeserializeObject<ClientMessage>(json)!;
         }
 
         /// <summary>

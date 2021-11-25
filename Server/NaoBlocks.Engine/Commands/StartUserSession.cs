@@ -66,7 +66,7 @@ namespace NaoBlocks.Engine.Commands
                 {
                     errors.Add(this.GenerateError("Unknown or invalid user"));
                 }
-                else if ((user.Password != null) && !user.Password.Verify(this.Password))
+                else if (!user.Password.Verify(this.Password))
                 {
                     errors.Add(this.GenerateError("Unknown or invalid user"));
                 }
@@ -90,7 +90,7 @@ namespace NaoBlocks.Engine.Commands
         {
             ValidateExecutionState(this.UserId);
             var now = this.WhenExecuted;
-            var userId = this.UserId ?? "<Unknown>";
+            var userId = this.UserId!;
             var existing = await session.Query<Session>()
                 .FirstOrDefaultAsync(us => us.UserId == userId && us.WhenExpires > now)
                 .ConfigureAwait(false);

@@ -67,8 +67,8 @@ namespace NaoBlocks.Engine.Commands
             ValidateExecutionState(this.robotType);
             var set = new BlockSet
             {
-                Name = (this.Name ?? "<Unknown>").Trim(),
-                BlockCategories = this.Categories ?? string.Empty
+                Name = (this.Name!).Trim(),
+                BlockCategories = this.Categories!
             };
 
             this.robotType!.BlockSets.Add(set);

@@ -185,16 +185,7 @@ namespace NaoBlocks.Parser
                         this.UnscanToken();
                         var child = await this.ParseItemAsync(result);
                         if (!child.IsValid) return new ParseOperationResult(node);
-                        if (child.Node == null)
-                        {
-                            // This branch should never occur
-                            result.Errors.Add(new ParseError("Invalid child node: got null value", token));
-                            return new ParseOperationResult(node, false);
-                        }
-                        else
-                        {
-                            node.Children.Add(child.Node);
-                        }
+                        node.Children.Add(child.Node!);
                     }
 
                     token = await this.ScanNextTokenAsync();
@@ -231,13 +222,7 @@ namespace NaoBlocks.Parser
             this.UnscanToken();
             var parseResult = await this.ParseFunctionItemAsync(result, false);
             if (!parseResult.IsValid) return new ParseOperationResult(parseResult.Node);
-            if (parseResult.Node == null)
-            {
-                // This branch should never occur
-                result.Errors.Add(new ParseError("Invalid node: got null value", token));
-                return new ParseOperationResult(parseResult.Node);
-            }
-            if (!this.compoundFunctions.TryGetValue(parseResult.Node.Token.Value, out CompoundFunction function))
+            if (!this.compoundFunctions.TryGetValue(parseResult.Node!.Token.Value, out CompoundFunction function))
             {
                 return new ParseOperationResult(parseResult.Node, true);
             }
@@ -249,14 +234,7 @@ namespace NaoBlocks.Parser
             while ((token.Type == TokenType.Identifier) && function.Clauses.Contains(token.Value))
             {
                 parseResult = await this.ParseFunctionItemAsync(result, false);
-                if (parseResult.Node == null)
-                {
-                    // This branch should never occur
-                    result.Errors.Add(new ParseError("Invalid node: got null value", token));
-                    return new ParseOperationResult(parseResult.Node);
-                }
-
-                compound.Children.Add(parseResult.Node);
+                compound.Children.Add(parseResult.Node!);
                 if (!parseResult.IsValid) return new ParseOperationResult(compound);
 
                 token = await this.ScanNextTokenAsync();

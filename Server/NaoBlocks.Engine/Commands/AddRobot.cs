@@ -90,13 +90,14 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
+            ValidateExecutionState(this.robotType);
             var robot = new Robot
             {
-                MachineName = this.MachineName ?? "<Unknown>",
-                FriendlyName = this.FriendlyName ?? "<Unknown>",
+                MachineName = this.MachineName!,
+                FriendlyName = this.FriendlyName!,
                 Password = this.HashedPassword,
                 IsInitialised = true,
-                RobotTypeId = this.robotType!.Id ?? string.Empty,
+                RobotTypeId = this.robotType!.Id,
                 WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);
