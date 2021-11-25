@@ -47,7 +47,7 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.user);
+            ValidateExecutionState(this.user);
             var snapshots = await session.Query<CodeProgram>()
                 .Where(cp => cp.UserId == this.user!.Id)
                 .ToListAsync()

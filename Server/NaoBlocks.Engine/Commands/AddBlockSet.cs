@@ -64,7 +64,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.robotType);
+            ValidateExecutionState(this.robotType);
             var set = new BlockSet
             {
                 Name = (this.Name ?? "<Unknown>").Trim(),

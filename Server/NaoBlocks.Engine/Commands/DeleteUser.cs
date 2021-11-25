@@ -41,7 +41,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.person);
+            ValidateExecutionState(this.person);
             session.Delete(this.person);
             return Task.FromResult(CommandResult.New(this.Number));
         }

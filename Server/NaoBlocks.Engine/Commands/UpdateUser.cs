@@ -87,7 +87,7 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.person);
+            ValidateExecutionState(this.person);
             if (!string.IsNullOrWhiteSpace(this.Name) && (this.Name != this.person!.Name)) this.person.Name = this.Name.Trim();
             if (this.HashedPassword != null) this.person!.Password = this.HashedPassword;
             if (this.Settings != null) this.person!.Settings = this.Settings;

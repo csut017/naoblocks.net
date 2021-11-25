@@ -63,8 +63,8 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.robotType);
-            this.ValidateExecutionState(this.document);
+            ValidateExecutionState(this.robotType);
+            ValidateExecutionState(this.document);
             var categories = this.document!
                 .Root!
                 .Descendants("category")

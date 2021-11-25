@@ -79,7 +79,7 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.RobotId);
+            ValidateExecutionState(this.RobotId);
             var now = this.WhenExecuted;
             var robotId = this.RobotId ?? "<Unknown>";
             var existing = await session.Query<Session>()

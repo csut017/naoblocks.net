@@ -12,6 +12,8 @@ namespace NaoBlocks.Engine.Commands
     {
         private Robot? robot;
 
+        private RobotType? robotType;
+
         /// <summary>
         /// Gets or sets the friendly name.
         /// </summary>
@@ -31,6 +33,11 @@ namespace NaoBlocks.Engine.Commands
         /// Gets or sets the plain type password
         /// </summary>
         public string? Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the robot.
+        /// </summary>
+        public string? RobotType { get; set; }
 
         /// <summary>
         /// Validates that the robot exists.
@@ -56,6 +63,17 @@ namespace NaoBlocks.Engine.Commands
                 this.Password = null;
             }
 
+            if (!string.IsNullOrEmpty(this.RobotType))
+            {
+                this.robotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.RobotType)
+                    .ConfigureAwait(false);
+                if (this.robotType == null)
+                {
+                    errors.Add(this.GenerateError($"Unknown robot type {this.RobotType}"));
+                }
+            }
+
             return errors.AsEnumerable();
         }
 
@@ -67,12 +85,17 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.robot);
+            ValidateExecutionState(this.robot);
             if (!string.IsNullOrEmpty(this.FriendlyName) && (this.FriendlyName != this.robot!.FriendlyName)) this.robot.FriendlyName = this.FriendlyName;
             if (this.HashedPassword != null)
             {
                 this.robot!.Password = this.HashedPassword;
                 this.robot.IsInitialised = true;
+            }
+
+            if (!string.IsNullOrEmpty(this.RobotType))
+            {
+                this.robot!.RobotTypeId = this.robotType!.Id;
             }
 
             return Task.FromResult(CommandResult.New(this.Number, this.robot!));
@@ -87,6 +110,16 @@ namespace NaoBlocks.Engine.Commands
         {
             var errors = new List<CommandError>();
             this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(this.RobotType))
+            {
+                this.robotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.RobotType)
+                    .ConfigureAwait(false);
+                if (this.robotType == null)
+                {
+                    errors.Add(this.GenerateError($"Robot type {this.RobotType} is missing"));
+                }
+            }
             return errors.AsEnumerable();
         }
     }

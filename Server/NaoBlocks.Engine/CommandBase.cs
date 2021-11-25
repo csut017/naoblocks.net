@@ -112,9 +112,15 @@ namespace NaoBlocks.Engine
         /// </summary>
         /// <param name="state">The state object to check.</param>
         /// <exception cref="InvalidOperationException">Thrown if the state variable is null.</exception>
-        protected void ValidateExecutionState(object? state)
+        protected static void ValidateExecutionState(params object?[] state)
         {
-            if (state == null) throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
+            foreach (object? entity in state)
+            {
+                if (entity == null)
+                {
+                    throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
+                }
+            }
         }
     }
 }

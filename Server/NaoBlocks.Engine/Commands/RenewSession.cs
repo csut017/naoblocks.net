@@ -63,7 +63,7 @@ namespace NaoBlocks.Engine.Commands
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.session);
+            ValidateExecutionState(this.session);
             var now = this.WhenExecuted;
             this.session!.WhenExpires = now.AddDays(1);
             return Task.FromResult(CommandResult.New(this.Number, this.session));

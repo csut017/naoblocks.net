@@ -68,7 +68,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
         {
-            this.ValidateExecutionState(this.person);
+            ValidateExecutionState(this.person);
             this.person!.LoginToken = this.SecurityToken;
             return Task.FromResult(CommandResult.New(this.Number, this.person));
         }
