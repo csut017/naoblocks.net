@@ -1,5 +1,7 @@
 ﻿using Moq;
 using NaoBlocks.Common;
+using NaoBlocks.Engine.Queries;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -134,6 +136,40 @@ namespace NaoBlocks.Engine.Tests
             Assert.Equal(new string[] {
                     "WARNING: Command failed validation"
                 }, logger.Messages.ToArray());
+        }
+
+        [Fact]
+        public void QueryRetrievesTheQueryInstance()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+
+            // Act
+            var query = engine.Query<UserData>();
+
+            // Assert
+            Assert.NotNull(query);
+            Assert.NotNull(query.Session);
+        }
+
+        [Fact]
+        public void QueryRetrievesSameQueryInstance()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+
+            // Act
+            var query1 = engine.Query<UserData>();
+            var query2 = engine.Query<UserData>();
+
+            // Assert
+            Assert.Same(query1, query2);
         }
     }
 }

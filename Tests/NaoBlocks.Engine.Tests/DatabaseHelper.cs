@@ -3,7 +3,7 @@ using Raven.Client.Documents.Session;
 using Raven.TestDriver;
 using System;
 
-namespace NaoBlocks.Engine.Tests.Commands
+namespace NaoBlocks.Engine.Tests
 {
     public class DatabaseHelper : RavenTestDriver
     {
@@ -30,6 +30,19 @@ namespace NaoBlocks.Engine.Tests.Commands
             session.SaveChanges();
             WaitForIndexing(store);
             return store;
+        }
+
+        protected static IDatabaseSession WrapSession(IAsyncDocumentSession session)
+        {
+            return new MockingRavenDbWrapper(session);
+        }
+
+        protected static TQuery InitialiseQuery<TQuery>(IAsyncDocumentSession session)
+            where TQuery : DataQuery, new()
+        {
+            var query = new TQuery();
+            query.InitialiseSession(WrapSession(session));
+            return query;
         }
     }
 }

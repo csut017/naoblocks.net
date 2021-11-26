@@ -10,6 +10,7 @@ namespace NaoBlocks.Engine
     {
         private readonly IDatabaseSession session;
         private readonly IDatabase database;
+        private readonly Dictionary<Type, DataQuery> queries = new Dictionary<Type, DataQuery>();
 
         /// <summary>
         /// Initialises a new <see cref="ExecutionEngine"/> instance.
@@ -110,6 +111,21 @@ namespace NaoBlocks.Engine
                 this.Logger.LogInformation("Command validated");
             }
             return errors;
+        }
+
+        /// <summary>
+        /// Retrieves a database query.
+        /// </summary>
+        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
+        /// <returns>An instance of the query.</returns>
+        public TQuery Query<TQuery>()
+            where TQuery : DataQuery, new()
+        {
+            if (this.queries.TryGetValue(typeof(TQuery), out var query)) return (TQuery)query;
+            query = new TQuery();
+            query.InitialiseSession(this.session);
+            this.queries.Add(typeof(TQuery), query);
+            return (TQuery)query;
         }
     }
 }

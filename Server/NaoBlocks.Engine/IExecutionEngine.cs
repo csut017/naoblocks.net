@@ -44,5 +44,13 @@ namespace NaoBlocks.Engine
         /// If errors is empty, then the command is assumed to be validated.
         /// </remarks>
         Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command);
+
+        /// <summary>
+        /// Retrieves a database query.
+        /// </summary>
+        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
+        /// <returns>An instance of the query.</returns>
+        TQuery Query<TQuery>()
+            where TQuery: DataQuery, new();
     }
 }

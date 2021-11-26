@@ -50,5 +50,11 @@ namespace NaoBlocks.Engine.Tests
         {
             return await command.RestoreAsync(this.DatabaseSession);
         }
+
+        public TQuery Query<TQuery>()
+            where TQuery : DataQuery, new()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
