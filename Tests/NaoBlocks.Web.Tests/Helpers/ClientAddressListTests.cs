@@ -4,6 +4,7 @@ using Xunit;
 
 namespace NaoBlocks.Web.Tests.Helpers
 {
+    [Collection("ClientAddressList tests")]
     public class ClientAddressListTests
     {
         [Fact]

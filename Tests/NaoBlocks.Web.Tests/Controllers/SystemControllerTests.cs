@@ -8,11 +8,15 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Dtos;
+using NaoBlocks.Web.Helpers;
+using System;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
+    [Collection("ClientAddressList tests")]
     public class SystemControllerTests
     {
         [Theory]
@@ -88,6 +92,56 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<ExecutionResult>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
             engine.Verify();
+        }
+
+        [Fact]
+        public async Task ClientAddressesRetrievesAddresses()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object);
+            ClientAddressList.Clear();
+            ClientAddressList.Add("Test Address");
+
+            // Act
+            var response = await controller.ClientAddresses();
+
+            // Assert
+            var result = Assert.IsType<ListResult<string>>(response.Value);
+            Assert.Equal(1, result.Count);
+            Assert.Equal(new[] { "Test Address" }, result.Items);
+        }
+
+        [Fact]
+        public async Task ClientAddressesFileRetrievesTextFile()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object);
+            ClientAddressList.Clear();
+            ClientAddressList.Add("http://test");
+            ClientAddressList.Add("https://test");
+
+            // Act
+            var response = await controller.ClientAddressesFile();
+
+            // Assert
+            var result = Assert.IsType<FileContentResult>(response);
+            Assert.Equal("connect.txt", result.FileDownloadName);
+            Assert.Equal(ContentTypes.Txt, result.ContentType);
+            Assert.Equal(
+                string.Join("\n", new[] { "http://test,,no", "https://test,,yes" }), 
+                Encoding.UTF8.GetString(result.FileContents));
         }
     }
 }

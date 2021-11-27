@@ -8,6 +8,7 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using System.Reflection;
+using System.Text;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -63,32 +64,40 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
         }
 
-        //[HttpGet("system/addresses")]
-        //[AllowAnonymous]
-        //public Task<ActionResult<ListResult<string>>> ClientAddresses()
-        //{
-        //    var addresses = new ListResult<string>
-        //    {
-        //        Items = ClientAddressList.Get()
-        //    };
-        //    addresses.Count = addresses.Items.Count();
-        //    return Task.FromResult(new ActionResult<ListResult<string>>(addresses));
-        //}
+        /// <summary>
+        /// Retreives the list of possible server addresses.
+        /// </summary>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the server addresses.</returns>
+        [HttpGet("system/addresses")]
+        [AllowAnonymous]
+        public Task<ActionResult<ListResult<string>>> ClientAddresses()
+        {
+            var addresses = new ListResult<string>
+            {
+                Items = ClientAddressList.Get()
+            };
+            addresses.Count = addresses.Items.Count();
+            return Task.FromResult(new ActionResult<ListResult<string>>(addresses));
+        }
 
-        //[HttpGet("system/addresses/connect.txt")]
-        //[AllowAnonymous]
-        //public Task<ActionResult> ClientAddressesFile()
-        //{
-        //    var addresses = ClientAddressList.Get();
-        //    var data = string.Join(
-        //        '\n',
-        //        addresses.Select(a => a + ",," + (a.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? "yes" : "no")));
-        //    var file = new FileContentResult(Encoding.UTF8.GetBytes(data), ContentTypes.Txt)
-        //    {
-        //        FileDownloadName = "connect.txt"
-        //    };
-        //    return Task.FromResult((ActionResult)file);
-        //}
+        /// <summary>
+        /// Retrieves the list of server addresses in a connection file.
+        /// </summary>
+        /// <returns>A <see cref="FileContentResult"/> containing the list of addresses.</returns>
+        [HttpGet("system/addresses/connect.txt")]
+        [AllowAnonymous]
+        public Task<ActionResult> ClientAddressesFile()
+        {
+            var addresses = ClientAddressList.Get();
+            var data = string.Join(
+                '\n',
+                addresses.Select(a => a + ",," + (a.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? "yes" : "no")));
+            var file = new FileContentResult(Encoding.UTF8.GetBytes(data), ContentTypes.Txt)
+            {
+                FileDownloadName = "connect.txt"
+            };
+            return Task.FromResult((ActionResult)file);
+        }
 
         //[HttpGet("system/status")]
         //[Authorize("Administrator")]
