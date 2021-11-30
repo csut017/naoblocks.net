@@ -26,5 +26,17 @@ namespace NaoBlocks.Engine.Tests.Queries
             var result = await query.RetrieveByNameAsync("Mia");
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task RetrievePageAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new User { Name = "Mia", Role = UserRole.Student });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<UserData>(session);
+            var result = await query.RetrievePageAsync(0, 10);
+            Assert.Equal(1, result.Count);
+            Assert.NotEmpty(result.Items);
+            Assert.Equal(0, result.Page);
+        }
     }
 }

@@ -1,5 +1,8 @@
-﻿using NaoBlocks.Engine.Data;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Engine.Data;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
 
 namespace NaoBlocks.Engine.Queries
 {
@@ -31,6 +34,29 @@ namespace NaoBlocks.Engine.Queries
             var result = await this.Session.Query<User>()
                 .FirstOrDefaultAsync(u => u.Name == name)
                 .ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieves a page of users.
+        /// </summary>
+        /// <param name="pageNum">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of users in the page.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the users.</returns>
+        public virtual async Task<ListResult<User>> RetrievePageAsync(int pageNum, int pageSize)
+        {
+            var query = (IRavenQueryable<User>)this.Session.Query<User>();
+            var users = await query.Statistics(out QueryStatistics stats)
+                                    .OrderBy(s => s.Name)
+                                    .Skip(pageNum * pageSize)
+                                    .Take(pageSize)
+                                    .ToListAsync();
+            var result = new ListResult<User>
+            {
+                Count = stats.TotalResults,
+                Page = pageNum,
+                Items = users
+            };
             return result;
         }
     }

@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 using Commands = NaoBlocks.Engine.Commands;
+using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -30,6 +31,11 @@ namespace NaoBlocks.Web.Controllers
             this.executionEngine = executionEngine;
         }
 
+        /// <summary>
+        /// Deletes a user by their name.
+        /// </summary>
+        /// <param name="id">The name of the user.</param>
+        /// <returns>The result of execution.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
@@ -41,6 +47,11 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp(command);
         }
 
+        /// <summary>
+        /// Retrieves a user by their name.
+        /// </summary>
+        /// <param name="id">The name of the user.</param>
+        /// <returns>Either a 404 (not found) or the user details.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Dtos.User>> GetUser(string id)
         {
@@ -59,83 +70,101 @@ namespace NaoBlocks.Web.Controllers
             return Dtos.User.FromModel(user, true);
         }
 
-        //[HttpGet]
-        //public async Task<ListResult<Dtos.User>> GetUsers(int? page, int? size)
-        //{
-        //    var pageSize = size ?? 25;
-        //    var pageNum = page ?? 0;
-        //    if (pageSize > 100) pageSize = 100;
+        /// <summary>
+        /// Retrieves a page of users.
+        /// </summary>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the users.</returns>
+        [HttpGet]
+        public async Task<ListResult<Dtos.User>> GetUsers(int? page, int? size)
+        {
+            (int pageNum, int pageSize)= this.ValidatePageArguments(page, size);
 
-        //    this._logger.LogDebug($"Retrieving users: page {pageNum} with size {pageSize}");
-        //    var users = await this.session.Query<User>()
-        //                                    .Statistics(out QueryStatistics stats)
-        //                                    .OrderBy(s => s.Name)
-        //                                    .Skip(pageNum * pageSize)
-        //                                    .Take(pageSize)
-        //                                    .ToListAsync();
-        //    var count = users.Count;
-        //    this._logger.LogDebug($"Retrieved {count} users");
-        //    var result = new ListResult<Dtos.User>
-        //    {
-        //        Count = stats.TotalResults,
-        //        Page = pageNum,
-        //        Items = users.Select(s => Dtos.User.FromModel(s))
-        //    };
-        //    return result;
-        //}
+            this._logger.LogDebug($"Retrieving users: page {pageNum} with size {pageSize}");
 
-        //[HttpPost]
-        //public async Task<ActionResult<ExecutionResult<Dtos.User>>> Post(Dtos.User user)
-        //{
-        //    if (user == null)
-        //    {
-        //        return this.BadRequest(new
-        //        {
-        //            Error = "Missing user details"
-        //        });
-        //    }
+            var dataPage = await this.executionEngine
+                .Query<UserData>()
+                .RetrievePageAsync(pageNum, pageSize)
+                .ConfigureAwait(false);
+            var count = dataPage.Items?.Count() ?? 0;
+            this._logger.LogDebug($"Retrieved {count} users");
 
-        //    this._logger.LogInformation($"Adding new user '{user.Name}'");
-        //    if (!Enum.TryParse<UserRole>(user.Role, out UserRole role))
-        //    {
-        //        role = UserRole.Unknown;
-        //    }
+            var result = new ListResult<Dtos.User>
+            {
+                Count = dataPage.Count,
+                Page = dataPage.Page,
+                Items = dataPage.Items?.Select(s => Dtos.User.FromModel(s))
+            };
+            return result;
+        }
 
-        //    var command = new Commands.AddUser
-        //    {
-        //        Name = user.Name,
-        //        Password = user.Password,
-        //        Role = role
-        //    };
-        //    return await this.executionEngine.ExecuteForHttp(command, s => Dtos.User.FromModel(s));
-        //}
+        /// <summary>
+        /// Adds a new user.
+        /// </summary>
+        /// <param name="user">The user to add.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost]
+        public async Task<ActionResult<ExecutionResult<Dtos.User>>> Post(Dtos.User? user)
+        {
+            if (user == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing user details"
+                });
+            }
 
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<ExecutionResult>> Put(string? id, Dtos.User? user)
-        //{
-        //    if ((user == null) || string.IsNullOrEmpty(id))
-        //    {
-        //        return this.BadRequest(new
-        //        {
-        //            Error = "Missing user details"
-        //        });
-        //    }
+            this._logger.LogInformation($"Adding new user '{user.Name}'");
+            if (!Enum.TryParse(user.Role, out Data.UserRole role))
+            {
+                role = Data.UserRole.Unknown;
+            }
 
-        //    this._logger.LogInformation($"Updating user '{id}'");
-        //    if (!Enum.TryParse<UserRole>(user.Role, out UserRole role))
-        //    {
-        //        role = UserRole.Unknown;
-        //    }
+            var command = new Commands.AddUser
+            {
+                Name = user.Name,
+                Password = user.Password,
+                Role = role
+            };
+            return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.User>(
+                command, s => Dtos.User.FromModel(s!));
+        }
 
-        //    var command = new Commands.UpdateUser
-        //    {
-        //        CurrentName = id,
-        //        Name = user.Name,
-        //        Password = user.Password,
-        //        Role = role
-        //    };
-        //    return await this.executionEngine.ExecuteForHttp(command);
-        //}
+        /// <summary>
+        /// Updates an existing user.
+        /// </summary>
+        /// <param name="id">The name of the user.</param>
+        /// <param name="user">The updated details.</param>
+        /// <returns>The result of execution.</returns>
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ExecutionResult<Dtos.User>>> Put(string? id, Dtos.User? user)
+        {
+            if ((user == null) || string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing user details"
+                });
+            }
+
+            this._logger.LogInformation($"Updating user '{id}'");
+            if (!Enum.TryParse(user.Role, out Data.UserRole role))
+            {
+                role = Data.UserRole.Unknown;
+            }
+
+            var command = new Commands.UpdateUser
+            {
+                CurrentName = id,
+                Name = user.Name,
+                Password = user.Password,
+                Role = role
+            };
+            return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.User>(
+                command, s => Dtos.User.FromModel(s!));
+        }
 
         //[HttpGet("export/list")]
         //public async Task<ActionResult> ExportList()
