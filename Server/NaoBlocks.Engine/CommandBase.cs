@@ -33,11 +33,12 @@ namespace NaoBlocks.Engine
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>The result of the execution.</returns>
-        public async Task<CommandResult> ExecuteAsync(IDatabaseSession session)
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        public async Task<CommandResult> ExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             try
             {
-                return await this.DoExecuteAsync(session).ConfigureAwait(false);
+                return await this.DoExecuteAsync(session, engine).ConfigureAwait(false);
             }
             catch (InvalidCallOrderException)
             {
@@ -75,7 +76,8 @@ namespace NaoBlocks.Engine
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>The errors from validation. Empty if there are no errors.</returns>
-        public virtual Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        public virtual Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             return Task.FromResult(new List<CommandError>().AsEnumerable());
         }
@@ -94,8 +96,9 @@ namespace NaoBlocks.Engine
         /// Performs the actual execution. This method must be implemented in all derived classes.
         /// </summary>
         /// <param name="session">The database session to use.</param>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
         /// <returns>The result of execution.</returns>
-        protected abstract Task<CommandResult> DoExecuteAsync(IDatabaseSession session);
+        protected abstract Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine);
 
         /// <summary>
         /// Generates an error.

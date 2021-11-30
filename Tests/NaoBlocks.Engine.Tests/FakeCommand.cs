@@ -19,7 +19,7 @@ namespace NaoBlocks.Engine.Tests
 
         public bool RestoreCalled { get; private set; }
 
-        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
+        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             this.ExecuteCalled = true;
             if (this.Error != null) throw this.Error;
@@ -34,10 +34,10 @@ namespace NaoBlocks.Engine.Tests
             return Task.FromResult(this.OnRestoration());
         }
 
-        public override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        public override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             this.ValidateCalled = true;
-            if (this.OnValidation == null) return base.ValidateAsync(session);
+            if (this.OnValidation == null) return base.ValidateAsync(session, engine);
 
             return Task.FromResult(this.OnValidation());
         }

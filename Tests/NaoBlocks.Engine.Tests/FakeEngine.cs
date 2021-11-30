@@ -37,13 +37,13 @@ namespace NaoBlocks.Engine.Tests
 
         public async Task<CommandResult> ExecuteAsync(CommandBase command)
         {
-            var result = await command.ExecuteAsync(this.DatabaseSession);
+            var result = await command.ExecuteAsync(this.DatabaseSession, this);
             return result;
         }
 
         public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
         {
-            return await command.ValidateAsync(this.DatabaseSession);
+            return await command.ValidateAsync(this.DatabaseSession, this);
         }
 
         public async Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)

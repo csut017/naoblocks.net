@@ -27,7 +27,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.CurrentName))
@@ -49,7 +50,8 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
-        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.robotType);
             if (!string.IsNullOrWhiteSpace(this.Name) && (this.Name != this.robotType!.Name)) this.robotType.Name = this.Name.Trim();

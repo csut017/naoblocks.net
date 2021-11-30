@@ -50,7 +50,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             var roleName = this.Role.ToString();
@@ -89,7 +90,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
-        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var user = new User
             {

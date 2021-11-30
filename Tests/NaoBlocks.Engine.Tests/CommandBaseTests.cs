@@ -12,7 +12,7 @@ namespace NaoBlocks.Engine.Tests
         {
             var command = new FakeCommand { Error = new Exception("Failing!") };
             var sessionMock = new Mock<IDatabaseSession>();
-            var result = await command.ExecuteAsync(sessionMock.Object);
+            var result = await command.ExecuteAsync(sessionMock.Object, new FakeEngine());
             Assert.Equal("Unexpected error: Failing!", result.Error);
         }
 
@@ -21,7 +21,7 @@ namespace NaoBlocks.Engine.Tests
         {
             var command = new FakeCommand { Error = new InvalidCallOrderException() };
             var sessionMock = new Mock<IDatabaseSession>();
-            await Assert.ThrowsAsync<InvalidCallOrderException>(async () => await command.ExecuteAsync(sessionMock.Object));
+            await Assert.ThrowsAsync<InvalidCallOrderException>(async () => await command.ExecuteAsync(sessionMock.Object, new FakeEngine()));
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace NaoBlocks.Engine.Tests
         {
             var command = new FakeCommand { Number = 10, Id = "5" };
             var sessionMock = new Mock<IDatabaseSession>();
-            var result = await command.ExecuteAsync(sessionMock.Object);
+            var result = await command.ExecuteAsync(sessionMock.Object, new FakeEngine());
             Assert.Equal(10, result.Number);
         }
 
@@ -57,7 +57,7 @@ namespace NaoBlocks.Engine.Tests
         {
             var command = new FakeCommand();
             var sessionMock = new Mock<IDatabaseSession>();
-            var result = await command.ValidateAsync(sessionMock.Object);
+            var result = await command.ValidateAsync(sessionMock.Object, new FakeEngine());
             Assert.Empty(result);
         }
 

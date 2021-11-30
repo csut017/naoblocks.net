@@ -20,7 +20,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>Any valdiation errors.</returns>
-        public override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        public override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Code))
@@ -36,7 +37,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
-        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var parser = CodeParser.New(this.Code!);
             var parseResult = await parser.ParseAsync().ConfigureAwait(false);

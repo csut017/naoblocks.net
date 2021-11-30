@@ -31,7 +31,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>Any valdiation errors.</returns>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
@@ -62,7 +63,8 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>A <see cref="CommandResult"/> containing the asbtract syntax tree.</returns>
-        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session)
+        /// <param name="engine"></param>
+        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.robotType);
             var set = new BlockSet
