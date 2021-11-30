@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
@@ -9,10 +8,11 @@ using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
-using System;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+
+using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -140,8 +140,77 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Equal("connect.txt", result.FileDownloadName);
             Assert.Equal(ContentTypes.Txt, result.ContentType);
             Assert.Equal(
-                string.Join("\n", new[] { "http://test,,no", "https://test,,yes" }), 
+                string.Join("\n", new[] { "http://test,,no", "https://test,,yes" }),
                 Encoding.UTF8.GetString(result.FileContents));
+        }
+
+        [Fact]
+        public async Task GetSiteConfigurationRetrievesAddress()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var query = new Mock<SystemData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveSystemValuesAsync()).Returns(Task.FromResult(new Data.SystemValues { DefaultAddress = "123" }));
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object);
+
+            // Act
+            var response = await controller.GetSiteConfiguration();
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.Equal("123", response.Value?.DefaultAddress);
+        }
+
+        [Fact]
+        public async Task SetDefaultAddressHandlesNoData()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object);
+
+            // Act
+            var response = await controller.SetDefaultAddress(null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task SetDefaultAddressCallsStoreDefaultAddress()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.SystemValues { DefaultAddress = "1234" })
+            };
+            engine.ExpectCommand<StoreDefaultAddress>();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object);
+
+            // Act
+            var response = await controller.SetDefaultAddress(
+                new SiteConfiguration { DefaultAddress = "4321" });
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<SiteConfiguration>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            Assert.Equal("1234", result?.Output?.DefaultAddress);
         }
     }
 }

@@ -46,6 +46,53 @@ namespace NaoBlocks.Web.Helpers
             engine.Logger.LogInformation($"Executed {command.GetType().Name} successfully");
             return new ExecutionResult();
         }
+
+        /// <summary>
+        /// Executes a command and transforms the result before returning it in an <see cref="ExecutionResult"/> instance.
+        /// </summary>
+        /// <typeparam name="TIn">The input type.</typeparam>
+        /// <typeparam name="TOut">The output type</typeparam>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="mapper">The mapper to transforms the result.</param>
+        /// <returns>A <see cref="ExecutionResult"/> instance containing the outcome of executing the command.</returns>
+        public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this IExecutionEngine engine, CommandBase command, Func<TIn?, TOut> mapper)
+            where TIn : class
+        {
+            engine.Logger.LogDebug($"Validating {command.GetType().Name} command");
+            var errors = await engine.ValidateAsync(command);
+            if (errors.Any())
+            {
+                LogValidationFailure(engine, command, errors);
+                return new BadRequestObjectResult(new ExecutionResult<TOut>
+                {
+                    ValidationErrors = errors
+                });
+            }
+
+            engine.Logger.LogDebug($"Executing {command.GetType().Name} command");
+            var rawResult = (await engine.ExecuteAsync(command));
+            if (!rawResult.WasSuccessful)
+            {
+                LogExecutionFailure(engine, command, rawResult);
+                return new ObjectResult(new ExecutionResult<TOut>
+                {
+                    ExecutionErrors = rawResult.ToErrors() ?? Array.Empty<CommandError>()
+                })
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+
+            await engine.CommitAsync();
+            engine.Logger.LogInformation($"Executed {command.GetType().Name} successfully");
+
+            engine.Logger.LogDebug($"Mapping from {typeof(TIn).Name} to {typeof(TOut).Name}");
+            var result = rawResult.As<TIn>();
+            var output = mapper(result.Output);
+            return ExecutionResult.New(output);
+        }
+
         private static void LogExecutionFailure(IExecutionEngine engine, CommandBase command, CommandResult? result)
         {
             engine.Logger.LogError($"Execution for {command.GetType().Name} failed execution");

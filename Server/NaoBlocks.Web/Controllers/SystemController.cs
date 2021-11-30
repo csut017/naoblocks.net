@@ -152,39 +152,41 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
-        //[HttpGet("system/config")]
-        //[AllowAnonymous]
-        //public async Task<ActionResult<Dtos.SiteConfiguration>> GetSiteConfiguration()
-        //{
-        //    this.logger.LogInformation($"retrieving site configuration");
-        //    var settings = await this.session.Query<SystemValues>()
-        //        .FirstOrDefaultAsync()
-        //        .ConfigureAwait(false);
-        //    return new Dtos.SiteConfiguration
-        //    {
-        //        DefaultAddress = settings?.DefaultAddress
-        //    };
-        //}
+        [HttpGet("system/config")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Dtos.SiteConfiguration>> GetSiteConfiguration()
+        {
+            this.logger.LogInformation($"Retrieving site configuration");
+            var settings = await this.executionEngine
+                .Query<SystemData>()
+                .RetrieveSystemValuesAsync();
+            return new Dtos.SiteConfiguration
+            {
+                DefaultAddress = settings.DefaultAddress
+            };
+        }
 
-        //[HttpPost("system/siteAddress")]
-        //[Authorize("Administrator")]
-        //public async Task<ActionResult<ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration config)
-        //{
-        //    if (config == null)
-        //    {
-        //        return this.BadRequest(new
-        //        {
-        //            Error = "Missing configuration settings"
-        //        });
-        //    }
+        [HttpPost("system/siteAddress")]
+        [Authorize("Administrator")]
+        public async Task<ActionResult<ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration? config)
+        {
+            if (config == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing configuration settings"
+                });
+            }
 
-        //    this.logger.LogInformation($"Updating default site address to '{config.DefaultAddress}'");
-        //    var command = new Commands.StoreDefaultAddress
-        //    {
-        //        Address = config.DefaultAddress
-        //    };
-        //    return await this.executionEngine.ExecuteForHttp(command, result => new Dtos.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
-        //}
+            this.logger.LogInformation($"Updating default site address to '{config.DefaultAddress}'");
+            var command = new StoreDefaultAddress
+            {
+                Address = config.DefaultAddress
+            };
+            return await this.executionEngine.ExecuteForHttp<SystemValues, Dtos.SiteConfiguration>(
+                command, 
+                result => new Dtos.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
+        }
 
         //[HttpGet("system/qrcode")]
         //[HttpGet("system/qrcode/{address}")]
