@@ -12,6 +12,9 @@ using System.Text;
 
 namespace NaoBlocks.Web.Controllers
 {
+    /// <summary>
+    /// Controller for system-level actions.
+    /// </summary>
     [Route("api/v1")]
     [ApiController]
     [Authorize]
@@ -21,6 +24,12 @@ namespace NaoBlocks.Web.Controllers
         private readonly IHub communicationsHub;
         private readonly ILogger<SystemController> logger;
 
+        /// <summary>
+        /// Initialise a new <see cref="SystemController"/> instance.
+        /// </summary>
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
+        /// <param name="hub">The client communications hub.</param>
         public SystemController(ILogger<SystemController> logger, IExecutionEngine executionEngine, IHub hub)
         {
             this.logger = logger;

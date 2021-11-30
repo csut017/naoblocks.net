@@ -20,5 +20,18 @@ namespace NaoBlocks.Engine.Queries
                 .ConfigureAwait(false);
             return hasAny;
         }
+
+        /// <summary>
+        /// Retrieve a user by their name.
+        /// </summary>
+        /// <param name="name">The user's name.</param>
+        /// <returns>The <see cref="User"/> instance.</returns>
+        public virtual async Task<User?> RetrieveByNameAsync(string name)
+        {
+            var result = await this.Session.Query<User>()
+                .FirstOrDefaultAsync(u => u.Name == name)
+                .ConfigureAwait(false);
+            return result;
+        }
     }
 }

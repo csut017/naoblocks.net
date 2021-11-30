@@ -10,11 +10,21 @@ namespace NaoBlocks.Engine.Tests.Queries
         [Fact]
         public async Task CheckForAnyCallsDatabase()
         {
-            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.Student });
+            using var store = InitialiseDatabase(new User { Name = "Mia", Role = UserRole.Student });
             using var session = store.OpenAsyncSession();
             var query = InitialiseQuery<UserData>(session);
             var result = await query.CheckForAnyAsync();
             Assert.True(result);
+        }
+
+        [Fact]
+        public async Task RetrieveByNameAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new User { Name = "Mia", Role = UserRole.Student });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<UserData>(session);
+            var result = await query.RetrieveByNameAsync("Mia");
+            Assert.NotNull(result);
         }
     }
 }
