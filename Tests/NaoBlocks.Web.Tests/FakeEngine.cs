@@ -1,9 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Data;
+using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -91,6 +98,42 @@ namespace NaoBlocks.Web.Tests
             }
 
             public Type Type { get; set; } 
+        }
+
+        /// <summary>
+        /// Setup the controller so a call to LoadUser will retrieve a user
+        /// </summary>
+        /// <param name="controller">The controller to configure</param>
+        /// <param name="name">The user's name.</param>
+        /// <param name="role">The user's role.</param>
+        /// <returns>A <see cref="User"/> instance.</returns>
+        internal User ConfigureUser(ControllerBase controller, string name, UserRole role)
+        {
+            var user = new User
+            {
+                Name = name,
+                Role = role
+            };
+            var identity = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, name),
+                    new Claim(ClaimTypes.Role, role.ToString())
+                });
+            var principal = new ClaimsPrincipal(identity);
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = principal
+                }
+            };
+
+            var query = new Mock<UserData>();
+            this.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync(name))
+                .Returns(Task.FromResult((User?)user));
+
+            return user;
         }
     }
 }

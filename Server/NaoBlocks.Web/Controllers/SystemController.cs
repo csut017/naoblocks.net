@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
-using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using System.Reflection;
 using System.Text;
+
+using Data = NaoBlocks.Engine.Data;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -44,7 +46,7 @@ namespace NaoBlocks.Web.Controllers
         /// <returns>A success <see cref="ExecutionResult"/> if the system was initialised, otherwise an error <see cref="ExecutionResult"/>.</returns>
         [HttpPost("system/initialise")]
         [AllowAnonymous]
-        public async Task<ActionResult<ExecutionResult>> Initialise(Dtos.User administrator)
+        public async Task<ActionResult<ExecutionResult>> Initialise(Transfer.User administrator)
         {
             this.logger.LogWarning("Initialising system");
 
@@ -65,7 +67,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 Name = administrator.Name,
                 Password = administrator.Password,
-                Role = UserRole.Administrator
+                Role = Data.UserRole.Administrator
             };
 
             return await this.executionEngine
@@ -110,12 +112,12 @@ namespace NaoBlocks.Web.Controllers
 
         //[HttpGet("system/status")]
         //[Authorize("Administrator")]
-        //public Task<ActionResult<Dtos.SystemStatus>> SystemStatus()
+        //public Task<ActionResult<Transfer.SystemStatus>> SystemStatus()
         //{
-        //    var status = new Dtos.SystemStatus();
+        //    var status = new Transfer.SystemStatus();
         //    foreach (var robot in this.communicationsHub.GetClients(ClientConnectionType.Robot))
         //    {
-        //        status.RobotsConnected.Add(new Dtos.RobotStatus
+        //        status.RobotsConnected.Add(new Transfer.RobotStatus
         //        {
         //            Id = robot.Id,
         //            MachineName = robot.Robot?.MachineName ?? string.Empty,
@@ -127,7 +129,7 @@ namespace NaoBlocks.Web.Controllers
 
         //    foreach (var user in this.communicationsHub.GetClients(ClientConnectionType.User))
         //    {
-        //        status.UsersConnected.Add(new Dtos.UserStatus
+        //        status.UsersConnected.Add(new Transfer.UserStatus
         //        {
         //            Id = user.Id,
         //            Name = user.User?.Name ?? string.Empty,
@@ -135,7 +137,7 @@ namespace NaoBlocks.Web.Controllers
         //        });
         //    }
 
-        //    return Task.FromResult(new ActionResult<Dtos.SystemStatus>(status));
+        //    return Task.FromResult(new ActionResult<Transfer.SystemStatus>(status));
         //}
 
         /// <summary>
@@ -163,13 +165,13 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpGet("system/config")]
         [AllowAnonymous]
-        public async Task<ActionResult<Dtos.SiteConfiguration>> GetSiteConfiguration()
+        public async Task<ActionResult<Transfer.SiteConfiguration>> GetSiteConfiguration()
         {
             this.logger.LogInformation($"Retrieving site configuration");
             var settings = await this.executionEngine
                 .Query<SystemData>()
                 .RetrieveSystemValuesAsync();
-            return new Dtos.SiteConfiguration
+            return new Transfer.SiteConfiguration
             {
                 DefaultAddress = settings.DefaultAddress
             };
@@ -177,7 +179,7 @@ namespace NaoBlocks.Web.Controllers
 
         [HttpPost("system/siteAddress")]
         [Authorize("Administrator")]
-        public async Task<ActionResult<ExecutionResult<Dtos.SiteConfiguration>>> SetDefaultAddress(Dtos.SiteConfiguration? config)
+        public async Task<ActionResult<ExecutionResult<Transfer.SiteConfiguration>>> SetDefaultAddress(Transfer.SiteConfiguration? config)
         {
             if (config == null)
             {
@@ -192,9 +194,9 @@ namespace NaoBlocks.Web.Controllers
             {
                 Address = config.DefaultAddress
             };
-            return await this.executionEngine.ExecuteForHttp<SystemValues, Dtos.SiteConfiguration>(
+            return await this.executionEngine.ExecuteForHttp<Data.SystemValues, Transfer.SiteConfiguration>(
                 command, 
-                result => new Dtos.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
+                result => new Transfer.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
         }
 
         //[HttpGet("system/qrcode")]
@@ -221,17 +223,17 @@ namespace NaoBlocks.Web.Controllers
         //    return File(stream.ToArray(), ContentTypes.Png);
         //}
 
-        //[HttpGet("whoami")]
-        //public async Task<ActionResult<Dtos.User>> WhoAmI()
-        //{
-        //    this.logger.LogInformation("Retrieving current user");
-        //    var user = await this.LoadUser(this.session).ConfigureAwait(false);
-        //    if (user == null) return this.NotFound();
-        //    return new Dtos.User
-        //    {
-        //        Name = user.Name,
-        //        Role = user.Role.ToString()
-        //    };
-        //}
+        [HttpGet("whoami")]
+        public async Task<ActionResult<Transfer.User>> WhoAmI()
+        {
+            this.logger.LogInformation("Retrieving current user");
+            var user = await this.LoadUserAsync(this.executionEngine).ConfigureAwait(false);
+            if (user == null) return this.NotFound();
+            return new Transfer.User
+            {
+                Name = user.Name,
+                Role = user.Role.ToString()
+            };
+        }
     }
 }

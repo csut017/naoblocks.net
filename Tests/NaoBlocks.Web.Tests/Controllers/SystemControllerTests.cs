@@ -212,5 +212,42 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.Verify();
             Assert.Equal("1234", result?.Output?.DefaultAddress);
         }
+
+
+        [Fact]
+        public async Task WhoAmIFailsIfUserNotSet()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var controller = new SystemController(loggerMock, engine, hub.Object);
+
+            // Act
+            var response = await controller.WhoAmI();
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<User>>(response);
+            Assert.IsType<NotFoundResult>(actual.Result);
+        }
+
+        [Fact]
+        public async Task WhoAmIReturnsCurrentUser()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var controller = new SystemController(loggerMock, engine, hub.Object);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.WhoAmI();
+
+            // Assert
+            var actual = Assert.IsType<ActionResult<User>>(response);
+            var user = Assert.IsType<User>(actual.Value);
+            Assert.Equal("Mia", user.Name);
+        }
     }
 }
