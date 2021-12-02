@@ -50,6 +50,11 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        public ILogger<MessageProcessor> Logger => logger;
+
+        /// <summary>
         /// Processes a message.
         /// </summary>
         /// <param name="client">The client that received the message.</param>
@@ -63,7 +68,7 @@ namespace NaoBlocks.Web.Communications
                     var (engine, session) = this.engineFactory.Initialise();
                     try
                     {
-                        this.logger.LogInformation($"Processing message type {message.Type}");
+                        this.Logger.LogInformation($"Processing message type {message.Type}");
                         await processor(engine, client, message);
                         await session.SaveChangesAsync();
                     }
@@ -74,13 +79,13 @@ namespace NaoBlocks.Web.Communications
                 }
                 catch (Exception err)
                 {
-                    this.logger.LogWarning($"An error occurred while processing {message.Type}: {err.Message}");
+                    this.Logger.LogWarning($"An error occurred while processing {message.Type}: {err.Message}");
                     client.SendMessage(GenerateErrorResponse(message, $"Unable to process message: {err.Message}"));
                 }
             }
             else
             {
-                this.logger.LogWarning($"Unable to find processor for message type {message.Type}");
+                this.Logger.LogWarning($"Unable to find processor for message type {message.Type}");
                 client.SendMessage(GenerateErrorResponse(message, $"Unable to find processor for {message.Type}"));
             }
         }
@@ -123,7 +128,7 @@ namespace NaoBlocks.Web.Communications
                 var errors = await AddToRobotLogAsync(engine, client.Robot.MachineName, message, logDescription);
                 foreach (var error in errors)
                 {
-                    this.logger.LogWarning($"Broadcast error: {error.Error}");
+                    this.Logger.LogWarning($"Broadcast error: {error.Error}");
                 }
             }
         }

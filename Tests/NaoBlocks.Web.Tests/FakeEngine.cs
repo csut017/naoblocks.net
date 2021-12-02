@@ -18,7 +18,7 @@ namespace NaoBlocks.Web.Tests
 {
     public class FakeEngine : IExecutionEngine
     {
-        private readonly ILogger logger = new FakeLogger<FakeEngine>();
+        private readonly FakeLogger<FakeEngine> logger = new FakeLogger<FakeEngine>();
         private readonly IDictionary<Type, DataQuery> queries = new Dictionary<Type, DataQuery>();
         private readonly Queue<CommandCall> expectedCommands = new();
         private bool useExpectedCommand;
@@ -134,6 +134,11 @@ namespace NaoBlocks.Web.Tests
                 .Returns(Task.FromResult((User?)user));
 
             return user;
+        }
+
+        public IEnumerable<string> GetLogMessages()
+        {
+            return this.logger.Messages;
         }
     }
 }
