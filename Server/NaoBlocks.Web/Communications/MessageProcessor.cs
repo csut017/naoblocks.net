@@ -122,14 +122,10 @@ namespace NaoBlocks.Web.Communications
             client.NotifyListeners(msg);
             client.LogMessage(msg);
             PopulateSourceValues(client, msg);
-            client.Hub?.SendToMonitors(msg);
+            this.hub.SendToMonitors(msg);
             if (client.Robot != null)
             {
-                var errors = await AddToRobotLogAsync(engine, client.Robot.MachineName, message, logDescription);
-                foreach (var error in errors)
-                {
-                    this.Logger.LogWarning($"Broadcast error: {error.Error}");
-                }
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, logDescription);
             }
         }
 
@@ -141,7 +137,7 @@ namespace NaoBlocks.Web.Communications
             client.NotifyListeners(msg);
             client.LogMessage(msg);
             PopulateSourceValues(client, msg);
-            client.Hub?.SendToMonitors(msg);
+            this.hub.SendToMonitors(msg);
             if ((client != null) && (client.Robot != null))
             {
                 await AddToRobotLogAsync(session, client.Robot.Id, message, "Program transferred");
@@ -301,7 +297,7 @@ namespace NaoBlocks.Web.Communications
             }
 
             client.LogMessage(msg);
-            client.Hub?.SendToMonitors(msg);
+            this.hub.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
@@ -440,7 +436,7 @@ namespace NaoBlocks.Web.Communications
             client.NotifyListeners(msg);
             client.LogMessage(msg);
             PopulateSourceValues(client, msg);
-            client.Hub?.SendToMonitors(msg);
+            this.hub.SendToMonitors(msg);
 
             if (client.Robot != null)
             {
@@ -491,7 +487,7 @@ namespace NaoBlocks.Web.Communications
                 severity = alert.Severity
             });
             PopulateSourceValues(client, broadcast);
-            client.Hub?.SendToMonitors(broadcast);
+            this.hub.SendToMonitors(broadcast);
             return Task.CompletedTask;
         }
 
@@ -607,43 +603,50 @@ namespace NaoBlocks.Web.Communications
         /// <param name="message">The message that the line is being generated as a result of.</param>
         /// <param name="description">The description of the line.</param>
         /// <param name="skipValues">Whether to include the values or not.</param>
-        private static async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false)
+        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false)
         {
+            var errors = new List<CommandError>();
             if (message.ConversationId == null)
             {
-                return new[]
-                {
-                    new CommandError(-1, "Adding to a robot log requires a conversation")
-                };
+                errors.Add(new CommandError(-1, "Adding to a robot log requires a conversation"));
             }
 
-            var command = new AddToRobotLog
-            {
-                ConversationId = message.ConversationId.Value,
-                MachineName = machineName,
-                Description = description,
-                SourceMessageType = message.Type
-            };
-
-            if (!skipValues)
-            {
-                foreach (var (key, value) in message.Values)
-                {
-                    command.Values.Add(new NamedValue
-                    {
-                        Name = key,
-                        Value = value
-                    });
-                }
-            }
-            var errors = await engine.ValidateAsync(command);
             if (!errors.Any())
             {
-                var result = await engine.ExecuteAsync(command);
-                if (!result.WasSuccessful)
+                var command = new AddToRobotLog
                 {
-                    errors = result.ToErrors();
+                    ConversationId = message.ConversationId!.Value,
+                    MachineName = machineName,
+                    Description = description,
+                    SourceMessageType = message.Type
+                };
+
+                if (!skipValues)
+                {
+                    foreach (var (key, value) in message.Values)
+                    {
+                        command.Values.Add(new NamedValue
+                        {
+                            Name = key,
+                            Value = value
+                        });
+                    }
                 }
+                errors.AddRange(await engine.ValidateAsync(command));
+
+                if (!errors.Any())
+                {
+                    var result = await engine.ExecuteAsync(command);
+                    if (!result.WasSuccessful)
+                    {
+                        errors.AddRange(result.ToErrors());
+                    }
+                }
+            }
+
+            foreach (var error in errors)
+            {
+                this.Logger.LogWarning($"Broadcast error: {error.Error}");
             }
 
             return errors;

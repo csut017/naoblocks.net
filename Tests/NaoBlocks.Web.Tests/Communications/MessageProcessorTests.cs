@@ -147,6 +147,12 @@ namespace NaoBlocks.Web.Tests.Communications
         {
             // Arrange
             var (engine, processor, client) = InitialiseTestProcessor();
+            AddToRobotLog? command = null;
+            engine.OnExecute = c =>
+            {
+                command = c as AddToRobotLog;
+                return CommandResult.New(3);
+            };
             engine.ExpectCommand<AddToRobotLog>();
             client.Robot = new Data.Robot();
 
@@ -159,6 +165,92 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             engine.Verify();
+            Assert.Equal("14916", command?.Values.FirstOrDefault(nv => nv.Name == "programId")?.Value);
+        }
+
+        [Theory]
+        [InlineData(ClientConnectionType.Robot, "Robot")]
+        [InlineData(ClientConnectionType.User, "User")]
+        [InlineData(ClientConnectionType.Unknown, "Unknown")]
+        public async Task BroadcastSendsToMonitors(ClientConnectionType type, string expectedType)
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (_, processor, client) = InitialiseTestProcessor(type, hub.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.ProgramStarted)
+            {
+                ConversationId = 963
+            };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.VerifyAll();
+            Assert.Equal(expectedType, receivedMessage?.Values["SourceType"]);
+        }
+
+        [Fact]
+        public async Task BroadcastSendsUserDetails()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (_, processor, client) = InitialiseTestProcessor(ClientConnectionType.User, hub.Object);
+            client.User = new Data.User { Name = "Mia" };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.ProgramStarted)
+            {
+                ConversationId = 963
+            };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.VerifyAll();
+            Assert.Equal("User", receivedMessage?.Values["SourceType"]);
+            Assert.Equal("Mia", receivedMessage?.Values["SourceName"]);
+        }
+
+        [Fact]
+        public async Task BroadcastSendsRobotDetails()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (_, processor, client) = InitialiseTestProcessor(ClientConnectionType.Robot, hub.Object);
+            client.Robot = new Data.Robot { MachineName = "Mihīni" };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.ProgramStarted)
+            {
+                ConversationId = 963
+            };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.VerifyAll();
+            Assert.Equal("Robot", receivedMessage?.Values["SourceType"]);
+            Assert.Equal("Mihīni", receivedMessage?.Values["SourceName"]);
         }
 
         [Fact]
@@ -190,9 +282,9 @@ namespace NaoBlocks.Web.Tests.Communications
             return logger.Messages.ToArray();
         }
 
-        private static (FakeEngine, MessageProcessor, ClientConnection) InitialiseTestProcessor()
+        private static (FakeEngine, MessageProcessor, ClientConnection) InitialiseTestProcessor(ClientConnectionType type = ClientConnectionType.Unknown, IHub? hub = null)
         {
-            var hub = new Mock<IHub>();
+            hub ??= new Mock<IHub>().Object;
             var logger = new FakeLogger<MessageProcessor>();
             var factory = new Mock<IEngineFactory>();
             var engine = new FakeEngine();
@@ -200,8 +292,8 @@ namespace NaoBlocks.Web.Tests.Communications
             factory.Setup(f => f.Initialise())
                 .Returns((engine, session.Object));
             var socket = new Mock<WebSocket>();
-            var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new ClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var processor = new MessageProcessor(hub, logger, factory.Object);
+            var client = new ClientConnection(socket.Object, type, processor);
             return (engine, processor, client);
         }
 

@@ -39,7 +39,7 @@ namespace NaoBlocks.Web.Communications
         public IHub? Hub { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of connection.
+        /// Gets the type of connection.
         /// </summary>
         public ClientConnectionType Type { get; private set; }
 
