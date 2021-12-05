@@ -28,10 +28,10 @@ namespace NaoBlocks.Web.Communications
             {
                 //{ ClientMessageType.Authenticate, this.Authenticate },
                 //{ ClientMessageType.RequestRobot, this.AllocateRobot },
-                //{ ClientMessageType.TransferProgram, this.TransferProgramToRobot },
+                { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 //{ ClientMessageType.StartProgram, this.StartProgram },
-                //{ ClientMessageType.StopProgram, this.StopProgram },
-                //{ ClientMessageType.ProgramDownloaded, this.ProgramDownloaded },
+                { ClientMessageType.StopProgram, this.StopProgram },
+                { ClientMessageType.ProgramDownloaded, this.ProgramDownloaded },
                 { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted, "Program started") },
                 { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished, "Program finished") },
                 { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped, "Program stopped") },
@@ -93,27 +93,28 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Initialises a message broadcast processor.
         /// </summary>
-        /// <param name="messageType"></param>
-        /// <param name="logDescription"></param>
-        /// <param name="includeValues"></param>
-        /// <returns></returns>
+        /// <param name="messageType">The type of message to broadcast.</param>
+        /// <param name="logDescription">The description of the message.</param>
+        /// <param name="includeValues">Whether to include the values from the source or not.</param>
+        /// <returns>The <see cref="TypeProcessor"/> for sending the message.</returns>
         private TypeProcessor BroadcastMessage(ClientMessageType messageType, string logDescription, bool includeValues = false)
         {
             return async (IExecutionEngine engine, ClientConnection client, ClientMessage message) =>
             {
-                await this.DoBroadcastMessage(engine, client, message, messageType, logDescription, includeValues);
+                var valuesToCopy = includeValues ? message.Values : null;
+                await this.DoBroadcastMessage(engine, client, message, messageType, logDescription, valuesToCopy);
             };
         }
 
         /// <summary>
         /// Performs the actual broadcast of the message.
         /// </summary>
-        private async Task DoBroadcastMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, bool includeValues)
+        private async Task DoBroadcastMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, IDictionary<string, string>? valuesToCopy)
         {
             var msg = GenerateResponse(message, messageType);
-            if (includeValues)
+            if (valuesToCopy != null)
             {
-                foreach (var (key, value) in message.Values)
+                foreach (var (key, value) in valuesToCopy)
                 {
                     msg.Values[key] = value;
                 }
@@ -129,56 +130,82 @@ namespace NaoBlocks.Web.Communications
             }
         }
 
-        /*
+        /// <summary>
+        /// Handles a program downloaded message.
+        /// </summary>
         private async Task ProgramDownloaded(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
-            var msg = GenerateResponse(message, ClientMessageType.ProgramTransferred);
-            msg.Values["ProgramId"] = client?.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture) ?? "0";
-            client.NotifyListeners(msg);
-            client.LogMessage(msg);
-            PopulateSourceValues(client, msg);
-            this.hub.SendToMonitors(msg);
-            if ((client != null) && (client.Robot != null))
+            var valuesToCopy = new Dictionary<string, string>
             {
-                await AddToRobotLogAsync(session, client.Robot.Id, message, "Program transferred");
-            }
+                { "ProgramId", client.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture) ?? "0" }
+            };
+            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.ProgramTransferred, "Program has been transferred", valuesToCopy);
         }
 
-        private static bool ValidateRequest(ClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
+        /// <summary>
+        /// Sends a stop message to the robot.
+        /// </summary>
+        private async Task StopProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
-            if ((client.User == null) && (client.Robot == null))
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient))
             {
-                client.SendMessage(GenerateResponse(message, ClientMessageType.NotAuthenticated));
-                return false;
+                // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
+                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
+                return;
             }
 
-            if (requiredRole.HasValue)
+            var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
+            robotClient!.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
             {
-                switch (requiredRole.Value)
-                {
-                    case ClientConnectionType.Robot:
-                        if (client.Robot == null)
-                        {
-                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
-                            return false;
-                        }
-
-                        break;
-
-                    case ClientConnectionType.User:
-                        if (client.User == null)
-                        {
-                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
-                            return false;
-                        }
-
-                        break;
-                }
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program stopping");
             }
-
-            return true;
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
         }
 
+        /// <summary>
+        /// Triggers the transfer of a program on the robot.
+        /// </summary>
+        private async Task TransferProgramToRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
+                return;
+            }
+
+            if (!int.TryParse(programId, out int programIdValue))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Invalid program ID"));
+                return;
+            }
+
+            robotClient!.RobotDetails = new RobotStatus
+            {
+                LastProgramId = programIdValue
+            };
+            var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
+            clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
+            robotClient?.SendMessage(clientMessage);
+            if ((robotClient != null) && (robotClient.Robot != null))
+            {
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program transferring");
+            }
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /*
         private async Task AllocateRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
@@ -224,7 +251,7 @@ namespace NaoBlocks.Web.Communications
             client?.Hub.SendToMonitors(response);
 
             this.logger.LogInformation($"Allocated robot {nextRobot.Id}");
-            await AddToRobotLogAsync(session, nextRobot.Robot.Id, message, "Robot allocated to user");
+            await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Robot allocated to user");
         }
 
         private async Task Authenticate(IExecutionEngine engine, ClientConnection client, ClientMessage message)
@@ -301,31 +328,6 @@ namespace NaoBlocks.Web.Communications
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
-        private bool RetrieveRobot(ClientConnection client, ClientMessage message, out ClientConnection? robotClient)
-        {
-            robotClient = null;
-            if (!message.Values.TryGetValue("robot", out string? robotCode))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Robot is missing"));
-                return false;
-            }
-
-            if (!int.TryParse(robotCode, out int robotId))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Robot id is invalid"));
-                return false;
-            }
-
-            robotClient = this.hub.GetClient(robotId);
-            if (robotClient == null)
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Robot is not longer connected"));
-                return false;
-            }
-
-            return true;
-        }
-
         private async Task StartProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
@@ -350,63 +352,6 @@ namespace NaoBlocks.Web.Communications
             if ((robotClient != null) && (robotClient.Robot != null))
             {
                 await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program starting");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
-        private async Task StopProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient))
-            {
-                // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
-                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
-                return;
-            }
-
-            var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
-            robotClient?.SendMessage(clientMessage);
-            if ((robotClient != null) && (robotClient.Robot != null))
-            {
-                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program stopping");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
-        private async Task TransferProgramToRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient) || (robotClient == null)) return;
-
-            if (!message.Values.TryGetValue("program", out string? programId))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
-                return;
-            }
-
-            if (!int.TryParse(programId, out int programIdValue))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Invalid program ID"));
-                return;
-            }
-
-            robotClient.RobotDetails = new RobotStatus
-            {
-                LastProgramId = programIdValue
-            };
-            var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
-            clientMessage.Values.Add("program", programId);
-            clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
-            robotClient?.SendMessage(clientMessage);
-            if ((robotClient != null) && (robotClient.Robot != null))
-            {
-                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program transferring");
             }
             else
             {
@@ -650,6 +595,80 @@ namespace NaoBlocks.Web.Communications
             }
 
             return errors;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the <see cref="ClientConnection"/> instance to the robot.
+        /// </summary>
+        /// <param name="client">The client attempting to get the robot connection.</param>
+        /// <param name="message">The source message (used to generate any errors).</param>
+        /// <param name="robotClient">The retrieved <see cref="ClientConnection"/> instance if found, null otherwise.</param>
+        /// <returns>True if the robot could be retrieved, false otherwise.</returns>
+        private bool RetrieveRobot(ClientConnection client, ClientMessage message, out ClientConnection? robotClient)
+        {
+            robotClient = null;
+            if (!message.Values.TryGetValue("robot", out string? robotCode))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot is missing"));
+                return false;
+            }
+
+            if (!int.TryParse(robotCode, out int robotId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot id is invalid"));
+                return false;
+            }
+
+            robotClient = this.hub.GetClient(robotId);
+            if (robotClient == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Robot is no longer connected"));
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the incoming request.
+        /// </summary>
+        /// <param name="client">The <see cref="ClientConnection"/> instance the request is coming in on.</param>
+        /// <param name="message">The message to validate.</param>
+        /// <param name="requiredRole">The required role, if any.</param>
+        /// <returns>True if the request is valid, false otherwise.</returns>
+        private static bool ValidateRequest(ClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
+        {
+            if ((client.User == null) && (client.Robot == null))
+            {
+                client.SendMessage(GenerateResponse(message, ClientMessageType.NotAuthenticated));
+                return false;
+            }
+
+            if (requiredRole.HasValue)
+            {
+                switch (requiredRole.Value)
+                {
+                    case ClientConnectionType.Robot:
+                        if (client.Robot == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
+
+                    case ClientConnectionType.User:
+                        if (client.User == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
