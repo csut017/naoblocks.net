@@ -4,6 +4,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Web.Communications;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace NaoBlocks.Web.Tests.Communications
             // Assert
             var msgs = client.RetrievePendingMessages();
             Assert.Equal(new[] { "Error" }, msgs.Select(m => m.Type.ToString()).ToArray());
-            Assert.Equal(new[] { "Unable to find processor for Unknown" }, msgs.Select(m => m.Values["error"]).ToArray());
+            Assert.Equal(new[] { "Unable to find processor for Unknown" }, RetrieveErrorMessages(msgs));
         }
 
         [Fact]
@@ -57,7 +58,7 @@ namespace NaoBlocks.Web.Tests.Communications
             // Assert
             var msgs = client.RetrievePendingMessages();
             Assert.Equal(new[] { "Error" }, msgs.Select(m => m.Type.ToString()).ToArray());
-            Assert.Equal(new[] { "Unable to process message: error" }, msgs.Select(m => m.Values["error"]).ToArray());
+            Assert.Equal(new[] { "Unable to process message: error" }, RetrieveErrorMessages(msgs));
         }
 
         [Fact]
@@ -91,6 +92,8 @@ namespace NaoBlocks.Web.Tests.Communications
         [InlineData(ClientMessageType.ProgramFinished, ClientMessageType.ProgramFinished)]
         [InlineData(ClientMessageType.ProgramStopped, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.ProgramDownloaded, ClientMessageType.ProgramTransferred)]
+        [InlineData(ClientMessageType.RobotDebugMessage, ClientMessageType.RobotDebugMessage)]
+        [InlineData(ClientMessageType.RobotError, ClientMessageType.RobotError)]
         [InlineData(ClientMessageType.UnableToDownloadProgram, ClientMessageType.UnableToDownloadProgram)]
         public async Task ProcessAsyncSendsToListenersAndLogs(ClientMessageType inputType, ClientMessageType outputType)
         {
@@ -311,6 +314,9 @@ namespace NaoBlocks.Web.Tests.Communications
         [Theory]
         [InlineData(ClientMessageType.StopProgram)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
+        [InlineData(ClientMessageType.StartMonitoring)]
+        [InlineData(ClientMessageType.StopMonitoring)]
         public async Task ProcessAsyncChecksAuthentication(ClientMessageType messageType)
         {
             // Arrange
@@ -328,6 +334,9 @@ namespace NaoBlocks.Web.Tests.Communications
         [Theory]
         [InlineData(ClientMessageType.StopProgram)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
+        [InlineData(ClientMessageType.StartMonitoring)]
+        [InlineData(ClientMessageType.StopMonitoring)]
         public async Task ProcessAsyncChecksConnectionIsForUser(ClientMessageType messageType)
         {
             // Arrange
@@ -346,6 +355,7 @@ namespace NaoBlocks.Web.Tests.Communications
         [Theory]
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
         public async Task ProcessAsyncValidatesRobotIsSet(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -362,14 +372,13 @@ namespace NaoBlocks.Web.Tests.Communications
             expectedMessages[0] = ClientMessageType.Error;
             Array.Copy(extraMessages, 0, expectedMessages, 1, extraMessages.Length);
             Assert.Equal(expectedMessages, msgs.Select(m => m.Type).ToArray());
-            Assert.Equal(
-                new[] { "Robot is missing" },
-                msgs.Where(m => m.Values.ContainsKey("error")).Select(m => m.Values["error"]).ToArray());
+            Assert.Equal(new[] { "Robot is missing" }, RetrieveErrorMessages(msgs));
         }
 
         [Theory]
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
         public async Task ProcessAsyncValidatesRobotIdIsValid(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -386,14 +395,13 @@ namespace NaoBlocks.Web.Tests.Communications
             expectedMessages[0] = ClientMessageType.Error;
             Array.Copy(extraMessages, 0, expectedMessages, 1, extraMessages.Length);
             Assert.Equal(expectedMessages, msgs.Select(m => m.Type).ToArray());
-            Assert.Equal(
-                new[] { "Robot id is invalid" },
-                msgs.Where(m => m.Values.ContainsKey("error")).Select(m => m.Values["error"]).ToArray());
+            Assert.Equal(new[] { "Robot id is invalid" }, RetrieveErrorMessages(msgs));
         }
 
         [Theory]
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
         public async Task ProcessAsyncValidatesRobotIsConnected(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -410,21 +418,18 @@ namespace NaoBlocks.Web.Tests.Communications
             expectedMessages[0] = ClientMessageType.Error;
             Array.Copy(extraMessages, 0, expectedMessages, 1, extraMessages.Length);
             Assert.Equal(expectedMessages, msgs.Select(m => m.Type).ToArray());
-            Assert.Equal(
-                new[] { "Robot is no longer connected" },
-                msgs.Where(m => m.Values.ContainsKey("error")).Select(m => m.Values["error"]).ToArray());
+            Assert.Equal(new[] { "Robot is no longer connected" }, RetrieveErrorMessages(msgs));
         }
 
         [Theory]
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.StopProgram, "")]
         [InlineData(ClientMessageType.TransferProgram, ClientMessageType.DownloadProgram, "program=14916")]
+        [InlineData(ClientMessageType.StartProgram, ClientMessageType.StartProgram, "program=14916")]
         public async Task ProcessAsyncChecksRobotIsSentMessage(ClientMessageType inputMessage, ClientMessageType outputMessage, string parameters)
         {
             // Arrange
-            var robotClient = InitialiseClient();
-            var hub = new Mock<IHub>();
-            hub.Setup(h => h.GetClient(14916)).Returns(robotClient);
-            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (hub, robotClient) = InitialiseHubConnection(14916);
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub);
             client.User = new Data.User();
 
             // Act
@@ -440,13 +445,12 @@ namespace NaoBlocks.Web.Tests.Communications
         [Theory]
         [InlineData(ClientMessageType.StopProgram, "")]
         [InlineData(ClientMessageType.TransferProgram, "program=14916")]
-        public async Task ProcessAsyncWarnsIfRobotNotSet(ClientMessageType inputMessage, string parameters)
+        [InlineData(ClientMessageType.StartProgram, "program=14916", "INFORMATION: Starting program 14916 with {}")]
+        public async Task ProcessAsyncWarnsIfRobotNotSet(ClientMessageType inputMessage, string parameters, params string[] extraMessages)
         {
             // Arrange
-            var robotClient = InitialiseClient();
-            var hub = new Mock<IHub>();
-            hub.Setup(h => h.GetClient(14916)).Returns(robotClient);
-            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (hub, _) = InitialiseHubConnection(14916);
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub);
             client.User = new Data.User();
 
             // Act
@@ -456,23 +460,23 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             var messages = RetrieveLogMessages(processor);
-            Assert.Equal(new[] {
-                $"INFORMATION: Processing message type {inputMessage}",
-                "WARNING: Unable to add to log: robot is missing"
-            }, messages);
+            var expectedMessages = new List<string>();
+            expectedMessages.Add($"INFORMATION: Processing message type {inputMessage}");
+            expectedMessages.AddRange(extraMessages);
+            expectedMessages.Add("WARNING: Unable to add to log: robot is missing");
+            Assert.Equal(expectedMessages.ToArray(), messages);
         }
 
         [Theory]
         [InlineData(ClientMessageType.StopProgram, "Program stopping", "")]
         [InlineData(ClientMessageType.TransferProgram, "Program transferring", "program=14916")]
+        [InlineData(ClientMessageType.StartProgram, "Program starting", "program=14916")]
         public async Task ProcessAsyncLogsMessage(ClientMessageType inputMessage, string logMessage, string parameters)
         {
             // Arrange
-            var robotClient = InitialiseClient();
+            var (hub, robotClient) = InitialiseHubConnection(14916);
             robotClient.Robot = new Data.Robot { MachineName = "Mihīni" };
-            var hub = new Mock<IHub>();
-            hub.Setup(h => h.GetClient(14916)).Returns(robotClient);
-            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub);
             AddToRobotLog? command = null;
             engine.OnExecute = c =>
             {
@@ -494,6 +498,152 @@ namespace NaoBlocks.Web.Tests.Communications
             engine.Verify();
             Assert.Equal("Mihīni", command?.MachineName);
             Assert.Equal(logMessage, command?.Description);
+        }
+
+        [Theory]
+        [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
+        public async Task ProcessAsyncRequiresProgramID(ClientMessageType inputMessage)
+        {
+            // Arrange
+            var (hub, robotClient) = InitialiseHubConnection(14916);
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub);
+            client.User = new Data.User();
+
+            // Act
+            var msg = new ClientMessage(inputMessage, new { robot = "14916" });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Program ID is missing" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Theory]
+        [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.StartProgram)]
+        public async Task ProcessAsyncChecksProgramID(ClientMessageType inputMessage)
+        {
+            // Arrange
+            var (hub, robotClient) = InitialiseHubConnection(14916);
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub);
+            client.User = new Data.User();
+
+            // Act
+            var msg = new ClientMessage(inputMessage, new { robot = "14916", program = "alpha" });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Program ID is invalid" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task RobotDebugMessageStoresSourceID()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.RobotDetails = new RobotStatus();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotDebugMessage, new { sourceID = "ABC1234" });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Contains("ABC1234", client!.RobotDetails!.SourceIds);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData(" ")]
+        public async Task RobotDebugMessageHandlesInvalidSourceID(string? id)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.RobotDetails = new RobotStatus();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotDebugMessage, new { sourceID = id });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Empty(client!.RobotDetails!.SourceIds);
+        }
+
+        [Fact]
+        public async Task RobotDebugMessageHandlesMissingSourceID()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.RobotDetails = new RobotStatus();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotDebugMessage);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Empty(client!.RobotDetails!.SourceIds);
+        }
+
+        [Theory]
+        [InlineData(ClientMessageType.StartMonitoring)]
+        [InlineData(ClientMessageType.StopMonitoring)]
+        public async Task MonitoringFailsIfNotConnectedToAHub(ClientMessageType inputType)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.User = new Data.User();
+
+            // Act
+            var msg = new ClientMessage(inputType);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Client not connected to Hub" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task StartMonitoringAddsClient()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.User = new Data.User();
+            client.Hub = hub.Object;
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.StartMonitoring);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.Verify(h => h.AddClient(It.IsAny<ClientConnection>(), true));
+        }
+
+        [Fact]
+        public async Task StopMonitoringRemovesClient()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.User = new Data.User();
+            client.Hub = hub.Object;
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.StopMonitoring);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.Verify(h => h.RemoveClient(It.IsAny<ClientConnection>()));
+        }
+
+        private static string[] RetrieveErrorMessages(IEnumerable<ClientMessage> msgs)
+        {
+            return msgs.Where(m => m.Values.ContainsKey("error")).Select(m => m.Values["error"]).ToArray();
         }
 
         private static string[] RetrieveLogMessages(MessageProcessor processor)
@@ -538,6 +688,14 @@ namespace NaoBlocks.Web.Tests.Communications
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
             var client = new ClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
             return client;
+        }
+
+        private static (IHub, ClientConnection) InitialiseHubConnection(long id)
+        {
+            var client = InitialiseClient();
+            var hub = new Mock<IHub>();
+            hub.Setup(h => h.GetClient(id)).Returns(client);
+            return (hub.Object, client);
         }
 
         private static void InitialiseMessageParameters(string parameters, ClientMessage msg)

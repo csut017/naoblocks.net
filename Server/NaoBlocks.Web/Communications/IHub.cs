@@ -47,6 +47,10 @@ namespace NaoBlocks.Web.Communications
         /// <param name="message">The message to send.</param>
         void SendToMonitors(ClientMessage message);
 
+        /// <summary>
+        /// Removes a client.
+        /// </summary>
+        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
         void RemoveClient(ClientConnection client);
     }
 }

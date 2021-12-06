@@ -29,18 +29,18 @@ namespace NaoBlocks.Web.Communications
                 //{ ClientMessageType.Authenticate, this.Authenticate },
                 //{ ClientMessageType.RequestRobot, this.AllocateRobot },
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
-                //{ ClientMessageType.StartProgram, this.StartProgram },
+                { ClientMessageType.StartProgram, this.StartProgram },
                 { ClientMessageType.StopProgram, this.StopProgram },
                 { ClientMessageType.ProgramDownloaded, this.ProgramDownloaded },
                 { ClientMessageType.ProgramStarted, this.BroadcastMessage(ClientMessageType.ProgramStarted, "Program started") },
                 { ClientMessageType.ProgramFinished, this.BroadcastMessage(ClientMessageType.ProgramFinished, "Program finished") },
                 { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped, "Program stopped") },
-                //{ ClientMessageType.RobotDebugMessage, this.RobotDebugMessage },
-                //{ ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
+                { ClientMessageType.RobotDebugMessage, this.RobotDebugMessage },
+                { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
                 //{ ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
                 { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
-                //{ ClientMessageType.StartMonitoring, this.StartMonitoringAllClients },
-                //{ ClientMessageType.StopMonitoring, this.StopMonitoringAllClients },
+                { ClientMessageType.StartMonitoring, this.StartMonitoringAllClients },
+                { ClientMessageType.StopMonitoring, this.StopMonitoringAllClients },
                 //{ ClientMessageType.AlertsRequest, this.HandleAlertsRequest},
                 //{ ClientMessageType.AlertBroadcast, this.HandleBroadcastAlert }
             };
@@ -177,13 +177,13 @@ namespace NaoBlocks.Web.Communications
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
-                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
                 return;
             }
 
             if (!int.TryParse(programId, out int programIdValue))
             {
-                client.SendMessage(GenerateErrorResponse(message, "Invalid program ID"));
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
                 return;
             }
 
@@ -193,15 +193,70 @@ namespace NaoBlocks.Web.Communications
             };
             var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
             clientMessage.Values.Add("program", programId);
-            clientMessage.Values.Add("user", client.User?.Name ?? string.Empty);
-            robotClient?.SendMessage(clientMessage);
-            if ((robotClient != null) && (robotClient.Robot != null))
+            clientMessage.Values.Add("user", client.User!.Name);
+            robotClient.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
             {
                 await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program transferring");
             }
             else
             {
                 this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /// <summary>
+        /// Starts program execution on a robot.
+        /// </summary>
+        private async Task StartProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
+                return;
+            }
+
+            if (!int.TryParse(programId, out int programIdValue))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
+                return;
+            }
+
+            if (!message.Values.TryGetValue("opts", out string? opts))
+            {
+                opts = "{}";
+            }
+
+            var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
+            clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("opts", opts);
+            this.logger.LogInformation($"Starting program {programId} with {opts}");
+            robotClient!.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
+            {
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program starting");
+            }
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /// <summary>
+        /// Broadcasts a debug message.
+        /// </summary>
+        private async Task RobotDebugMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        {
+            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", message.Values);
+            if (client.RobotDetails != null)
+            {
+                if (message.Values.TryGetValue("sourceID", out string? sourceId) && !string.IsNullOrWhiteSpace(sourceId))
+                {
+                    client.RobotDetails.SourceIds.Add(sourceId);
+                }
             }
         }
 
@@ -328,37 +383,6 @@ namespace NaoBlocks.Web.Communications
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
 
-        private async Task StartProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) ;
-
-            if (!message.Values.TryGetValue("program", out string? programId))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program is missing"));
-                return;
-            }
-
-            if (!message.Values.TryGetValue("opts", out string? opts))
-            {
-                opts = "{}";
-            }
-
-            var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
-            clientMessage.Values.Add("program", programId);
-            clientMessage.Values.Add("opts", opts);
-            this.logger.LogInformation($"Starting program {programId} with {opts}");
-            robotClient?.SendMessage(clientMessage);
-            if ((robotClient != null) && (robotClient.Robot != null))
-            {
-                await AddToRobotLogAsync(session, robotClient.Robot.Id, message, "Program starting");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
         private async Task UpdateRobotState(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
@@ -435,45 +459,41 @@ namespace NaoBlocks.Web.Communications
             this.hub.SendToMonitors(broadcast);
             return Task.CompletedTask;
         }
-
-        private async Task RobotDebugMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            await this.DoBroadcastMessage(session, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", true);
-            if (client.RobotDetails != null)
-            {
-                if (message.Values.TryGetValue("sourceID", out string? sourceId) && !string.IsNullOrEmpty(sourceId))
-                {
-                    client.RobotDetails.SourceIds.Add(sourceId);
-                }
-            }
-        }
-
-        private Task StartMonitoringAllClients(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (client.Hub == null)
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
-                return Task.CompletedTask;
-            }
-
-            client.Hub.AddMonitor(client);
-            return Task.CompletedTask;
-        }
-
-        private Task StopMonitoringAllClients(IExecutionEngine engine, ClientConnection client, ClientMessage message)
-        {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-            if (client.Hub == null)
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
-                return Task.CompletedTask;
-            }
-
-            client.Hub.RemoveMonitor(client);
-            return Task.CompletedTask;
-        }
         */
+
+        /// <summary>
+        /// Starts monitoring all clients.
+        /// </summary>
+        private Task StartMonitoringAllClients(IExecutionEngine _, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.AddClient(client, true);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Stop monitoring all clients.
+        /// </summary>
+        private Task StopMonitoringAllClients(IExecutionEngine _, ClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.RemoveClient(client);
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// Generates an empty response message.
