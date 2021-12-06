@@ -123,6 +123,16 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
+        /// Adds a <see cref="NotificationAlert"/> instance.
+        /// </summary>
+        /// <param name="alert">The <see cref="NotificationAlert"/> instance.</param>
+        public void AddNotification(NotificationAlert alert)
+        {
+            this.Notifications.Add(alert);
+            if (this.Notifications.Count > 20) this.Notifications.RemoveAt(0);
+        }
+
+        /// <summary>
         /// Closes the connection.
         /// </summary>
         public void Close()

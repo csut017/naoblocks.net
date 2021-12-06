@@ -317,6 +317,9 @@ namespace NaoBlocks.Web.Tests.Communications
         [InlineData(ClientMessageType.StartProgram)]
         [InlineData(ClientMessageType.StartMonitoring)]
         [InlineData(ClientMessageType.StopMonitoring)]
+        [InlineData(ClientMessageType.AlertsRequest)]
+        [InlineData(ClientMessageType.AlertBroadcast)]
+        [InlineData(ClientMessageType.RobotStateUpdate)]
         public async Task ProcessAsyncChecksAuthentication(ClientMessageType messageType)
         {
             // Arrange
@@ -337,6 +340,7 @@ namespace NaoBlocks.Web.Tests.Communications
         [InlineData(ClientMessageType.StartProgram)]
         [InlineData(ClientMessageType.StartMonitoring)]
         [InlineData(ClientMessageType.StopMonitoring)]
+        [InlineData(ClientMessageType.AlertsRequest)]
         public async Task ProcessAsyncChecksConnectionIsForUser(ClientMessageType messageType)
         {
             // Arrange
@@ -353,9 +357,28 @@ namespace NaoBlocks.Web.Tests.Communications
         }
 
         [Theory]
+        [InlineData(ClientMessageType.AlertBroadcast)]
+        [InlineData(ClientMessageType.RobotStateUpdate)]
+        public async Task ProcessAsyncChecksConnectionIsForRobot(ClientMessageType messageType)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.User = new Data.User();
+
+            // Act
+            var msg = new ClientMessage(messageType);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Forbidden }, msgs.Select(m => m.Type).ToArray());
+        }
+
+        [Theory]
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
         [InlineData(ClientMessageType.StartProgram)]
+        [InlineData(ClientMessageType.AlertsRequest)]
         public async Task ProcessAsyncValidatesRobotIsSet(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -379,6 +402,7 @@ namespace NaoBlocks.Web.Tests.Communications
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
         [InlineData(ClientMessageType.StartProgram)]
+        [InlineData(ClientMessageType.AlertsRequest)]
         public async Task ProcessAsyncValidatesRobotIdIsValid(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -402,6 +426,7 @@ namespace NaoBlocks.Web.Tests.Communications
         [InlineData(ClientMessageType.StopProgram, ClientMessageType.ProgramStopped)]
         [InlineData(ClientMessageType.TransferProgram)]
         [InlineData(ClientMessageType.StartProgram)]
+        [InlineData(ClientMessageType.AlertsRequest)]
         public async Task ProcessAsyncValidatesRobotIsConnected(ClientMessageType messageType, params ClientMessageType[] extraMessages)
         {
             // Arrange
@@ -639,6 +664,194 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             hub.Verify(h => h.RemoveClient(It.IsAny<ClientConnection>()));
+        }
+
+        [Fact]
+        public async Task AlertsRequestSendsAllNotifications()
+        {
+            // Arrange
+            var (hub, robotClient) = InitialiseHubConnection(14916);
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub);
+            client.User = new Data.User();
+            robotClient.AddNotification(new NotificationAlert { Id = 1, Message = "tahi", Severity = "mild" });
+            robotClient.AddNotification(new NotificationAlert { Id = 2, Message = "rua", Severity = "hot" });
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertsRequest, new { robot = "14916" });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(
+                new[] { ClientMessageType.AlertBroadcast, ClientMessageType.AlertBroadcast },
+                msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "1", "2" }, msgs.Select(m => m.Values["id"]).ToArray());
+            Assert.Equal(new[] { "tahi", "rua" }, msgs.Select(m => m.Values["message"]).ToArray());
+            Assert.Equal(new[] { "mild", "hot" }, msgs.Select(m => m.Values["severity"]).ToArray());
+        }
+
+        [Fact]
+        public async Task AlertBroadcastAddsNotification()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.NotEmpty(client.Notifications);
+        }
+
+        [Theory]
+        [InlineData(null, -1)]
+        [InlineData("", -1)]
+        [InlineData("bad", -1)]
+        [InlineData("2", 2)]
+        public async Task AlertBroadcastSetsId(string? input, int expected)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { id = input });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var notification = client.Notifications.First();
+            Assert.Equal(expected, notification.Id);
+        }
+
+        [Theory]
+        [InlineData(null, "info")]
+        [InlineData("", "info")]
+        [InlineData("hot", "hot")]
+        public async Task AlertBroadcastSetsSeverity(string? input, string expected)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { severity = input });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var notification = client.Notifications.First();
+            Assert.Equal(expected, notification.Severity);
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("rua", "rua")]
+        public async Task AlertBroadcastSetsMessage(string? input, string expected)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { message = input });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var notification = client.Notifications.First();
+            Assert.Equal(expected, notification.Message);
+        }
+
+        [Fact]
+        public async Task AlertBroadcastSendsToMonitors()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? message = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) => message = m)
+                .Verifiable();
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { id = "2", message = "rua", severity = "hot"});
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            hub.VerifyAll();
+            Assert.Equal("2", message?.Values["id"]);
+            Assert.Equal("rua", message?.Values["message"]);
+            Assert.Equal("hot", message?.Values["severity"]);
+        }
+
+        [Fact]
+        public async Task UpdateRobotStateSetsUnknownStatus()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+            client.Status.Message = "Waiting";
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotStateUpdate);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Equal("Unknown", client.Status.Message);
+        }
+
+        [Theory]
+        [InlineData(null, "Unknown", false)]
+        [InlineData("", "Unknown", false)]
+        [InlineData(" ", "Unknown", false)]
+        [InlineData("Running", "Running", false)]
+        [InlineData("Waiting", "Waiting", true)]
+        public async Task UpdateRobotStateSetsStatus(string? input, string expected, bool isAvailable)
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            client.Robot = new Data.Robot();
+            client.Status.Message = "Waiting";
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotStateUpdate, new { state = input});
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Equal(expected, client.Status.Message);
+            Assert.Equal(isAvailable, client.Status.IsAvailable);
+        }
+
+        [Theory]
+        [InlineData(null, "State updated to Unknown")]
+        [InlineData("", "State updated to Unknown")]
+        [InlineData(" ", "State updated to Unknown")]
+        [InlineData("Executing", "State updated to Executing")]
+        public async Task UpdateRobotStateLogsToRobotCallsCommand(string? input, string expected)
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            AddToRobotLog? command = null;
+            engine.OnExecute = c =>
+            {
+                command = c as AddToRobotLog;
+                return CommandResult.New(3);
+            };
+            engine.ExpectCommand<AddToRobotLog>();
+            client.Robot = new Data.Robot();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RobotStateUpdate, new { state = input })
+            {
+                ConversationId = 963
+            };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            engine.Verify();
+            Assert.Equal(expected, command?.Description);
         }
 
         private static string[] RetrieveErrorMessages(IEnumerable<ClientMessage> msgs)

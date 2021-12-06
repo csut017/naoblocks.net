@@ -328,5 +328,41 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Contains(listener1.RetrievePendingMessages(), m => m.Type == ClientMessageType.Authenticated);
             Assert.Contains(listener2.RetrievePendingMessages(), m => m.Type == ClientMessageType.Authenticated);
         }
+
+        [Fact]
+        public void AddNotificationAddsMessage()
+        {
+            // Arrange
+            var socket = new Mock<WebSocket>();
+            var processor = new Mock<IMessageProcessor>();
+            var client = new ClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+
+            // Act
+            var notification = new NotificationAlert();
+            client.AddNotification(notification);
+
+            // Assert
+            Assert.Contains(notification, client.Notifications);
+        }
+
+        [Fact]
+        public void AddNotificationLimitsNumberOfStoredNotifications()
+        {
+            // Arrange
+            var socket = new Mock<WebSocket>();
+            var processor = new Mock<IMessageProcessor>();
+            var client = new ClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+
+            // Act
+            for (var loop = 0; loop < 30; loop++)
+            {
+                var notification = new NotificationAlert();
+                client.AddNotification(notification);
+            }
+
+            // Assert
+            var length = client.Notifications.Count;
+            Assert.Equal(20, length);
+        }
     }
 }

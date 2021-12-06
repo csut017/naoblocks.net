@@ -37,12 +37,12 @@ namespace NaoBlocks.Web.Communications
                 { ClientMessageType.ProgramStopped, this.BroadcastMessage(ClientMessageType.ProgramStopped, "Program stopped") },
                 { ClientMessageType.RobotDebugMessage, this.RobotDebugMessage },
                 { ClientMessageType.RobotError, this.BroadcastMessage(ClientMessageType.RobotError, "An unexpected error has occurred", true) },
-                //{ ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
+                { ClientMessageType.RobotStateUpdate, this.UpdateRobotState },
                 { ClientMessageType.UnableToDownloadProgram, this.BroadcastMessage(ClientMessageType.UnableToDownloadProgram, "Unable to download program", true) },
                 { ClientMessageType.StartMonitoring, this.StartMonitoringAllClients },
                 { ClientMessageType.StopMonitoring, this.StopMonitoringAllClients },
-                //{ ClientMessageType.AlertsRequest, this.HandleAlertsRequest},
-                //{ ClientMessageType.AlertBroadcast, this.HandleBroadcastAlert }
+                { ClientMessageType.AlertsRequest, this.HandleAlertsRequest},
+                { ClientMessageType.AlertBroadcast, this.HandleBroadcastAlert }
             };
             this.hub = hub;
             this.logger = logger;
@@ -382,7 +382,11 @@ namespace NaoBlocks.Web.Communications
             this.hub.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
+        */
 
+        /// <summary>
+        /// Updates the robot state.
+        /// </summary>
         private async Task UpdateRobotState(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
@@ -390,7 +394,7 @@ namespace NaoBlocks.Web.Communications
             if (message.Values.TryGetValue("state", out string? state))
             {
                 client.Status.IsAvailable = state == "Waiting";
-                client.Status.Message = state ?? "Unknown";
+                client.Status.Message = string.IsNullOrWhiteSpace(state) ? "Unknown" : state;
             }
             else
             {
@@ -409,17 +413,19 @@ namespace NaoBlocks.Web.Communications
 
             if (client.Robot != null)
             {
-                state ??= "Unknown";
-                await AddToRobotLogAsync(session, client.Robot.Id, message, $"State updated to {state}");
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, $"State updated to {client.Status.Message}");
             }
         }
 
+        /// <summary>
+        /// Handles an alert message.
+        /// </summary>
         private Task HandleAlertsRequest(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient) || (robotClient == null)) return Task.CompletedTask;
+            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
 
-            foreach (var alert in robotClient.Notifications)
+            foreach (var alert in robotClient!.Notifications)
             {
                 var broadcast = new ClientMessage(ClientMessageType.AlertBroadcast, new
                 {
@@ -434,21 +440,23 @@ namespace NaoBlocks.Web.Communications
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Handles a broadcast message.
+        /// </summary>
         private Task HandleBroadcastAlert(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return Task.CompletedTask;
 
+            var severityText = message.Values.TryGetValue("severity", out string? severity) ? severity : "info";
             var alert = new NotificationAlert
             {
                 Id = int.TryParse(message.Values.TryGetValue("id", out string? value) ? value : "-1", out int idValue) ? idValue : -1,
                 Message = message.Values.TryGetValue("message", out string? msg) ? msg : string.Empty,
-                Severity = message.Values.TryGetValue("severity", out string? severity) ? severity : "info",
+                Severity = string.IsNullOrEmpty(severityText) ? "info" : severityText,
                 WhenAdded = DateTime.UtcNow
             };
 
-            client.Notifications.Add(alert);
-            if (client.Notifications.Count > 20) client.Notifications.RemoveAt(0);
-
+            client.AddNotification(alert);
             var broadcast = new ClientMessage(ClientMessageType.AlertBroadcast, new
             {
                 id = alert.Id,
@@ -459,7 +467,6 @@ namespace NaoBlocks.Web.Communications
             this.hub.SendToMonitors(broadcast);
             return Task.CompletedTask;
         }
-        */
 
         /// <summary>
         /// Starts monitoring all clients.
