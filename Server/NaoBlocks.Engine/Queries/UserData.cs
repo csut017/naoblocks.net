@@ -38,6 +38,18 @@ namespace NaoBlocks.Engine.Queries
         }
 
         /// <summary>
+        /// Retrieve a user by their identifier.
+        /// </summary>
+        /// <param name="id">The user id.</param>
+        /// <returns>The <see cref="User"/> instance if found, null otherwise.</returns>
+        public virtual async Task<User?> RetrieveByIdAsync(string id)
+        {
+            var result = await this.Session.LoadAsync<User>(id)
+                .ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
         /// Retrieves a page of users.
         /// </summary>
         /// <param name="pageNum">The page number to retrieve.</param>

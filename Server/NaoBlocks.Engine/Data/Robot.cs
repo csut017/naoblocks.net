@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// Defines a robot.
@@ -38,6 +40,7 @@
         /// <summary>
         /// Gets or sets the type of the robot.
         /// </summary>
+        [JsonIgnore]
         public RobotType? Type { get; set; }
 
         /// <summary>

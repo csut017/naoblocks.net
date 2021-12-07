@@ -1,12 +1,16 @@
-﻿using Moq;
+﻿using Microsoft.IdentityModel.Tokens;
+using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
+using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,6 +20,8 @@ namespace NaoBlocks.Web.Tests.Communications
 {
     public class MessageProcessorTests
     {
+        private const string sessionId = "sessions/1";
+
         [Fact]
         public async Task ProcessAsyncHandlesMissingCommand()
         {
@@ -33,7 +39,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             var msgs = client.RetrievePendingMessages();
-            Assert.Equal(new[] { "Error" }, msgs.Select(m => m.Type.ToString()).ToArray());
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
             Assert.Equal(new[] { "Unable to find processor for Unknown" }, RetrieveErrorMessages(msgs));
         }
 
@@ -57,7 +63,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             var msgs = client.RetrievePendingMessages();
-            Assert.Equal(new[] { "Error" }, msgs.Select(m => m.Type.ToString()).ToArray());
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
             Assert.Equal(new[] { "Unable to process message: error" }, RetrieveErrorMessages(msgs));
         }
 
@@ -82,7 +88,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             var msgs = client.RetrievePendingMessages();
-            Assert.Empty(msgs.Select(m => m.Type.ToString()).ToArray());
+            Assert.Empty(msgs.Select(m => m.Type).ToArray());
             session.Verify(s => s.SaveChangesAsync());
             session.Verify(s => s.Dispose());
         }
@@ -255,7 +261,7 @@ namespace NaoBlocks.Web.Tests.Communications
             hub.VerifyAll();
             Assert.Equal(
                 new[] { "SourceClientId=>0", "SourceName=>Mihīni", "SourceType=>Robot" },
-                receivedMessage?.Values.Select(value => $"{value.Key}=>{value.Value}").OrderBy(v => v).ToArray());
+                ConvertMessageValuesToTestableValues(receivedMessage));
         }
 
         [Fact]
@@ -306,9 +312,9 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             hub.VerifyAll();
-            Assert.Equal(
+            Assert.Equal<string[]>(
                 new[] { "ProgramId=>11235", "SourceClientId=>0", "SourceName=>Mihīni", "SourceType=>Robot" },
-                receivedMessage?.Values.Select(value => $"{value.Key}=>{value.Value}").OrderBy(v => v).ToArray());
+                ConvertMessageValuesToTestableValues(receivedMessage));
         }
 
         [Theory]
@@ -776,7 +782,7 @@ namespace NaoBlocks.Web.Tests.Communications
             client.Robot = new Data.Robot();
 
             // Act
-            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { id = "2", message = "rua", severity = "hot"});
+            var msg = new ClientMessage(ClientMessageType.AlertBroadcast, new { id = "2", message = "rua", severity = "hot" });
             await processor.ProcessAsync(client, msg);
 
             // Assert
@@ -816,7 +822,7 @@ namespace NaoBlocks.Web.Tests.Communications
             client.Status.Message = "Waiting";
 
             // Act
-            var msg = new ClientMessage(ClientMessageType.RobotStateUpdate, new { state = input});
+            var msg = new ClientMessage(ClientMessageType.RobotStateUpdate, new { state = input });
             await processor.ProcessAsync(client, msg);
 
             // Assert
@@ -852,6 +858,405 @@ namespace NaoBlocks.Web.Tests.Communications
             // Assert
             engine.Verify();
             Assert.Equal(expected, command?.Description);
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksForToken()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Token is missing" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateValidatesToken()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token = "hacking" });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Token is invalid" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksForSession()
+        {
+            // Arrange
+            var (_, processor, client) = InitialiseTestProcessor();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                })
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token = tokenHandler.WriteToken(token) });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Token is invalid: missing session" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksSessionExists()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            engine.RegisterQuery(sessionQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksSessionExpiresInFuture()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session { WhenExpires = DateTime.MinValue }));
+            engine.RegisterQuery(sessionQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksSessionHasUserId()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session { WhenExpires = DateTime.MaxValue }));
+            engine.RegisterQuery(sessionQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid: missing id" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksRobotExists()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = true,
+                    UserId = "robots/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var robotQuery = new Mock<RobotData>();
+            engine.RegisterQuery(robotQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid: missing robot" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateReturnsSessionForRobot()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = true,
+                    UserId = "robots/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var robotQuery = new Mock<RobotData>();
+            robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
+                .Returns(Task.FromResult<Data.Robot?>(new Data.Robot()));
+            engine.RegisterQuery(robotQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Authenticated }, msgs.Select(m => m.Type).ToArray());
+        }
+
+        [Fact]
+        public async Task AuthenticateSetsRobotValues()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = true,
+                    UserId = "robots/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var robotQuery = new Mock<RobotData>();
+            robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
+                .Returns(Task.FromResult<Data.Robot?>(new Data.Robot { FriendlyName = "Mia" }));
+            engine.RegisterQuery(robotQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Equal(
+                new[] { "ClientId=>0", "Name=>Mia", "SubType=>Unknown", "Type=>robot" },
+                ConvertMessageValuesToTestableValues(receivedMessage));
+        }
+
+        [Fact]
+        public async Task AuthenticateSetsRobotValuesWithRobotType()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = true,
+                    UserId = "robots/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var robotQuery = new Mock<RobotData>();
+            robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
+                .Returns(Task.FromResult<Data.Robot?>(new Data.Robot { 
+                    FriendlyName = "Mia",
+                    Type = new Data.RobotType { Name = "Mihīni" }
+                }));
+            engine.RegisterQuery(robotQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Equal(
+                new[] { "ClientId=>0", "Name=>Mia", "SubType=>Mihīni", "Type=>robot" },
+                ConvertMessageValuesToTestableValues(receivedMessage));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksUserExists()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = false,
+                    UserId = "users/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var userQuery = new Mock<UserData>();
+            engine.RegisterQuery(userQuery.Object);
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid: missing user" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateChecksStartsConversation()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = false,
+                    UserId = "users/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var userQuery = new Mock<UserData>();
+            userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
+                .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
+            engine.RegisterQuery(userQuery.Object);
+            engine.ExpectCommand<StartConversation>();
+            engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Authenticated }, msgs.Select(m => m.Type).ToArray());
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task AuthenticateHandlesStartsConversationError()
+        {
+            // Arrange
+            var (engine, processor, client) = InitialiseTestProcessor();
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = false,
+                    UserId = "users/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var userQuery = new Mock<UserData>();
+            userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
+                .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
+            engine.RegisterQuery(userQuery.Object);
+            engine.ExpectCommand<StartConversation>();
+            engine.OnExecute = c => new CommandResult(1, "Failed");
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.Error }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "Session is invalid: cannot start conversation" }, RetrieveErrorMessages(msgs));
+        }
+
+        [Fact]
+        public async Task AuthenticateSetsUserValues()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            ClientMessage? receivedMessage = null;
+            hub.Setup(h => h.SendToMonitors(It.IsAny<ClientMessage>()))
+                .Callback((ClientMessage m) =>
+                {
+                    receivedMessage = m;
+                })
+                .Verifiable();
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var token = GenerateJwtToken(sessionId);
+            var sessionQuery = new Mock<SessionData>();
+            sessionQuery.Setup(q => q.RetrieveByIdAsync(sessionId))
+                .Returns(Task.FromResult<Data.Session?>(new Data.Session
+                {
+                    WhenExpires = DateTime.MaxValue,
+                    IsRobot = false,
+                    UserId = "users/1"
+                }));
+            engine.RegisterQuery(sessionQuery.Object);
+            var userQuery = new Mock<UserData>();
+            userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
+                .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
+            engine.RegisterQuery(userQuery.Object);
+            engine.ExpectCommand<StartConversation>();
+            engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            Assert.Equal(
+                new[] { "ClientId=>0", "IsStudent=>yes", "Name=>Mia", "SubType=>Student", "Type=>user" },
+                ConvertMessageValuesToTestableValues(receivedMessage));
+        }
+
+        private static string GenerateJwtToken(string sessionId)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("SessionId", sessionId)
+                })
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         private static string[] RetrieveErrorMessages(IEnumerable<ClientMessage> msgs)
@@ -921,6 +1326,13 @@ namespace NaoBlocks.Web.Tests.Communications
                     msg.Values.Add(parts[0], parts[1]);
                 }
             }
+        }
+
+        private static string[] ConvertMessageValuesToTestableValues(ClientMessage? message)
+        {
+            if (message == null) return Array.Empty<string>();
+
+            return message.Values.Select(value => $"{value.Key}=>{value.Value}").OrderBy(v => v).ToArray();
         }
     }
 }

@@ -31,5 +31,13 @@ namespace NaoBlocks.Engine
         /// <typeparam name="T">The type of the entity.</typeparam>
         /// <param name="entity">The entity to delete.</param>
         void Delete<T>(T entity);
+
+        /// <summary>
+        /// Retrieves an entity by its identifier.
+        /// </summary>
+        /// <typeparam name="T">The type of entity to retrieve.</typeparam>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <returns>The entity if found, null otherwise.</returns>
+        Task<T?> LoadAsync<T>(string id);
     }
 }

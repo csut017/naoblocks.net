@@ -2,7 +2,9 @@
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
+using NaoBlocks.Engine.Queries;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace NaoBlocks.Web.Communications
 {
@@ -26,7 +28,7 @@ namespace NaoBlocks.Web.Communications
         {
             this._processors = new Dictionary<ClientMessageType, TypeProcessor>
             {
-                //{ ClientMessageType.Authenticate, this.Authenticate },
+                { ClientMessageType.Authenticate, this.Authenticate },
                 //{ ClientMessageType.RequestRobot, this.AllocateRobot },
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
@@ -303,15 +305,18 @@ namespace NaoBlocks.Web.Communications
 
             client.LogMessage(response);
             PopulateSourceValues(client, response);
-            client?.Hub.SendToMonitors(response);
+            client.Hub.SendToMonitors(response);
 
             this.logger.LogInformation($"Allocated robot {nextRobot.Id}");
             await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Robot allocated to user");
         }
+        */
 
+        /// <summary>
+        /// Attempts to authenticate a client (user or robot.)
+        /// </summary>
         private async Task Authenticate(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
             if (!message.Values.TryGetValue("token", out string? token))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is missing"));
@@ -319,15 +324,23 @@ namespace NaoBlocks.Web.Communications
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var jwtToken = tokenHandler.ReadJwtToken(token);
-            var sessionId = jwtToken.Claims.FirstOrDefault(c => c.Type == "SessionId");
-            if (sessionId == null)
+            if (!tokenHandler.CanReadToken(token))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is invalid"));
                 return;
             }
 
-            var userSession = await session.LoadAsync<Core.Models.Session>(sessionId.Value);
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            var sessionId = jwtToken.Claims.FirstOrDefault(c => c.Type == "SessionId");
+            if (sessionId == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Token is invalid: missing session"));
+                return;
+            }
+
+            var userSession = await engine.Query<SessionData>()
+                .RetrieveByIdAsync(sessionId.Value)
+                .ConfigureAwait(false);
             if ((userSession == null) || (userSession.WhenExpires < DateTime.UtcNow))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Session is invalid"));
@@ -341,48 +354,69 @@ namespace NaoBlocks.Web.Communications
             msg.Values["ClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
             msg.Values["Type"] = "Unknown";
 
+            if (userSession.UserId == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Session is invalid: missing id"));
+                return;
+            }
+
             if (userSession.IsRobot)
             {
-                client.Robot = await session.LoadAsync<Robot>(userSession.UserId);
-                if (client?.Robot != null)
+                client.Robot = await engine.Query<RobotData>()
+                    .RetrieveByIdAsync(userSession.UserId)
+                    .ConfigureAwait(false);
+                if (client.Robot != null)
                 {
-                    client.Robot.Type = await session.LoadAsync<RobotType>(client.Robot.RobotTypeId);
-                    await AddToRobotLogAsync(session, client.Robot.Id, message, "Robot authenticated", false);
+                    await AddToRobotLogAsync(engine, client.Robot.MachineName, message, "Robot authenticated", false);
+                    msg.Values["Type"] = "robot";
+                    msg.Values["SubType"] = client.Robot!.Type?.Name ?? "Unknown";
+                    msg.Values["Name"] = client.Robot!.FriendlyName;
                 }
-
-                msg.Values["Type"] = "robot";
-                msg.Values["SubType"] = client?.Robot?.Type?.Name ?? "Unknown";
-                msg.Values["Name"] = client?.Robot?.FriendlyName ?? "Unknown";
+                else
+                {
+                    client.SendMessage(GenerateErrorResponse(message, "Session is invalid: missing robot"));
+                    return;
+                }
             }
             else
             {
-                client.User = await session.LoadAsync<User>(userSession.UserId);
-                var systemValues = await session.Query<SystemValues>().FirstOrDefaultAsync();
-                if (systemValues == null)
+                client.User = await engine.Query<UserData>()
+                    .RetrieveByIdAsync(userSession.UserId)
+                    .ConfigureAwait(false);
+                if (client.User == null)
                 {
-                    systemValues = new SystemValues();
-                    await session.StoreAsync(systemValues);
+                    client.SendMessage(GenerateErrorResponse(message, "Session is invalid: missing user"));
+                    return;
                 }
-                var conversationId = ++systemValues.NextConversationId;
-                message.ConversationId = conversationId;
-                await session.StoreAsync(new Conversation
+
+                var command = new StartConversation
                 {
-                    ConversationId = conversationId,
-                    UserId = client.User.Id,
-                    UserName = client.User.Name
-                });
+                    Name = client.User.Name
+                };
+                var errors = new List<CommandError>();
+                var result = await ValidateAndExecuteCommand(engine, errors, command);
+                if (errors.Any())
+                {
+                    foreach (var error in errors)
+                    {
+                        this.Logger.LogWarning($"Authenticate error: {error.Error}");
+                    }
+
+                    client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
+                    return;
+                }
+                message.ConversationId = result.As<Conversation>().Output!.ConversationId;
 
                 msg.Values["Type"] = "user";
-                msg.Values["SubType"] = client?.User?.Role.ToString() ?? "Unknown";
-                msg.Values["Name"] = client?.User?.Name ?? "Unknown";
-                msg.Values["IsStudent"] = (client?.User?.Role ?? UserRole.Student) == UserRole.Student ? "yes" : "no";
+                msg.Values["SubType"] = client.User.Role.ToString();
+                msg.Values["Name"] = client.User.Name;
+                msg.Values["IsStudent"] = client.User.Role == UserRole.Student ? "yes" : "no";
             }
 
             client.LogMessage(msg);
             this.hub.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
         }
-        */
 
         /// <summary>
         /// Updates the robot state.
@@ -604,16 +638,8 @@ namespace NaoBlocks.Web.Communications
                         });
                     }
                 }
-                errors.AddRange(await engine.ValidateAsync(command));
 
-                if (!errors.Any())
-                {
-                    var result = await engine.ExecuteAsync(command);
-                    if (!result.WasSuccessful)
-                    {
-                        errors.AddRange(result.ToErrors());
-                    }
-                }
+                await ValidateAndExecuteCommand(engine, errors, command);
             }
 
             foreach (var error in errors)
@@ -622,6 +648,28 @@ namespace NaoBlocks.Web.Communications
             }
 
             return errors;
+        }
+
+        /// <summary>
+        /// Validates and executes a command.
+        /// </summary>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="errors">The errors from the process.</param>
+        /// <param name="command">The command to execute.</param>
+        private static async Task<CommandResult> ValidateAndExecuteCommand(IExecutionEngine engine, List<CommandError> errors, CommandBase command)
+        {
+            errors.AddRange(await engine.ValidateAsync(command));
+            if (!errors.Any())
+            {
+                var result = await engine.ExecuteAsync(command);
+                if (!result.WasSuccessful)
+                {
+                    errors.AddRange(result.ToErrors());
+                }
+                return result;
+            }
+
+            return new CommandResult(command.Number, "Validation failed");
         }
 
         /// <summary>

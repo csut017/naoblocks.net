@@ -28,6 +28,16 @@ namespace NaoBlocks.Engine.Tests.Queries
         }
 
         [Fact]
+        public async Task RetrieveByIdAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new User { Id = "users/1" });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<UserData>(session);
+            var result = await query.RetrieveByIdAsync("users/1");
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task RetrievePageAsyncCallsDatabase()
         {
             using var store = InitialiseDatabase(new User { Name = "Mia", Role = UserRole.Student });

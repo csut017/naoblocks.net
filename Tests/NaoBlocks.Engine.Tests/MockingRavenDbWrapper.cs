@@ -50,7 +50,7 @@ namespace NaoBlocks.Engine.Tests
                 return this.ravenDbSession.Query<T>();
             }
 
-            throw new NotImplementedException("Using query required a RavenDB session");
+            throw new NotImplementedException("Using query requires a RavenDB session");
         }
 
         public async Task SaveChangesAsync()
@@ -75,6 +75,16 @@ namespace NaoBlocks.Engine.Tests
         public object? GetLastModifiedEntity()
         {
             return this.lastModifiedEntity;
+        }
+
+        public async Task<T?> LoadAsync<T>(string id)
+        {
+            if (this.ravenDbSession != null)
+            {
+                return await this.ravenDbSession.LoadAsync<T>(id);
+            }
+
+            throw new NotImplementedException("Using load requires a RavenDB session");
         }
     }
 }
