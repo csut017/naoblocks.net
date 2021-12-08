@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Communications
             this._processors = new Dictionary<ClientMessageType, TypeProcessor>
             {
                 { ClientMessageType.Authenticate, this.Authenticate },
-                //{ ClientMessageType.RequestRobot, this.AllocateRobot },
+                { ClientMessageType.RequestRobot, this.AllocateRobot },
                 { ClientMessageType.TransferProgram, this.TransferProgramToRobot },
                 { ClientMessageType.StartProgram, this.StartProgram },
                 { ClientMessageType.StopProgram, this.StopProgram },
@@ -262,19 +262,21 @@ namespace NaoBlocks.Web.Communications
             }
         }
 
-        /*
+        /// <summary>
+        /// Attempts to allocate a robot.
+        /// </summary>
         private async Task AllocateRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
 
             ClientConnection? nextRobot = null;
-            if ((client.User != null) && (client.User.Settings != null) && (client.User.Settings.AllocationMode > 0))
+            if ((client.User?.Settings != null) && (client.User.Settings.AllocationMode > 0))
             {
                 nextRobot = this.hub.GetClients(ClientConnectionType.Robot)
                     .FirstOrDefault(r => (r.Robot != null) && (r.Robot.MachineName == client.User.Settings.RobotId) && r.Status.IsAvailable);
                 if ((nextRobot == null) && (client.User.Settings.AllocationMode == 1))
                 {
-                    this.logger.LogInformation($"No robots available for allocation");
+                    this.logger.LogInformation($"Robot {client.User.Settings.RobotId} is not available for allocation");
                     client.SendMessage(GenerateResponse(message, ClientMessageType.NoRobotsAvailable));
                     return;
                 }
@@ -282,6 +284,7 @@ namespace NaoBlocks.Web.Communications
 
             if (nextRobot == null)
             {
+                this.logger.LogDebug($"Randomly selecting robot");
                 var rnd = new Random();
                 nextRobot = this.hub.GetClients(ClientConnectionType.Robot)
                     .OrderBy(r => r.Status.LastAllocatedTime)
@@ -305,12 +308,11 @@ namespace NaoBlocks.Web.Communications
 
             client.LogMessage(response);
             PopulateSourceValues(client, response);
-            client.Hub.SendToMonitors(response);
+            this.hub.SendToMonitors(response);
 
             this.logger.LogInformation($"Allocated robot {nextRobot.Id}");
-            await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Robot allocated to user");
+            await AddToRobotLogAsync(engine, nextRobot.Robot.MachineName, message, "Robot allocated to user");
         }
-        */
 
         /// <summary>
         /// Attempts to authenticate a client (user or robot.)

@@ -319,6 +319,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
         [Theory]
         [InlineData(ClientMessageType.StopProgram)]
+        [InlineData(ClientMessageType.RequestRobot)]
         [InlineData(ClientMessageType.TransferProgram)]
         [InlineData(ClientMessageType.StartProgram)]
         [InlineData(ClientMessageType.StartMonitoring)]
@@ -343,6 +344,7 @@ namespace NaoBlocks.Web.Tests.Communications
         [Theory]
         [InlineData(ClientMessageType.StopProgram)]
         [InlineData(ClientMessageType.TransferProgram)]
+        [InlineData(ClientMessageType.RequestRobot)]
         [InlineData(ClientMessageType.StartProgram)]
         [InlineData(ClientMessageType.StartMonitoring)]
         [InlineData(ClientMessageType.StopMonitoring)]
@@ -1097,7 +1099,8 @@ namespace NaoBlocks.Web.Tests.Communications
             engine.RegisterQuery(sessionQuery.Object);
             var robotQuery = new Mock<RobotData>();
             robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
-                .Returns(Task.FromResult<Data.Robot?>(new Data.Robot { 
+                .Returns(Task.FromResult<Data.Robot?>(new Data.Robot
+                {
                     FriendlyName = "Mia",
                     Type = new Data.RobotType { Name = "Mihīni" }
                 }));
@@ -1245,6 +1248,175 @@ namespace NaoBlocks.Web.Tests.Communications
                 ConvertMessageValuesToTestableValues(receivedMessage));
         }
 
+        [Fact]
+        public async Task AllocateRobotHandlesWhenAssignRobotIsNotAvailable()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.User = new Data.User
+            {
+                Settings = new Data.UserSettings
+                {
+                    AllocationMode = 1,
+                    RobotId = "Mihīni"
+                }
+            };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RequestRobot);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.NoRobotsAvailable }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(
+                new[] {
+                    "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Robot Mihīni is not available for allocation"
+                },
+                RetrieveLogMessages(processor));
+        }
+
+        [Fact]
+        public async Task AllocateRobotHandlesWhenNoRobotsAreAvailable()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.User = new Data.User
+            {
+                Settings = new Data.UserSettings
+                {
+                    AllocationMode = 0
+                }
+            };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RequestRobot);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.NoRobotsAvailable }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(
+                new[] {
+                    "INFORMATION: Processing message type RequestRobot",
+                    "DEBUG: Randomly selecting robot",
+                    "INFORMATION: No robots available for allocation"
+                },
+                RetrieveLogMessages(processor));
+        }
+
+        [Fact]
+        public async Task AllocateRobotHandlesWhenAssignRobotIsAllocated()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var robot = InitialiseClient(ClientConnectionType.Robot);
+            robot.Status.IsAvailable = false;
+            robot.Robot = new Data.Robot { MachineName = "Mihīni" };
+            hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
+                .Returns(new[] { robot });
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.User = new Data.User
+            {
+                Settings = new Data.UserSettings
+                {
+                    AllocationMode = 1,
+                    RobotId = "Mihīni"
+                }
+            };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RequestRobot);
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.NoRobotsAvailable }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(
+                new[] {
+                    "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Robot Mihīni is not available for allocation"
+                },
+                RetrieveLogMessages(processor));
+        }
+
+        [Fact]
+        public async Task AllocateRobotAllocatesAssignedRobot()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var robot = InitialiseClient(ClientConnectionType.Robot);
+            robot.Id = 2;
+            robot.Status.IsAvailable = true;
+            robot.Robot = new Data.Robot { MachineName = "Mihīni" };
+            hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
+                .Returns(new[] { robot });
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.User = new Data.User
+            {
+                Settings = new Data.UserSettings
+                {
+                    AllocationMode = 1,
+                    RobotId = "Mihīni"
+                }
+            };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RequestRobot) { ConversationId = 1 };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.RobotAllocated }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "2" }, msgs.Select(m => m.Values.Where(kv => kv.Key == "robot").SelectMany(kv => kv.Value)).ToArray());
+            Assert.Equal(
+                new[] {
+                    "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Allocated robot 2"
+                },
+                RetrieveLogMessages(processor));
+        }
+
+        [Fact]
+        public async Task AllocateRobotAllocatesRandomRobot()
+        {
+            // Arrange
+            var hub = new Mock<IHub>();
+            var robot = InitialiseClient(ClientConnectionType.Robot);
+            robot.Id = 2;
+            robot.Status.IsAvailable = true;
+            robot.Robot = new Data.Robot { MachineName = "Mihīni" };
+            hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
+                .Returns(new[] { robot });
+            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            client.User = new Data.User
+            {
+                Settings = new Data.UserSettings
+                {
+                    AllocationMode = 0
+                }
+            };
+
+            // Act
+            var msg = new ClientMessage(ClientMessageType.RequestRobot) { ConversationId = 1 };
+            await processor.ProcessAsync(client, msg);
+
+            // Assert
+            var msgs = client.RetrievePendingMessages();
+            Assert.Equal(new[] { ClientMessageType.RobotAllocated }, msgs.Select(m => m.Type).ToArray());
+            Assert.Equal(new[] { "2" }, msgs.Select(m => m.Values.Where(kv => kv.Key == "robot").SelectMany(kv => kv.Value)).ToArray());
+            Assert.Equal(
+                new[] {
+                    "INFORMATION: Processing message type RequestRobot",
+                    "DEBUG: Randomly selecting robot",
+                    "INFORMATION: Allocated robot 2"
+                },
+                RetrieveLogMessages(processor));
+        }
+
         private static string GenerateJwtToken(string sessionId)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -1297,14 +1469,14 @@ namespace NaoBlocks.Web.Tests.Communications
             return listener;
         }
 
-        private static ClientConnection InitialiseClient()
+        private static ClientConnection InitialiseClient(ClientConnectionType type = ClientConnectionType.Unknown)
         {
             var hub = new Mock<IHub>();
             var logger = new FakeLogger<MessageProcessor>();
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new ClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var client = new ClientConnection(socket.Object, type, processor);
             return client;
         }
 
