@@ -16,10 +16,13 @@ namespace NaoBlocks.Web
         /// <returns>An <see cref="IHostBuilder"/> instance.</returns>
         public IHostBuilder CreateHostBuilder(string[] args)
         {
+            var parsedArgs = ParseArgs(args);
+
             var availableInterfaces = NetworkInterface.GetAllNetworkInterfaces()
                 .OrderByDescending(c => c.Speed)
                 .Where(c => c.NetworkInterfaceType != NetworkInterfaceType.Loopback && c.OperationalStatus == OperationalStatus.Up);
-            ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
+            if (parsedArgs.ContainsKey("useLocal")) ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
+
             foreach (var availableInterface in availableInterfaces)
             {
                 var props = availableInterface.GetIPProperties();
@@ -39,6 +42,45 @@ namespace NaoBlocks.Web
                     webBuilder.UseUrls(ClientAddressList.Get().ToArray());
                     webBuilder.UseStartup<Startup>();
                 });
+        }
+
+        /// <summary>
+        /// Parses the command line args into a dictionary.
+        /// </summary>
+        /// <param name="args">The args to parse.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> containing the args.</returns>
+        public static Dictionary<string, string> ParseArgs(string[] args)
+        {
+            var output = new Dictionary<string, string>();
+            foreach (var arg in args)
+            {
+                if (arg.StartsWith("--") || arg.StartsWith("/"))
+                {
+                    var parts = arg.Split('=');
+                    var name = parts[0];
+                    if (name.StartsWith("--"))
+                    {
+                        name = name[2..];
+                    }
+                    else if (name.StartsWith("/"))
+                    {
+                        name = name[1..];
+                    }
+                    if (output.TryGetValue(name, out var current))
+                    {
+                        if (parts.Length > 1) output[name] = $"{current},{parts[1]}";
+                    }
+                    else
+                    {
+                        output[name] = parts.Length > 1 ? parts[1] : string.Empty;
+                    }
+                }
+                else
+                {
+                    output.Add(arg, string.Empty);
+                }
+            }
+            return output;
         }
 
         /// <summary>
