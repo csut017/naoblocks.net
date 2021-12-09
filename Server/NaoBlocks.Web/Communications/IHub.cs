@@ -12,8 +12,7 @@ namespace NaoBlocks.Web.Communications
         /// Adds a new <see cref="ClientConnection"/>.
         /// </summary>
         /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
-        /// <param name="isMonitor">Whether the connection is a monitor or not.</param>
-        void AddClient(ClientConnection client, bool isMonitor);
+        void AddClient(ClientConnection client);
 
         /// <summary>
         /// Retrieves a <see cref="ClientConnection"/> instance by its identifier.
@@ -26,8 +25,20 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves all the current connections.
         /// </summary>
         /// <param name="type">The client type to retrieve.</param>
-        /// <returns>All the current connections.</returns>
+        /// <returns>All the current connections of the specified type.</returns>
         IEnumerable<ClientConnection> GetClients(ClientConnectionType type);
+
+        /// <summary>
+        /// Retrieves all the current connections regardless of type.
+        /// </summary>
+        /// <returns>All the current connections.</returns>
+        IEnumerable<ClientConnection> GetAllClients();
+
+        /// <summary>
+        /// Retrieves all the current monitor connections.
+        /// </summary>
+        /// <returns>All the current monitor connections.</returns>
+        IEnumerable<ClientConnection> GetMonitors();
 
         /// <summary>
         /// Sends a message to all connections.
@@ -52,5 +63,17 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
         void RemoveClient(ClientConnection client);
+
+        /// <summary>
+        /// Adds a new monitor <see cref="ClientConnection"/>.
+        /// </summary>
+        /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
+        void AddMonitor(ClientConnection client);
+
+        /// <summary>
+        /// Removes a monitor.
+        /// </summary>
+        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
+        void RemoveMonitor(ClientConnection client);
     }
 }

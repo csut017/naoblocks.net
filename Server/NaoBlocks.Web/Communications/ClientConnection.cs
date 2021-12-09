@@ -9,7 +9,7 @@ namespace NaoBlocks.Web.Communications
     /// <summary>
     /// Defines a client connection.
     /// </summary>
-    public class ClientConnection 
+    public class ClientConnection
         : IDisposable
     {
         private readonly CancellationTokenSource cancellationSource = new CancellationTokenSource();
@@ -19,6 +19,7 @@ namespace NaoBlocks.Web.Communications
         private readonly IList<ClientConnection> listeners = new List<ClientConnection>();
         private readonly IList<ClientMessage> messageLog = new List<ClientMessage>();
         private readonly object messageLogLock = new object();
+        private bool isRunning;
 
         /// <summary>
         /// Initialises a new <see cref="ClientConnection"/> instance.
@@ -138,7 +139,14 @@ namespace NaoBlocks.Web.Communications
         public void Close()
         {
             this.cancellationSource.Cancel();
-            this.IsClosing = true;
+            if (this.isRunning)
+            {
+                this.IsClosing = true;
+            }
+            else
+            {
+                this.Closed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -207,6 +215,8 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         public async Task StartAsync()
         {
+            this.IsClosing = false;
+            this.isRunning = true;
             var pushTask = Task.Run(async () => await this.PushMessagesAsync(this.cancellationSource.Token));
             try
             {
@@ -223,6 +233,7 @@ namespace NaoBlocks.Web.Communications
                     }
                 }
                 await this.socket.CloseAsync(WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None);
+                this.isRunning = false;
                 this.Closed?.Invoke(this, EventArgs.Empty);
             }
             catch (WebSocketException ex)
@@ -230,6 +241,7 @@ namespace NaoBlocks.Web.Communications
                 switch (ex.WebSocketErrorCode)
                 {
                     case WebSocketError.ConnectionClosedPrematurely:
+                        this.isRunning = false;
                         this.Closed?.Invoke(this, EventArgs.Empty);
                         break;
 

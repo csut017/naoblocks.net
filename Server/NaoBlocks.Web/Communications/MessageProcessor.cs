@@ -517,7 +517,7 @@ namespace NaoBlocks.Web.Communications
                 return Task.CompletedTask;
             }
 
-            client.Hub.AddClient(client, true);
+            client.Hub.AddMonitor(client);
             return Task.CompletedTask;
         }
 

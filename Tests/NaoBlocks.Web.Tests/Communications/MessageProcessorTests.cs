@@ -654,7 +654,7 @@ namespace NaoBlocks.Web.Tests.Communications
             await processor.ProcessAsync(client, msg);
 
             // Assert
-            hub.Verify(h => h.AddClient(It.IsAny<ClientConnection>(), true));
+            hub.Verify(h => h.AddMonitor(It.IsAny<ClientConnection>()));
         }
 
         [Fact]

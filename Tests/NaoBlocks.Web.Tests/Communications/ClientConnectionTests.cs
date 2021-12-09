@@ -78,19 +78,21 @@ namespace NaoBlocks.Web.Tests.Communications
         }
 
         [Fact]
-        public void CloseSetsFlags()
+        public void CloseFiresEventIfNotRunning()
         {
             // Arrange
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
             var client = new ClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var closeCalled = false;
+            client.Closed += (o, e) => closeCalled = true;
 
             // Act
             Assert.False(client.IsClosing);
             client.Close();
 
             // Assert
-            Assert.True(client.IsClosing);
+            Assert.True(closeCalled);
         }
 
         [Fact]
@@ -257,6 +259,12 @@ namespace NaoBlocks.Web.Tests.Communications
         {
             // Arrange
             var socket = new Mock<WebSocket>();
+            socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
+                .Returns((ArraySegment<byte> s, CancellationToken c) =>
+                {
+                    c.WaitHandle.WaitOne();
+                    return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+                });
             var processor = new Mock<IMessageProcessor>();
             var client = new ClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
             var closedCalled = false;
