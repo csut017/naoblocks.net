@@ -6,7 +6,6 @@ using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
-using NaoBlocks.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +33,8 @@ namespace NaoBlocks.Web.Tests
 
         public bool CommitCalled { get; set; }
 
+        public CommandBase? LastCommand { get; private set; }
+
         public Task CommitAsync()
         {
             this.CommitCalled = true;
@@ -49,6 +50,7 @@ namespace NaoBlocks.Web.Tests
                 Assert.Equal(nextCommand.Type, command.GetType());
             }
 
+            this.LastCommand = command;
             return Task.FromResult(this.OnExecute == null 
                 ? CommandResult.New(command.Number) 
                 : this.OnExecute(command));

@@ -50,15 +50,15 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Retrieves a user by their name.
         /// </summary>
-        /// <param name="id">The name of the user.</param>
+        /// <param name="name">The name of the user.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.User>> GetUser(string id)
+        [HttpGet("{name}")]
+        public async Task<ActionResult<Dtos.User>> GetUser(string name)
         {
-            this._logger.LogDebug($"Retrieving user: id {id}");
+            this._logger.LogDebug($"Retrieving user: {name}");
             var user = await this.executionEngine
                 .Query<UserData>()
-                .RetrieveByNameAsync(id)
+                .RetrieveByNameAsync(name)
                 .ConfigureAwait(false);
             if (user == null)
             {
