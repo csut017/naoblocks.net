@@ -169,38 +169,21 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format)
         {
-            var reportFormat = ReportFormat.Excel;
-            if (!string.IsNullOrEmpty(format))
-            {
-                if (!Enum.TryParse(format, true, out reportFormat))
-                {
-                    return this.BadRequest(new
-                    {
-                        Error = $"Unknown report format {format}"
-                    });
-                }
-            }
-
-            var generator = this.executionEngine.Generator<Generators.StudentsList>();
-            if (!generator.IsFormatAvailable(reportFormat))
-            {
-                return this.BadRequest(new
-                {
-                    Error = $"Report format {format} is not available"
-                });
-            }
-
-            var data = await generator.GenerateAsync(reportFormat);
-            var contentType = ContentTypes.Convert(reportFormat);
-            return File(data.Item1, contentType, data.Item2);
+            return await this.GenerateReport<Generators.StudentsList>(
+                this.executionEngine,
+                format);
         }
 
-        /*
-        [HttpGet("{id}/export")]
+        /// <summary>
+        /// Exports the details on a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <returns>The generated student details.</returns>
+        [HttpGet("{name}/export")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDetails(string? id)
+        public async Task<ActionResult> ExportDetails(string? name, string? format)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 return this.BadRequest(new
                 {
@@ -208,20 +191,21 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            var student = await this.session.Query<User>()
-                                .FirstOrDefaultAsync(u => u.Name == id && u.Role == UserRole.Student);
+            var student = await this.executionEngine
+                .Query<UserData>()
+                .RetrieveByNameAsync(name);
             if (student == null)
             {
                 return NotFound();
             }
 
-            this._logger.LogDebug($"Generating details for {student.Name}");
-            var excelData = await Generators.StudentDetails.GenerateAsync(this.session, student);
-            var contentType = ContentTypes.Xlsx;
-            var fileName = "Students-List.xlsx";
-            return File(excelData, contentType, fileName);
+            return await this.GenerateReport<Generators.StudentExport>(
+                this.executionEngine,
+                format,
+                async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student));
         }
 
+        /*
         [HttpGet("{id}/logs/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportLogs(string? id)
@@ -248,6 +232,7 @@ namespace NaoBlocks.Web.Controllers
             return File(excelData, contentType, fileName);
         }
 
+        /*
         [HttpGet("{id}/snapshots/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportSnapshots(string? id)
@@ -274,7 +259,8 @@ namespace NaoBlocks.Web.Controllers
             return File(excelData, contentType, fileName);
         }
 
-                 /// <summary>
+        /*
+        /// <summary>
         /// Generates a student's QR code.
         /// </summary>
         /// <param name="name">The name of the student.</param>
