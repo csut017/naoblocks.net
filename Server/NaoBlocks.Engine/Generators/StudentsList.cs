@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-
-namespace NaoBlocks.Engine.Generators
+﻿namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
     /// Generates the students list export.
@@ -17,6 +14,21 @@ namespace NaoBlocks.Engine.Generators
         public override Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
             throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Checks if the report format is available.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns>True if the format is available, false otherwise.</returns>
+        public override bool IsFormatAvailable(ReportFormat format)
+        {
+            return format switch
+            {
+                ReportFormat.Excel => true,
+                ReportFormat.Pdf => true,
+                _ => false,
+            };
         }
     }
 }

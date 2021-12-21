@@ -172,7 +172,7 @@ namespace NaoBlocks.Web.Controllers
             var reportFormat = ReportFormat.Excel;
             if (!string.IsNullOrEmpty(format))
             {
-                if (!Enum.TryParse(format, out reportFormat))
+                if (!Enum.TryParse(format, true, out reportFormat))
                 {
                     return this.BadRequest(new
                     {
@@ -182,6 +182,14 @@ namespace NaoBlocks.Web.Controllers
             }
 
             var generator = this.executionEngine.Generator<Generators.StudentsList>();
+            if (!generator.IsFormatAvailable(reportFormat))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Report format {format} is not available"
+                });
+            }
+
             var data = await generator.GenerateAsync(reportFormat);
             var contentType = ContentTypes.Convert(reportFormat);
             return File(data.Item1, contentType, data.Item2);

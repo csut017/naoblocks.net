@@ -89,5 +89,12 @@ namespace NaoBlocks.Engine
             this.robotType = robotType;
             return this.GenerateAsync(format);
         }
+
+        /// <summary>
+        /// Checks if the report format is available.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns>True if the format is available, false otherwise.</returns>
+        public abstract bool IsFormatAvailable(ReportFormat format);
     }
 }

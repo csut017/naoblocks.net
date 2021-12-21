@@ -339,6 +339,8 @@ namespace NaoBlocks.Web.Tests.Controllers
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         public async Task ExportListGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
         {
             // Arrange
@@ -348,6 +350,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Tuple.Create((Stream)new MemoryStream(), fileName);
             generator.Setup(g => g.GenerateAsync(expected))
                 .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
                 .Verifiable();
             engine.RegisterGenerator(generator.Object);
             var controller = new StudentsController(
@@ -376,6 +381,25 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Act
             var response = await controller.ExportList("garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportListHandlesUnknownFormat()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.StudentsList>();
+            engine.RegisterGenerator(generator.Object);
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportList("unknown");
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response);
