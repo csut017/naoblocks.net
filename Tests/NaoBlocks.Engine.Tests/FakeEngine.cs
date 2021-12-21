@@ -56,5 +56,11 @@ namespace NaoBlocks.Engine.Tests
         {
             throw new NotImplementedException();
         }
+
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

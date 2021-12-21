@@ -3,7 +3,7 @@
 namespace NaoBlocks.Web.Dtos
 {
     /// <summary>
-    /// A Data Transfer Object for a user.
+    /// A Data Transfer Object for a teacher.
     /// </summary>
     public class Teacher : User
     {

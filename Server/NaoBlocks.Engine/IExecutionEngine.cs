@@ -52,5 +52,13 @@ namespace NaoBlocks.Engine
         /// <returns>An instance of the query.</returns>
         TQuery Query<TQuery>()
             where TQuery: DataQuery, new();
+
+        /// <summary>
+        /// Retrieves a report generator.
+        /// </summary>
+        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
+        /// <returns>An instance of the generator.</returns>
+        TGenerator Generator<TGenerator>()
+           where TGenerator : ReportGenerator, new();
     }
 }

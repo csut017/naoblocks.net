@@ -17,8 +17,9 @@ namespace NaoBlocks.Web.Tests
 {
     public class FakeEngine : IExecutionEngine
     {
-        private readonly FakeLogger<FakeEngine> logger = new FakeLogger<FakeEngine>();
-        private readonly IDictionary<Type, DataQuery> queries = new Dictionary<Type, DataQuery>();
+        private readonly FakeLogger<FakeEngine> logger = new();
+        private readonly Dictionary<Type, DataQuery> queries = new();
+        private readonly Dictionary<Type, ReportGenerator> generators = new();
         private readonly Queue<CommandCall> expectedCommands = new();
         private bool useExpectedCommand;
 
@@ -74,10 +75,22 @@ namespace NaoBlocks.Web.Tests
             return (TQuery)this.queries[typeof(TQuery)];
         }
 
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
+        {
+            return (TGenerator)this.generators[typeof(TGenerator)];
+        }
+
         public void RegisterQuery<T>(T query)
-            where T: DataQuery
+            where T : DataQuery
         {
             queries.Add(typeof(T), query);
+        }
+
+        public void RegisterGenerator<T>(T genertor)
+            where T : ReportGenerator
+        {
+            generators.Add(typeof(T), genertor);
         }
 
         public void ExpectCommand<TCommand>()

@@ -171,5 +171,39 @@ namespace NaoBlocks.Engine.Tests
             // Assert
             Assert.Same(query1, query2);
         }
+
+        [Fact]
+        public void GeneratorRetrievesGeneratorInstance()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+
+            // Act
+            var generator = engine.Generator<FakeGenerator>();
+
+            // Assert
+            Assert.NotNull(generator);
+            Assert.NotNull(generator.Session);
+        }
+
+        [Fact]
+        public void GeneratorRetrievesSameGeneratorInstance()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+
+            // Act
+            var generator1 = engine.Generator<FakeGenerator>();
+            var generator2 = engine.Generator<FakeGenerator>();
+
+            // Assert
+            Assert.Same(generator1, generator2);
+        }
     }
 }

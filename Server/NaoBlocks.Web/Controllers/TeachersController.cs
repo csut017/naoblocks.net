@@ -78,9 +78,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet]
         public async Task<ListResult<Dtos.Teacher>> GetTeachers(int? page, int? size)
         {
-            var pageSize = size ?? 25;
-            var pageNum = page ?? 0;
-            if (pageSize > 100) pageSize = 100;
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
 
             this.logger.LogDebug($"Retrieving teachers: page {pageNum} with size {pageSize}");
             var dataPage = await this.executionEngine
@@ -129,13 +127,13 @@ namespace NaoBlocks.Web.Controllers
         /// Updates an existing teacher.
         /// </summary>
         /// <param name="id">The name of the teacher.</param>
-        /// <param name="user">The updated details.</param>
+        /// <param name="teacher">The updated details.</param>
         /// <returns>The result of execution.</returns>
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ExecutionResult<Dtos.Teacher>>> Put(string? id, Dtos.Teacher? user)
+        public async Task<ActionResult<ExecutionResult<Dtos.Teacher>>> Put(string? id, Dtos.Teacher? teacher)
         {
-            if ((user == null) || string.IsNullOrEmpty(id))
+            if ((teacher == null) || string.IsNullOrEmpty(id))
             {
                 return this.BadRequest(new
                 {
@@ -147,7 +145,7 @@ namespace NaoBlocks.Web.Controllers
             var command = new Commands.UpdateUser
             {
                 CurrentName = id,
-                Name = user.Name,
+                Name = teacher.Name,
                 Role = Data.UserRole.Teacher
             };
             return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.Teacher>(

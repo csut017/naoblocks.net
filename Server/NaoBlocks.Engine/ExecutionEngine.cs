@@ -10,7 +10,8 @@ namespace NaoBlocks.Engine
     {
         private readonly IDatabaseSession session;
         private readonly IDatabase database;
-        private readonly Dictionary<Type, DataQuery> queries = new Dictionary<Type, DataQuery>();
+        private readonly Dictionary<Type, DataQuery> queries = new();
+        private readonly Dictionary<Type, ReportGenerator> generators = new();
 
         /// <summary>
         /// Initialises a new <see cref="ExecutionEngine"/> instance.
@@ -126,6 +127,21 @@ namespace NaoBlocks.Engine
             query.InitialiseSession(this.session);
             this.queries.Add(typeof(TQuery), query);
             return (TQuery)query;
+        }
+
+        /// <summary>
+        /// Retrieves a report generator.
+        /// </summary>
+        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
+        /// <returns>An instance of the generator.</returns>
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
+        {
+            if (this.generators.TryGetValue(typeof(TGenerator), out var generator)) return (TGenerator)generator;
+            generator = new TGenerator();
+            generator.InitialiseSession(this.session);
+            this.generators.Add(typeof(TGenerator), generator);
+            return (TGenerator)generator;
         }
     }
 }
