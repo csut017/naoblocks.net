@@ -183,80 +183,40 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportDetails(string? name, string? format)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing student details"
-                });
-            }
-
-            var student = await this.executionEngine
-                .Query<UserData>()
-                .RetrieveByNameAsync(name);
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            return await this.GenerateReport<Generators.StudentExport>(
+            return await this.GenerateUserReport<Generators.StudentExport>(
                 this.executionEngine,
                 format,
-                async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student));
+                name);
         }
 
-        /*
+        /// <summary>
+        /// Exports the logs for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <returns>The generated student logs.</returns>
         [HttpGet("{id}/logs/export")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportLogs(string? id)
+        public async Task<ActionResult> ExportLogs(string? name, string? format)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing student details"
-                });
-            }
-
-            var student = await this.session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == id);
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            this._logger.LogDebug($"Exporting logs for {student.Name}");
-            var excelData = await Generators.StudentLogs.GenerateAsync(this.session, student);
-            var contentType = ContentTypes.Xlsx;
-            var fileName = "Students-List.xlsx";
-            return File(excelData, contentType, fileName);
+            return await this.GenerateUserReport<Generators.ProgramLogsList>(
+                this.executionEngine,
+                format,
+                name);
         }
 
-        /*
+        /// <summary>
+        /// Exports the snapshots for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <returns>The generated snapshots list.</returns>
         [HttpGet("{id}/snapshots/export")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportSnapshots(string? id)
+        public async Task<ActionResult> ExportSnapshots(string? name, string? format)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing student details"
-                });
-            }
-
-            var student = await this.session.Query<User>()
-                                            .FirstOrDefaultAsync(u => u.Name == id);
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            this._logger.LogDebug($"Exporting snapshots for {student.Name}");
-            var excelData = await Generators.StudentSnapshots.GenerateAsync(this.session, student);
-            var contentType = ContentTypes.Xlsx;
-            var fileName = "Students-List.xlsx";
-            return File(excelData, contentType, fileName);
+            return await this.GenerateUserReport<Generators.SnapshotsLists>(
+                this.executionEngine,
+                format,
+                name);
         }
 
         /*

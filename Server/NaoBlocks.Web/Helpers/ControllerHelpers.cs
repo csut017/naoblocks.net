@@ -105,5 +105,47 @@ namespace NaoBlocks.Web.Helpers
             var contentType = ContentTypes.Convert(reportFormat);
             return controller.File(data.Item1, contentType, data.Item2);
         }
+
+        /// <summary>
+        /// Attempts to generate a report for a user.
+        /// </summary>
+        /// <typeparam name="TGenerator">The report generator to use.</typeparam>
+        /// <param name="controller">The controller attempting to generate the report.</param>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        /// <param name="format">The output format.</param>
+        /// <param name="name">The user's name.</param>
+        /// <param name="generate">An optional generation function.</param>
+        /// <returns>A <see cref="ActionResult"/> containing the result of the validation and generation.</returns>
+        public static async Task<ActionResult> GenerateUserReport<TGenerator>(
+            this ControllerBase controller,
+            IExecutionEngine engine,
+            string? format,
+            string? name,
+            Func<TGenerator, ReportFormat, Task<Tuple<Stream, string>>>? generate = null)
+           where TGenerator : ReportGenerator, new()
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return controller.BadRequest(new
+                {
+                    Error = "Missing student details"
+                });
+            }
+
+            var student = await engine
+                .Query<UserData>()
+                .RetrieveByNameAsync(name);
+            if (student == null)
+            {
+                return controller.NotFound();
+            }
+
+            return await controller.GenerateReport(
+                engine,
+                format,
+                generate != null 
+                    ? generate
+                    : async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student));
+        }
     }
 }

@@ -530,6 +530,258 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.IsType<BadRequestObjectResult>(response);
         }
 
+
+        [Theory]
+        [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        public async Task ExportLogsGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.ProgramLogsList>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportLogs("Mia", format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportLogsHandlesInvalidInput()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportLogs("Mia", "garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportLogsHandlesUnknownFormat()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.ProgramLogsList>();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportLogs("Mia", "Unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportLogsHandlesMissingStudent()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.ProgramLogsList>();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, null);
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportLogs("Mia", "Pdf");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task ExportLogsHandlesInvalidStudentName(string? studentName)
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportLogs(studentName, "Pdf");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+
+        [Theory]
+        [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
+        public async Task ExportSnapshotsGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.SnapshotsLists>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportSnapshots("Mia", format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportSnapshotsHandlesInvalidInput()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportSnapshots("Mia", "garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportSnapshotsHandlesUnknownFormat()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.SnapshotsLists>();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, new Data.User
+            {
+                Name = "Mia",
+                Role = Data.UserRole.Student
+            });
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportSnapshots("Mia", "Unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportSnapshotsHandlesMissingStudent()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.SnapshotsLists>();
+            engine.RegisterGenerator(generator.Object);
+            GenerateUserDataQuery(engine, null);
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportSnapshots("Mia", "Pdf");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task ExportSnapshotsHandlesInvalidStudentName(string? studentName)
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportSnapshots(studentName, "Pdf");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
         private static void GenerateUserDataQuery(FakeEngine engine, Data.User? user)
         {
             var query = new Mock<UserData>();
