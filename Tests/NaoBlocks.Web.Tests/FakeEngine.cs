@@ -127,7 +127,8 @@ namespace NaoBlocks.Web.Tests
             var user = new User
             {
                 Name = name,
-                Role = role
+                Role = role,
+                Id = "users/1"
             };
             var identity = new ClaimsIdentity(new Claim[]
                 {

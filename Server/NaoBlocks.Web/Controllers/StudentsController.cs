@@ -18,7 +18,7 @@ namespace NaoBlocks.Web.Controllers
     [Authorize(Policy = "Teacher")]
     public class StudentsController : ControllerBase
     {
-        private readonly ILogger<StudentsController> _logger;
+        private readonly ILogger<StudentsController> logger;
         private readonly IExecutionEngine executionEngine;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
         public StudentsController(ILogger<StudentsController> logger, IExecutionEngine engine)
         {
-            this._logger = logger;
+            this.logger = logger;
             this.executionEngine = engine;
         }
 
@@ -40,7 +40,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this._logger.LogInformation($"Deleting student '{id}'");
+            this.logger.LogInformation($"Deleting student '{id}'");
             var command = new Commands.DeleteUser
             {
                 Name = id,
@@ -57,7 +57,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Dtos.Student>> GetStudent(string name)
         {
-            this._logger.LogDebug($"Retrieving student: id {name}");
+            this.logger.LogDebug($"Retrieving student: id {name}");
             var student = await this.executionEngine
                 .Query<UserData>()
                 .RetrieveByNameAsync(name)
@@ -67,7 +67,7 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogDebug("Retrieved student");
+            this.logger.LogDebug("Retrieved student");
             return Dtos.Student.FromModel(student, true);
         }
 
@@ -82,13 +82,13 @@ namespace NaoBlocks.Web.Controllers
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
 
-            this._logger.LogDebug($"Retrieving students: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug($"Retrieving students: page {pageNum} with size {pageSize}");
             var dataPage = await this.executionEngine
                 .Query<UserData>()
                 .RetrievePageAsync(pageNum, pageSize, Data.UserRole.Student)
                 .ConfigureAwait(false);
             var count = dataPage.Items?.Count() ?? 0;
-            this._logger.LogDebug($"Retrieved {count} students");
+            this.logger.LogDebug($"Retrieved {count} students");
             var result = new ListResult<Dtos.Student>
             {
                 Count = dataPage.Count,
@@ -114,7 +114,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Adding new student '{student.Name}'");
+            this.logger.LogInformation($"Adding new student '{student.Name}'");
             var command = new Commands.AddUser
             {
                 Name = student.Name,
@@ -145,7 +145,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Updating student '{id}'");
+            this.logger.LogInformation($"Updating student '{id}'");
             var command = new Commands.UpdateUser
             {
                 CurrentName = id,
@@ -279,7 +279,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Clearing logs for student '{name}'");
+            this.logger.LogInformation($"Clearing logs for student '{name}'");
             var command = new Commands.ClearProgramLogs
             {
                 UserName = name
@@ -304,7 +304,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Clearing snapshots for student '{name}'");
+            this.logger.LogInformation($"Clearing snapshots for student '{name}'");
             var command = new Commands.ClearSnapshots
             {
                 UserName = name
