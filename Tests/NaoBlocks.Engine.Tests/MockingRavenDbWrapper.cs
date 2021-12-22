@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Engine.Data;
+using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using System;
 using System.Linq;
@@ -48,6 +49,18 @@ namespace NaoBlocks.Engine.Tests
             if (this.ravenDbSession != null)
             {
                 return this.ravenDbSession.Query<T>();
+            }
+
+            throw new NotImplementedException("Using query requires a RavenDB session");
+        }
+
+        public IQueryable<T> Query<T, TIndex>()
+            where TIndex : AbstractCommonApiForIndexes, new()
+        {
+            this.QueryCalled = true;
+            if (this.ravenDbSession != null)
+            {
+                return this.ravenDbSession.Query<T, TIndex>();
             }
 
             throw new NotImplementedException("Using query requires a RavenDB session");

@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Engine.Data;
+using Raven.Client.Documents.Indexes;
 
 namespace NaoBlocks.Engine
 {
@@ -24,6 +25,15 @@ namespace NaoBlocks.Engine
         /// <typeparam name="T">The type of data to query.</typeparam>
         /// <returns>An <see cref="IQueryable{T}"/> for retrieving the data.</returns>
         IQueryable<T> Query<T>();
+
+        /// <summary>
+        /// Queries the database for one or more entities using an index.
+        /// </summary>
+        /// <typeparam name="TIndex">The index to use.</typeparam>
+        /// <typeparam name="T">The type of data to query.</typeparam>
+        /// <returns>An <see cref="IQueryable{T}"/> for retrieving the data.</returns>
+        IQueryable<T> Query<T, TIndex>()
+            where TIndex : AbstractCommonApiForIndexes, new();
 
         /// <summary>
         /// Deletes an entity from the database.

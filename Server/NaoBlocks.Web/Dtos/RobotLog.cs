@@ -39,7 +39,7 @@ namespace NaoBlocks.Web.Dtos
         /// <param name="includeLines">Whether to include the lines or not.</param>
         /// <param name="converstion">The associated conversation.</param>
         /// <returns>A new <see cref="RobotLog"/> instance containing the required properties.</returns>
-        public static RobotLog FromModel(Data.RobotLog value, bool includeLines, Data.Conversation? converstion)
+        public static RobotLog FromModel(Data.RobotLog value, bool includeLines, Data.Conversation? converstion = null)
         {
             var robotLog = new RobotLog
             {
