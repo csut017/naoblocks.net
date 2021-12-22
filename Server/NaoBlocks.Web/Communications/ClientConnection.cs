@@ -178,7 +178,7 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves the message log.
         /// </summary>
         /// <returns>The messages in the log.</returns>
-        public Task<IReadOnlyCollection<ClientMessage>> GetMessageLogAsync()
+        public virtual Task<IReadOnlyCollection<ClientMessage>> GetMessageLogAsync()
         {
             var clone = new ClientMessage[this.messageLog.Count];
             lock (this.messageLogLock)
