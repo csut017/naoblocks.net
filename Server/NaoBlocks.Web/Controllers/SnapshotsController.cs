@@ -9,7 +9,7 @@ using Data = NaoBlocks.Engine.Data;
 namespace NaoBlocks.Web.Controllers
 {
     /// <summary>
-    /// A controller for working with snapshots
+    /// A controller for working with program snapshots
     /// </summary>
     [Route("api/v1/[controller]")]
     [ApiController]

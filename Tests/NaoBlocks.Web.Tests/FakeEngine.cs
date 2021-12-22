@@ -121,8 +121,8 @@ namespace NaoBlocks.Web.Tests
         /// <param name="controller">The controller to configure</param>
         /// <param name="name">The user's name.</param>
         /// <param name="role">The user's role.</param>
-        /// <returns>A <see cref="User"/> instance.</returns>
-        internal User ConfigureUser(ControllerBase controller, string name, UserRole role)
+        /// <returns>A <see cref="User"/> instance and the mock query.</returns>
+        internal (User, Mock<UserData>) ConfigureUser(ControllerBase controller, string name, UserRole role)
         {
             var user = new User
             {
@@ -149,7 +149,7 @@ namespace NaoBlocks.Web.Tests
             query.Setup(q => q.RetrieveByNameAsync(name))
                 .Returns(Task.FromResult((User?)user));
 
-            return user;
+            return (user, query);
         }
 
         public IEnumerable<string> GetLogMessages()

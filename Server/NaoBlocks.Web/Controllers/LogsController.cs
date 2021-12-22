@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Queries;
-using NaoBlocks.Web.Helpers;
-using Commands = NaoBlocks.Engine.Commands;
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Controllers
 {
+    /// <summary>
+    /// A controller for working with robot logs.
+    /// </summary>
     [Route("api/v1/robots/{robotId}/[controller]")]
     [ApiController]
     [Authorize]

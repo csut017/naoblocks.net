@@ -8,13 +8,6 @@ namespace NaoBlocks.Web.Tests.Dtos
     public class CodeProgramTests
     {
         [Fact]
-        public void FromModelHandlesNull()
-        {
-            var dto = Transfer.CodeProgram.FromModel(null);
-            Assert.Null(dto);
-        }
-
-        [Fact]
         public void FromModelConvertsEntity()
         {
             var now = DateTime.Now;

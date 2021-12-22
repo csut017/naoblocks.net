@@ -38,10 +38,8 @@ namespace NaoBlocks.Web.Dtos
         /// <param name="value">The <see cref="Data.CodeProgram"/> to convert.</param>
         /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A <see cref="CodeProgram"/> instance.</returns>
-        public static CodeProgram? FromModel(Data.CodeProgram? value, bool includeDetails = false)
+        public static CodeProgram FromModel(Data.CodeProgram value, bool includeDetails = false)
         {
-            if (value == null) return null;
-
             var program = new CodeProgram
             {
                 Id = value.Number,
