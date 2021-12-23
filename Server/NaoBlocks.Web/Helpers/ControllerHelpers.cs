@@ -11,62 +11,6 @@ namespace NaoBlocks.Web.Helpers
     public static class ControllerHelpers
     {
         /// <summary>
-        /// Attempts to validate the paging arguments.
-        /// </summary>
-        /// <param name="controller">The controller to use for retrieving the user.</param>
-        /// <param name="page">The incoming page number.</param>
-        /// <param name="size">The incoming page size.</param>
-        /// <returns>The validated page number and size.</returns>
-        public static (int, int) ValidatePageArguments(this ControllerBase controller, int? page, int? size)
-        {
-            var pageSize = size ?? 25;
-            var pageNum = page ?? 0;
-            if (pageSize > 100) pageSize = 100;
-            if (pageSize < 0) pageSize = 25;
-
-            return (pageNum, pageSize);
-        }
-
-        /// <summary>
-        /// Retrieves the current user details.
-        /// </summary>
-        /// <param name="controller">The controller to use for retrieving the user.</param>
-        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
-        /// <returns>A <see cref="User"/> instance, if found, otherwise null.</returns>
-        public static async Task<User?> LoadUserAsync(this ControllerBase controller, IExecutionEngine engine)
-        {
-            var userId = controller.User?.Identity?.Name;
-            if (userId == null) return null;
-
-            var user = await engine.Query<UserData>()
-                .RetrieveByNameAsync(userId)
-                .ConfigureAwait(false);
-            return user;
-        }
-
-        /// <summary>
-        /// Attempt to convert an incoming format string into a valid <see cref="ReportFormat"/>.
-        /// </summary>
-        /// <param name="controller">The controller to use for retrieving the user.</param>
-        /// <param name="format">The incoming format string.</param>
-        /// <param name="output">The parsed <see cref="ReportFormat"/>.</param>
-        /// <param name="defaultFormat">The default <see cref="ReportFormat"/> to use.</param>
-        /// <returns>True if the conversion worked (or was missing), false otherwise.</returns>
-        public static bool TryConvertFormat(this ControllerBase controller, string? format, out ReportFormat output, ReportFormat defaultFormat = ReportFormat.Excel)
-        {
-            output = defaultFormat;
-            if (!string.IsNullOrEmpty(format))
-            {
-                if (!Enum.TryParse(format, true, out output))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Attempts to generate a report.
         /// </summary>
         /// <typeparam name="TGenerator">The report generator to use.</typeparam>
@@ -79,10 +23,11 @@ namespace NaoBlocks.Web.Helpers
             this ControllerBase controller,
             IExecutionEngine engine,
             string? format,
-            Func<TGenerator, ReportFormat, Task<Tuple<Stream, string>>>? generate = null)
+            Func<TGenerator, ReportFormat, Task<Tuple<Stream, string>>>? generate = null,
+            ReportFormat? defaultFormat = ReportFormat.Excel)
            where TGenerator : ReportGenerator, new()
         {
-            if (!controller.TryConvertFormat(format, out var reportFormat))
+            if (!controller.TryConvertFormat(format, out var reportFormat, defaultFormat ?? ReportFormat.Excel))
             {
                 return controller.BadRequest(new
                 {
@@ -143,9 +88,65 @@ namespace NaoBlocks.Web.Helpers
             return await controller.GenerateReport(
                 engine,
                 format,
-                generate != null 
+                generate != null
                     ? generate
                     : async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student));
+        }
+
+        /// <summary>
+        /// Retrieves the current user details.
+        /// </summary>
+        /// <param name="controller">The controller to use for retrieving the user.</param>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        /// <returns>A <see cref="User"/> instance, if found, otherwise null.</returns>
+        public static async Task<User?> LoadUserAsync(this ControllerBase controller, IExecutionEngine engine)
+        {
+            var userId = controller.User?.Identity?.Name;
+            if (userId == null) return null;
+
+            var user = await engine.Query<UserData>()
+                .RetrieveByNameAsync(userId)
+                .ConfigureAwait(false);
+            return user;
+        }
+
+        /// <summary>
+        /// Attempt to convert an incoming format string into a valid <see cref="ReportFormat"/>.
+        /// </summary>
+        /// <param name="controller">The controller to use for retrieving the user.</param>
+        /// <param name="format">The incoming format string.</param>
+        /// <param name="output">The parsed <see cref="ReportFormat"/>.</param>
+        /// <param name="defaultFormat">The default <see cref="ReportFormat"/> to use.</param>
+        /// <returns>True if the conversion worked (or was missing), false otherwise.</returns>
+        public static bool TryConvertFormat(this ControllerBase controller, string? format, out ReportFormat output, ReportFormat defaultFormat = ReportFormat.Excel)
+        {
+            output = defaultFormat;
+            if (!string.IsNullOrEmpty(format))
+            {
+                if (!Enum.TryParse(format, true, out output))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to validate the paging arguments.
+        /// </summary>
+        /// <param name="controller">The controller to use for retrieving the user.</param>
+        /// <param name="page">The incoming page number.</param>
+        /// <param name="size">The incoming page size.</param>
+        /// <returns>The validated page number and size.</returns>
+        public static (int, int) ValidatePageArguments(this ControllerBase controller, int? page, int? size)
+        {
+            var pageSize = size ?? 25;
+            var pageNum = page ?? 0;
+            if (pageSize > 100) pageSize = 100;
+            if (pageSize < 0) pageSize = 25;
+
+            return (pageNum, pageSize);
         }
     }
 }

@@ -8,39 +8,6 @@ namespace NaoBlocks.Engine.Tests.Queries
     public class RobotDataTests : DatabaseHelper
     {
         [Fact]
-        public async Task RetrieveByNameAsyncCallsDatabase()
-        {
-            using var store = InitialiseDatabase(new Robot { MachineName = "Mihīni" });
-            using var session = store.OpenAsyncSession();
-            var query = InitialiseQuery<RobotData>(session);
-            var result = await query.RetrieveByNameAsync("Mihīni");
-            Assert.NotNull(result);
-        }
-
-        [Fact]
-        public async Task RetrieveByNameAsyncHandlesIncludeType()
-        {
-            using var store = InitialiseDatabase(
-                new RobotType { Name = "karetao", Id = "types/3" },
-                new Robot { MachineName = "Mihīni", RobotTypeId = "types/3" });
-            using var session = store.OpenAsyncSession();
-            var query = InitialiseQuery<RobotData>(session);
-            var result = await query.RetrieveByNameAsync("Mihīni", true);
-            Assert.NotNull(result);
-            Assert.Equal("karetao", result?.Type?.Name);
-        }
-
-        [Fact]
-        public async Task RetrieveByNameAsyncHandlesMissingRobot()
-        {
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var query = InitialiseQuery<RobotData>(session);
-            var result = await query.RetrieveByNameAsync("Mihīni", true);
-            Assert.Null(result);
-        }
-
-        [Fact]
         public async Task RetrieveByIdAsyncCallsDatabase()
         {
             using var store = InitialiseDatabase(new Robot { Id = "robots/1" });
@@ -72,6 +39,39 @@ namespace NaoBlocks.Engine.Tests.Queries
             var result = await query.RetrieveByIdAsync("robots/1");
             Assert.NotNull(result);
             Assert.NotNull(result?.Type);
+        }
+
+        [Fact]
+        public async Task RetrieveByNameAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new Robot { MachineName = "Mihīni" });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotData>(session);
+            var result = await query.RetrieveByNameAsync("Mihīni");
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task RetrieveByNameAsyncHandlesIncludeType()
+        {
+            using var store = InitialiseDatabase(
+                new RobotType { Name = "karetao", Id = "types/3" },
+                new Robot { MachineName = "Mihīni", RobotTypeId = "types/3" });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotData>(session);
+            var result = await query.RetrieveByNameAsync("Mihīni", true);
+            Assert.NotNull(result);
+            Assert.Equal("karetao", result?.Type?.Name);
+        }
+
+        [Fact]
+        public async Task RetrieveByNameAsyncHandlesMissingRobot()
+        {
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotData>(session);
+            var result = await query.RetrieveByNameAsync("Mihīni", true);
+            Assert.Null(result);
         }
 
         [Fact]

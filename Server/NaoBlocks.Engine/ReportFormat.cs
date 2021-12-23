@@ -7,6 +7,7 @@
     {
         Unknown,
         Pdf,
-        Excel
+        Excel,
+        Zip
     }
 }

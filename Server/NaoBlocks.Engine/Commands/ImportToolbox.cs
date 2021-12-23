@@ -1,6 +1,5 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
 using System.Xml.Linq;
 
 namespace NaoBlocks.Engine.Commands
@@ -16,14 +15,27 @@ namespace NaoBlocks.Engine.Commands
         private RobotType? robotType;
 
         /// <summary>
+        /// Gets or sets the definition of the toolbox.
+        /// </summary>
+        public string? Definition { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the robot type the toolbox is for.
         /// </summary>
         public string? Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the definition of the toolbox.
+        /// Attempts to restore the command from the database.
         /// </summary>
-        public string? Definition { get; set; }
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            this.document = XDocument.Parse(this.Definition!);
+            return errors.AsEnumerable();
+        }
 
         /// <summary>
         /// Attempts to retrieve the robot type and validate the toolbox.
@@ -31,7 +43,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
@@ -80,17 +92,22 @@ namespace NaoBlocks.Engine.Commands
             return Task.FromResult(CommandResult.New(this.Number, this.robotType));
         }
 
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        private ToolboxBlock ParseBlock(XElement blockEl, int elOrder)
         {
-            var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
-            this.document = XDocument.Parse(this.Definition!);
-            return errors.AsEnumerable();
+            var name = blockEl.Attribute("type")?.Value ?? "Unknown";
+            var orderText = blockEl.Attribute("order")?.Value ?? "-1";
+            if (!int.TryParse(orderText, out int order) || (order < 0))
+            {
+                order = (elOrder + 10) * 10;
+            }
+
+            var block = new ToolboxBlock
+            {
+                Name = name,
+                Order = order,
+                Definition = blockEl.ToString()
+            };
+            return block;
         }
 
         private ToolboxCategory ParseCategory(XElement categoryEl, int elOrder)
@@ -123,24 +140,6 @@ namespace NaoBlocks.Engine.Commands
             }
 
             return category;
-        }
-
-        private ToolboxBlock ParseBlock(XElement blockEl, int elOrder)
-        {
-            var name = blockEl.Attribute("type")?.Value ?? "Unknown";
-            var orderText = blockEl.Attribute("order")?.Value ?? "-1";
-            if (!int.TryParse(orderText, out int order) || (order < 0))
-            {
-                order = (elOrder + 10) * 10;
-            }
-
-            var block = new ToolboxBlock
-            {
-                Name = name,
-                Order = order,
-                Definition = blockEl.ToString()
-            };
-            return block;
         }
     }
 }

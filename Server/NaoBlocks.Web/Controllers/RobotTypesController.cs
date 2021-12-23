@@ -5,9 +5,9 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -38,6 +38,34 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Adds a blockset to a robot type.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="value">The details of the blockset.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{id}/blocksets")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<ExecutionResult>> AddBlockSet(string id, Data.NamedValue? value)
+        {
+            if (value == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing blockset details"
+                });
+            }
+
+            this._logger.LogInformation($"Adding new blockset for '{id}'");
+            var command = new AddBlockSet
+            {
+                Name = value.Name,
+                RobotType = id,
+                Categories = value.Value
+            };
+            return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
         /// Deletes a robot type.
         /// </summary>
         /// <param name="id">The id of the robot type.</param>
@@ -52,6 +80,22 @@ namespace NaoBlocks.Web.Controllers
                 Name = id
             };
             return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Generates an export package for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="format">The export format.</param>
+        /// <returns>The robot type export package.</returns>
+        [HttpGet("export/package/{id}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportPackage(string id, string? format)
+        {
+            return await this.GenerateReport<Generators.RobotTypePackage>(
+                this.executionEngine,
+                format,
+                defaultFormat: ReportFormat.Zip);
         }
 
         /// <summary>
@@ -74,6 +118,66 @@ namespace NaoBlocks.Web.Controllers
 
             this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             return Transfer.RobotType.FromModel(robotType);
+        }
+
+        /// <summary>
+        /// Retrieves a page of blocksets for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the blocksets.</returns>
+        [HttpGet("{id}/blocksets")]
+        public async Task<ActionResult<ListResult<Data.NamedValue>>> GetBlockSets(string id)
+        {
+            this._logger.LogDebug($"Retrieving blocksets for {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            var sets = robotType.BlockSets
+                .Select(bs => new Data.NamedValue { Name = bs.Name, Value = bs.BlockCategories })
+                .AsEnumerable();
+            return ListResult.New(sets);
+        }
+
+        /// <summary>
+        /// Imports a toolbox for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{id}/toolbox")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id)
+        {
+            var xml = string.Empty;
+            using (var reader = new StreamReader(this.Request.Body))
+            {
+                xml = await reader.ReadToEndAsync();
+            }
+
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing toolbox definition"
+                });
+            }
+
+            this._logger.LogInformation($"Updating robot type '{id}'");
+            var command = new ImportToolbox
+            {
+                Name = id,
+                Definition = xml
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>
+                (command,
+                rt => Transfer.RobotType.FromModel(rt!, true));
         }
 
         /// <summary>
@@ -265,90 +369,6 @@ namespace NaoBlocks.Web.Controllers
             var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
             if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
             return File(details.DataStream, ContentTypes.Txt, filename);
-        }
-
-        [HttpPost("{id}/blocksets")]
-        [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<ExecutionResult>> AddBlockSet(string id, NamedValue? value)
-        {
-            if (value == null)
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing blockset details"
-                });
-            }
-
-            this._logger.LogInformation($"Adding new blockset for '{id}'");
-            var command = new Commands.AddBlockSet
-            {
-                Name = value.Name,
-                RobotType = id,
-                Categories = value.Value
-            };
-            return await this.commandManager.ExecuteForHttp(command);
-        }
-
-        [HttpGet("{id}/blocksets")]
-        public async Task<ActionResult<ListResult<NamedValue>>> GetBlockSets(string id)
-        {
-            this._logger.LogDebug($"Retrieving blocksets for {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            var sets = robotType.BlockSets.Select(bs => new NamedValue { Name = bs.Name, Value = bs.BlockCategories }).AsEnumerable();
-            return ListResult.New(sets);
-        }
-
-        [HttpGet("export/package/{id}")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportPackage(string id)
-        {
-            this._logger.LogDebug($"Generating package for robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            var stream = await Generators.RobotTypePackage.GeneraAsync(robotType, this.session);
-            var contentType = ContentTypes.Xlsx;
-            var fileName = $"RobotType-{robotType.Name}-Package.zip";
-            this._logger.LogDebug($"Generated robot type {robotType.Name} package");
-            return File(stream, contentType, fileName);
-        }
-
-        [HttpPost("{id}/toolbox")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id)
-        {
-            var xml = string.Empty;
-            using (var reader = new StreamReader(this.Request.Body))
-            {
-                xml = await reader.ReadToEndAsync();
-            }
-
-            if (string.IsNullOrWhiteSpace(xml))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing toolbox definition"
-                });
-            }
-
-            this._logger.LogInformation($"Updating robot type '{id}'");
-            var command = new Commands.ImportToolbox
-            {
-                Name = id,
-                Definition = xml
-            };
-            return await this.commandManager.ExecuteForHttp(command, rt => Transfer.RobotType.FromModel(rt, Transfer.ConversionOptions.IncludeDetails));
         }
         */
     }

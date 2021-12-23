@@ -56,7 +56,7 @@ namespace NaoBlocks.Web.Helpers
         /// <param name="command">The command to execute.</param>
         /// <param name="mapper">The mapper to transforms the result.</param>
         /// <returns>A <see cref="ExecutionResult"/> instance containing the outcome of executing the command.</returns>
-        public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this IExecutionEngine engine, CommandBase command, Func<TIn?, TOut> mapper)
+        public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this IExecutionEngine engine, CommandBase command, Func<TIn, TOut> mapper)
             where TIn : class
         {
             engine.Logger.LogDebug($"Validating {command.GetType().Name} command");
@@ -89,6 +89,7 @@ namespace NaoBlocks.Web.Helpers
 
             engine.Logger.LogDebug($"Mapping from {typeof(TIn).Name} to {typeof(TOut).Name}");
             var result = rawResult.As<TIn>();
+            if (result.Output == null) return new ExecutionResult<TOut>();
             var output = mapper(result.Output);
             return ExecutionResult.New(output);
         }

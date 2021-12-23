@@ -8,6 +8,11 @@ namespace NaoBlocks.Web.Helpers
     public static class ContentTypes
     {
         /// <summary>
+        /// The file type for a PDF document.
+        /// </summary>
+        public const string Pdf = "application/pdf";
+
+        /// <summary>
         /// The file type for a png image.
         /// </summary>
         public const string Png = "image/png";
@@ -23,9 +28,9 @@ namespace NaoBlocks.Web.Helpers
         public const string Xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
         /// <summary>
-        /// The file type for a PDF document.
+        /// The file type for a Zip file.
         /// </summary>
-        public const string Pdf = "application/pdf";
+        public const string Zip = "application/zip";
 
         /// <summary>
         /// Converts a <see cref="ReportFormat"/> into a MIME type.
@@ -38,6 +43,7 @@ namespace NaoBlocks.Web.Helpers
             {
                 ReportFormat.Excel => Xlsx,
                 ReportFormat.Pdf => Pdf,
+                ReportFormat.Zip => Zip,
                 _ => throw new ApplicationException($"Unknown report format {format}"),
             };
         }

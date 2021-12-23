@@ -16,5 +16,17 @@ namespace NaoBlocks.Engine.Tests.Queries
             var result = await query.RetrieveByNameAsync("Mihīni");
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task RetrievePageAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new RobotType { Name = "Mihīni" });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotTypeData>(session);
+            var result = await query.RetrievePageAsync(0, 10);
+            Assert.Equal(1, result.Count);
+            Assert.NotEmpty(result.Items);
+            Assert.Equal(0, result.Page);
+        }
     }
 }
