@@ -30,7 +30,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.GetUser("Mia");
+            var response = await controller.Get("Mia");
 
             // Assert
             Assert.NotNull(response.Value);
@@ -52,7 +52,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.GetUser("Mia");
+            var response = await controller.Get("Mia");
 
             // Assert
             Assert.IsType<NotFoundResult>(response.Result);
@@ -245,7 +245,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.GetUsers(null, null);
+            var response = await controller.List(null, null);
 
             // Assert
             Assert.Equal(1, response.Count);
@@ -269,7 +269,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.GetUsers(null, null);
+            var response = await controller.List(null, null);
 
             // Assert
             Assert.Equal(0, response.Count);

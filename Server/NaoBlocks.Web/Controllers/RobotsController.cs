@@ -51,82 +51,71 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp(command);
         }
 
-        /*
+        /// <summary>
+        /// Retrieves a robot by its machine name.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <returns>Either a 404 (not found) or the robot details.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.Robot>> GetRobot(string id)
+        public async Task<ActionResult<Dtos.Robot>> Get(string id)
         {
             this._logger.LogDebug($"Retrieving robot: id {id}");
-            var queryable = this.session.Query<Robot>()
-                .Include<Robot>(r => r.RobotTypeId);
-            var robot = await queryable.FirstOrDefaultAsync(u => u.MachineName == id);
+            var robot = await this.executionEngine
+                .Query<RobotData>()
+                .RetrieveByNameAsync(id, true)
+                .ConfigureAwait(false);
             if (robot == null)
             {
                 return NotFound();
             }
 
-            robot.Type = await session.LoadAsync<RobotType>(robot.RobotTypeId);
             this._logger.LogDebug("Retrieved robot");
             return Dtos.Robot.FromModel(robot);
         }
 
+        /// <summary>
+        /// Retrieves a page of robots.
+        /// </summary>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the robots.</returns>
         [HttpGet]
-        public async Task<ActionResult<ListResult<Dtos.Robot>>> GetRobots(int? page, int? size, string? type)
+        public async Task<ActionResult<ListResult<Dtos.Robot>>> List(int? page, int? size, string? type)
         {
-            var pageSize = size ?? 25;
-            var pageNum = page ?? 0;
-            if (pageSize > 100) pageSize = 100;
-
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
             this._logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
-            List<Robot> robots;
-            QueryStatistics stats;
+            string? typeFilter = null;
+
             if (!string.IsNullOrEmpty(type))
             {
-                var robotType = await this.session.Query<RobotType>()
-                    .FirstOrDefaultAsync(rt => rt.Name == type);
+                var robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveByNameAsync(type)
+                    .ConfigureAwait(false);
                 if (robotType == null)
                 {
                     return NotFound();
                 }
 
-                robots = await this.session.Query<Robot>()
-                    .Include<Robot>(r => r.RobotTypeId)
-                    .Statistics(out stats)
-                    .Where(r => r.RobotTypeId == robotType.Id)
-                    .OrderBy(s => s.MachineName)
-                    .Skip(pageNum * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                robots = await this.session.Query<Robot>()
-                    .Include<Robot>(r => r.RobotTypeId)
-                    .Statistics(out stats)
-                    .OrderBy(s => s.MachineName)
-                    .Skip(pageNum * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                typeFilter = robotType.Id;
             }
 
-            robots.ForEach(async r =>
-            {
-                r.Type = string.IsNullOrEmpty(r.RobotTypeId)
-                    ? RobotType.Unknown
-                    : await session.LoadAsync<RobotType>(r.RobotTypeId);
-            });
-            var count = robots.Count;
+            var robots = await this.executionEngine
+                .Query<RobotData>()
+                .RetrievePageAsync(pageNum, pageSize, typeFilter)
+                .ConfigureAwait(false);
+            var count = robots.Items?.Count();
             this._logger.LogDebug($"Retrieved {count} robots");
             var result = new ListResult<Dtos.Robot>
             {
-                Count = stats.TotalResults,
+                Count = robots.Count,
                 Page = pageNum,
-                Items = robots.Select(Dtos.Robot.FromModel)
+                Items = robots.Items?.Select(r => Dtos.Robot.FromModel(r))
             };
             return result;
         }
 
+        /*
         [HttpPost]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)

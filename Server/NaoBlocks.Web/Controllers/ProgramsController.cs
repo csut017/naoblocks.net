@@ -165,6 +165,14 @@ namespace NaoBlocks.Web.Controllers
             var currentUser = await this.LoadUserAsync(this.executionEngine);
             if (currentUser == null) return Unauthorized();
 
+            if (program == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing program details"
+                });
+            }
+
             if ((currentUser.Role == Data.UserRole.Student) || string.IsNullOrEmpty(user)) user = currentUser.Name;
             this._logger.LogDebug($"Retrieving programs for {user}");
 
@@ -175,14 +183,6 @@ namespace NaoBlocks.Web.Controllers
                     .RetrieveByNameAsync(user)
                     .ConfigureAwait(false);
                 if (currentUser == null) return NotFound();
-            }
-
-            if (program == null)
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing program details"
-                });
             }
 
             this._logger.LogInformation($"Adding new program '{program.Name}'");

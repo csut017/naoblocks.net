@@ -387,5 +387,169 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Equal(0, response.Value?.Count);
             Assert.Null(response.Value?.Items);
         }
+
+        [Fact]
+        public async Task PostHandlesRequestWithoutUser()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Post(null, "Mia");
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PostHandlesMissingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.Post(null, "Mia");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PostCallsStoreProgram()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
+            };
+            engine.ExpectCommand<StoreProgram>();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var code = new Transfer.CodeProgram
+            {
+                Code = "go()",
+                Name = "hōtaka"
+            };
+            var response = await controller.Post(code, "Mia");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.CodeProgram>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            var command = Assert.IsType<StoreProgram>(engine.LastCommand);
+            Assert.Equal("go()", command.Code);
+            Assert.Equal("hōtaka", command.Name);
+            Assert.Equal("Mia", command.UserName);
+            Assert.True(command.RequireName);
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task PostHandlesStudent()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
+            };
+            engine.ExpectCommand<StoreProgram>();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Student);
+
+            // Act
+            var code = new Transfer.CodeProgram
+            {
+                Code = "go()",
+                Name = "hōtaka"
+            };
+            var response = await controller.Post(code, "Moana");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.CodeProgram>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            var command = Assert.IsType<StoreProgram>(engine.LastCommand);
+            Assert.Equal("go()", command.Code);
+            Assert.Equal("hōtaka", command.Name);
+            Assert.Equal("Mia", command.UserName);
+            Assert.True(command.RequireName);
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task PostHandlesNonStudent()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
+            };
+            engine.ExpectCommand<StoreProgram>();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
+                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
+
+            // Act
+            var code = new Transfer.CodeProgram
+            {
+                Code = "go()",
+                Name = "hōtaka"
+            };
+            var response = await controller.Post(code, "Moana");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.CodeProgram>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            var command = Assert.IsType<StoreProgram>(engine.LastCommand);
+            Assert.Equal("go()", command.Code);
+            Assert.Equal("hōtaka", command.Name);
+            Assert.Equal("Moana", command.UserName);
+            Assert.True(command.RequireName);
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task PostHandlesMissingUser()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
+                .Returns(Task.FromResult((Data.User?)null));
+
+            // Act
+            var code = new Transfer.CodeProgram
+            {
+                Code = "go()",
+                Name = "hōtaka"
+            };
+            var response = await controller.Post(code, "Moana");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
     }
 }

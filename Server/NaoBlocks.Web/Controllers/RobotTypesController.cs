@@ -53,8 +53,33 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.executionEngine.ExecuteForHttp(command);
         }
+        /*
+        /// <summary>
+        /// Retrieves a robot type by its name.
+        /// </summary>
+        /// <param name="name">The name of the robot type.</param>
+        /// <returns>Either a 404 (not found) or the robot type details.</returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Dtos.RobotType>> Get(string id)
+        {
+            this._logger.LogDebug($"Retrieving robot type: {id}");
+            var queryable = this.session.Query<RobotType>();
+            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            return Dtos.RobotType.FromModel(robotType);
+        }
 
         /*
+        /// <summary>
+        /// Retrieves a robot type by its name.
+        /// </summary>
+        /// <param name="name">The name of the robot type.</param>
+        /// <returns>Either a 404 (not found) or the robot type details.</returns>
         [HttpGet("{id}/package{format}")]
         [HttpGet("{id}/package")]
         [AllowAnonymous]
@@ -212,21 +237,6 @@ namespace NaoBlocks.Web.Controllers
             var fileName = $"RobotType-{robotType.Name}-Package.zip";
             this._logger.LogDebug($"Generated robot type {robotType.Name} package");
             return File(stream, contentType, fileName);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.RobotType>> GetRobotType(string id)
-        {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            return Dtos.RobotType.FromModel(robotType);
         }
 
         [HttpGet]

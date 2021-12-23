@@ -53,7 +53,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the user.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
         [HttpGet("{name}")]
-        public async Task<ActionResult<Dtos.User>> GetUser(string name)
+        public async Task<ActionResult<Dtos.User>> Get(string name)
         {
             this._logger.LogDebug($"Retrieving user: {name}");
             var user = await this.executionEngine
@@ -77,7 +77,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="size">The number of records.</param>
         /// <returns>A <see cref="ListResult{TData}"/> containing the users.</returns>
         [HttpGet]
-        public async Task<ListResult<Dtos.User>> GetUsers(int? page, int? size)
+        public async Task<ListResult<Dtos.User>> List(int? page, int? size)
         {
             (int pageNum, int pageSize)= this.ValidatePageArguments(page, size);
 
