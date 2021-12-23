@@ -38,33 +38,147 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.Verify();
         }
 
-        /*
         [Fact]
-        public async Task GetRetrievesUserViaQuery()
+        public async Task GetHandlesMissing()
         {
             // Arrange
             var logger = new FakeLogger<RobotTypesController>();
             var engine = new FakeEngine();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
             var controller = new RobotTypesController(
                 logger,
-                engine);
-            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
-                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
-            var codeQuery = new Mock<CodeData>();
-            codeQuery.Setup(q => q.RetrieveCodeAsync("Moana", 3))
-                .Returns(Task.FromResult((Data.CodeProgram?)new Data.CodeProgram { Name = "hōtaka", Code = "go()" }));
-            engine.RegisterQuery(codeQuery.Object);
+                engine,
+                env.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
 
             // Act
-            var response = await controller.Get("3", "Moana");
+            var response = await controller.Get("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetRetrievesViaQuery()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotTypesController>();
+            var engine = new FakeEngine();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
+            var controller = new RobotTypesController(
+                logger,
+                engine,
+                env.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.Get("karetao");
 
             // Assert
             Assert.NotNull(response.Value);
-            Assert.Equal("hōtaka", response.Value?.Name);
-            Assert.Equal("go()", response.Value?.Code);
+            Assert.Equal("karetao", response.Value?.Name);
         }
-        */
+
+        [Fact]
+        public async Task PostCallsAddsRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotTypesController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.RobotType())
+            };
+            engine.ExpectCommand<AddRobotType>();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
+            var controller = new RobotTypesController(
+                logger,
+                engine,
+                env.Object);
+
+            // Act
+            var type = new Transfer.RobotType { Name = "karetao" };
+            var response = await controller.Post(type);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = Assert.IsType<AddRobotType>(engine.LastCommand);
+            Assert.Equal("karetao", command.Name);
+        }
+
+        [Fact]
+        public async Task PostValidatesIncomingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotTypesController>();
+            var engine = new FakeEngine();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
+            var controller = new RobotTypesController(
+                logger,
+                engine,
+                env.Object);
+
+            // Act
+            var response = await controller.Post(null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PutCallsUpdateRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotTypesController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.RobotType())
+            };
+            engine.ExpectCommand<UpdateRobotType>();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
+            var controller = new RobotTypesController(
+                logger,
+                engine,
+                env.Object);
+
+            // Act
+            var type = new Transfer.RobotType { Name = "Mihīni" };
+            var response = await controller.Put("karetao", type);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<UpdateRobotType>(engine.LastCommand);
+            Assert.Equal("Mihīni", command.Name);
+        }
+
+        [Fact]
+        public async Task PutValidatesIncomingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotTypesController>();
+            var engine = new FakeEngine();
+            Mock<IWebHostEnvironment> env = InitialiseEnvironment();
+            var controller = new RobotTypesController(
+                logger,
+                engine,
+                env.Object);
+
+            // Act
+            var response = await controller.Put("karetao", null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
 
         private static Mock<IWebHostEnvironment> InitialiseEnvironment(string value = "http://test")
         {

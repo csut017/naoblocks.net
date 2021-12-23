@@ -36,6 +36,27 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetHandlesMissingRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var controller = new RobotsController(
+                logger,
+                engine);
+            var query = new Mock<RobotData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao", true))
+                .Returns(Task.FromResult((Data.Robot?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.Get("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
         public async Task GetRetrievesUserViaQuery()
         {
             // Arrange
@@ -58,35 +79,13 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetHandlesMissingRobot()
-        {
-            // Arrange
-            var logger = new FakeLogger<RobotsController>();
-            var engine = new FakeEngine();
-            var controller = new RobotsController(
-                logger,
-                engine);
-            var query = new Mock<RobotData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao", true))
-                .Returns(Task.FromResult((Data.Robot?)null));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.Get("karetao");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListRetrievesViaQuery()
+        public async Task ListHandlesNullData()
         {
             // Arrange
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
             var query = new Mock<RobotData>();
-            var result = ListResult.New(
-                new[] { new Data.Robot() });
+            var result = new ListResult<Data.Robot>();
             engine.RegisterQuery(query.Object);
             query.Setup(q => q.RetrievePageAsync(0, 25, null))
                 .Returns(Task.FromResult(result));
@@ -98,9 +97,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.List(null, null, null);
 
             // Assert
-            Assert.Equal(1, response.Value?.Count);
+            Assert.Equal(0, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.NotEmpty(response.Value?.Items);
+            Assert.Null(response.Value?.Items);
         }
 
         [Fact]
@@ -154,13 +153,14 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListHandlesNullData()
+        public async Task ListRetrievesViaQuery()
         {
             // Arrange
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
             var query = new Mock<RobotData>();
-            var result = new ListResult<Data.Robot>();
+            var result = ListResult.New(
+                new[] { new Data.Robot() });
             engine.RegisterQuery(query.Object);
             query.Setup(q => q.RetrievePageAsync(0, 25, null))
                 .Returns(Task.FromResult(result));
@@ -172,9 +172,97 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.List(null, null, null);
 
             // Assert
-            Assert.Equal(0, response.Value?.Count);
+            Assert.Equal(1, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.Null(response.Value?.Items);
+            Assert.NotEmpty(response.Value?.Items);
+        }
+
+        [Fact]
+        public async Task PostCallsAddsRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.Robot())
+            };
+            engine.ExpectCommand<AddRobot>();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var robot = new Transfer.Robot { MachineName = "karetao" };
+            var response = await controller.Post(robot);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.Robot>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = Assert.IsType<AddRobot>(engine.LastCommand);
+            Assert.Equal("karetao", command.MachineName);
+        }
+
+        [Fact]
+        public async Task PostValidatesIncomingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Post(null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PutCallsUpdateRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.Robot())
+            };
+            engine.ExpectCommand<UpdateRobot>();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var robot = new Transfer.Robot { FriendlyName = "Mihīni" };
+            var response = await controller.Put("karetao", robot);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.Robot>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<UpdateRobot>(engine.LastCommand);
+            Assert.Equal("karetao", command.MachineName);
+            Assert.Equal("Mihīni", command.FriendlyName);
+        }
+
+        [Fact]
+        public async Task PutValidatesIncomingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Put("karetao", null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
     }
 }

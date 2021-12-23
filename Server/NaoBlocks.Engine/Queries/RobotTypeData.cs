@@ -24,5 +24,28 @@ namespace NaoBlocks.Engine.Queries
                 .ConfigureAwait(false);
             return result;
         }
+
+        /// <summary>
+        /// Retrieves a page of robot types.
+        /// </summary>
+        /// <param name="pageNum">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of robot types in the page.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the robot types.</returns>
+        public virtual async Task<ListResult<RobotType>> RetrievePageAsync(int pageNum, int pageSize)
+        {
+            var query = ((IRavenQueryable<RobotType>)this.Session.Query<RobotType>())
+                .Statistics(out QueryStatistics stats)
+                .OrderBy(r => r.Name)
+                .Skip(pageNum * pageSize)
+                .Take(pageSize);
+            var data = await query.ToListAsync();
+            var result = new ListResult<RobotType>
+            {
+                Count = stats.TotalResults,
+                Page = pageNum,
+                Items = data
+            };
+            return result;
+        }
     }
 }

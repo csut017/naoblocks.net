@@ -53,30 +53,116 @@ namespace NaoBlocks.Web.Controllers
             };
             return await this.executionEngine.ExecuteForHttp(command);
         }
-        /*
+
         /// <summary>
         /// Retrieves a robot type by its name.
         /// </summary>
         /// <param name="name">The name of the robot type.</param>
         /// <returns>Either a 404 (not found) or the robot type details.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.RobotType>> Get(string id)
+        public async Task<ActionResult<Transfer.RobotType>> Get(string id)
         {
             this._logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
             if (robotType == null)
             {
                 return NotFound();
             }
 
             this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            return Dtos.RobotType.FromModel(robotType);
+            return Transfer.RobotType.FromModel(robotType);
+        }
+
+        /// <summary>
+        /// Retrieves a page of robot types.
+        /// </summary>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the robot types.</returns>
+        [HttpGet]
+        public async Task<ListResult<Transfer.RobotType>> List(int? page, int? size)
+        {
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
+            this._logger.LogDebug($"Retrieving robot types: page {pageNum} with size {pageSize}");
+            var robotTypes = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrievePageAsync(pageNum, pageSize)
+                .ConfigureAwait(false);
+            var count = robotTypes.Items?.Count() ?? 0;
+            this._logger.LogDebug($"Retrieved {count} robot types");
+            var result = new ListResult<Transfer.RobotType>
+            {
+                Count = robotTypes.Count,
+                Page = pageNum,
+                Items = robotTypes.Items?.Select(r => Transfer.RobotType.FromModel(r))
+            };
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a new robot type.
+        /// </summary>
+        /// <param name="robot">The robot type to add.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> Post(Transfer.RobotType? robotType)
+        {
+            if (robotType == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot type details"
+                });
+            }
+
+            this._logger.LogInformation($"Adding new robot type '{robotType.Name}'");
+            var command = new AddRobotType
+            {
+                Name = robotType.Name
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
+                command,
+                t => Transfer.RobotType.FromModel(t!));
+        }
+
+        /// <summary>
+        /// Updates an existing robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="robot">The details of the robot type.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPut("{id}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> Put(string? id, Transfer.RobotType? robotType)
+        {
+            if ((robotType == null) || string.IsNullOrEmpty(id))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot type details"
+                });
+            }
+
+            this._logger.LogInformation($"Updating robot type '{id}'");
+            var command = new UpdateRobotType
+            {
+                CurrentName = id,
+                Name = robotType.Name
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
+                command,
+                t => Transfer.RobotType.FromModel(t!));
         }
 
         /*
         /// <summary>
-        /// Retrieves a robot type by its name.
+        /// Retrieves a package list for a robot type.
         /// </summary>
         /// <param name="name">The name of the robot type.</param>
         /// <returns>Either a 404 (not found) or the robot type details.</returns>
@@ -107,7 +193,7 @@ namespace NaoBlocks.Web.Controllers
                     .Select(line =>
                     {
                         var values = line.Split(',');
-                        return new Dtos.PackageFile
+                        return new Transfer.PackageFile
                         {
                             Name = values[0],
                             Hash = values[1]
@@ -219,7 +305,6 @@ namespace NaoBlocks.Web.Controllers
             return ListResult.New(sets);
         }
 
-
         [HttpGet("export/package/{id}")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportPackage(string id)
@@ -239,55 +324,9 @@ namespace NaoBlocks.Web.Controllers
             return File(stream, contentType, fileName);
         }
 
-        [HttpGet]
-        public async Task<ListResult<Dtos.RobotType>> GetRobotTypes(int? page, int? size)
-        {
-            var pageSize = size ?? 25;
-            var pageNum = page ?? 0;
-            if (pageSize > 100) pageSize = 100;
-
-            this._logger.LogDebug($"Retrieving robot types: page {pageNum} with size {pageSize}");
-            var robotTypes = await this.session.Query<RobotType>()
-                                             .Statistics(out QueryStatistics stats)
-                                             .OrderBy(s => s.Name)
-                                             .Skip(pageNum * pageSize)
-                                             .Take(pageSize)
-                                             .ToListAsync();
-            var count = robotTypes.Count;
-            this._logger.LogDebug($"Retrieved {count} robot types");
-            var result = new ListResult<Dtos.RobotType>
-            {
-                Count = stats.TotalResults,
-                Page = pageNum,
-                Items = robotTypes.Select(Dtos.RobotType.FromModel)
-            };
-            return result;
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> Post(Dtos.RobotType robotType)
-        {
-            if (robotType == null)
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing robot type details"
-                });
-            }
-
-            this._logger.LogInformation($"Adding new robot type '{robotType.Name}'");
-            var command = new Commands.AddRobotType
-            {
-                Name = robotType.Name,
-                IsDefault = robotType.IsDefault.GetValueOrDefault(false)
-            };
-            return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
-        }
-
         [HttpPost("{id}/toolbox")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> ImportToolbox(string? id)
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id)
         {
             var xml = string.Empty;
             using (var reader = new StreamReader(this.Request.Body))
@@ -309,29 +348,7 @@ namespace NaoBlocks.Web.Controllers
                 Name = id,
                 Definition = xml
             };
-            return await this.commandManager.ExecuteForHttp(command, rt => Dtos.RobotType.FromModel(rt, Dtos.ConversionOptions.IncludeDetails));
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Dtos.RobotType>>> Put(string? id, Dtos.RobotType? robotType)
-        {
-            if ((robotType == null) || string.IsNullOrEmpty(id))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing robot type details"
-                });
-            }
-
-            this._logger.LogInformation($"Updating robot type '{id}'");
-            var command = new Commands.UpdateRobotType
-            {
-                CurrentName = id,
-                Name = robotType.Name,
-                IsDefault = robotType.IsDefault
-            };
-            return await this.commandManager.ExecuteForHttp(command, Dtos.RobotType.FromModel);
+            return await this.commandManager.ExecuteForHttp(command, rt => Transfer.RobotType.FromModel(rt, Transfer.ConversionOptions.IncludeDetails));
         }
         */
     }

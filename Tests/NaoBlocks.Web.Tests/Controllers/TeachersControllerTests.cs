@@ -16,29 +16,23 @@ namespace NaoBlocks.Web.Tests.Controllers
     public class TeachersControllerTests
     {
         [Fact]
-        public async Task GetTeacherRetrievesTeacherViaQuery()
+        public async Task DeleteCallsDelete()
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
             var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrieveByNameAsync("Mia"))
-                .Returns(Task.FromResult((Data.User?)new Data.User
-                    {
-                        Name = "Mia",
-                        Role = Data.UserRole.Teacher
-                    }));
+            engine.ExpectCommand<DeleteUser>();
             var controller = new TeachersController(
                 logger,
                 engine);
 
             // Act
-            var response = await controller.GetTeacher("Mia");
+            var response = await controller.Delete("Mia");
 
             // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal("Mia", response.Value?.Name);
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
         }
 
         [Fact]
@@ -72,10 +66,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             query.Setup(q => q.RetrieveByNameAsync("Mia"))
                 .Returns(Task.FromResult((Data.User?)new Data.User
-                    {
-                        Name = "Mia",
-                        Role = Data.UserRole.Student
-                    }));
+                {
+                    Name = "Mia",
+                    Role = Data.UserRole.Student
+                }));
             var controller = new TeachersController(
                 logger,
                 engine);
@@ -88,67 +82,80 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteCallsDelete()
+        public async Task GetTeacherRetrievesTeacherViaQuery()
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
             var engine = new FakeEngine();
-            engine.ExpectCommand<DeleteUser>();
+            var query = new Mock<UserData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mia"))
+                .Returns(Task.FromResult((Data.User?)new Data.User
+                {
+                    Name = "Mia",
+                    Role = Data.UserRole.Teacher
+                }));
             var controller = new TeachersController(
                 logger,
                 engine);
 
             // Act
-            var response = await controller.Delete("Mia");
+            var response = await controller.GetTeacher("Mia");
 
             // Assert
-            var result = Assert.IsType<ExecutionResult>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
+            Assert.NotNull(response.Value);
+            Assert.Equal("Mia", response.Value?.Name);
         }
 
         [Fact]
-        public async Task PutCallsUpdateTeacher()
-        {
-            // Arrange
-            var logger = new FakeLogger<TeachersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.User())
-            };
-            engine.ExpectCommand<UpdateUser>();
-            var controller = new TeachersController(
-                logger,
-                engine);
-
-            // Act
-            var Teacher = new Transfer.Teacher { Name = "Mia", Role = "Student" };
-            var response = await controller.Put("Maia", Teacher);
-
-            // Assert
-            var result = Assert.IsType<ExecutionResult<Transfer.Teacher>>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
-
-            var command = Assert.IsType<UpdateUser>(engine.LastCommand);
-            Assert.Equal(Data.UserRole.Teacher, command.Role);
-        }
-
-        [Fact]
-        public async Task PutValidatesIncomingData()
+        public async Task GetTeachersHandlesNullData()
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
             var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            var result = new ListResult<Data.User>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrievePageAsync(0, 25, Data.UserRole.Teacher))
+                .Returns(Task.FromResult(result));
             var controller = new TeachersController(
                 logger,
                 engine);
 
             // Act
-            var response = await controller.Put("Maia", null);
+            var response = await controller.GetTeachers(null, null);
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
+            Assert.Equal(0, response.Count);
+            Assert.Equal(0, response.Page);
+            Assert.Null(response.Items);
+        }
+
+        [Fact]
+        public async Task GetTeachersRetrievesViaQuery()
+        {
+            // Arrange
+            var logger = new FakeLogger<TeachersController>();
+            var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            var result = ListResult.New(
+                new[] {
+                    new Data.User { Role = Data.UserRole.Teacher }
+                });
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrievePageAsync(0, 25, Data.UserRole.Teacher))
+                .Returns(Task.FromResult(result));
+            var controller = new TeachersController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.GetTeachers(null, null);
+
+            // Assert
+            Assert.Equal(1, response.Count);
+            Assert.Equal(0, response.Page);
+            Assert.NotEmpty(response.Items);
         }
 
         [Fact]
@@ -196,54 +203,47 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetTeachersRetrievesViaQuery()
+        public async Task PutCallsUpdateTeacher()
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
-            var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            var result = ListResult.New(
-                new[] {
-                    new Data.User { Role = Data.UserRole.Teacher }
-                });
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrievePageAsync(0, 25, Data.UserRole.Teacher))
-                .Returns(Task.FromResult(result));
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.User())
+            };
+            engine.ExpectCommand<UpdateUser>();
             var controller = new TeachersController(
                 logger,
                 engine);
 
             // Act
-            var response = await controller.GetTeachers(null, null);
+            var Teacher = new Transfer.Teacher { Name = "Mia", Role = "Student" };
+            var response = await controller.Put("Maia", Teacher);
 
             // Assert
-            Assert.Equal(1, response.Count);
-            Assert.Equal(0, response.Page);
-            Assert.NotEmpty(response.Items);
+            var result = Assert.IsType<ExecutionResult<Transfer.Teacher>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<UpdateUser>(engine.LastCommand);
+            Assert.Equal(Data.UserRole.Teacher, command.Role);
         }
 
         [Fact]
-        public async Task GetTeachersHandlesNullData()
+        public async Task PutValidatesIncomingData()
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
             var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            var result = new ListResult<Data.User>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrievePageAsync(0, 25, Data.UserRole.Teacher))
-                .Returns(Task.FromResult(result));
             var controller = new TeachersController(
                 logger,
                 engine);
 
             // Act
-            var response = await controller.GetTeachers(null, null);
+            var response = await controller.Put("Maia", null);
 
             // Assert
-            Assert.Equal(0, response.Count);
-            Assert.Equal(0, response.Page);
-            Assert.Null(response.Items);
+            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
     }
 }

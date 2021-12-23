@@ -57,7 +57,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the robot.</param>
         /// <returns>Either a 404 (not found) or the robot details.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Dtos.Robot>> Get(string id)
+        public async Task<ActionResult<Transfer.Robot>> Get(string id)
         {
             this._logger.LogDebug($"Retrieving robot: id {id}");
             var robot = await this.executionEngine
@@ -70,7 +70,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved robot");
-            return Dtos.Robot.FromModel(robot);
+            return Transfer.Robot.FromModel(robot);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="size">The number of records.</param>
         /// <returns>A <see cref="ListResult{TData}"/> containing the robots.</returns>
         [HttpGet]
-        public async Task<ActionResult<ListResult<Dtos.Robot>>> List(int? page, int? size, string? type)
+        public async Task<ActionResult<ListResult<Transfer.Robot>>> List(int? page, int? size, string? type)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
             this._logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
@@ -106,19 +106,23 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             var count = robots.Items?.Count();
             this._logger.LogDebug($"Retrieved {count} robots");
-            var result = new ListResult<Dtos.Robot>
+            var result = new ListResult<Transfer.Robot>
             {
                 Count = robots.Count,
                 Page = pageNum,
-                Items = robots.Items?.Select(r => Dtos.Robot.FromModel(r))
+                Items = robots.Items?.Select(r => Transfer.Robot.FromModel(r))
             };
             return result;
         }
 
-        /*
+        /// <summary>
+        /// Adds a new robot.
+        /// </summary>
+        /// <param name="robot">The robot to add.</param>
+        /// <returns>The result of execution.</returns>
         [HttpPost]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Dtos.Robot>>> Post(Dtos.Robot robot)
+        public async Task<ActionResult<ExecutionResult<Transfer.Robot>>> Post(Transfer.Robot? robot)
         {
             if (robot == null)
             {
@@ -136,12 +140,20 @@ namespace NaoBlocks.Web.Controllers
                 Password = robot.Password,
                 Type = robot.Type
             };
-            return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
+            return await this.executionEngine
+                .ExecuteForHttp<Data.Robot, Transfer.Robot>
+                (command, r => Transfer.Robot.FromModel(r!));
         }
 
+        /// <summary>
+        /// Updates an existing robot.
+        /// </summary>
+        /// <param name="id">The machine name of the robot.</param>
+        /// <param name="robot">The details of the robot.</param>
+        /// <returns>The result of execution.</returns>
         [HttpPut("{id}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult>> Put(string? id, Dtos.Robot? robot)
+        public async Task<ActionResult<ExecutionResult<Transfer.Robot>>> Put(string? id, Transfer.Robot? robot)
         {
             if ((robot == null) || string.IsNullOrEmpty(id))
             {
@@ -154,18 +166,20 @@ namespace NaoBlocks.Web.Controllers
             this._logger.LogInformation($"Updating robot '{id}'");
             var command = new UpdateRobot
             {
-                CurrentMachineName = id,
-                MachineName = robot.MachineName,
+                MachineName = id,
                 FriendlyName = robot.FriendlyName,
                 Password = robot.Password,
-                Type = robot.Type
+                RobotType = robot.Type
             };
-            return await this.commandManager.ExecuteForHttp(command);
+            return await this.executionEngine
+                .ExecuteForHttp<Data.Robot, Transfer.Robot>
+                (command, r => Transfer.Robot.FromModel(r!));
         }
 
+        /*
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<ExecutionResult<Dtos.Robot>>> Register(Dtos.Robot robot)
+        public async Task<ActionResult<ExecutionResult<Transfer.Robot>>> Register(Transfer.Robot robot)
         {
             if (robot == null)
             {
@@ -180,7 +194,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 MachineName = robot.MachineName
             };
-            return await this.commandManager.ExecuteForHttp(command, Dtos.Robot.FromModel);
+            return await this.commandManager.ExecuteForHttp(command, Transfer.Robot.FromModel);
         }
 
         [HttpGet("export/list")]
