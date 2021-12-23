@@ -5,9 +5,8 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -49,6 +48,20 @@ namespace NaoBlocks.Web.Controllers
                 Name = id
             };
             return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Generates the robot list export.
+        /// </summary>
+        /// <param name="format">The format to use.</param>
+        /// <returns>The generated robot list.</returns>
+        [HttpGet("export/list")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportList(string? format)
+        {
+            return await this.GenerateReport<Generators.RobotsList>(
+                this.executionEngine,
+                format);
         }
 
         /// <summary>
@@ -176,10 +189,14 @@ namespace NaoBlocks.Web.Controllers
                 (command, r => Transfer.Robot.FromModel(r!));
         }
 
-        /*
+        /// <summary>
+        /// Registers a new unknown robot.
+        /// </summary>
+        /// <param name="robot">The robot details</param>
+        /// <returns>The result of execution.</returns>
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<ExecutionResult<Transfer.Robot>>> Register(Transfer.Robot robot)
+        public async Task<ActionResult<ExecutionResult<Transfer.Robot>>> Register(Transfer.Robot? robot)
         {
             if (robot == null)
             {
@@ -194,18 +211,9 @@ namespace NaoBlocks.Web.Controllers
             {
                 MachineName = robot.MachineName
             };
-            return await this.commandManager.ExecuteForHttp(command, Transfer.Robot.FromModel);
+            return await this.executionEngine
+                .ExecuteForHttp<Data.Robot, Transfer.Robot>
+                (command, r => Transfer.Robot.FromModel(r!));
         }
-
-        [HttpGet("export/list")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportList()
-        {
-            var excelData = await Generators.RobotsList.GenerateAsync(this.session);
-            var contentType = ContentTypes.Xlsx;
-            var fileName = "Robots-List.xlsx";
-            return File(excelData, contentType, fileName);
-        }
-        */
     }
 }

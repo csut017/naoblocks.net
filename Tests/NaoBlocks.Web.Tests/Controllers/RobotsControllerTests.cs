@@ -5,10 +5,13 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Controllers
@@ -33,6 +36,76 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<ExecutionResult>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
             engine.Verify();
+        }
+
+        [Theory]
+        [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Robots-List.xlsx")]
+        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Robots-List.xlsx")]
+        [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]
+        [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]
+        [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]
+        public async Task ExportListGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.RobotsList>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportList(format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportListHandlesInvalidInput()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportList("garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportListHandlesUnknownFormat()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.RobotsList>();
+            engine.RegisterGenerator(generator.Object);
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.ExportList("unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
         }
 
         [Fact]
@@ -260,6 +333,49 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Act
             var response = await controller.Put("karetao", null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task RegisterCallsAddsRobot()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.Robot())
+            };
+            engine.ExpectCommand<RegisterRobot>();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var robot = new Transfer.Robot { MachineName = "karetao" };
+            var response = await controller.Register(robot);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.Robot>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = Assert.IsType<RegisterRobot>(engine.LastCommand);
+            Assert.Equal("karetao", command.MachineName);
+        }
+
+        [Fact]
+        public async Task RegisterValidatesIncomingData()
+        {
+            // Arrange
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            var controller = new RobotsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Register(null);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);
