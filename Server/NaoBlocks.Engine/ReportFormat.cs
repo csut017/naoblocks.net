@@ -8,6 +8,8 @@
         Unknown,
         Pdf,
         Excel,
-        Zip
+        Zip,
+        Csv,
+        Text
     }
 }

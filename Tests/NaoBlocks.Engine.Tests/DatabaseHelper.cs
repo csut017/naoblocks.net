@@ -44,5 +44,13 @@ namespace NaoBlocks.Engine.Tests
             query.InitialiseSession(WrapSession(session));
             return query;
         }
+
+        protected static TGenerator InitialiseGenerator<TGenerator>(IAsyncDocumentSession session)
+            where TGenerator : ReportGenerator, new()
+        {
+            var query = new TGenerator();
+            query.InitialiseSession(WrapSession(session));
+            return query;
+        }
     }
 }

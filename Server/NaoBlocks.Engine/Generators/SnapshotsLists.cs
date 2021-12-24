@@ -27,6 +27,8 @@
             {
                 ReportFormat.Excel => true,
                 ReportFormat.Pdf => true,
+                ReportFormat.Text => true,
+                ReportFormat.Csv => true,
                 _ => false,
             };
         }
