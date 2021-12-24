@@ -22,6 +22,25 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Equal(allowed, generator.IsFormatAvailable(format));
         }
 
+        [Theory]
+        [InlineData(ReportFormat.Csv, "Student-List.csv")]
+        [InlineData(ReportFormat.Text, "Student-List.txt")]
+        [InlineData(ReportFormat.Excel, "Student-List.xlsx")]
+        public async Task GenerateAsyncHandlesDifferentFormats(ReportFormat format, string expectedName)
+        {
+            using var store = InitialiseDatabase(
+                new User { Name = "Mia", Role = UserRole.Student, WhenAdded = new DateTime(2021, 3, 4) });
+            using var session = store.OpenAsyncSession();
+            var generator = InitialiseGenerator<StudentsList>(session);
+
+            // Act
+            var output = await generator.GenerateAsync(format);
+
+            // Assert
+            Assert.Equal(expectedName, output.Item2);
+            Assert.True(output.Item1.Length > 0);
+        }
+
         [Fact]
         public async Task GenerateAsyncGeneratesReport()
         {

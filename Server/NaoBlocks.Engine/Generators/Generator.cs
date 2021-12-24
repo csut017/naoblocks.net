@@ -19,17 +19,6 @@ namespace NaoBlocks.Engine.Generators
         }
 
         /// <summary>
-        /// Adds a <see cref="Table"/>.
-        /// </summary>
-        /// <param name="table">The <see cref="Table"/> to add.</param>
-        /// <returns>The add <see cref="Table"/>.</returns>
-        public Table AddTable(Table table)
-        {
-            this.tables.Add(table);
-            return table;
-        }
-
-        /// <summary>
         /// Starts a new <see cref="Table"/> and adds it.
         /// </summary>
         /// <param name="name">The name of the table.</param>
@@ -47,18 +36,18 @@ namespace NaoBlocks.Engine.Generators
         /// <param name="format">The format to generate.</param>
         /// <param name="baseName">The base name of the file.</param>
         /// <returns>A <see cref="Stream"/> containing the data and the filename.</returns>
-        public Task<(Stream, string)> GenerateAsync(ReportFormat format, string baseName)
+        public async Task<(Stream, string)> GenerateAsync(ReportFormat format, string baseName)
         {
             return format switch
             {
-                ReportFormat.Excel => Task.FromResult(this.GenerateExcel(baseName)),
-                ReportFormat.Csv => Task.FromResult(this.GenerateText(baseName, "csv", false, ",")),
-                ReportFormat.Text => Task.FromResult(this.GenerateText(baseName, "txt", true, ",")),
+                ReportFormat.Excel => await this.GenerateExcel(baseName),
+                ReportFormat.Csv => this.GenerateText(baseName, "csv", false, ","),
+                ReportFormat.Text => this.GenerateText(baseName, "txt", true, ","),
                 _ => throw new ApplicationException($"Unable to generate: unhandled {format}"),
             };
         }
 
-        private (Stream, string) GenerateExcel(string baseName)
+        private async Task<(Stream, string)> GenerateExcel(string baseName)
         {
             using var package = new ExcelPackage();
             var tableNum = 0;
@@ -88,7 +77,10 @@ namespace NaoBlocks.Engine.Generators
                 }
             }
 
-            return (package.Stream, $"{baseName}.xlsx");
+            var stream = new MemoryStream();
+            await package.SaveAsAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return (stream, $"{baseName}.xlsx");
         }
 
         private (Stream, string) GenerateText(string baseName, string extension, bool includeHeader, string separator)
