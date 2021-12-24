@@ -9,38 +9,6 @@ namespace NaoBlocks.Engine.Tests.Generators
 {
     public class StudentsListTests : DatabaseHelper
     {
-        [Theory]
-        [InlineData(ReportFormat.Unknown, false)]
-        [InlineData(ReportFormat.Zip, false)]
-        [InlineData(ReportFormat.Pdf, true)]
-        [InlineData(ReportFormat.Excel, true)]
-        [InlineData(ReportFormat.Text, true)]
-        [InlineData(ReportFormat.Csv, true)]
-        public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
-        {
-            var generator = new StudentsList();
-            Assert.Equal(allowed, generator.IsFormatAvailable(format));
-        }
-
-        [Theory]
-        [InlineData(ReportFormat.Csv, "Student-List.csv")]
-        [InlineData(ReportFormat.Text, "Student-List.txt")]
-        [InlineData(ReportFormat.Excel, "Student-List.xlsx")]
-        public async Task GenerateAsyncHandlesDifferentFormats(ReportFormat format, string expectedName)
-        {
-            using var store = InitialiseDatabase(
-                new User { Name = "Mia", Role = UserRole.Student, WhenAdded = new DateTime(2021, 3, 4) });
-            using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<StudentsList>(session);
-
-            // Act
-            var output = await generator.GenerateAsync(format);
-
-            // Assert
-            Assert.Equal(expectedName, output.Item2);
-            Assert.True(output.Item1.Length > 0);
-        }
-
         [Fact]
         public async Task GenerateAsyncGeneratesReport()
         {
@@ -54,6 +22,11 @@ namespace NaoBlocks.Engine.Tests.Generators
                 {
                     RobotType = "Karetao",
                     Conditionals = true
+                },
+                StudentDetails = new StudentDetails
+                {
+                    Age = 10,
+                    Gender = "Female"
                 }
             };
             var student2 = new User
@@ -90,9 +63,41 @@ namespace NaoBlocks.Engine.Tests.Generators
 Name,Robot,When Added,Mode,Dances,Conditionals,Loops,Sensors,Variables,Age,Gender
 Ari,Karetao,8-Jul-2021,Simple,Yes,No,Yes,No,No,,
 Mia,,4-Mar-2021,,,,,,,,
-Moana,Karetao,6-May-2021,Default,No,Yes,No,No,No,,
+Moana,Karetao,6-May-2021,Default,No,Yes,No,No,No,10,Female
 ",
                 text);
+        }
+
+        [Theory]
+        [InlineData(ReportFormat.Csv, "Student-List.csv")]
+        [InlineData(ReportFormat.Text, "Student-List.txt")]
+        [InlineData(ReportFormat.Excel, "Student-List.xlsx")]
+        public async Task GenerateAsyncHandlesDifferentFormats(ReportFormat format, string expectedName)
+        {
+            using var store = InitialiseDatabase(
+                new User { Name = "Mia", Role = UserRole.Student, WhenAdded = new DateTime(2021, 3, 4) });
+            using var session = store.OpenAsyncSession();
+            var generator = InitialiseGenerator<StudentsList>(session);
+
+            // Act
+            var output = await generator.GenerateAsync(format);
+
+            // Assert
+            Assert.Equal(expectedName, output.Item2);
+            Assert.True(output.Item1.Length > 0);
+        }
+
+        [Theory]
+        [InlineData(ReportFormat.Unknown, false)]
+        [InlineData(ReportFormat.Zip, false)]
+        [InlineData(ReportFormat.Pdf, true)]
+        [InlineData(ReportFormat.Excel, true)]
+        [InlineData(ReportFormat.Text, true)]
+        [InlineData(ReportFormat.Csv, true)]
+        public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
+        {
+            var generator = new StudentsList();
+            Assert.Equal(allowed, generator.IsFormatAvailable(format));
         }
     }
 }
