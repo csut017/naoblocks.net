@@ -20,7 +20,7 @@
         /// </summary>
         /// <param name="type">The type of the row.</param>
         /// <param name="data">The cell values.</param>
-        public void AddRow(TableRowType type, params TableCell?[] data)
+        public TableRow AddRow(TableRowType type, params TableCell?[] data)
         {
             var row = new TableRow
             {
@@ -28,15 +28,16 @@
             };
             row.Values.AddRange(data);
             this.Rows.Add(row);
+            return row;
         }
 
         /// <summary>
         /// Adds a row to the table.
         /// </summary>
         /// <param name="data">The cell values.</param>
-        public void AddRow(params TableCell?[] data)
+        public TableRow AddRow(params TableCell?[] data)
         {
-            this.AddRow(TableRowType.Data, data);
+            return this.AddRow(TableRowType.Data, data);
         }
 
         /// <summary>
