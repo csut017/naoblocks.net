@@ -5,6 +5,8 @@ using NaoBlocks.Engine.Database;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using System.Reflection;
+using System.Security.Claims;
+using System.Security.Principal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,8 +53,13 @@ builder.Services.AddScoped<IDatabaseSession>(services =>
     return database.StartSession();
 });
 
-// Add the application services
+// Add security
 builder.Services.AddJwtSecurity(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<IPrincipal>(s =>
+    s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
+
+// Add the application services
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
 
