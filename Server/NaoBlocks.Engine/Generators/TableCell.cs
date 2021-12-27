@@ -37,7 +37,7 @@
         /// Converts from a <see cref="DateTime"/> to a <see cref="TableCell"/>.
         /// </summary>
         /// <param name="value">The <see cref="DateTime"/> to convert.</param>
-        public static implicit operator TableCell(DateTime value) => new(value, "d-MMM-yyyy");
+        public static implicit operator TableCell(DateTime value) => new(value, "yyyy-MM-dd");
 
         /// <summary>
         /// Converts from a <see cref="string"/> to a <see cref="TableCell"/>.

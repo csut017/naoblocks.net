@@ -213,7 +213,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportSnapshots(string? name, string? format)
         {
-            return await this.GenerateUserReport<Generators.SnapshotsLists>(
+            return await this.GenerateUserReport<Generators.SnapshotsList>(
                 this.executionEngine,
                 format,
                 name);

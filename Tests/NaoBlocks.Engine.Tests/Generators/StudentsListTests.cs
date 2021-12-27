@@ -61,9 +61,9 @@ namespace NaoBlocks.Engine.Tests.Generators
                     @"Students
 ========
 Name,Robot,When Added,Mode,Dances,Conditionals,Loops,Sensors,Variables,Age,Gender
-Ari,Karetao,8-Jul-2021,Simple,Yes,No,Yes,No,No,,
-Mia,,4-Mar-2021,,,,,,,,
-Moana,Karetao,6-May-2021,Default,No,Yes,No,No,No,10,Female
+Ari,Karetao,2021-07-08,Simple,Yes,No,Yes,No,No,,
+Mia,,2021-03-04,,,,,,,,
+Moana,Karetao,2021-05-06,Default,No,Yes,No,No,No,10,Female
 ",
                 text);
         }

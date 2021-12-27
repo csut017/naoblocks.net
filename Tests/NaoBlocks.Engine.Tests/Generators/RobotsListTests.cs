@@ -31,8 +31,8 @@ namespace NaoBlocks.Engine.Tests.Generators
                     @"Robots
 ======
 Machine Name,Friendly Name,Type,When Added,Initialized
-Mihīni-1,Mia,,9-Oct-2021,No
-Mihīni-2,Taita,Karetao,11-Dec-2021,Yes
+Mihīni-1,Mia,,2021-10-09,No
+Mihīni-2,Taita,Karetao,2021-12-11,Yes
 ",
                 text);
         }
