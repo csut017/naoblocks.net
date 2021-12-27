@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using NaoBlocks.Common;
+using Newtonsoft.Json;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,7 +18,7 @@ namespace NaoBlocks.Web.IntegrationTests
         }
 
         [Fact]
-        public async Task VersionRetrievesVersion()
+        public async Task VersionRetrievesJson()
         {
             // Arrange
             var client = this.factory.CreateClient();
@@ -25,6 +28,23 @@ namespace NaoBlocks.Web.IntegrationTests
 
             // Assert
             response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<VersionInformation>(content);
+            Assert.False(string.IsNullOrWhiteSpace(data?.Version));
+            Assert.False(string.IsNullOrWhiteSpace(data?.Status));
+        }
+
+        [Fact]
+        public async Task WhoAmIHandlesNonAuthenticatedRequest()
+        {
+            // Arrange
+            var client = this.factory.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("/api/v1/whoami");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }

@@ -238,11 +238,13 @@ namespace NaoBlocks.Web.Controllers
         /// <returns>The current user details, if authenticated, not found otherwise.</returns>
         [HttpGet("whoami")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Transfer.User>> WhoAmI()
         {
             this.logger.LogInformation("Retrieving current user");
-            var user = await this.LoadUserAsync(this.executionEngine).ConfigureAwait(false);
+            var user = await this.LoadUserAsync(this.executionEngine)
+                .ConfigureAwait(false);
             if (user == null) return this.NotFound();
             return new Transfer.User
             {

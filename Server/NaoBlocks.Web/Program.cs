@@ -3,9 +3,20 @@ using Microsoft.OpenApi.Models;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Database;
 using NaoBlocks.Web.Communications;
+using NaoBlocks.Web.Helpers;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy("CorsPolicy", builder => builder
+        .WithOrigins("http://localhost:4200")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
+});
+builder.Services.AddHealthChecks();
 
 // Register the configuration settings
 builder.Services.Configure<RavenDbConfiguration>(
@@ -41,9 +52,9 @@ builder.Services.AddScoped<IDatabaseSession>(services =>
 });
 
 // Add the application services
+builder.Services.AddJwtSecurity(builder.Configuration);
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
-builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())
