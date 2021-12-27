@@ -120,6 +120,7 @@ namespace NaoBlocks.Web.Communications
         /// Sends a message to all connections of a specific type.
         /// </summary>
         /// <param name="message">The message to send.</param>
+        /// <param name="clientType">The type of client to send the messages to.</param>
         public void SendToAll(ClientMessage message, ClientConnectionType clientType)
         {
             var monitors = this.GetClients(clientType);
@@ -169,6 +170,7 @@ namespace NaoBlocks.Web.Communications
             msg.Values["ClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
             this.SendToMonitors(msg);
         }
+
         /// <summary>
         /// Retrieves all the current monitor connections.
         /// </summary>
@@ -219,7 +221,6 @@ namespace NaoBlocks.Web.Communications
                 var msg = GenerateAddClientMessage(existing);
                 client.SendMessage(msg);
             }
-
         }
 
         /// <summary>

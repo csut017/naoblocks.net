@@ -1,96 +1,67 @@
-using NaoBlocks.Web.Helpers;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using NaoBlocks.Engine;
+using NaoBlocks.Engine.Database;
+using NaoBlocks.Web.Communications;
+using System.Reflection;
 
-namespace NaoBlocks.Web
+var builder = WebApplication.CreateBuilder(args);
+
+// Register the configuration settings
+builder.Services.Configure<RavenDbConfiguration>(
+    builder.Configuration.GetSection("Database"));
+
+// Add the controllers and documentation
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(opts =>
 {
-    /// <summary>
-    /// Main entry point for the web API application.
-    /// </summary>
-    public class Program
+    opts.SwaggerDoc("v1", new OpenApiInfo
     {
-        /// <summary>
-        /// Initialises the application.
-        /// </summary>
-        /// <param name="args">Any command line arguments to check.</param>
-        /// <returns>An <see cref="IHostBuilder"/> instance.</returns>
-        public IHostBuilder CreateHostBuilder(string[] args)
-        {
-            var parsedArgs = ParseArgs(args);
+        Version = "v1",
+        Title = "NaoBlocks.NET API",
+        Description = "Web API for interacting with the NaoBlocks system"
+    });
 
-            var availableInterfaces = NetworkInterface.GetAllNetworkInterfaces()
-                .OrderByDescending(c => c.Speed)
-                .Where(c => c.NetworkInterfaceType != NetworkInterfaceType.Loopback && c.OperationalStatus == OperationalStatus.Up);
-            if (parsedArgs.ContainsKey("useLocal")) ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
 
-            foreach (var availableInterface in availableInterfaces)
-            {
-                var props = availableInterface.GetIPProperties();
-                var ip4Addresses = props.UnicastAddresses
-                    .Where(c => c.Address.AddressFamily == AddressFamily.InterNetwork)
-                    .Select(c => c.Address)
-                    .ToArray();
-                foreach (var ip4Address in ip4Addresses)
-                {
-                    ClientAddressList.Add($"http://{ip4Address}:5000");
-                }
-            }
+// Define the database services
+builder.Services.AddSingleton<IDatabase>(services =>
+    {
+        var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
+        var config = services.GetService<IOptions<RavenDbConfiguration>>();
+        var env = services.GetRequiredService<IWebHostEnvironment>();
+        return RavenDbDatabase.New(logger, config?.Value, env.ContentRootPath);
+    });
+builder.Services.AddScoped<IDatabaseSession>(services =>
+{
+    var database = services.GetRequiredService<IDatabase>();
+    return database.StartSession();
+});
 
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseUrls(ClientAddressList.Get().ToArray());
-                    webBuilder.UseStartup<Startup>();
-                });
-        }
+// Add the application services
+builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
+builder.Services.AddSingleton<IHub, LocalHub>();
+builder.Services.AddHealthChecks();
 
-        /// <summary>
-        /// Parses the command line args into a dictionary.
-        /// </summary>
-        /// <param name="args">The args to parse.</param>
-        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> containing the args.</returns>
-        public static Dictionary<string, string> ParseArgs(string[] args)
-        {
-            var output = new Dictionary<string, string>();
-            foreach (var arg in args)
-            {
-                if (arg.StartsWith("--") || arg.StartsWith("/"))
-                {
-                    var parts = arg.Split('=');
-                    var name = parts[0];
-                    if (name.StartsWith("--"))
-                    {
-                        name = name[2..];
-                    }
-                    else if (name.StartsWith("/"))
-                    {
-                        name = name[1..];
-                    }
-                    if (output.TryGetValue(name, out var current))
-                    {
-                        if (parts.Length > 1) output[name] = $"{current},{parts[1]}";
-                    }
-                    else
-                    {
-                        output[name] = parts.Length > 1 ? parts[1] : string.Empty;
-                    }
-                }
-                else
-                {
-                    output.Add(arg, string.Empty);
-                }
-            }
-            return output;
-        }
-
-        /// <summary>
-        /// Executes the application.
-        /// </summary>
-        /// <param name="args">Any command line arguments to check.</param>
-        public static void Main(string[] args)
-        {
-            var app = new Program();
-            app.CreateHostBuilder(args).Build().Run();
-        }
-    }
+var app = builder.Build();
+if (builder.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+// Some basic configuration
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+app.MapHealthChecks("/health");
+app.Run();
+
+/// <summary>
+/// Make the Program class explicit so it can be accessed by tests
+/// </summary>
+public partial class Program
+{ }

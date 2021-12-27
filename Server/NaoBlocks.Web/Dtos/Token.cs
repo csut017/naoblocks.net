@@ -37,7 +37,6 @@
         /// Converts from a data entity to a data transfer object.
         /// </summary>
         /// <param name="value">The <see cref="Common.Token"/> to convert.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A <see cref="Token"/> instance.</returns>
         public static Token? FromModel(Common.Token? value)
         {

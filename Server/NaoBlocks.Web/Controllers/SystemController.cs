@@ -163,6 +163,10 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
+        /// <summary>
+        /// Retrieves the site configuration options.
+        /// </summary>
+        /// <returns>A <see cref="Transfer.SiteConfiguration"/> containing the configuration details.</returns>
         [HttpGet("system/config")]
         [AllowAnonymous]
         public async Task<ActionResult<Transfer.SiteConfiguration>> GetSiteConfiguration()
@@ -177,6 +181,11 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
+        /// <summary>
+        /// Sets the default site address.
+        /// </summary>
+        /// <param name="config">The configuration options containing the site address.</param>
+        /// <returns>The result of the command execution.</returns>
         [HttpPost("system/siteAddress")]
         [Authorize("Administrator")]
         public async Task<ActionResult<ExecutionResult<Transfer.SiteConfiguration>>> SetDefaultAddress(Transfer.SiteConfiguration? config)
@@ -195,7 +204,7 @@ namespace NaoBlocks.Web.Controllers
                 Address = config.DefaultAddress
             };
             return await this.executionEngine.ExecuteForHttp<Data.SystemValues, Transfer.SiteConfiguration>(
-                command, 
+                command,
                 result => new Transfer.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
         }
 
@@ -223,7 +232,13 @@ namespace NaoBlocks.Web.Controllers
         //    return File(stream.ToArray(), ContentTypes.Png);
         //}
 
+        /// <summary>
+        /// Retrieves the details of the current user.
+        /// </summary>
+        /// <returns>The current user details, if authenticated, not found otherwise.</returns>
         [HttpGet("whoami")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Transfer.User>> WhoAmI()
         {
             this.logger.LogInformation("Retrieving current user");

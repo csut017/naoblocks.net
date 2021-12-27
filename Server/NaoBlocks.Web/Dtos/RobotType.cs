@@ -26,6 +26,7 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
+        /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A new <see cref="RobotType"/> instance containing the required properties.</returns>
         public static RobotType FromModel(Data.RobotType value, bool includeDetails = false)
         {

@@ -18,6 +18,7 @@ namespace NaoBlocks.Web.Helpers
         /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
         /// <param name="format">The output format.</param>
         /// <param name="generate">An optional generation function.</param>
+        /// <param name="defaultFormat">The default report generation format.</param>
         /// <returns>A <see cref="ActionResult"/> containing the result of the validation and generation.</returns>
         public static async Task<ActionResult> GenerateReport<TGenerator>(
             this ControllerBase controller,

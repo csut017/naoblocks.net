@@ -25,7 +25,7 @@ namespace NaoBlocks.Web.Controllers
         /// Initialises a new <see cref="UsersController"/> instance.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
-        /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
+        /// <param name="engine">The execution engine for processing commands and queries.</param>
         public StudentsController(ILogger<StudentsController> logger, IExecutionEngine engine)
         {
             this.logger = logger;
@@ -101,7 +101,7 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Adds a new student.
         /// </summary>
-        /// <param name="teacher">The details of the student.</param>
+        /// <param name="student">The details of the student.</param>
         /// <returns>The result of execution.</returns>
         [HttpPost]
         public async Task<ActionResult<ExecutionResult<Dtos.Student>>> Post(Dtos.Student? student)
@@ -178,6 +178,7 @@ namespace NaoBlocks.Web.Controllers
         /// Exports the details on a student.
         /// </summary>
         /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
         /// <returns>The generated student details.</returns>
         [HttpGet("{name}/export")]
         [Authorize(Policy = "Teacher")]
@@ -193,6 +194,7 @@ namespace NaoBlocks.Web.Controllers
         /// Exports the logs for a student.
         /// </summary>
         /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
         /// <returns>The generated student logs.</returns>
         [HttpGet("{id}/logs/export")]
         [Authorize(Policy = "Teacher")]
@@ -208,6 +210,7 @@ namespace NaoBlocks.Web.Controllers
         /// Exports the snapshots for a student.
         /// </summary>
         /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
         /// <returns>The generated snapshots list.</returns>
         [HttpGet("{id}/snapshots/export")]
         [Authorize(Policy = "Teacher")]

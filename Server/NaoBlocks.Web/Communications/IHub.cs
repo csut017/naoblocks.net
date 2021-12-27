@@ -50,6 +50,7 @@ namespace NaoBlocks.Web.Communications
         /// Sends a message to all connections of a specific type.
         /// </summary>
         /// <param name="message">The message to send.</param>
+        /// <param name="clientType">The type of client to send the messages to.</param>
         void SendToAll(ClientMessage message, ClientConnectionType clientType);
 
         /// <summary>

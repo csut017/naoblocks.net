@@ -69,13 +69,13 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the robot.</param>
         /// <returns>Either a 404 (not found) or the robot details.</returns>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Transfer.Robot>> Get(string id)
+        [HttpGet("{name}")]
+        public async Task<ActionResult<Transfer.Robot>> Get(string name)
         {
-            this._logger.LogDebug($"Retrieving robot: id {id}");
+            this._logger.LogDebug($"Retrieving robot: id {name}");
             var robot = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveByNameAsync(id, true)
+                .RetrieveByNameAsync(name, true)
                 .ConfigureAwait(false);
             if (robot == null)
             {
@@ -91,6 +91,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="page">The page number.</param>
         /// <param name="size">The number of records.</param>
+        /// <param name="type">The type of robot to retrieve.</param>
         /// <returns>A <see cref="ListResult{TData}"/> containing the robots.</returns>
         [HttpGet]
         public async Task<ActionResult<ListResult<Transfer.Robot>>> List(int? page, int? size, string? type)

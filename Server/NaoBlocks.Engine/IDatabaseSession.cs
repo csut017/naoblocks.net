@@ -1,5 +1,4 @@
-﻿using NaoBlocks.Engine.Data;
-using Raven.Client.Documents.Indexes;
+﻿using Raven.Client.Documents.Indexes;
 
 namespace NaoBlocks.Engine
 {
@@ -9,15 +8,19 @@ namespace NaoBlocks.Engine
     public interface IDatabaseSession : IDisposable
     {
         /// <summary>
-        /// Saves (commits) the changes to the database.
+        /// Deletes an entity from the database.
         /// </summary>
-        Task SaveChangesAsync();
+        /// <typeparam name="T">The type of the entity.</typeparam>
+        /// <param name="entity">The entity to delete.</param>
+        void Delete<T>(T entity);
 
         /// <summary>
-        /// Stores an entity.
+        /// Retrieves an entity by its identifier.
         /// </summary>
-        /// <param name="entity">The entity to store.</param>
-        Task StoreAsync(object entity);
+        /// <typeparam name="T">The type of entity to retrieve.</typeparam>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <returns>The entity if found, null otherwise.</returns>
+        Task<T?> LoadAsync<T>(string id);
 
         /// <summary>
         /// Queries the database for one or more entities.
@@ -36,18 +39,14 @@ namespace NaoBlocks.Engine
             where TIndex : AbstractCommonApiForIndexes, new();
 
         /// <summary>
-        /// Deletes an entity from the database.
+        /// Saves (commits) the changes to the database.
         /// </summary>
-        /// <typeparam name="T">The type of the entity.</typeparam>
-        /// <param name="entity">The entity to delete.</param>
-        void Delete<T>(T entity);
+        Task SaveChangesAsync();
 
         /// <summary>
-        /// Retrieves an entity by its identifier.
+        /// Stores an entity.
         /// </summary>
-        /// <typeparam name="T">The type of entity to retrieve.</typeparam>
-        /// <param name="id">The identifier of the entity.</param>
-        /// <returns>The entity if found, null otherwise.</returns>
-        Task<T?> LoadAsync<T>(string id);
+        /// <param name="entity">The entity to store.</param>
+        Task StoreAsync(object entity);
     }
 }

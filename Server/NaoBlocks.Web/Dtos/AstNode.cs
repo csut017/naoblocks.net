@@ -42,7 +42,6 @@
         /// Converts from a data entity to a data transfer object.
         /// </summary>
         /// <param name="value">The <see cref="Common.AstNode"/> to convert.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A <see cref="AstNode"/> instance.</returns>
         public static AstNode? FromModel(Common.AstNode? value)
         {

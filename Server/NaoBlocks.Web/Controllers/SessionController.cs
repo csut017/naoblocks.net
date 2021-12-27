@@ -26,7 +26,7 @@
 //        private readonly string jwtSecret;
 
 //        /*
-/// <summary>
+///// <summary>
 ///// Initialises a new <see cref="UsersController"/> instance.
 ///// </summary>
 ///// <param name="logger">The logger to use.</param>

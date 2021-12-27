@@ -28,7 +28,6 @@ namespace NaoBlocks.Web.Dtos
         /// Converts from a data entity to a data transfer object.
         /// </summary>
         /// <param name="value">The <see cref="Data.CompiledCodeProgram"/> to convert.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A <see cref="CompiledCodeProgram"/> instance.</returns>
         public static CompiledCodeProgram? FromModel(Data.CompiledCodeProgram? value)
         {

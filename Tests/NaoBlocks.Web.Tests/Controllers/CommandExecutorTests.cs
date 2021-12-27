@@ -113,7 +113,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                     .ConfigureAwait(false);
             }
 
-            public async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(IExecutionEngine engine, Func<TIn?, TOut> mapper)
+            public async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(IExecutionEngine engine, Func<TIn, TOut> mapper)
                 where TIn : class
             {
                 var command = new Mock<CommandBase>();

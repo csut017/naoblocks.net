@@ -103,13 +103,13 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the robot type.</param>
         /// <returns>Either a 404 (not found) or the robot type details.</returns>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Transfer.RobotType>> Get(string id)
+        [HttpGet("{name}")]
+        public async Task<ActionResult<Transfer.RobotType>> Get(string name)
         {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
+            this._logger.LogDebug($"Retrieving robot type: {name}");
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
-                .RetrieveByNameAsync(id)
+                .RetrieveByNameAsync(name)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
@@ -209,7 +209,7 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Adds a new robot type.
         /// </summary>
-        /// <param name="robot">The robot type to add.</param>
+        /// <param name="robotType">The robot type to add.</param>
         /// <returns>The result of execution.</returns>
         [HttpPost]
         [Authorize(Policy = "Teacher")]
@@ -238,7 +238,7 @@ namespace NaoBlocks.Web.Controllers
         /// Updates an existing robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
-        /// <param name="robot">The details of the robot type.</param>
+        /// <param name="robotType">The details of the robot type.</param>
         /// <returns>The result of execution.</returns>
         [HttpPut("{id}")]
         [Authorize(Policy = "Teacher")]
