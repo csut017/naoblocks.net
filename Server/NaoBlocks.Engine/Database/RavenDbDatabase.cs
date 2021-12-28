@@ -33,19 +33,21 @@ namespace NaoBlocks.Engine.Database
         /// <param name="configuration">The configuration settings to use.</param>
         /// <param name="certificatePath">The path to any certificates.</param>
         /// <returns>The new <see cref="IDatabase"/> instance.</returns>
-        public static IDatabase New(ILogger<RavenDbDatabase> logger, RavenDbConfiguration? configuration, string certificatePath)
+        public static async Task<IDatabase> New(
+            ILogger<RavenDbDatabase> logger,
+            RavenDbConfiguration? configuration,
+            string certificatePath)
         {
             logger.LogInformation("Initialising database store");
             var store = (configuration == null) || configuration.UseEmbedded
                 ? InitialiseEmbeddedDatabase(logger, configuration)
-                : InitialiseRemoteDatabase(logger, configuration, certificatePath);
+                : await InitialiseRemoteDatabase(logger, configuration, certificatePath);
 
             logger.LogInformation("Starting database store");
             store.Initialize();
 
             logger.LogInformation("Generating indexes");
             IndexCreation.CreateIndexes(typeof(RavenDbDatabase).Assembly, store);
-
             return new RavenDbDatabase(logger, store);
         }
 
@@ -88,7 +90,7 @@ namespace NaoBlocks.Engine.Database
             return store;
         }
 
-        private static IDocumentStore InitialiseRemoteDatabase(ILogger<RavenDbDatabase> logger, RavenDbConfiguration? configuration, string certificatePath)
+        private static async Task<IDocumentStore> InitialiseRemoteDatabase(ILogger<RavenDbDatabase> logger, RavenDbConfiguration? configuration, string certificatePath)
         {
             IDocumentStore store;
             var certPath = configuration?.Certificate ?? "certificate.pfx";
@@ -98,7 +100,7 @@ namespace NaoBlocks.Engine.Database
             }
 
             logger.LogInformation($"Loading certificate from {certPath}");
-            var bytes = File.ReadAllBytes(certPath);
+            var bytes = await File.ReadAllBytesAsync(certPath);
             var cert = new X509Certificate2(bytes);
             logger.LogInformation($"Loaded certificate with subject {cert.Subject} [{cert.Thumbprint}]");
 

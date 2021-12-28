@@ -45,7 +45,7 @@ builder.Services.AddSingleton<IDatabase>(services =>
         var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
         var config = services.GetService<IOptions<RavenDbConfiguration>>();
         var env = services.GetRequiredService<IWebHostEnvironment>();
-        return RavenDbDatabase.New(logger, config?.Value, env.ContentRootPath);
+        return RavenDbDatabase.New(logger, config?.Value, env.ContentRootPath).Result;
     });
 builder.Services.AddScoped<IDatabaseSession>(services =>
 {

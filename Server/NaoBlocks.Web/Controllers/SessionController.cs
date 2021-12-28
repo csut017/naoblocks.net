@@ -6,7 +6,6 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -52,7 +51,14 @@ namespace NaoBlocks.Web.Controllers
         /// Deletes the current user's session.
         /// </summary>
         /// <returns>The result of execution.</returns>
+        /// <response code="200">Returns the status of the command.</response>
+        /// <response code="401">If the the request is not authenticated.</response>
+        /// <response code="404">If the current user cannot be found.</response>
         [HttpDelete]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ExecutionResult>> Delete()
         {
             var user = await this.LoadUserAsync(this.executionEngine)
@@ -66,9 +72,16 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Retrieves the details of the current user.
         /// </summary>
-        /// <returns>A <see cref="Transfer.UserSession"/> containing the session details.</returns>
+        /// <returns>A <see cref="UserSessionResult"/> containing the session details.</returns>
+        /// <response code="200">Returns the current status information.</response>
+        /// <response code="401">If the the request is not authenticated.</response>
+        /// <response code="404">If the current user cannot be found.</response>
         [HttpGet]
-        public async Task<ActionResult<Transfer.UserSession>> Get()
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserSessionResult>> Get()
         {
             var user = await this.LoadUserAsync(this.executionEngine)
                 .ConfigureAwait(false);
@@ -82,7 +95,7 @@ namespace NaoBlocks.Web.Controllers
             var remaining = session != null
                 ? session.WhenExpires.Subtract(now).TotalMinutes
                 : -1;
-            return new Transfer.UserSession
+            return new UserSessionResult
             {
                 Name = user.Name,
                 Role = user.Role.ToString(),

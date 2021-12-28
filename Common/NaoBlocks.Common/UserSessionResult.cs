@@ -6,14 +6,19 @@
     public class UserSessionResult
     {
         /// <summary>
-        /// Gets or sets the date and time the session expires (in UTC.)
+        /// Gets or sets how long until the session expires in minutes.
         /// </summary>
-        public DateTime Expires { get; set; } = DateTime.MinValue;
+        public int TimeRemaining { get; set; }
 
         /// <summary>
         /// Gets or sets the role of the user.
         /// </summary>
         public string Role { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the name of the user.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the session token.
