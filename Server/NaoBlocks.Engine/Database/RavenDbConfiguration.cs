@@ -11,14 +11,14 @@
         public string? Certificate { get; set; }
 
         /// <summary>
+        /// Gets or sets the data directory.
+        /// </summary>
+        public string? DataDirectory { get; set; }
+
+        /// <summary>
         /// Gets or sets the path to the .Net framework.
         /// </summary>
         public string? DotNetPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the embedded database.
-        /// </summary>
-        public string? EmbeddedPath { get; set; }
 
         /// <summary>
         /// Gets or sets the .Net framework to use.

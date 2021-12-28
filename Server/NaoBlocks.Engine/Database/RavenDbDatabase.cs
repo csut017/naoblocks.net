@@ -81,6 +81,11 @@ namespace NaoBlocks.Engine.Database
                     options.FrameworkVersion = configuration.FrameworkVersion;
                     logger.LogInformation($"=> FrameworkVersion={options.FrameworkVersion}");
                 }
+                if (!string.IsNullOrWhiteSpace(configuration.DataDirectory))
+                {
+                    options.DataDirectory = configuration.DataDirectory;
+                    logger.LogInformation($"=> DataDirectory={options.DataDirectory}");
+                }
             }
 
             logger.LogInformation($"Embedded database can be accessed on {options.ServerUrl}");
