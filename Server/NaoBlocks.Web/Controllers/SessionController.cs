@@ -7,6 +7,10 @@ using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 
+using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
+using Transfer = NaoBlocks.Web.Dtos;
+
 namespace NaoBlocks.Web.Controllers
 {
     /// <summary>
@@ -103,30 +107,49 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
-        /*
+        /// <summary>
+        /// Retrieves the editor settings for the current user.
+        /// </summary>
+        /// <returns>The editor settings for the current user.</returns>
         [HttpGet("settings")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Transfer.EditorSettings>> GetSettings()
         {
-            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            var user = await this.LoadUserAsync(this.executionEngine)
+                .ConfigureAwait(false);
             if (user == null) return NotFound();
 
             var settings = await this.PrepareSettings(user);
             return settings;
         }
 
-        private async Task<Transfer.EditorSettings> PrepareSettings(User? user, UserSettings? settings = null)
+        /// <summary>
+        /// Prepares the settings for a user.
+        /// </summary>
+        /// <param name="user">The user to retrieve the settings for.</param>
+        /// <param name="settings">The current settings.</param>
+        /// <returns>The <see cref="Transfer.EditorSettings"/> instance.</returns>
+        private async Task<Transfer.EditorSettings> PrepareSettings(
+            Data.User user,
+            Data.UserSettings? settings = null)
         {
-            if (user == null) throw new ArgumentNullException(nameof(user));
             var robotType = await this.RetrieveRobotTypeForUser(user);
             if (robotType != null)
             {
-                var toolbox = Generators.UserToolbox.Generate(user, robotType);
+                var toolbox = await this.executionEngine
+                    .Generator<Generators.UserToolbox>()
+                    .GenerateAsync(ReportFormat.Text, user, robotType)
+                    .ConfigureAwait(false);
+                using var reader = new StreamReader(toolbox.Item1);
                 return new Transfer.EditorSettings
                 {
                     CanConfigure = string.IsNullOrEmpty((settings ?? user.Settings).CustomBlockSet),
                     IsSystemInitialised = true,
                     User = settings ?? user.Settings,
-                    Toolbox = toolbox
+                    Toolbox = await reader.ReadToEndAsync()
                 };
             }
 
@@ -137,23 +160,35 @@ namespace NaoBlocks.Web.Controllers
             };
         }
 
-        private async Task<RobotType> RetrieveRobotTypeForUser(User? user)
+        /// <summary>
+        /// Attempt to retrieve the robot type for a user.
+        /// </summary>
+        /// <param name="user">The user to retrieve the robot type for.</param>
+        /// <returns>The <see cref="Data.RobotType"/> if found, null otherwise.</returns>
+        private async Task<Data.RobotType?> RetrieveRobotTypeForUser(
+            Data.User? user)
         {
-            RobotType? robotType = null;
+            Data.RobotType? robotType = null;
             if (!string.IsNullOrEmpty(user?.Settings.RobotTypeId))
             {
-                robotType = await this.session.LoadAsync<RobotType>(user.Settings.RobotTypeId);
+                robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveByIdAsync(user.Settings.RobotTypeId)
+                    .ConfigureAwait(false);
             }
 
             if (robotType == null)
             {
-                robotType = await this.session.Query<RobotType>()
-                    .FirstOrDefaultAsync(rt => rt.IsDefault);
+                robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveDefaultAsync()
+                    .ConfigureAwait(false);
             }
 
             return robotType;
         }
 
+        /*
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<ExecutionResult<Common.TokenSession>>> Post(Transfer.User? user)

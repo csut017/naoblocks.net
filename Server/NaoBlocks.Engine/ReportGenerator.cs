@@ -91,6 +91,20 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Generates a user-based report.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <param name="user">The user the report is for.</param>
+        /// <param name="robotType">The robot type to generate the report for.</param>
+        /// <returns>The output <see cref="Stream"/> containing the generated data and filename.</returns>
+        public Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format, User user, RobotType robotType)
+        {
+            this.user = user;
+            this.robotType = robotType;
+            return this.GenerateAsync(format);
+        }
+
+        /// <summary>
         /// Checks if the report format is available.
         /// </summary>
         /// <param name="format">The format.</param>

@@ -18,6 +18,26 @@ namespace NaoBlocks.Engine.Tests.Queries
         }
 
         [Fact]
+        public async Task RetrieveByIdAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new RobotType { Id = "users/1" });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotTypeData>(session);
+            var result = await query.RetrieveByIdAsync("users/1");
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task RetrieveDefaultAsyncCallsDatabase()
+        {
+            using var store = InitialiseDatabase(new RobotType { IsDefault = true });
+            using var session = store.OpenAsyncSession();
+            var query = InitialiseQuery<RobotTypeData>(session);
+            var result = await query.RetrieveDefaultAsync();
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task RetrievePageAsyncCallsDatabase()
         {
             using var store = InitialiseDatabase(new RobotType { Name = "Mihīni" });

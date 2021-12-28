@@ -6,10 +6,13 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Configuration;
 using NaoBlocks.Web.Controllers;
 using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -109,6 +112,109 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Act
             var response = await controller.Get();
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetSettingsHandlesNoDefaultRobotType()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SessionController>();
+            var engine = new FakeEngine();
+            var query = new Mock<RobotTypeData>();
+            engine.RegisterQuery(query.Object);
+            Data.RobotType? type = null;
+            query.Setup(q => q.RetrieveDefaultAsync())
+                .Returns(Task.FromResult(type));
+            var config = DefineSecuritySettings();
+            var controller = new SessionController(loggerMock, engine, config.Object);
+            (var user, _) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.GetSettings();
+
+            // Assert
+            Assert.False(response?.Value?.IsSystemInitialised, "System should not be initialised");
+            Assert.Null(response?.Value?.Toolbox);
+        }
+
+        [Fact]
+        public async Task GetSettingsHandlesDefaultRobotType()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SessionController>();
+            var engine = new FakeEngine();
+            var query = new Mock<RobotTypeData>();
+            engine.RegisterQuery(query.Object);
+            var type = new Data.RobotType { };
+            query.Setup(q => q.RetrieveDefaultAsync())
+                .Returns(Task.FromResult((Data.RobotType?)type));
+            var generator = new Mock<Generators.UserToolbox>();
+            engine.RegisterGenerator(generator.Object);
+            var result = Tuple.Create(GenerateToolbox(), string.Empty);
+            generator.Setup(g => g.GenerateAsync(Engine.ReportFormat.Text))
+                .Returns(Task.FromResult(result));
+            var config = DefineSecuritySettings();
+            var controller = new SessionController(loggerMock, engine, config.Object);
+            (var user, _) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.GetSettings();
+
+            // Assert
+            Assert.True(response?.Value?.IsSystemInitialised, "System should be initialised");
+            Assert.Equal("<toolbox/>", response?.Value?.Toolbox);
+        }
+
+        [Fact]
+        public async Task GetSettingsHandlesConfiguredRobotType()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SessionController>();
+            var engine = new FakeEngine();
+            var query = new Mock<RobotTypeData>();
+            engine.RegisterQuery(query.Object);
+            var type = new Data.RobotType { };
+            query.Setup(q => q.RetrieveByIdAsync("types/1"))
+                .Returns(Task.FromResult((Data.RobotType?)type));
+            var generator = new Mock<Generators.UserToolbox>();
+            engine.RegisterGenerator(generator.Object);
+            var result = Tuple.Create(GenerateToolbox(), string.Empty);
+            generator.Setup(g => g.GenerateAsync(Engine.ReportFormat.Text))
+                .Returns(Task.FromResult(result));
+            var config = DefineSecuritySettings();
+            var controller = new SessionController(loggerMock, engine, config.Object);
+            (var user, _) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            user.Settings.RobotTypeId = "types/1";
+
+            // Act
+            var response = await controller.GetSettings();
+
+            // Assert
+            Assert.True(response?.Value?.IsSystemInitialised, "System should be initialised");
+            Assert.Equal("<toolbox/>", response?.Value?.Toolbox);
+        }
+
+        private static Stream GenerateToolbox(string data = "<toolbox/>")
+        {
+            var stream = new MemoryStream(
+                Encoding.UTF8.GetBytes(data));
+            return stream;
+        }
+
+        [Fact]
+        public async Task GetSettingsHandlesMissingUser()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SessionController>();
+            var engine = new FakeEngine();
+            var config = DefineSecuritySettings();
+            var controller = new SessionController(loggerMock, engine, config.Object);
+
+            // Act
+            var response = await controller.GetSettings();
 
             // Assert
             Assert.IsType<NotFoundResult>(response.Result);

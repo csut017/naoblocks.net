@@ -13,6 +13,19 @@ namespace NaoBlocks.Engine.Queries
         : DataQuery
     {
         /// <summary>
+        /// Retrieve a robot type by its id.
+        /// </summary>
+        /// <param name="id">The robot type's id.</param>
+        /// <returns>The <see cref="RobotType"/> instance.</returns>
+        public virtual async Task<RobotType?> RetrieveByIdAsync(string id)
+        {
+            var result = await this.Session
+                .LoadAsync<RobotType>(id)
+                .ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
         /// Retrieve a robot type by its name.
         /// </summary>
         /// <param name="name">The robot type's name.</param>
@@ -21,6 +34,18 @@ namespace NaoBlocks.Engine.Queries
         {
             var result = await this.Session.Query<RobotType>()
                 .FirstOrDefaultAsync(r => r.Name == name)
+                .ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieve the default robot type.
+        /// </summary>
+        /// <returns>The <see cref="RobotType"/> instance.</returns>
+        public virtual async Task<RobotType?> RetrieveDefaultAsync()
+        {
+            var result = await this.Session.Query<RobotType>()
+                .FirstOrDefaultAsync(r => r.IsDefault)
                 .ConfigureAwait(false);
             return result;
         }
