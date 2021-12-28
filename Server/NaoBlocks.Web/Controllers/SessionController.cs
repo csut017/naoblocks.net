@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
+using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -61,29 +63,36 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp(command);
         }
 
-        /*
+        /// <summary>
+        /// Retrieves the details of the current user.
+        /// </summary>
+        /// <returns>A <see cref="Transfer.UserSession"/> containing the session details.</returns>
         [HttpGet]
-        public async Task<ActionResult<Dtos.UserSession>> Get()
+        public async Task<ActionResult<Transfer.UserSession>> Get()
         {
-            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            var user = await this.LoadUserAsync(this.executionEngine)
+                .ConfigureAwait(false);
             if (user == null) return NotFound();
 
             var now = this.CurrentTimeFunc();
-            var session = await this.session.Query<Session>()
-                .FirstOrDefaultAsync(s => s.UserId == user.Id && s.WhenExpires > now);
+            var session = await this.executionEngine
+                .Query<SessionData>()
+                .RetrieveForUserAsync(user)
+                .ConfigureAwait(false);
             var remaining = session != null
                 ? session.WhenExpires.Subtract(now).TotalMinutes
                 : -1;
-            return new Dtos.UserSession
+            return new Transfer.UserSession
             {
                 Name = user.Name,
                 Role = user.Role.ToString(),
-                TimeRemaining = Convert.ToInt32(remaining)
+                TimeRemaining = Convert.ToInt32(remaining < 0 ? 0 : remaining)
             };
         }
 
+        /*
         [HttpGet("settings")]
-        public async Task<ActionResult<Dtos.EditorSettings>> GetSettings()
+        public async Task<ActionResult<Transfer.EditorSettings>> GetSettings()
         {
             var user = await this.LoadUser(this.session).ConfigureAwait(false);
             if (user == null) return NotFound();
@@ -92,14 +101,14 @@ namespace NaoBlocks.Web.Controllers
             return settings;
         }
 
-        private async Task<Dtos.EditorSettings> PrepareSettings(User? user, UserSettings? settings = null)
+        private async Task<Transfer.EditorSettings> PrepareSettings(User? user, UserSettings? settings = null)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             var robotType = await this.RetrieveRobotTypeForUser(user);
             if (robotType != null)
             {
                 var toolbox = Generators.UserToolbox.Generate(user, robotType);
-                return new Dtos.EditorSettings
+                return new Transfer.EditorSettings
                 {
                     CanConfigure = string.IsNullOrEmpty((settings ?? user.Settings).CustomBlockSet),
                     IsSystemInitialised = true,
@@ -108,7 +117,7 @@ namespace NaoBlocks.Web.Controllers
                 };
             }
 
-            return new Dtos.EditorSettings
+            return new Transfer.EditorSettings
             {
                 IsSystemInitialised = false,
                 User = settings ?? user.Settings
@@ -134,7 +143,7 @@ namespace NaoBlocks.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<ExecutionResult<Common.TokenSession>>> Post(Dtos.User? user)
+        public async Task<ActionResult<ExecutionResult<Common.TokenSession>>> Post(Transfer.User? user)
         {
             if (user == null)
             {
@@ -174,7 +183,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         [HttpPost("settings")]
-        public async Task<ActionResult<ExecutionResult<Dtos.EditorSettings>>> PostSettings(Dtos.EditorSettings settings)
+        public async Task<ActionResult<ExecutionResult<Transfer.EditorSettings>>> PostSettings(Transfer.EditorSettings settings)
         {
             if (settings == null)
             {
