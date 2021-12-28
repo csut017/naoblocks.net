@@ -62,6 +62,7 @@ builder.Services.AddTransient<IPrincipal>(s =>
 // Add the application services
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
+ClientAddressList.Initialise();
 
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())
@@ -69,6 +70,7 @@ if (builder.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
+    ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
 }
 
 // Some basic configuration

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using NaoBlocks.Common;
-using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -17,31 +16,50 @@ namespace NaoBlocks.Web.IntegrationTests
             this.factory = factory;
         }
 
-        [Fact]
-        public async Task VersionRetrievesJson()
+        [Theory]
+        [InlineData("version")]
+        [InlineData("system/addresses")]
+        [InlineData("system/addresses/connect.txt")]
+        [InlineData("system/config")]
+        public async Task GetApiMethodAllowsAnonymous(string url)
         {
             // Arrange
             var client = this.factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/api/v1/version");
+            var response = await client.GetAsync($"/api/v1/{url}");
 
             // Assert
-            response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<VersionInformation>(content);
-            Assert.False(string.IsNullOrWhiteSpace(data?.Version));
-            Assert.False(string.IsNullOrWhiteSpace(data?.Status));
+            response.EnsureSuccessStatusCode();
+            Assert.False(string.IsNullOrEmpty(content), "Expected some content");
         }
 
-        [Fact]
-        public async Task WhoAmIHandlesNonAuthenticatedRequest()
+        [Theory]
+        [InlineData("whoami")]
+        public async Task GetApiMethodRequiresAuthentication(string url)
         {
             // Arrange
             var client = this.factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/api/v1/whoami");
+            var response = await client.GetAsync($"/api/v1/{url}");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("system/siteAddress")]
+        public async Task PostApiMethodRequiresAuthentication(string url)
+        {
+            // Arrange
+            var client = this.factory.CreateClient();
+
+            // Act
+            var response = await client.PostAsync(
+                $"/api/v1/{url}",
+                new StringContent(string.Empty));
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
