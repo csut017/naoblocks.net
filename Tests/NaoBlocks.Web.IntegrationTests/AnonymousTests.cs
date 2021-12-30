@@ -6,12 +6,12 @@ using Xunit;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
-    public class SystemControllerTests
+    public class AnonymousTests
         : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> factory;
 
-        public SystemControllerTests(WebApplicationFactory<Program> factory)
+        public AnonymousTests(WebApplicationFactory<Program> factory)
         {
             this.factory = factory;
         }
@@ -37,6 +37,10 @@ namespace NaoBlocks.Web.IntegrationTests
 
         [Theory]
         [InlineData("whoami")]
+        [InlineData("clients/robot")]
+        [InlineData("clients/mia/logs")]
+        [InlineData("code/mia/1")]
+        [InlineData("robots/karetao/logs/1")]
         public async Task GetApiMethodRequiresAuthentication(string url)
         {
             // Arrange
@@ -51,6 +55,7 @@ namespace NaoBlocks.Web.IntegrationTests
 
         [Theory]
         [InlineData("system/siteAddress")]
+        [InlineData("code/compile")]
         public async Task PostApiMethodRequiresAuthentication(string url)
         {
             // Arrange
