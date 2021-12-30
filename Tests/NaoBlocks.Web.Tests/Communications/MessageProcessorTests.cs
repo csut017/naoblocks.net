@@ -493,8 +493,10 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             var messages = RetrieveLogMessages(processor);
-            var expectedMessages = new List<string>();
-            expectedMessages.Add($"INFORMATION: Processing message type {inputMessage}");
+            var expectedMessages = new List<string>
+            {
+                $"INFORMATION: Processing message type {inputMessage}"
+            };
             expectedMessages.AddRange(extraMessages);
             expectedMessages.Add("WARNING: Unable to add to log: robot is missing");
             Assert.Equal(expectedMessages.ToArray(), messages);
@@ -902,9 +904,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                })
+                Subject = new ClaimsIdentity(Array.Empty<Claim>())
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 

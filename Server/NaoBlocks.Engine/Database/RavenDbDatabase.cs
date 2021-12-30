@@ -20,7 +20,7 @@ namespace NaoBlocks.Engine.Database
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="store">The <see cref="IDocumentStore"/> instance.</param>
-        private RavenDbDatabase(ILogger<RavenDbDatabase> logger, IDocumentStore store)
+        public RavenDbDatabase(ILogger<RavenDbDatabase> logger, IDocumentStore store)
         {
             this.logger = logger;
             this.store = store;

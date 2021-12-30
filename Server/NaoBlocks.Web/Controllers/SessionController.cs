@@ -59,7 +59,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <returns>The result of execution.</returns>
         /// <response code="200">Returns the status of the command.</response>
-        /// <response code="401">If the the request is not authenticated.</response>
+        /// <response code="401">If the request is not authenticated.</response>
         /// <response code="404">If the current user cannot be found.</response>
         [HttpDelete]
         [Produces("application/json")]
@@ -81,7 +81,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <returns>A <see cref="UserSessionResult"/> containing the session details.</returns>
         /// <response code="200">Returns the current status information.</response>
-        /// <response code="401">If the the request is not authenticated.</response>
+        /// <response code="401">If the request is not authenticated.</response>
         /// <response code="404">If the current user cannot be found.</response>
         [HttpGet]
         [Produces("application/json")]
@@ -195,9 +195,14 @@ namespace NaoBlocks.Web.Controllers
         /// Starts a new user session.
         /// </summary>
         /// <param name="user">The details of the user.</param>
-        /// <returns></returns>
+        /// <returns>The session details.</returns>
+        /// <response code="200">Returns the session details.</response>
+        /// <response code="401">If there is an error in the request (e.g. invalid password or unknown login.)</response>
         [AllowAnonymous]
         [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ExecutionResult<UserSessionResult>>> Post(Transfer.User? user)
         {
             if (user == null)
@@ -244,6 +249,10 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="settings">The updated settings.</param>
         /// <returns>The result of execution.</returns>
         [HttpPost("settings")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ExecutionResult<Transfer.EditorSettings>>> PostSettings(Transfer.EditorSettings? settings)
         {
             if (settings == null)
@@ -276,6 +285,10 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <returns>The result of execution.</returns>
         [HttpPut]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ExecutionResult>> Put()
         {
             var user = await this.LoadUserAsync(this.executionEngine).ConfigureAwait(false);

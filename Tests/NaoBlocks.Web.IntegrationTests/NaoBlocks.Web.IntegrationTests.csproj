@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="RavenDB.TestDriver" Version="5.3.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,6 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
+    <ProjectReference Include="..\..\Server\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
     <ProjectReference Include="..\..\Server\NaoBlocks.Web\NaoBlocks.Web.csproj" />
   </ItemGroup>
 
