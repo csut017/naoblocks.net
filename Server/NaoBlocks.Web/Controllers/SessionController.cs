@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -188,10 +191,14 @@ namespace NaoBlocks.Web.Controllers
             return robotType;
         }
 
-        /*
+        /// <summary>
+        /// Starts a new user session.
+        /// </summary>
+        /// <param name="user">The details of the user.</param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<ExecutionResult<Common.TokenSession>>> Post(Transfer.User? user)
+        public async Task<ActionResult<ExecutionResult<UserSessionResult>>> Post(Transfer.User? user)
         {
             if (user == null)
             {
@@ -202,10 +209,10 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogInformation($"Starting new session for '{user.Name}'");
-            Commands.CommandBase command;
+            CommandBase command;
             if (user.Role == "robot")
             {
-                command = new Commands.StartRobotSession
+                command = new StartRobotSession
                 {
                     Password = user.Password,
                     Name = user.Name
@@ -213,25 +220,31 @@ namespace NaoBlocks.Web.Controllers
             }
             else if (!string.IsNullOrEmpty(user.Token))
             {
-                command = new Commands.StartUserSessionViaToken
+                command = new StartUserSessionViaToken
                 {
                     Token = user.Token
                 };
             }
             else
             {
-                command = new Commands.StartUserSession
+                command = new StartUserSession
                 {
                     Password = user.Password,
                     Name = user.Name
                 };
             }
 
-            return await this.ApplyCommand(command).ConfigureAwait(false);
+            return await this.ApplyCommand(command)
+                .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Updates the current user's settings.
+        /// </summary>
+        /// <param name="settings">The updated settings.</param>
+        /// <returns>The result of execution.</returns>
         [HttpPost("settings")]
-        public async Task<ActionResult<ExecutionResult<Transfer.EditorSettings>>> PostSettings(Transfer.EditorSettings settings)
+        public async Task<ActionResult<ExecutionResult<Transfer.EditorSettings>>> PostSettings(Transfer.EditorSettings? settings)
         {
             if (settings == null)
             {
@@ -241,36 +254,41 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            var user = await this.LoadUserAsync(this.executionEngine).ConfigureAwait(false);
             if (user == null) return NotFound();
 
             this._logger.LogInformation($"Updating settings for '{user.Name}'");
-            var command = new Commands.StoreSettings
+            var command = new StoreSettings
             {
-                UserId = user.Id,
+                UserName = user.Name,
                 Settings = settings.User
             };
 
-            return await this.commandManager.ExecuteForHttp(command, async s =>
+            return await this.executionEngine.ExecuteForHttp<Data.UserSettings, Transfer.EditorSettings>(command, s =>
             {
-                var settings = await this.PrepareSettings(user, s);
+                var settings = this.PrepareSettings(user, s).Result;
                 return settings;
             });
         }
 
+        /// <summary>
+        /// Renews a user session.
+        /// </summary>
+        /// <returns>The result of execution.</returns>
         [HttpPut]
         public async Task<ActionResult<ExecutionResult>> Put()
         {
-            var user = await this.LoadUser(this.session).ConfigureAwait(false);
+            var user = await this.LoadUserAsync(this.executionEngine).ConfigureAwait(false);
             if (user == null) return NotFound();
 
-            var command = new Commands.RenewSession { UserId = user.Id };
-            return await this.commandManager.ExecuteForHttp(command);
+            var command = new RenewSession { UserName = user.Name };
+            return await this.executionEngine.ExecuteForHttp(command);
         }
 
-        private async Task<ActionResult<ExecutionResult<Common.TokenSession>>> ApplyCommand(Commands.CommandBase command)
+        private async Task<ActionResult<ExecutionResult<UserSessionResult>>> ApplyCommand(CommandBase command)
         {
-            var errors = await commandManager.ValidateAsync(command).ConfigureAwait(false);
+            var errors = await executionEngine.ValidateAsync(command)
+                .ConfigureAwait(false);
             if (errors.Any())
             {
                 foreach (var error in errors)
@@ -278,16 +296,17 @@ namespace NaoBlocks.Web.Controllers
                     this._logger.LogInformation(error.Error);
                 }
 
-                return new BadRequestObjectResult(new ExecutionResult<Common.TokenSession>
+                return new BadRequestObjectResult(new ExecutionResult<UserSessionResult>
                 {
                     ValidationErrors = new[] { new CommandError(0, "Unable to validate session details") }
                 });
             }
 
-            var rawResult = (await commandManager.ApplyAsync(command).ConfigureAwait(false));
+            var rawResult = (await executionEngine.ExecuteAsync(command)
+                .ConfigureAwait(false));
             if (!rawResult.WasSuccessful)
             {
-                return new ObjectResult(new ExecutionResult<Common.TokenSession>
+                return new ObjectResult(new ExecutionResult<UserSessionResult>
                 {
                     ExecutionErrors = rawResult.ToErrors()
                 })
@@ -296,38 +315,37 @@ namespace NaoBlocks.Web.Controllers
                 };
             }
 
-            var result = rawResult.As<Session>();
+            var result = rawResult.As<Data.Session>();
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(this.jwtSecret);
             var expiry = result.Output?.WhenExpires ?? DateTime.UtcNow;
-            var role = UserRole.Student;
-            if (result.Output != null)
-            {
-                role = result.Output.IsRobot
-                    ? UserRole.Robot
-                    : (result.Output.Role ?? UserRole.Student);
-            }
+            Data.UserRole role = result!.Output!.IsRobot
+                ? Data.UserRole.Robot
+                : result.Output.Role ?? Data.UserRole.Student;
+            var name = result.Output.UserId ?? "<unknown>";
+            var sessionId = result.Output?.Id ?? string.Empty;
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, result.Output?.UserId ?? string.Empty),
+                    new Claim(ClaimTypes.Name, name),
                     new Claim(ClaimTypes.Role, role.ToString()),
-                    new Claim("SessionId", result.Output?.Id ?? string.Empty)
+                    new Claim("SessionId", sessionId)
                 }),
                 Expires = expiry,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            await commandManager.CommitAsync().ConfigureAwait(false);
-            return ExecutionResult.New(new Common.TokenSession
+            await executionEngine.CommitAsync().ConfigureAwait(false);
+            var remaining = expiry.Subtract(this.CurrentTimeFunc());
+            return ExecutionResult.New(new UserSessionResult
             {
                 Token = tokenHandler.WriteToken(token),
-                Expires = expiry,
-                Role = (result.Output?.Role.ToString() ?? "Unknown")
+                TimeRemaining = Convert.ToInt32(remaining.TotalMinutes),
+                Role = role.ToString()
             });
         }
-        */
     }
 }
