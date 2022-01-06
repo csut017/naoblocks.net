@@ -17,17 +17,19 @@ namespace NaoBlocks.Web.IntegrationTests
         }
 
         [Theory]
-        [InlineData("version")]
-        [InlineData("system/addresses")]
-        [InlineData("system/addresses/connect.txt")]
-        [InlineData("system/config")]
+        [InlineData("/")]
+        [InlineData("/health")]
+        [InlineData("/api/v1/version")]
+        [InlineData("/api/v1/system/addresses")]
+        [InlineData("/api/v1/system/addresses/connect.txt")]
+        [InlineData("/api/v1/system/config")]
         public async Task GetApiMethodAllowsAnonymous(string url)
         {
             // Arrange
             var client = this.factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync($"/api/v1/{url}");
+            var response = await client.GetAsync(url);
 
             // Assert
             var content = await response.Content.ReadAsStringAsync();
@@ -36,18 +38,18 @@ namespace NaoBlocks.Web.IntegrationTests
         }
 
         [Theory]
-        [InlineData("whoami")]
-        [InlineData("clients/robot")]
-        [InlineData("clients/mia/logs")]
-        [InlineData("code/mia/1")]
-        [InlineData("robots/karetao/logs/1")]
+        [InlineData("/api/v1/whoami")]
+        [InlineData("/api/v1/clients/robot")]
+        [InlineData("/api/v1/clients/mia/logs")]
+        [InlineData("/api/v1/code/mia/1")]
+        [InlineData("/api/v1/robots/karetao/logs/1")]
         public async Task GetApiMethodRequiresAuthentication(string url)
         {
             // Arrange
             var client = this.factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync($"/api/v1/{url}");
+            var response = await client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
