@@ -146,7 +146,7 @@ namespace NaoBlocks.Web.Tests
 
             var query = new Mock<UserData>();
             this.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrieveByNameAsync(name))
+            query.Setup(q => q.RetrieveByIdAsync(name))
                 .Returns(Task.FromResult((User?)user));
 
             return (user, query);

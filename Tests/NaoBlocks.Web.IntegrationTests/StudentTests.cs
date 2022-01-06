@@ -1,16 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using NaoBlocks.Common;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
-
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
@@ -26,7 +17,7 @@ namespace NaoBlocks.Web.IntegrationTests
 
         [Theory]
         [InlineData("whoami")]
-        public async Task CanAccessAuthorizedApi(string url)
+        public async Task GetCanAccessAuthorizedApi(string url)
         {
             // Arrange
             var user = GenerateUser();
@@ -46,6 +37,29 @@ namespace NaoBlocks.Web.IntegrationTests
             var content = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             Assert.False(string.IsNullOrEmpty(content), "Expected some content");
+        }
+
+        [Theory]
+        [InlineData("clients/robot")]
+        [InlineData("clients/robot/logs")]
+        public async Task GetFailsWithAuthorizedApi(string url)
+        {
+            // Arrange
+            var user = GenerateUser();
+            var client = this.factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    AddDatabaseToServices(services, user);
+                });
+            }).CreateClient();
+            await GenerateSessionToken(user, client);
+
+            // Act
+            var response = await client.GetAsync($"/api/v1/{url}");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
     }
 }

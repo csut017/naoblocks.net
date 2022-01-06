@@ -16,6 +16,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize(Policy = "Teacher")]
+    [Produces("application/json")]
     public class StudentsController : ControllerBase
     {
         private readonly ILogger<StudentsController> logger;

@@ -18,6 +18,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class CodeController : ControllerBase
     {
         private readonly ILogger<CodeController> _logger;

@@ -13,6 +13,8 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [Authorize(Policy = "Teacher")]
+    [Produces("application/json")]
     public class ClientsController : ControllerBase
     {
         private readonly IHub hub;

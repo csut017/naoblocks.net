@@ -22,6 +22,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class SessionController : ControllerBase
     {
         private readonly ILogger<SessionController> _logger;
@@ -62,7 +63,6 @@ namespace NaoBlocks.Web.Controllers
         /// <response code="401">If the request is not authenticated.</response>
         /// <response code="404">If the current user cannot be found.</response>
         [HttpDelete]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -84,7 +84,6 @@ namespace NaoBlocks.Web.Controllers
         /// <response code="401">If the request is not authenticated.</response>
         /// <response code="404">If the current user cannot be found.</response>
         [HttpGet]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -115,7 +114,6 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <returns>The editor settings for the current user.</returns>
         [HttpGet("settings")]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -200,7 +198,6 @@ namespace NaoBlocks.Web.Controllers
         /// <response code="401">If there is an error in the request (e.g. invalid password or unknown login.)</response>
         [AllowAnonymous]
         [HttpPost]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ExecutionResult<UserSessionResult>>> Post(Transfer.User? user)
@@ -249,7 +246,6 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="settings">The updated settings.</param>
         /// <returns>The result of execution.</returns>
         [HttpPost("settings")]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -285,7 +281,6 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <returns>The result of execution.</returns>
         [HttpPut]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -18,6 +18,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/robots/types")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class RobotTypesController : ControllerBase
     {
         private readonly ILogger<RobotTypesController> _logger;

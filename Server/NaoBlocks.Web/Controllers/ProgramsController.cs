@@ -5,11 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Data = NaoBlocks.Engine.Data;
-using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -20,6 +16,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class ProgramsController : ControllerBase
     {
         private readonly ILogger<ProgramsController> _logger;

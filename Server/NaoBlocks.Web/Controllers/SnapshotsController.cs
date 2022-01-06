@@ -14,6 +14,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/[controller]")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class SnapshotsController : ControllerBase
     {
         private readonly ILogger<SnapshotsController> logger;

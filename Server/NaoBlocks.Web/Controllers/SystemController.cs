@@ -20,6 +20,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class SystemController : ControllerBase
     {
         private readonly IExecutionEngine executionEngine;
