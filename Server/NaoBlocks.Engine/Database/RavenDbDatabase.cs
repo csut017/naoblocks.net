@@ -66,7 +66,7 @@ namespace NaoBlocks.Engine.Database
             IDocumentStore store;
             var options = new ServerOptions
             {
-                ServerUrl = "http://127.0.0.1:8088"
+                ServerUrl = "http://127.0.0.1:8090"
             };
             if (configuration != null)
             {
