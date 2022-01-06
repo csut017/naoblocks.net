@@ -106,7 +106,7 @@ namespace NaoBlocks.Web.Helpers
             if (userId == null) return null;
 
             var user = await engine.Query<UserData>()
-                .RetrieveByNameAsync(userId)
+                .RetrieveByIdAsync(userId)
                 .ConfigureAwait(false);
             return user;
         }

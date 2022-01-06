@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 
+using Configuration = NaoBlocks.Web.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();
@@ -16,6 +18,8 @@ builder.Services.AddHealthChecks();
 // Register the configuration settings
 builder.Services.Configure<RavenDbConfiguration>(
     builder.Configuration.GetSection("Database"));
+builder.Services.Configure<Configuration.Security>(
+    builder.Configuration.GetSection("Security"));
 
 // Add the controllers and documentation
 builder.Services.AddControllers();
@@ -28,29 +32,27 @@ builder.Services.AddSwaggerGen(opts =>
         Description = "Web API for interacting with the NaoBlocks system"
     });
 
+    var securitySchema = new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+    opts.AddSecurityDefinition("Bearer", securitySchema);
+    opts.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securitySchema, new[] { "Bearer" } }
+                });
+
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-
-    opts.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme."
-    });
-    opts.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
-                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-        }
-    });
 });
 
 // Define the database services
@@ -92,6 +94,7 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseCors(x => x
     .AllowAnyOrigin()
     .AllowAnyMethod()
