@@ -14,7 +14,7 @@ namespace NaoBlocks.Web.Controllers
     /// </summary>
     [Route("api/v1/[controller]")]
     [ApiController]
-    [Authorize(Policy = "Teacher")]
+    [Authorize(Policy = "Administrator")]
     [Produces("application/json")]
     public class TeachersController : ControllerBase
     {

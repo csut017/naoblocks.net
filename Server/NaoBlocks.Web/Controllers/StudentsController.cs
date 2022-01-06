@@ -36,15 +36,15 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Deletes a student by their name.
         /// </summary>
-        /// <param name="id">The name of the student.</param>
+        /// <param name="name">The name of the student.</param>
         /// <returns>The result of execution.</returns>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ExecutionResult>> Delete(string id)
+        [HttpDelete("{name}")]
+        public async Task<ActionResult<ExecutionResult>> Delete(string name)
         {
-            this.logger.LogInformation($"Deleting student '{id}'");
+            this.logger.LogInformation($"Deleting student '{name}'");
             var command = new Commands.DeleteUser
             {
-                Name = id,
+                Name = name,
                 Role = Data.UserRole.Student
             };
             return await this.executionEngine.ExecuteForHttp(command);
@@ -58,7 +58,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Dtos.Student>> GetStudent(string name)
         {
-            this.logger.LogDebug($"Retrieving student: id {name}");
+            this.logger.LogDebug($"Retrieving student: {name}");
             var student = await this.executionEngine
                 .Query<UserData>()
                 .RetrieveByNameAsync(name)
@@ -132,13 +132,13 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Updates an existing student.
         /// </summary>
-        /// <param name="id">The name of the student.</param>
+        /// <param name="name">The name of the student.</param>
         /// <param name="student">The updated details.</param>
         /// <returns>The result of execution.</returns>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ExecutionResult<Dtos.Student>>> Put(string? id, Dtos.Student? student)
+        [HttpPut("{name}")]
+        public async Task<ActionResult<ExecutionResult<Dtos.Student>>> Put(string? name, Dtos.Student? student)
         {
-            if ((student == null) || string.IsNullOrEmpty(id))
+            if ((student == null) || string.IsNullOrEmpty(name))
             {
                 return this.BadRequest(new
                 {
@@ -146,10 +146,10 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Updating student '{id}'");
+            this.logger.LogInformation($"Updating student '{name}'");
             var command = new Commands.UpdateUser
             {
-                CurrentName = id,
+                CurrentName = name,
                 Name = student.Name,
                 Password = student.Password,
                 Role = Data.UserRole.Student,
@@ -170,6 +170,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format)
         {
+            this.logger.LogInformation("Generating student list export");
             return await this.GenerateReport<Generators.StudentsList>(
                 this.executionEngine,
                 format);
@@ -185,6 +186,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportDetails(string? name, string? format)
         {
+            this.logger.LogInformation("Generating student details export");
             return await this.GenerateUserReport<Generators.StudentExport>(
                 this.executionEngine,
                 format,
@@ -197,10 +199,11 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The report format to generate.</param>
         /// <returns>The generated student logs.</returns>
-        [HttpGet("{id}/logs/export")]
+        [HttpGet("{name}/logs/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportLogs(string? name, string? format)
         {
+            this.logger.LogInformation("Generating student log export");
             return await this.GenerateUserReport<Generators.ProgramLogsList>(
                 this.executionEngine,
                 format,
@@ -213,10 +216,11 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The report format to generate.</param>
         /// <returns>The generated snapshots list.</returns>
-        [HttpGet("{id}/snapshots/export")]
+        [HttpGet("{name}/snapshots/export")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportSnapshots(string? name, string? format)
         {
+            this.logger.LogInformation("Generating student snapshots export");
             return await this.GenerateUserReport<Generators.SnapshotsList>(
                 this.executionEngine,
                 format,
@@ -229,14 +233,14 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the student.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
-        [HttpGet("{id}/qrcode")]
+        [HttpGet("{name}/qrcode")]
         [AllowAnonymous]
-        public async Task<ActionResult> GetStudentQRCode(string id, string? force)
+        public async Task<ActionResult> GetStudentQRCode(string name, string? force)
         {
-            this._logger.LogDebug($"Generating login token for {id}");
+            this._logger.LogDebug($"Generating login token for {name}");
             var command = new Commands.GenerateLoginToken
             {
-                Name = id,
+                Name = name,
                 OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
             };
             var result = await this.executionEngine.ExecuteForHttp(command, i => i);
@@ -271,7 +275,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the student.</param>
         /// <returns>The result of execution.</returns>
-        [HttpDelete("{id}/logs")]
+        [HttpDelete("{name}/logs")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> ClearLogs(string? name)
         {
@@ -296,7 +300,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the student.</param>
         /// <returns>The result of execution.</returns>
-        [HttpDelete("{id}/snapshots")]
+        [HttpDelete("{name}/snapshots")]
         [Authorize(Policy = "Administrator")]
         public async Task<ActionResult<ExecutionResult>> ClearSnapshots(string? name)
         {

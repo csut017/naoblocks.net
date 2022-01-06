@@ -6,6 +6,7 @@ using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Database;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
 using Raven.TestDriver;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -42,6 +43,7 @@ namespace NaoBlocks.Web.IntegrationTests
         public IDocumentStore InitialiseDatabase(params object[] entities)
         {
             var store = GetDocumentStore();
+            IndexCreation.CreateIndexes(typeof(RavenDbDatabase).Assembly, store);
             using var session = store.OpenSession();
             foreach (var entity in entities)
             {

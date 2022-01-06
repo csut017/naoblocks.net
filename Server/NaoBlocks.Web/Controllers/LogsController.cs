@@ -11,6 +11,7 @@ namespace NaoBlocks.Web.Controllers
     [Route("api/v1/robots/{robotId}/[controller]")]
     [ApiController]
     [Authorize]
+    [Authorize(Policy = "Teacher")]
     [Produces("application/json")]
     public class LogsController : ControllerBase
     {

@@ -4,3 +4,5 @@
 Tests/**/coverage.cobertura.xml
 Tests/*/coveragereport/*.*
 Tests/Coverage/*.*
+Utilities/paths.csv
+Utilities/swagger.json
