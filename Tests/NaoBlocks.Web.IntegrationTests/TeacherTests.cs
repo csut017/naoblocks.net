@@ -1,37 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using NaoBlocks.Engine.Data;
-using Newtonsoft.Json;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
-    public class StudentTests
+    public class TeacherTests
         : IntegrationSecurityTestHelper
     {
-        public StudentTests(WebApplicationFactory<Program> factory)
-            : base(factory) 
+        public TeacherTests(WebApplicationFactory<Program> factory)
+            : base(factory)
         {
         }
-
 
         [Theory]
         [InlineData("version")]
         [InlineData("whoami")]
+        [InlineData("clients/robot")]
+        [InlineData("clients/2/logs", HttpStatusCode.NotFound)]
         public async Task GetCanAccessAuthorizedApi(string url, HttpStatusCode expectedCode = HttpStatusCode.OK)
         {
-            await RunSecurityTest(UserRole.Student, url, expectedCode);
+            await RunSecurityTest(UserRole.Teacher, url, expectedCode);
         }
 
         [Theory]
-        [InlineData("clients/robot")]
-        [InlineData("clients/2/logs")]
         [InlineData("users")]
         [InlineData("users/mia")]
         public async Task GetFailsWithAuthorizedApi(string url)
         {
-            await RunSecurityTest(UserRole.Student, url, HttpStatusCode.Forbidden);
+            await RunSecurityTest(UserRole.Teacher, url, HttpStatusCode.Forbidden);
         }
     }
 }
