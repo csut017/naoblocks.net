@@ -10,14 +10,7 @@ using System.Security.Principal;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(opts =>
-{
-    opts.AddPolicy("CorsPolicy", builder => builder
-        .WithOrigins("http://localhost:4200")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
-});
+builder.Services.AddCors();
 builder.Services.AddHealthChecks();
 
 // Register the configuration settings
@@ -37,6 +30,27 @@ builder.Services.AddSwaggerGen(opts =>
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+    opts.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    opts.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+        }
+    });
 });
 
 // Define the database services
@@ -64,6 +78,7 @@ builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
 ClientAddressList.Initialise();
 
+// Configure the application
 var app = builder.Build();
 if (builder.Environment.IsDevelopment())
 {
@@ -72,12 +87,21 @@ if (builder.Environment.IsDevelopment())
     app.UseSwaggerUI();
     ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-// Some basic configuration
-app.UseHttpsRedirection();
+app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
+app.UseWebSockets();
+app.MapHealthChecks("/health");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
 app.Run();
 
 /// <summary>

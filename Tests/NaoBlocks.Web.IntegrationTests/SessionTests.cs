@@ -1,16 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NaoBlocks.Common;
-using NaoBlocks.Engine;
-using NaoBlocks.Engine.Database;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
@@ -28,29 +22,19 @@ namespace NaoBlocks.Web.IntegrationTests
         public async Task CanStartNewUserSession()
         {
             // Arrange
+            var user = GenerateUser();
             var client = this.factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.AddSingleton<IDatabase>(services =>
-                    {
-                        var store = InitialiseDatabase(
-                            new Data.User
-                            {
-                                Name = "Mia",
-                                Role = Data.UserRole.Student,
-                                Password = Data.Password.New("mia-1234")
-                            });
-                        var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
-                        return new RavenDbDatabase(logger, store);
-                    });
+                    AddDatabaseToServices(services, user);
                 });
             }).CreateClient();
             var request = new
             {
                 role = "student",
-                name = "Mia",
-                password = "mia-1234"
+                name = user.Name,
+                password = DefaultPassword
             };
             var json = JsonConvert.SerializeObject(request);
 
@@ -72,28 +56,19 @@ namespace NaoBlocks.Web.IntegrationTests
         public async Task CanStartNewRobotSession()
         {
             // Arrange
+            var robot = GenerateRobot();
             var client = this.factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.AddSingleton<IDatabase>(services =>
-                    {
-                        var store = InitialiseDatabase(
-                            new Data.Robot
-                            {
-                                MachineName = "karetao",
-                                Password = Data.Password.New("mia-1234")
-                            });
-                        var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
-                        return new RavenDbDatabase(logger, store);
-                    });
+                    AddDatabaseToServices(services, robot);
                 });
             }).CreateClient();
             var request = new
             {
                 role = "robot",
-                name = "karetao",
-                password = "mia-1234"
+                name = robot.MachineName,
+                password = DefaultPassword
             };
             var json = JsonConvert.SerializeObject(request);
 

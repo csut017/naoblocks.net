@@ -26,12 +26,8 @@ namespace NaoBlocks.Web.Helpers
             }
 
             var key = Encoding.ASCII.GetBytes(settings.JwtSecret);
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, x =>
             {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
