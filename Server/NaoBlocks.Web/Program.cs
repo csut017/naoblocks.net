@@ -94,14 +94,14 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles();
+app.MapHealthChecks("/health");
+app.UseAngularUI();
+app.UseRouting();
 app.UseCors(x => x
     .AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader());
-
 app.UseWebSockets();
-app.MapHealthChecks("/health");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
