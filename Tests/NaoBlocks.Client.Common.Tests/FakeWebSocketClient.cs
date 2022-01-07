@@ -1,7 +1,10 @@
-﻿using System;
+﻿using NaoBlocks.Common;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,6 +52,31 @@ namespace NaoBlocks.Client.Common.Tests
             GC.SuppressFinalize(this);
         }
 
+        public void AddOutgoingMessage(ClientMessage message)
+        {
+            var json = JsonConvert.SerializeObject(message);
+            var data = Encoding.UTF8.GetBytes(json);
+            this.OutgoingMessages.Enqueue(
+                new FakeWebSocketMessage
+                {
+                    Buffer = data,
+                    MessageType = WebSocketMessageType.Text,
+                    State = WebSocketState.Open
+                });
+        }
+
+        public void AddOutgoingCloseMessage()
+        {
+            var data = Array.Empty<byte>();
+            this.OutgoingMessages.Enqueue(
+                new FakeWebSocketMessage
+                {
+                    Buffer = data,
+                    MessageType = WebSocketMessageType.Close,
+                    State = WebSocketState.Closed
+                });
+        }
+
         public Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -62,7 +90,7 @@ namespace NaoBlocks.Client.Common.Tests
                 message.Buffer.CopyTo(buffer);
                 this.State = message.State;
                 return Task.FromResult(
-                    new WebSocketReceiveResult(0, message.MessageType, true));
+                    new WebSocketReceiveResult(message.Buffer.Count, message.MessageType, true));
             }
 
             return Task.FromResult(

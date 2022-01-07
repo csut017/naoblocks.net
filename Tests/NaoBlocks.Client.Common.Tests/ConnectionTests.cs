@@ -247,6 +247,125 @@ namespace NaoBlocks.Client.Common.Tests
             Assert.Equal($"{wsPrefix}://localhost/api/v1/connections/robot", socket.Address);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CallingConnectionAsyncTwiceIsIgnored(bool withDelay)
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                JsonConvert.SerializeObject(new VersionInformation()));
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
+            using var connection = new Connection("localhost", "1234");
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+            connection.InitialiseWebSocket = () => socket;
+
+            // Act
+            await connection.ConnectAsync();
+            if (withDelay) await Task.Delay(TimeSpan.FromSeconds(0.5));
+            await connection.ConnectAsync();
+            await connection.DisconnectAsync();
+        }
+
+        [Fact]
+        public async Task HandlesCloseMessage()
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                JsonConvert.SerializeObject(new VersionInformation()));
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
+            using var connection = new Connection("localhost", "1234");
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+            connection.InitialiseWebSocket = () => socket;
+
+            // Act
+            var waiter = new AutoResetEvent(false);
+            connection.OnClosed += (o, e) => waiter.Set();
+            await connection.ConnectAsync();
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            Assert.True(connection.IsConnected, "Expected to be connected");
+            socket.AddOutgoingCloseMessage();
+            Assert.True(waiter.WaitOne(TimeSpan.FromSeconds(5)), "Connection was not closed");
+
+            // Assert
+            Assert.False(connection.IsConnected, "Expected to be disconnected");
+        }
+
+        [Fact]
+        public async Task HandlesIncomingMessage()
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                JsonConvert.SerializeObject(new VersionInformation()));
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
+            using var connection = new Connection("localhost", "1234");
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+            connection.InitialiseWebSocket = () => socket;
+
+            // Act
+            await connection.ConnectAsync();
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            Assert.True(connection.IsConnected, "Expected to be connected");
+            ClientMessage? messageRecieved = null;
+            var waiter = new AutoResetEvent(false);
+            var message = connection.OnMessageReceived.Subscribe(message =>
+            {
+                messageRecieved = message;
+                waiter.Set();
+            });
+            socket.AddOutgoingMessage(
+                new ClientMessage(ClientMessageType.DownloadProgram));
+            Assert.True(waiter.WaitOne(TimeSpan.FromSeconds(5)), "Message was not received");
+            await connection.DisconnectAsync();
+
+            // Assert
+            Assert.Equal(ClientMessageType.DownloadProgram, messageRecieved?.Type);
+        }
+
+        [Fact]
+        public async Task ConnectAsyncRetrievesVersion()
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                JsonConvert.SerializeObject(new VersionInformation
+                {
+                    Version = "1.2.3.4"
+                }));
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
+            using var connection = new Connection("localhost", "1234");
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+            connection.InitialiseWebSocket = () => socket;
+
+            // Act
+            await connection.ConnectAsync();
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            Assert.True(connection.IsConnected, "Expected to be connected");
+
+            // Assert
+            Assert.Equal("1.2.3.4", connection.ServerVersion);
+            await connection.DisconnectAsync();
+        }
+
         private static AstNode GenerateFunctionNode(string name)
         {
             return new AstNode(
