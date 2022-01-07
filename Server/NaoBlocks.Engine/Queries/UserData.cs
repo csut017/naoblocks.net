@@ -77,6 +77,7 @@ namespace NaoBlocks.Engine.Queries
         /// </summary>
         /// <param name="pageNum">The page number to retrieve.</param>
         /// <param name="pageSize">The number of users in the page.</param>
+        /// <param name="role">The user role to retrieve.</param>
         /// <returns>A <see cref="ListResult{TData}"/> containing the users.</returns>
         public virtual async Task<ListResult<User>> RetrievePageAsync(int pageNum, int pageSize, UserRole role)
         {

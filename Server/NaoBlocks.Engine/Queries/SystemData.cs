@@ -9,12 +9,16 @@ namespace NaoBlocks.Engine.Queries
     public class SystemData
         : DataQuery
     {
+        /// <summary>
+        /// Attempts to retrieve the system values.
+        /// </summary>
+        /// <returns>A <see cref="SystemValues"/> instance containing the system values (will be empty if not found.)</returns>
         public virtual async Task<SystemValues> RetrieveSystemValuesAsync()
         {
             var settings = await this.Session.Query<SystemValues>()
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
-            return settings != null ? settings : new SystemValues();
+            return settings ?? new SystemValues();
         }
     }
 }

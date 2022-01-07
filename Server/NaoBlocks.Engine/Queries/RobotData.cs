@@ -16,6 +16,7 @@ namespace NaoBlocks.Engine.Queries
         /// Retrieve a robot by their machine name.
         /// </summary>
         /// <param name="name">The robot's mchine name.</param>
+        /// <param name="loadTypeDetails">Whether to include the type details or not.</param>
         /// <returns>The <see cref="Robot"/> instance.</returns>
         public virtual async Task<Robot?> RetrieveByNameAsync(string name, bool loadTypeDetails = false)
         {

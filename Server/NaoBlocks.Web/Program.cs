@@ -110,5 +110,7 @@ app.Run();
 /// <summary>
 /// Make the Program class explicit so it can be accessed by tests
 /// </summary>
+#pragma warning disable CA1050 // We need to expore Program as a class so it can be used in the integration tests
 public partial class Program
+#pragma warning restore CA1050
 { }

@@ -6,6 +6,9 @@ using Raven.Client.Documents.Session;
 
 namespace NaoBlocks.Engine.Queries
 {
+    /// <summary>
+    /// Queries for working with programs.
+    /// </summary>
     public class CodeData
         : DataQuery
     {

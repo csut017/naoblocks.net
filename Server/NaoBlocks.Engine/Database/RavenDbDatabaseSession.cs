@@ -3,11 +3,14 @@ using Raven.Client.Documents.Session;
 
 namespace NaoBlocks.Engine.Database
 {
+    /// <summary>
+    /// A wrapper class for holding the RavenDB document session.
+    /// </summary>
     public class RavenDbDatabaseSession
         : IDatabaseSession
     {
         private bool disposedValue;
-        private IAsyncDocumentSession session;
+        private readonly IAsyncDocumentSession session;
 
         /// <summary>
         /// Starts a new <see cref="RavenDbDatabaseSession"/> instance.

@@ -89,9 +89,7 @@ namespace NaoBlocks.Web.Helpers
             return await controller.GenerateReport(
                 engine,
                 format,
-                generate != null
-                    ? generate
-                    : async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student));
+                generate ?? (async (generator, reportFormat) => await generator.GenerateAsync(reportFormat, student)));
         }
 
         /// <summary>
