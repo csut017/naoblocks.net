@@ -1,0 +1,18 @@
+.page-centre{
+    margin: 20vh calc(50vw - 10em);
+    text-align: center;
+    
+    .inner {
+        margin: 1rem 5rem;
+    }
+
+    .error {
+        .mat-icon {
+            font-size: 4rem;
+            height: 4rem;
+            width: 4rem;
+            color: #b00020;
+            background-color: #fff;
+        }
+    }
+}
