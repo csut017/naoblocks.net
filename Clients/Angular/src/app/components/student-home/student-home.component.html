@@ -1,16 +1,87 @@
-<div class="alert alert-app-level alert-danger" role="alert" *ngIf="!hasAccess">
-    <div class="alert-items">
-        <div class="alert-item static">
-            <div class="alert-icon-wrapper">
-                <mat-icon aria-hidden="false" aria-label="Access error">error_outline</mat-icon>
-            </div>
-            <div class="alert-text">
-                You do not have access to this role
-            </div>
-            <div class="alert-actions">
-                <button class="btn alert-action" (click)="openChangeRole()">Change Role</button>
-            </div>
-        </div>
-    </div>
-</div>
-<p>student-home works!</p>
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
+        <mat-toolbar color="primary">
+            <div mat-card-avatar class="app-icon"></div>
+        </mat-toolbar>
+        <mat-nav-list>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Play current program">play_arrow</mat-icon> Play
+            </a>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">stop</mat-icon> Stop
+            </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">delete_outline</mat-icon> Clear
+            </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">file_download</mat-icon> Load
+            </a>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">publish</mat-icon> Save
+            </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">tune</mat-icon> Settings
+            </a>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">
+            <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
+                *ngIf="isHandset$ | async">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span>NaoBlocks: Block Editor</span>
+            <span class="example-spacer"></span>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item>
+                    <mat-icon>settings</mat-icon>
+                    <span>Settings</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="openChangeRole()" *ngIf="canChangeRole()">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>Change Role</span>
+                </button>
+                <button mat-menu-item (click)="openChangeView()" *ngIf="canChangeView()">
+                    <mat-icon>wysiwyg</mat-icon>
+                    <span>Change View</span>
+                </button>
+                <button mat-menu-item (click)="openAbout()">
+                    <mat-icon>help_outline</mat-icon>
+                    <span>About</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Log Out</span>
+                </button>
+            </mat-menu>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn">
+            <button mat-icon-button aria-label="Access error">
+                <mat-icon>error_outline</mat-icon>
+            </button>
+            <span>You do not have access to this role</span>
+            <span class="example-spacer"></span>
+            <button mat-stroked-button (click)="openChangeRole()">Change Role</button>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.isSystemInitialised">
+            <button mat-icon-button aria-label="No default robot error">
+                <mat-icon>error_outline</mat-icon>
+            </button>
+            <span>The system has not been completely initialised - there is no default robot type</span>
+        </mat-toolbar>
+
+        <span>Content here</span>
+        <!-- Add Content Here -->
+    </mat-sidenav-content>
+</mat-sidenav-container>

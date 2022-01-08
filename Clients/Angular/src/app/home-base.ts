@@ -46,6 +46,11 @@ export class HomeBase {
         this.viewSelector?.show();
     }
 
+    openAbout(): void {
+        console.log('[HomeBase] Showing about');
+        this.about?.show();
+    }
+
     logout(): void {
         this.authenticationService.logout()
             .subscribe(_ => {

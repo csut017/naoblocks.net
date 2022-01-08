@@ -14,6 +14,13 @@ import { ChangeRoleComponent } from './components/change-role/change-role.compon
 import { ChangeViewComponent } from './components/change-view/change-view.component';
 import { AboutComponent } from './components/about/about.component';
 import { StudentHomeComponent } from './components/student-home/student-home.component';
+import { TeacherHomeComponent } from './components/teacher-home/teacher-home.component';
+import { LayoutModule } from '@angular/cdk/layout';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -23,7 +30,8 @@ import { StudentHomeComponent } from './components/student-home/student-home.com
     StudentHomeComponent,
     ChangeRoleComponent,
     ChangeViewComponent,
-    AboutComponent
+    AboutComponent,
+    TeacherHomeComponent
   ],
   imports: [
     BrowserModule,
@@ -33,6 +41,12 @@ import { StudentHomeComponent } from './components/student-home/student-home.com
     ReactiveFormsModule,
     HttpClientModule,
     MaterialModule,
+    LayoutModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule,
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
