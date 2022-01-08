@@ -10,12 +10,20 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LandingComponent } from './components/landing/landing.component';
 import { LoginComponent } from './components/login/login.component';
+import { ChangeRoleComponent } from './components/change-role/change-role.component';
+import { ChangeViewComponent } from './components/change-view/change-view.component';
+import { AboutComponent } from './components/about/about.component';
+import { StudentHomeComponent } from './components/student-home/student-home.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LandingComponent,
-    LoginComponent
+    LoginComponent,
+    StudentHomeComponent,
+    ChangeRoleComponent,
+    ChangeViewComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
