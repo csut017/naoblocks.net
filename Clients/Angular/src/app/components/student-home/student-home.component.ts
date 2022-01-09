@@ -7,6 +7,7 @@ import { PromptSettings } from 'src/app/data/prompt-settings';
 import { UserInputMode } from 'src/app/data/user-input-mode';
 import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
+import { ChangeRoleService } from 'src/app/services/change-role.service';
 import { SettingsService } from 'src/app/services/settings.service';
 
 @Component({
@@ -32,9 +33,10 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
+    changeRoleService: ChangeRoleService,
     private settingsService: SettingsService,
     private breakpointObserver: BreakpointObserver) {
-    super(authenticationService, router);
+    super(authenticationService, router, changeRoleService);
   }
 
   ngOnInit(): void {

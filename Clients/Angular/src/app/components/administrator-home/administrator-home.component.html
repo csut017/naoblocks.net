@@ -7,25 +7,24 @@
           </mat-toolbar>
         <mat-nav-list>
             <a mat-list-item href="#">
-                <mat-icon aria-label="Play current program">play_arrow</mat-icon> Play
-            </a>
-            <a mat-list-item href="#">
-                <mat-icon aria-label="Stop current program">stop</mat-icon> Stop
+                <mat-icon aria-label="Play current program">dashboard</mat-icon> Dashboard
             </a>
             <mat-divider></mat-divider>
             <a mat-list-item href="#">
-                <mat-icon aria-label="Stop current program">delete_outline</mat-icon> Clear
+                <mat-icon aria-label="Stop current program">filter_1</mat-icon> Logs
+            </a>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">dns</mat-icon> Robot Types
+            </a>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">perm_data_setting</mat-icon> Settings
+            </a>
+            <a mat-list-item href="#">
+                <mat-icon aria-label="Stop current program">supervisor_account</mat-icon> Users
             </a>
             <mat-divider></mat-divider>
             <a mat-list-item href="#">
-                <mat-icon aria-label="Stop current program">file_download</mat-icon> Load
-            </a>
-            <a mat-list-item href="#">
-                <mat-icon aria-label="Stop current program">publish</mat-icon> Save
-            </a>
-            <mat-divider></mat-divider>
-            <a mat-list-item href="#">
-                <mat-icon aria-label="Stop current program">tune</mat-icon> Settings
+                <mat-icon aria-label="Stop current program">construction</mat-icon> Configuration
             </a>
         </mat-nav-list>
     </mat-sidenav>
@@ -35,24 +34,15 @@
                 *ngIf="isHandset$ | async">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
             </button>
-            <span>Block Editor</span>
+            <span>Administrator</span>
             <span class="example-spacer"></span>
             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
                 <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu">
-                <button mat-menu-item (click)="showSettings()">
-                    <mat-icon>settings</mat-icon>
-                    <span>Settings</span>
-                </button>
-                <mat-divider></mat-divider>
-                <button mat-menu-item (click)="openChangeRole('Student')" *ngIf="canChangeRole()">
+                <button mat-menu-item (click)="openChangeRole('Administrator')" *ngIf="canChangeRole()">
                     <mat-icon>account_circle</mat-icon>
                     <span>Change Role</span>
-                </button>
-                <button mat-menu-item (click)="openChangeView()" *ngIf="canChangeView()">
-                    <mat-icon>wysiwyg</mat-icon>
-                    <span>Change View</span>
                 </button>
                 <button mat-menu-item (click)="openAbout()">
                     <mat-icon>help_outline</mat-icon>
@@ -65,30 +55,14 @@
                 </button>
             </mat-menu>
         </mat-toolbar>
-
+  
         <mat-toolbar color="warn" *ngIf="!hasAccess">
             <button mat-icon-button aria-label="Access error">
                 <mat-icon>error_outline</mat-icon>
             </button>
             <span>You do not have access to this role</span>
             <span class="example-spacer"></span>
-            <button mat-stroked-button (click)="openChangeRole('Student')">Change Role</button>
-        </mat-toolbar>
-
-        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.isSystemInitialised">
-            <button mat-icon-button aria-label="No default robot error">
-                <mat-icon>error_outline</mat-icon>
-            </button>
-            <span>The system has not been completely initialised - there is no default robot type</span>
-        </mat-toolbar>
-
-        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.user.robotType">
-            <button mat-icon-button aria-label="No default robot error">
-                <mat-icon>warning_amber</mat-icon>
-            </button>
-            <span>You have not selected a robot type yet</span>
-            <span class="example-spacer"></span>
-            <button mat-stroked-button (click)="showSettings()">Settings</button>
+            <button mat-stroked-button (click)="openChangeRole('Administrator')">Change Role</button>
         </mat-toolbar>
     </mat-sidenav-content>
-</mat-sidenav-container>
+  </mat-sidenav-container>

@@ -1,18 +1,17 @@
+import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
 import { Component, OnInit } from '@angular/core';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
-import { HomeBase } from 'src/app/home-base';
 import { Router } from '@angular/router';
+import { map, Observable, shareReplay } from 'rxjs';
+import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
 
 @Component({
-  selector: 'app-teacher-home',
-  templateUrl: './teacher-home.component.html',
-  styleUrls: ['./teacher-home.component.scss']
+  selector: 'app-administrator-home',
+  templateUrl: './administrator-home.component.html',
+  styleUrls: ['./administrator-home.component.scss']
 })
-export class TeacherHomeComponent extends HomeBase implements OnInit {
+export class AdministratorHomeComponent extends HomeBase implements OnInit {
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
@@ -28,7 +27,7 @@ export class TeacherHomeComponent extends HomeBase implements OnInit {
   }
 
   ngOnInit(): void {
-    this.checkAccess(UserRole.Teacher);
+    this.checkAccess(UserRole.Administrator);
   }
 
 }

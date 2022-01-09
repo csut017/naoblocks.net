@@ -16,6 +16,7 @@ import { AboutComponent } from './components/about/about.component';
 import { StudentHomeComponent } from './components/student-home/student-home.component';
 import { TeacherHomeComponent } from './components/teacher-home/teacher-home.component';
 import { LayoutModule } from '@angular/cdk/layout';
+import { AdministratorHomeComponent } from './components/administrator-home/administrator-home.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { LayoutModule } from '@angular/cdk/layout';
     ChangeRoleComponent,
     ChangeViewComponent,
     AboutComponent,
-    TeacherHomeComponent
+    TeacherHomeComponent,
+    AdministratorHomeComponent
   ],
   imports: [
     BrowserModule,

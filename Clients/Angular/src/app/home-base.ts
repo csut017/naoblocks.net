@@ -6,6 +6,7 @@ import { User } from './data/user';
 import { AboutComponent } from './components/about/about.component';
 import { ChangeRoleComponent } from './components/change-role/change-role.component';
 import { ChangeViewComponent } from './components/change-view/change-view.component';
+import { ChangeRoleService } from './services/change-role.service';
 
 @Directive()
 export class HomeBase {
@@ -18,7 +19,8 @@ export class HomeBase {
     currentUser?: User;
 
     constructor(protected authenticationService: AuthenticationService,
-        protected router: Router) {
+        protected router: Router,
+        private changeRoleService: ChangeRoleService) {
     }
 
     canChangeRole(): boolean {
@@ -32,9 +34,10 @@ export class HomeBase {
             .subscribe(u => this.currentUser = u);
     }
 
-    openChangeRole(): void {
+    openChangeRole(currentRole: string): void {
+        let role = (<any>UserRole)[currentRole];
         console.log('[HomeBase] Changing Role');
-        this.roleSelector?.show();
+        this.changeRoleService.show(role);
     }
 
     canChangeView(): boolean {
