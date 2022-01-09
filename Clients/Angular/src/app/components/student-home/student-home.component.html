@@ -40,7 +40,7 @@
                 <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu">
-                <button mat-menu-item>
+                <button mat-menu-item (click)="showSettings()">
                     <mat-icon>settings</mat-icon>
                     <span>Settings</span>
                 </button>
@@ -65,7 +65,7 @@
             </mat-menu>
         </mat-toolbar>
 
-        <mat-toolbar color="warn">
+        <mat-toolbar color="warn" *ngIf="!hasAccess">
             <button mat-icon-button aria-label="Access error">
                 <mat-icon>error_outline</mat-icon>
             </button>
@@ -81,7 +81,13 @@
             <span>The system has not been completely initialised - there is no default robot type</span>
         </mat-toolbar>
 
-        <span>Content here</span>
-        <!-- Add Content Here -->
+        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.user.robotType">
+            <button mat-icon-button aria-label="No default robot error">
+                <mat-icon>warning_amber</mat-icon>
+            </button>
+            <span>You have not selected a robot type yet</span>
+            <span class="example-spacer"></span>
+            <button mat-stroked-button (click)="showSettings()">Settings</button>
+        </mat-toolbar>
     </mat-sidenav-content>
 </mat-sidenav-container>
