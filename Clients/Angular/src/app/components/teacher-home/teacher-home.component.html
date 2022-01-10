@@ -59,11 +59,27 @@
             <button mat-stroked-button (click)="openChangeRole('Teacher')">Change Role</button>
         </mat-toolbar>
 
-        <div *ngIf="hasAccess">
-            <app-system-dashboard *ngIf="currentView=='Dashboard'"></app-system-dashboard>
-            <app-robots-list *ngIf="currentView=='Robots'"></app-robots-list>
-            <app-students-list *ngIf="currentView=='Students'"></app-students-list>
-            <app-system-configuration *ngIf="currentView=='Configuration'"></app-system-configuration>
+        <div *ngIf="hasAccess" [ngSwitch]="currentView">
+            <app-system-dashboard *ngSwitchCase="'Dashboard'"></app-system-dashboard>
+            <app-robots-list *ngSwitchCase="'Robots'"></app-robots-list>
+            <app-students-list *ngSwitchCase="'Students'"></app-students-list>
+            <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
+            <div *ngSwitchDefault class="unknown-view">
+                <mat-card>
+                    <mat-card-title>
+                        <mat-icon color="warn">device_unknown</mat-icon>
+                        Unknown view
+                    </mat-card-title>
+                    <mat-card-content>
+                        <div>
+                            The view '{{currentView}}' is not a valid teacher view.
+                        </div>
+                        <div>
+                            Please select a different view.
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
         </div>
     </mat-sidenav-content>
 </mat-sidenav-container>
