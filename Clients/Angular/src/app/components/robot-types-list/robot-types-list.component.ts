@@ -2,6 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RobotType } from 'src/app/data/robot-type';
+import { AuthenticationService } from 'src/app/services/authentication.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 
@@ -18,6 +19,7 @@ export class RobotTypesListComponent implements OnInit {
   selection = new SelectionModel<RobotType>(true, []);
 
   constructor(private robotTypeService: RobotTypeService,
+    private authenticationService: AuthenticationService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -50,6 +52,7 @@ export class RobotTypesListComponent implements OnInit {
     this.isLoading = true;
     this.robotTypeService.list()
       .subscribe(data => {
+        if (!this.authenticationService.checkHttpResponse(data)) return;
         this.dataSource = new MatTableDataSource(data.items);
         this.isLoading = false;
       });

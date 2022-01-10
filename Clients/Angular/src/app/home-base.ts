@@ -31,7 +31,7 @@ export class HomeBase {
     checkAccess(role: UserRole) {
         this.hasAccess = this.authenticationService.canAccess(role);
         this.authenticationService.getCurrentUser()
-            .subscribe(u => this.currentUser = u);
+            .subscribe(u => this.currentUser = u.output);
     }
 
     openChangeRole(currentRole: string): void {

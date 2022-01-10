@@ -3,9 +3,10 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { HomeBase } from 'src/app/home-base';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
+import { ViewFormatterService } from 'src/app/services/view-formatter.service';
 
 @Component({
   selector: 'app-teacher-home',
@@ -24,8 +25,13 @@ export class TeacherHomeComponent extends HomeBase implements OnInit {
   constructor(authenticationService: AuthenticationService,
     router: Router,
     changeRoleService: ChangeRoleService,
+    private viewFormatter: ViewFormatterService,
+    private route: ActivatedRoute,
     private breakpointObserver: BreakpointObserver) {
     super(authenticationService, router, changeRoleService);
+    this.route.paramMap.subscribe(params => {
+      this.currentView = this.viewFormatter.fromUrl(params.get('view') || 'Dashboard');
+    });
   }
 
   ngOnInit(): void {
@@ -36,6 +42,8 @@ export class TeacherHomeComponent extends HomeBase implements OnInit {
     event.preventDefault();
     console.log('[TeacherHomeComponent] Changing to view ' + view);
     this.currentView = view;
+    const viewUrl = this.viewFormatter.toUrl(view);
+    this.router.navigate(['teacher', viewUrl], {});
   }
 
 }

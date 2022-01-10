@@ -1,10 +1,11 @@
 import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map, Observable, shareReplay } from 'rxjs';
 import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
+import { ViewFormatterService } from 'src/app/services/view-formatter.service';
 
 @Component({
   selector: 'app-administrator-home',
@@ -23,8 +24,13 @@ export class AdministratorHomeComponent extends HomeBase implements OnInit {
   constructor(authenticationService: AuthenticationService,
     router: Router,
     changeRoleService: ChangeRoleService,
+    private viewFormatter: ViewFormatterService,
+    private route: ActivatedRoute,
     private breakpointObserver: BreakpointObserver) {
     super(authenticationService, router, changeRoleService);
+    this.route.paramMap.subscribe(params => {
+      this.currentView = this.viewFormatter.fromUrl(params.get('view') || 'Dashboard');
+    });
   }
 
   ngOnInit(): void {
@@ -35,6 +41,8 @@ export class AdministratorHomeComponent extends HomeBase implements OnInit {
     event.preventDefault();
     console.log('[AdministratorHomeComponent] Changing to view ' + view);
     this.currentView = view;
+    const viewUrl = this.viewFormatter.toUrl(view);
+    this.router.navigate(['administrator', viewUrl], {});
   }
 
 }

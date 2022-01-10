@@ -24,6 +24,11 @@ import { SystemConfigurationComponent } from './components/system-configuration/
 import { SystemDashboardComponent } from './components/system-dashboard/system-dashboard.component';
 import { RobotsListComponent } from './components/robots-list/robots-list.component';
 import { StudentsListComponent } from './components/students-list/students-list.component';
+import { RobotEditorComponent } from './components/robot-editor/robot-editor.component';
+import { RobotTypeEditorComponent } from './components/robot-type-editor/robot-type-editor.component';
+import { UserEditorComponent } from './components/user-editor/user-editor.component';
+import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
+import { StudentEditorComponent } from './components/student-editor/student-editor.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +47,12 @@ import { StudentsListComponent } from './components/students-list/students-list.
     SystemConfigurationComponent,
     SystemDashboardComponent,
     RobotsListComponent,
-    StudentsListComponent
+    StudentsListComponent,
+    RobotEditorComponent,
+    RobotTypeEditorComponent,
+    UserEditorComponent,
+    PageNotFoundComponent,
+    StudentEditorComponent
   ],
   imports: [
     BrowserModule,

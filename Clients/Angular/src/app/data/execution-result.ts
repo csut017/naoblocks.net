@@ -1,8 +1,12 @@
-export class ExecutionResult<T> {
+import { SessionChecker } from "./session-checker";
+
+export class ExecutionResult<T> implements SessionChecker {
     successful: boolean;
     validationErrors: string[] = [];
     executionErrors: string[] = [];
     output?: T;
+
+    hasSessionExpired: boolean = false;
 
     constructor(data?: T, error?: string) {
         this.output = data;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { SessionChecker } from '../data/session-checker';
 import { ErrorHandlerService } from './error-handler.service';
 
 @Injectable({
@@ -27,12 +28,14 @@ export abstract class ClientService {
     console.error(`[${this.serviceName}] ${message}`);
   }
 
-  protected handleError<T>(operation: string, generator: (msg: string) => T) {
+  protected handleError<T extends SessionChecker>(operation: string, generator: (msg: string) => T) {
     return (error: any): Observable<T> => {
       let msg = '';
+      let isSessionValid = true;
       switch (error.status) {
         case 401:
           msg = 'Unauthorized';
+          isSessionValid = false;
           break;
         case 0:
           msg = 'Connection lost';
@@ -41,8 +44,11 @@ export abstract class ClientService {
           msg = this.errorhandler.formatError(error);
           break;
       }
+
       this.log(`${operation} failed: ${msg}`);
-      return of(generator(msg));
+      let entity = generator(msg);
+      entity.hasSessionExpired = !isSessionValid;
+      return of(entity);
     };
   }
 }

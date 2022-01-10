@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SystemVersion } from 'src/app/data/system-version';
-import { AuthenticationService, login } from 'src/app/services/authentication.service';
+import { AuthenticationService, LoginResult } from 'src/app/services/authentication.service';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
@@ -16,6 +16,7 @@ export class LoginComponent implements OnInit {
   loginInvalid = false;
   version?: SystemVersion;
   loggingIn: boolean = false;
+  returnTo?: string;
 
   constructor(private authenticationService: AuthenticationService,
     private systemService: SystemService,
@@ -25,6 +26,9 @@ export class LoginComponent implements OnInit {
     this.form = builder.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
+    });
+    this.route.queryParams.subscribe(params => {
+      this.returnTo = params['return'];
     });
   }
 
@@ -54,11 +58,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  private handleLogin(data: login) {
+  private handleLogin(data: LoginResult) {
     this.loggingIn = false;
     if (data.successful) {
       this.loginInvalid = false;
-      const view = data.output?.view || 'student';
+      const view = this.returnTo || data.output?.view || 'student';
       this.router.navigateByUrl(view.toLowerCase());
     } else {
       console.log(data.msg);
