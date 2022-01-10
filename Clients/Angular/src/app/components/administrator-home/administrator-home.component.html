@@ -6,21 +6,21 @@
             <span class="app-title">NaoBlocks</span>
         </mat-toolbar>
         <mat-nav-list>
-            <a mat-list-item href="#" (click)="changeView($event, 'dashboard')">
+            <a mat-list-item href="#" (click)="changeView($event, 'Dashboard')">
                 <mat-icon aria-label="Dashboard" class="menu-icon">dashboard</mat-icon> Dashboard
             </a>
             <mat-divider></mat-divider>
-            <a mat-list-item href="#" (click)="changeView($event, 'logs')">
+            <a mat-list-item href="#" (click)="changeView($event, 'Logs')">
                 <mat-icon aria-label="View logs" class="menu-icon">filter_1</mat-icon> Logs
             </a>
-            <a mat-list-item href="#" (click)="changeView($event, 'robotTypes')">
+            <a mat-list-item href="#" (click)="changeView($event, 'Robot Types')">
                 <mat-icon aria-label="Robot types" class="menu-icon">dns</mat-icon> Robot Types
             </a>
-            <a mat-list-item href="#" (click)="changeView($event, 'users')">
+            <a mat-list-item href="#" (click)="changeView($event, 'Users')">
                 <mat-icon aria-label="Users" class="menu-icon">supervisor_account</mat-icon> Users
             </a>
             <mat-divider></mat-divider>
-            <a mat-list-item href="#" (click)="changeView($event, 'configuration')">
+            <a mat-list-item href="#" (click)="changeView($event, 'Configuration')">
                 <mat-icon aria-label="System configuration" class="menu-icon">construction</mat-icon> Configuration
             </a>
         </mat-nav-list>
@@ -31,7 +31,7 @@
                 *ngIf="isHandset$ | async">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
             </button>
-            <span>Administrator</span>
+            <span>Administrator: {{currentView}}</span>
             <span class="example-spacer"></span>
             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
                 <mat-icon>more_vert</mat-icon>
@@ -63,11 +63,11 @@
         </mat-toolbar>
 
         <div *ngIf="hasAccess">
-            <app-system-dashboard *ngIf="currentView=='dashboard'"></app-system-dashboard>
-            <app-logs-list *ngIf="currentView=='logs'"></app-logs-list>
-            <app-robot-types-list *ngIf="currentView=='robotTypes'"></app-robot-types-list>
-            <app-users-list *ngIf="currentView=='users'"></app-users-list>
-            <app-system-configuration *ngIf="currentView=='configuration'"></app-system-configuration>
+            <app-system-dashboard *ngIf="currentView=='Dashboard'"></app-system-dashboard>
+            <app-logs-list *ngIf="currentView=='Logs'"></app-logs-list>
+            <app-robot-types-list *ngIf="currentView=='Robot Types'"></app-robot-types-list>
+            <app-users-list *ngIf="currentView=='Users'"></app-users-list>
+            <app-system-configuration *ngIf="currentView=='Configuration'"></app-system-configuration>
         </div>
     </mat-sidenav-content>
 </mat-sidenav-container>

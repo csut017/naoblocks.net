@@ -13,7 +13,7 @@ import { ChangeRoleService } from 'src/app/services/change-role.service';
 })
 export class AdministratorHomeComponent extends HomeBase implements OnInit {
 
-  currentView: string = 'users';
+  currentView: string = 'Users';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
