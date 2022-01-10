@@ -68,14 +68,30 @@
             <button mat-stroked-button (click)="openChangeRole('Administrator')">Change Role</button>
         </mat-toolbar>
 
-        <div *ngIf="hasAccess">
-            <app-system-dashboard *ngIf="currentView=='Dashboard'"></app-system-dashboard>
-            <app-robots-list *ngIf="currentView=='Robots'"></app-robots-list>
-            <app-students-list *ngIf="currentView=='Students'"></app-students-list>
-            <app-logs-list *ngIf="currentView=='Logs'"></app-logs-list>
-            <app-robot-types-list *ngIf="currentView=='Robot Types'"></app-robot-types-list>
-            <app-users-list *ngIf="currentView=='Users'"></app-users-list>
-            <app-system-configuration *ngIf="currentView=='Configuration'"></app-system-configuration>
+        <div *ngIf="hasAccess" [ngSwitch]="currentView">
+            <app-system-dashboard *ngSwitchCase="'Dashboard'"></app-system-dashboard>
+            <app-robots-list *ngSwitchCase="'Robots'"></app-robots-list>
+            <app-students-list *ngSwitchCase="'Students'"></app-students-list>
+            <app-logs-list *ngSwitchCase="'Logs'"></app-logs-list>
+            <app-robot-types-list *ngSwitchCase="'Robot Types'"></app-robot-types-list>
+            <app-users-list *ngSwitchCase="'Users'"></app-users-list>
+            <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
+            <div *ngSwitchDefault class="unknown-view">
+                <mat-card>
+                    <mat-card-title>
+                        <mat-icon color="warn">device_unknown</mat-icon>
+                        Unknown view
+                    </mat-card-title>
+                    <mat-card-content>
+                        <div>
+                            The view '{{currentView}}' is not a valid administrator view.
+                        </div>
+                        <div>
+                            Please select a different view.
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
         </div>
     </mat-sidenav-content>
 </mat-sidenav-container>
