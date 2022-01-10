@@ -9,12 +9,18 @@
             <a mat-list-item href="#" (click)="changeView($event, 'Dashboard')">
                 <mat-icon aria-label="Dashboard" class="menu-icon">dashboard</mat-icon> Dashboard
             </a>
-            <mat-divider></mat-divider>
             <a mat-list-item href="#" (click)="changeView($event, 'Logs')">
                 <mat-icon aria-label="View logs" class="menu-icon">filter_1</mat-icon> Logs
             </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#" (click)="changeView($event, 'Robots')">
+                <mat-icon aria-label="Robots" class="menu-icon">settings_input_composite</mat-icon> Robots
+            </a>
             <a mat-list-item href="#" (click)="changeView($event, 'Robot Types')">
                 <mat-icon aria-label="Robot types" class="menu-icon">dns</mat-icon> Robot Types
+            </a>
+            <a mat-list-item href="#" (click)="changeView($event, 'Students')">
+                <mat-icon aria-label="Students" class="menu-icon">people</mat-icon> Students
             </a>
             <a mat-list-item href="#" (click)="changeView($event, 'Users')">
                 <mat-icon aria-label="Users" class="menu-icon">supervisor_account</mat-icon> Users
@@ -64,6 +70,8 @@
 
         <div *ngIf="hasAccess">
             <app-system-dashboard *ngIf="currentView=='Dashboard'"></app-system-dashboard>
+            <app-robots-list *ngIf="currentView=='Robots'"></app-robots-list>
+            <app-students-list *ngIf="currentView=='Students'"></app-students-list>
             <app-logs-list *ngIf="currentView=='Logs'"></app-logs-list>
             <app-robot-types-list *ngIf="currentView=='Robot Types'"></app-robot-types-list>
             <app-users-list *ngIf="currentView=='Users'"></app-users-list>

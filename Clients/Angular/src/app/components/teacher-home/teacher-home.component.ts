@@ -14,7 +14,7 @@ import { ChangeRoleService } from 'src/app/services/change-role.service';
 })
 export class TeacherHomeComponent extends HomeBase implements OnInit {
 
-  currentView: string = 'dashboard';
+  currentView: string = 'Dashboard';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),

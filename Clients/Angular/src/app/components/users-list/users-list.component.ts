@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { ResultSet } from 'src/app/data/result-set';
 import { User } from 'src/app/data/user';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { UserService } from 'src/app/services/user.service';
