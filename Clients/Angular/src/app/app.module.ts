@@ -17,6 +17,13 @@ import { StudentHomeComponent } from './components/student-home/student-home.com
 import { TeacherHomeComponent } from './components/teacher-home/teacher-home.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { AdministratorHomeComponent } from './components/administrator-home/administrator-home.component';
+import { RobotTypesListComponent } from './components/robot-types-list/robot-types-list.component';
+import { LogsListComponent } from './components/logs-list/logs-list.component';
+import { UsersListComponent } from './components/users-list/users-list.component';
+import { SystemConfigurationComponent } from './components/system-configuration/system-configuration.component';
+import { SystemDashboardComponent } from './components/system-dashboard/system-dashboard.component';
+import { RobotsListComponent } from './components/robots-list/robots-list.component';
+import { StudentsListComponent } from './components/students-list/students-list.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +35,14 @@ import { AdministratorHomeComponent } from './components/administrator-home/admi
     ChangeViewComponent,
     AboutComponent,
     TeacherHomeComponent,
-    AdministratorHomeComponent
+    AdministratorHomeComponent,
+    RobotTypesListComponent,
+    LogsListComponent,
+    UsersListComponent,
+    SystemConfigurationComponent,
+    SystemDashboardComponent,
+    RobotsListComponent,
+    StudentsListComponent
   ],
   imports: [
     BrowserModule,

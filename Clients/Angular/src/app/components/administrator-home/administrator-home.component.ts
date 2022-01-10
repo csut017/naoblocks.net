@@ -13,6 +13,7 @@ import { ChangeRoleService } from 'src/app/services/change-role.service';
 })
 export class AdministratorHomeComponent extends HomeBase implements OnInit {
 
+  currentView: string = 'users';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
@@ -28,6 +29,12 @@ export class AdministratorHomeComponent extends HomeBase implements OnInit {
 
   ngOnInit(): void {
     this.checkAccess(UserRole.Administrator);
+  }
+
+  changeView(event: MouseEvent, view: string): void {
+    event.preventDefault();
+    console.log('[AdministratorHomeComponent] Changing to view ' + view);
+    this.currentView = view;
   }
 
 }
