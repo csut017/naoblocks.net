@@ -1,0 +1,30 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Delay Time</mat-label>
+                <input matInput type="number" placeholder="Delay Time" formControlName="delayTime" required class="align-right" min="0" max="60">
+                <span matSuffix>s</span>
+                                <mat-hint>How long should the robot pause between executing each step (in seconds).</mat-hint>
+                <mat-error>
+                    Please enter a delay time.
+                </mat-error>
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the debug settings:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+</form>

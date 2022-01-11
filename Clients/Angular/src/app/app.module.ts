@@ -31,6 +31,12 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { StudentEditorComponent } from './components/student-editor/student-editor.component';
 import { DeletionConfirmationComponent } from './components/deletion-confirmation/deletion-confirmation.component';
 import { MultilineMessageComponent } from './components/multiline-message/multiline-message.component';
+import { BlocklyEditorComponent } from './components/blockly-editor/blockly-editor.component';
+import { SettingsDebugComponent } from './components/settings-debug/settings-debug.component';
+import { SettingsStudentComponent } from './components/settings-student/settings-student.component';
+import { ProgramSaveComponent } from './components/program-save/program-save.component';
+import { ProgramLoadComponent } from './components/program-load/program-load.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +62,13 @@ import { MultilineMessageComponent } from './components/multiline-message/multil
     PageNotFoundComponent,
     StudentEditorComponent,
     DeletionConfirmationComponent,
-    MultilineMessageComponent
+    MultilineMessageComponent,
+    BlocklyEditorComponent,
+    SettingsDebugComponent,
+    SettingsStudentComponent,
+    ProgramSaveComponent,
+    ProgramLoadComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule,
