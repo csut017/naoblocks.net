@@ -9,6 +9,10 @@
             </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
+            <div *ngIf="reason">
+                <mat-icon>lock_clock</mat-icon>
+                {{reason}}
+            </div>
             <mat-error *ngIf="loginInvalid">
                 The username and password were not recognized
             </mat-error>

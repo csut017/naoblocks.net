@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   version?: SystemVersion;
   loggingIn: boolean = false;
   returnTo?: string;
+  reason?: string;
 
   constructor(private authenticationService: AuthenticationService,
     private systemService: SystemService,
@@ -29,6 +30,12 @@ export class LoginComponent implements OnInit {
     });
     this.route.queryParams.subscribe(params => {
       this.returnTo = params['return'];
+      this.reason = params['reason'];
+      switch (this.reason) {
+        case 'expired':
+          this.reason = 'Your session has expired, please login again';
+          break;
+      }
     });
   }
 
