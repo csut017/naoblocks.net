@@ -265,6 +265,26 @@ namespace NaoBlocks.Web.Controllers
                 t => Transfer.RobotType.FromModel(t!));
         }
 
+        /// <summary>
+        /// Sets a robot type as the system default.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPut("{id}/default")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> SetAsDefault(string? id)
+        {
+            this._logger.LogInformation($"Updating robot type '{id}'");
+            var command = new SetDefaultRobotType
+            {
+                Name = id
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
+                command,
+                t => Transfer.RobotType.FromModel(t!));
+        }
+
         /*
         /// <summary>
         /// Retrieves a package list for a robot type.

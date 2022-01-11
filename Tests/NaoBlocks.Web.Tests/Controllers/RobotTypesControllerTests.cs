@@ -359,6 +359,29 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task SetAsDefaultCallsCommand()
+        {
+            // Arrange
+            var engine = new FakeEngine
+            {
+                OnExecute = c => CommandResult.New(1, new Data.RobotType())
+            };
+            engine.ExpectCommand<SetDefaultRobotType>();
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.SetAsDefault("karetao");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<SetDefaultRobotType>(engine.LastCommand);
+            Assert.Equal("karetao", command.Name);
+        }
+
+        [Fact]
         public async Task PutValidatesIncomingData()
         {
             // Arrange

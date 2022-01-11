@@ -68,6 +68,16 @@ export class RobotTypeService extends ClientService {
     }
   }
 
+  setSystemDefault(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/default`;
+    this.log(`Setting '${robotType.name}' as the system default`);
+    return this.http.put<any>(url, robotType)
+      .pipe(
+        tap(_ => this.log(`Set '${robotType.name}' as the system default`)),
+        catchError(this.handleError('setSystemDefault', msg => new ExecutionResult<RobotType>(robotType, msg)))
+      );
+}
+
   delete(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;
     this.log('Deleting robot type');

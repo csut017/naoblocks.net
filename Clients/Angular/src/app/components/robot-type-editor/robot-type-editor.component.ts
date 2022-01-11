@@ -19,12 +19,14 @@ export class RobotTypeEditorComponent implements OnInit, OnChanges {
 
   constructor(private robotTypeService: RobotTypeService) {
     this.form = new FormGroup({
-      name: new FormControl('', [Validators.required])
+      name: new FormControl('', [Validators.required]),
+      type: new FormControl('', []),
     });
   }
   ngOnChanges(_: SimpleChanges): void {
     this.form.setValue({
-      name: this.item?.name || ''
+      name: this.item?.name || '',
+      type: this.item?.isDefault ? 'System default' : 'User selected',
     });
   }
 

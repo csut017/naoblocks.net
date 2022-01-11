@@ -36,6 +36,14 @@
                         (click)="edit()">Edit</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
                         (click)="delete()">Delete</button>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        [matMenuTriggerFor]="setMenu">
+                        Set
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #setMenu="matMenu">
+                        <button mat-menu-item (click)="setSystemDefault()">System Default</button>
+                    </mat-menu>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
                         [matMenuTriggerFor]="exportMenu">
                         Export

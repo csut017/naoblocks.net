@@ -12,10 +12,14 @@
         <mat-card-content>
             <mat-form-field class="fill-width">
                 <mat-label>Robot Type Name</mat-label>
-                <input matInput placeholder="name" formControlName="name" required>
+                <input matInput placeholder="Name" formControlName="name" required>
                 <mat-error>
                     Please provide a robot type name
                 </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <input matInput placeholder="Type" formControlName="type" readonly>
             </mat-form-field>
             <mat-error *ngIf="errors.length > 0" class="lower-1">
                 There were some errors saving the robot type:

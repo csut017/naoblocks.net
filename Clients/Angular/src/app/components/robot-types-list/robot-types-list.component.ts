@@ -106,6 +106,20 @@ export class RobotTypesListComponent implements OnInit {
 
   }
 
+  setSystemDefault(): void {
+    const robotType = this.selection.selected[0];
+    this.robotTypeService.setSystemDefault(robotType)
+      .subscribe(result => {
+        if (result.successful) {
+          this.dataSource.data.forEach(type => type.isDefault = false);
+          robotType.isDefault = true;
+          this.snackBar.open(`Set ${robotType.name} as system default`);
+        } else {
+          this.snackBar.open(`ERROR: Unable to set ${robotType.name} as system default`);
+        }
+      });
+  }
+
   onClosed(saved: boolean) {
     this.view = 'list';
     if (saved) {
