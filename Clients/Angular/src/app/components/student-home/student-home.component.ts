@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { Observable, map, shareReplay } from 'rxjs';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
-import { PromptSettings } from 'src/app/data/prompt-settings';
-import { UserInputMode } from 'src/app/data/user-input-mode';
 import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
@@ -31,8 +29,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   isValid: boolean = true;
   onResize: any;
   requireEvents: boolean = true;
-  userInput: PromptSettings = new PromptSettings();
-  view: string = 'editor';
+  view: string = 'blockly';
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
@@ -60,7 +57,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onClosed(saved: boolean) {
-    this.view = 'editor';
+    this.view = 'blockly';
   }
 
   playProgram() {
