@@ -30,6 +30,7 @@ import { UserEditorComponent } from './components/user-editor/user-editor.compon
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { StudentEditorComponent } from './components/student-editor/student-editor.component';
 import { DeletionConfirmationComponent } from './components/deletion-confirmation/deletion-confirmation.component';
+import { MultilineMessageComponent } from './components/multiline-message/multiline-message.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { DeletionConfirmationComponent } from './components/deletion-confirmatio
     UserEditorComponent,
     PageNotFoundComponent,
     StudentEditorComponent,
-    DeletionConfirmationComponent
+    DeletionConfirmationComponent,
+    MultilineMessageComponent
   ],
   imports: [
     BrowserModule,

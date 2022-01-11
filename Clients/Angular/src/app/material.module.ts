@@ -13,7 +13,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule, MAT_SNACK_BAR_DATA, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
@@ -41,6 +41,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     { provide: MatDialogRef, useValue: {} },
     { provide: MAT_BOTTOM_SHEET_DATA, useValue: {} },
     { provide: MAT_DIALOG_DATA, useValue: {} },
+    { provide: MAT_SNACK_BAR_DATA, useValue: {} },
+    { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } },
   ],
 })
 export class MaterialModule { }

@@ -33,6 +33,11 @@ namespace NaoBlocks.Web.Dtos
         public string? Type { get; set; }
 
         /// <summary>
+        /// Gets or sets when the robot was added.
+        /// </summary>
+        public DateTime? WhenAdded { get; set; }
+
+        /// <summary>
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
@@ -44,7 +49,8 @@ namespace NaoBlocks.Web.Dtos
                 FriendlyName = value.FriendlyName,
                 IsInitialised = value.IsInitialised,
                 MachineName = value.MachineName,
-                Type = value.Type?.Name
+                Type = value.Type?.Name,
+                WhenAdded = value.WhenAdded,
             };
         }
     }

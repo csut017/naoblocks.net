@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { forkJoin } from 'rxjs';
+import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -29,6 +30,7 @@ export class RobotTypesListComponent implements OnInit {
     private authenticationService: AuthenticationService,
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
+    private multilineMessage: MultilineMessageService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -85,6 +87,7 @@ export class RobotTypesListComponent implements OnInit {
           messages.push(`Failed to delete ${this.generateCountText(failed.length)}`);
         }
 
+        this.multilineMessage.show(messages);
         this.selection.clear();
         this.dataSource.data = this.dataSource
           .data
@@ -108,9 +111,9 @@ export class RobotTypesListComponent implements OnInit {
     if (saved) {
       if (this.isNew) {
         this.dataSource.data = [...this.dataSource.data, this.currentItem!];
-        this.snackBar.open(`Added robot type '${this.currentItem!.name}'`, 'OK');
+        this.snackBar.open(`Added robot type '${this.currentItem!.name}'`);
       } else {
-        this.snackBar.open(`Updated robot type '${this.currentItem!.name}'`, 'OK');
+        this.snackBar.open(`Updated robot type '${this.currentItem!.name}'`);
       }
       this.currentItem!.id = this.currentItem!.name;
     }

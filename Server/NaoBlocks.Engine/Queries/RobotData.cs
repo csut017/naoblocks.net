@@ -62,6 +62,7 @@ namespace NaoBlocks.Engine.Queries
         {
             var query = ((IRavenQueryable<Robot>)this.Session.Query<Robot>())
                 .Statistics(out QueryStatistics stats)
+                .Include(r => r.RobotTypeId)
                 .OrderBy(r => r.MachineName)
                 .Skip(pageNum * pageSize)
                 .Take(pageSize);
@@ -71,6 +72,10 @@ namespace NaoBlocks.Engine.Queries
             }
 
             var data = await query.ToListAsync();
+            foreach (var robot in data)
+            {
+                robot.Type = await this.Session.LoadAsync<RobotType>(robot.RobotTypeId);
+            }
             var result = new ListResult<Robot>
             {
                 Count = stats.TotalResults,
