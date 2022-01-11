@@ -29,7 +29,9 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   isValid: boolean = true;
   onResize: any;
   requireEvents: boolean = true;
-  view: string = 'blockly';
+  showCommands: boolean = true;
+  title: string = '';
+  view: string = '';
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
@@ -38,6 +40,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     private confirm: ConfirmService,
     private breakpointObserver: BreakpointObserver) {
     super(authenticationService, router, changeRoleService);
+    this.changeView('blockly', 'Block Editor', true);
   }
 
   ngOnInit(): void {
@@ -49,16 +52,15 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   showSettings(): void {
-    this.view = 'user-settings';
+    this.changeView('user-settings', 'User Settings', false);
   }
 
   showDebugSettings() {
-    this.view = 'debug-settings';
+    this.changeView('debug-settings', 'Debug Settings', false);
   }
 
   onClosed(saved: boolean) {
-    this.view = 'blockly';
-  }
+    this.changeView('blockly', 'Block Editor', true);  }
 
   playProgram() {
     this.isPlaying = true;
@@ -77,10 +79,16 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   loadProgram() {
-    this.view = 'load-program';
+    this.changeView('load-program', 'Load Program', false);
   }
 
   saveProgram() {
-    this.view = 'save-program';
+    this.changeView('save-program', 'Save Program', false);
+  }
+
+  private changeView(view: string, title: string, showCommands: boolean): void {
+    this.view = view;
+    this.title = title;
+    this.showCommands = showCommands;
   }
 }

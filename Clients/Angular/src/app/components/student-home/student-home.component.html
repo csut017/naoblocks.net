@@ -5,7 +5,7 @@
             <span mat-card-avatar class="app-icon"></span> 
             <span class="app-title">NaoBlocks</span>
           </mat-toolbar>
-        <mat-action-list *ngIf="view === 'editor'">
+        <mat-action-list *ngIf="showCommands">
             <button mat-list-item (click)="playProgram()" *ngIf="!isPlaying">
                 <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
             </button>
@@ -34,7 +34,7 @@
                 *ngIf="isHandset$ | async">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
             </button>
-            <span>Block Editor</span>
+            <span>Programming: {{title}}</span>
             <span class="example-spacer"></span>
             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
                 <mat-icon>more_vert</mat-icon>
@@ -91,7 +91,7 @@
         </mat-toolbar>
 
         <div [ngSwitch]="view">
-            <app-blockly-editor *ngSwitchCase="'editor'"></app-blockly-editor>
+            <app-blockly-editor *ngSwitchCase="'blockly'"></app-blockly-editor>
             <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onClosed($event)"></app-settings-debug>
             <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event)"></app-settings-student>
             <app-program-load *ngSwitchCase="'load-program'" (closed)="onClosed($event)"></app-program-load>
