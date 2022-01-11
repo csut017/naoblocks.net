@@ -1,67 +1,79 @@
-<div class="list-commands">
-    <div class="list-commands-all">
-        <div>
-            <div>
+<div [ngSwitch]="view">
+    <div *ngSwitchCase="'list'">
+        <div class="list-commands">
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" (click)="add()">Add Robot
+                            Type</button>
+                    </div>
+                </div>
             </div>
-            <div>
-                <button mat-raised-button color="accent" class="command-button">Add Robot Type</button>
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" (click)="import()">Import Robot
+                            Type</button>
+                    </div>
+                </div>
+            </div>
+            <div class="list-commands-selection">
+                <div class="list-commands-header">
+                    Selection
+                </div>
+                <div>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        (click)="edit()">Edit</button>
+                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
+                        (click)="delete()">Delete</button>
+                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
+                        [matMenuTriggerFor]="exportMenu">
+                        Export
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #exportMenu="matMenu">
+                        <button mat-menu-item>List</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1">Details</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1">Logs</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1">Snapshots</button>
+                    </mat-menu>
+                </div>
             </div>
         </div>
+
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <td mat-cell *matCellDef="let record"> {{record.name}} </td>
+            </ng-container>
+            <ng-container matColumnDef="isDefault">
+                <th mat-header-cell *matHeaderCellDef> </th>
+                <td mat-cell *matCellDef="let record"> {{record.isDefault ? 'Default' : ''}} </td>
+            </ng-container>
+            <ng-container matColumnDef="select">
+                <th mat-header-cell *matHeaderCellDef>
+                    <mat-checkbox (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
+                    </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                    </mat-checkbox>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+        </table>
     </div>
-    <div class="list-commands-all">
-        <div>
-            <div>
-            </div>
-            <div>
-                <button mat-raised-button color="accent" class="command-button">Import Robot Type</button>
-            </div>
-        </div>
-    </div>
-    <div class="list-commands-selection">
-        <div class="list-commands-header">
-            Selection
-        </div>
-        <div>
-            <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1">Edit</button>
-            <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()">Delete</button>
-            <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
-                [matMenuTriggerFor]="exportMenu">
-                Export
-                <mat-icon>arrow_drop_down</mat-icon>
-            </button>
-            <mat-menu #exportMenu="matMenu">
-                <button mat-menu-item>List</button>
-                <button mat-menu-item [disabled]="selection.selected.length != 1">Details</button>
-                <button mat-menu-item [disabled]="selection.selected.length != 1">Logs</button>
-                <button mat-menu-item [disabled]="selection.selected.length != 1">Snapshots</button>
-            </mat-menu>
-        </div>
+    <div *ngSwitchCase="'editor'">
+        <app-robot-type-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-type-editor>
     </div>
 </div>
-
-<table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
-
-    <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef> Name </th>
-        <td mat-cell *matCellDef="let record"> {{record.name}} </td>
-    </ng-container>
-    <ng-container matColumnDef="isDefault">
-        <th mat-header-cell *matHeaderCellDef> </th>
-        <td mat-cell *matCellDef="let record"> {{record.isDefault ? 'Default' : ''}} </td>
-    </ng-container>
-    <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef>
-            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
-                [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
-            </mat-checkbox>
-        </th>
-        <td mat-cell *matCellDef="let row">
-            <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
-                [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
-            </mat-checkbox>
-        </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="columns"></tr>
-    <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-</table>

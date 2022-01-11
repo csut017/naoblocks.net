@@ -1,1 +1,28 @@
-<p>robot-type-editor works!</p>
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            Close
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Robot Type Name</mat-label>
+                <input matInput placeholder="name" formControlName="name" required>
+                <mat-error>
+                    Please provide a robot type name
+                </mat-error>
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the robot type:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+</form>
