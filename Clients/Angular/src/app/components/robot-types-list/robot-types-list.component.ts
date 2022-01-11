@@ -6,6 +6,9 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
+import { DeletionItems } from 'src/app/data/deletion-items';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -25,6 +28,7 @@ export class RobotTypesListComponent implements OnInit {
   constructor(private robotTypeService: RobotTypeService,
     private authenticationService: AuthenticationService,
     private snackBar: MatSnackBar,
+    private deleteConfirm: DeletionConfirmationService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -60,6 +64,32 @@ export class RobotTypesListComponent implements OnInit {
   }
 
   delete(): void {
+    this.deleteConfirm.confirm(new DeletionItems('robot type', this.selection.selected.map(item => item.name || '')))
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        this.doDelete();
+      });
+  }
+
+  doDelete(): void {
+    forkJoin(this.selection.selected.map(s => this.robotTypeService.delete(s)))
+      .subscribe(results => {
+        let successful = results.filter(r => r.successful).map(r => r.output);
+        let failed = results.filter(r => !r.successful);
+        let messages: string[] = [];
+        if (successful.length !== 0) {
+          messages.push(`Deleted ${this.generateCountText(successful.length)}`);
+        }
+
+        if (failed.length !== 0) {
+          messages.push(`Failed to delete ${this.generateCountText(failed.length)}`);
+        }
+
+        this.selection.clear();
+        this.dataSource.data = this.dataSource
+          .data
+          .filter(el => !successful.includes(el));
+      });
 
   }
 
@@ -96,4 +126,10 @@ export class RobotTypesListComponent implements OnInit {
       });
   }
 
+  private generateCountText(count: number): string {
+    const text = count == 1
+      ? '1 robot type'
+      : `${count} robot types`
+    return text;
+  }
 }

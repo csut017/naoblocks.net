@@ -29,6 +29,7 @@ import { RobotTypeEditorComponent } from './components/robot-type-editor/robot-t
 import { UserEditorComponent } from './components/user-editor/user-editor.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { StudentEditorComponent } from './components/student-editor/student-editor.component';
+import { DeletionConfirmationComponent } from './components/deletion-confirmation/deletion-confirmation.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { StudentEditorComponent } from './components/student-editor/student-edit
     RobotTypeEditorComponent,
     UserEditorComponent,
     PageNotFoundComponent,
-    StudentEditorComponent
+    StudentEditorComponent,
+    DeletionConfirmationComponent
   ],
   imports: [
     BrowserModule,
