@@ -18,17 +18,12 @@ import { SettingsService } from 'src/app/services/settings.service';
 export class StudentHomeComponent extends HomeBase implements OnInit {
 
   editorSettings: EditorSettings = new EditorSettings();
-  hasChanged: boolean = false;
-  invalidBlocks: any[] = [];
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
       shareReplay()
     );
   isPlaying: boolean = false;
-  isValid: boolean = true;
-  onResize: any;
-  requireEvents: boolean = true;
   showCommands: boolean = true;
   title: string = '';
   view: string = '';
@@ -36,8 +31,8 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   constructor(authenticationService: AuthenticationService,
     router: Router,
     changeRoleService: ChangeRoleService,
-    private settingsService: SettingsService,
     private confirm: ConfirmService,
+    private settingsService: SettingsService,
     private breakpointObserver: BreakpointObserver) {
     super(authenticationService, router, changeRoleService);
     this.changeView('blockly', 'Block Editor', true);

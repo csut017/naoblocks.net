@@ -91,7 +91,7 @@
         </mat-toolbar>
 
         <div [ngSwitch]="view">
-            <app-blockly-editor *ngSwitchCase="'blockly'"></app-blockly-editor>
+            <app-blockly-editor *ngSwitchCase="'blockly'" [editorSettings]="editorSettings"></app-blockly-editor>
             <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onClosed($event)"></app-settings-debug>
             <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event)"></app-settings-student>
             <app-program-load *ngSwitchCase="'load-program'" (closed)="onClosed($event)"></app-program-load>

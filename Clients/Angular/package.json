@@ -21,6 +21,7 @@
     "@angular/platform-browser-dynamic": "~13.1.0",
     "@angular/router": "~13.1.0",
     "@types/file-saver": "^2.0.4",
+    "blockly": "github:google/blockly#7.20211209.2",
     "file-saver": "^2.0.5",
     "pdfmake": "^0.2.4",
     "rxjs": "~7.4.0",

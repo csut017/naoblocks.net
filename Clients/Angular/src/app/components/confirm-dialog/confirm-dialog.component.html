@@ -3,6 +3,6 @@
     {{data.prompt}}
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close *ngIf="data.showCancel">Cancel</button>
   <button mat-button [mat-dialog-close]="true" cdkFocusInitial>{{data.action}}</button>
 </mat-dialog-actions>

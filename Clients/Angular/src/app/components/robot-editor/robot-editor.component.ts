@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Robot } from 'src/app/data/robot';
 import { RobotType } from 'src/app/data/robot-type';
@@ -10,7 +10,7 @@ import { RobotService } from 'src/app/services/robot.service';
   templateUrl: './robot-editor.component.html',
   styleUrls: ['./robot-editor.component.scss']
 })
-export class RobotEditorComponent implements OnInit {
+export class RobotEditorComponent implements OnInit, OnChanges {
 
   @Input() item?: Robot;
   @Output() closed = new EventEmitter<boolean>();
