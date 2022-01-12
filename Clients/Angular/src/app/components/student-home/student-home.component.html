@@ -81,15 +81,6 @@
             <span>The system has not been completely initialised - there is no default robot type</span>
         </mat-toolbar>
 
-        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.user.robotType">
-            <button mat-icon-button aria-label="No default robot error">
-                <mat-icon>warning_amber</mat-icon>
-            </button>
-            <span>You have not selected a robot type yet</span>
-            <span class="example-spacer"></span>
-            <button mat-stroked-button (click)="showSettings()">Settings</button>
-        </mat-toolbar>
-
         <div [ngSwitch]="view">
             <app-blockly-editor *ngSwitchCase="'blockly'" [editorSettings]="editorSettings"></app-blockly-editor>
             <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onClosed($event)"></app-settings-debug>

@@ -75,7 +75,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
   }
 
   private buildToolbox(): string {
-    let xml = this.editorSettings.toolbox || '<xml></xml>';
+    let xml = this.editorSettings.toolbox || '<xml><category name="..."></category></xml>';
     this.requireEvents = this.editorSettings.user.events && !this.editorSettings.user.simple;
     return xml;
   }
