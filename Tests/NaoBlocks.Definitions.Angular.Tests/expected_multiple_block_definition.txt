@@ -1,0 +1,17 @@
+﻿var blocks = [{"type": "robot_wait","message0": "Wait for %1s","args0": [{"type": "input_value","check": "Number","name": "TIME"}],"nextStatement": null,"previousStatement": null,"colour": 65,"tooltip": "Puts the robot in a safe resting position."},
+{"type": "robot_rest","message0": "Rest","nextStatement": null,"previousStatement": null,"colour": 65,"tooltip": "Puts the robot in a safe resting position."}];
+console.groupCollapsed('[NaoLang] Defining blocks');
+blocks.forEach(function (block) {
+    console.log('[NaoLang] Defining ' + block.type);
+    Blockly.Blocks[block.type] = {
+        init: function () {
+            console.log('[NaoLang] Initialising ' + block.type);
+            this.jsonInit(block);
+            var thisBlock = this;
+            this.setTooltip(function () {
+                return block.tooltip;
+            });
+        }
+    };
+});
+console.groupEnd();

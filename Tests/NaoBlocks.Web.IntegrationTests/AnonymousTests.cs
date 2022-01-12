@@ -1,19 +1,28 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NaoBlocks.Engine.Data;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
+
+using Angular = NaoBlocks.Definitions.Angular;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
     public class AnonymousTests
-        : IClassFixture<WebApplicationFactory<Program>>
+        : DatabaseHelper, IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> factory;
+        private readonly ITestOutputHelper output;
 
-        public AnonymousTests(WebApplicationFactory<Program> factory)
+        public AnonymousTests(ITestOutputHelper output, WebApplicationFactory<Program> factory)
         {
             this.factory = factory;
+            this.output = output;
         }
 
         [Theory]
@@ -29,6 +38,40 @@ namespace NaoBlocks.Web.IntegrationTests
             var client = this.factory.CreateClient();
 
             // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var content = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+            Assert.False(string.IsNullOrEmpty(content), "Expected some content");
+        }
+
+        [Fact]
+        public async Task RetrieveUiComponent()
+        {
+            // Arrange
+            var definition = new UIDefinition
+            {
+                Name = "angular",
+                Definition = new Angular.Definition()
+            };
+            var client = this.factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.Services.AddSingleton<ILoggerProvider>(
+                        r => new XunitLoggerProvider(output, logging.UsesScopes()));
+
+                });
+                builder.ConfigureServices(services =>
+                {
+                    AddDatabaseToServices(services, definition);
+                });
+            }).CreateClient();
+
+            // Act
+            var url = "/api/v1/ui/angular/block_definitions";
             var response = await client.GetAsync(url);
 
             // Assert

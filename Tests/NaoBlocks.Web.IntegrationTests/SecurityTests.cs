@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using NaoBlocks.Engine.Data;
 using Newtonsoft.Json;
 using System.Net;
@@ -40,7 +38,7 @@ namespace NaoBlocks.Web.IntegrationTests
                 {
                     logging.ClearProviders();
                     logging.Services.AddSingleton<ILoggerProvider>(
-                        r => new XunitLoggerProvider(output, UsesScopes(logging)));
+                        r => new XunitLoggerProvider(output, logging.UsesScopes()));
 
                 });
                 builder.ConfigureServices(services =>
@@ -61,33 +59,6 @@ namespace NaoBlocks.Web.IntegrationTests
             if (!checkForJson) return;
             var json = JsonConvert.DeserializeObject(content);
             Assert.NotNull(json);
-        }
-
-        private static bool UsesScopes(ILoggingBuilder builder)
-        {
-            var serviceProvider = builder.Services.BuildServiceProvider();
-
-            // look for other host builders on this chain calling ConfigureLogging explicitly
-            var options = serviceProvider.GetService<SimpleConsoleFormatterOptions>() ??
-                          serviceProvider.GetService<JsonConsoleFormatterOptions>() ??
-                          serviceProvider.GetService<ConsoleFormatterOptions>();
-
-            if (options != default)
-                return options.IncludeScopes;
-
-            // look for other configuration sources
-            // See: https://docs.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#set-log-level-by-command-line-environment-variables-and-other-configuration
-
-            var config = serviceProvider.GetService<IConfigurationRoot>() ?? serviceProvider.GetService<IConfiguration>();
-            var logging = config?.GetSection("Logging");
-            if (logging == default)
-                return false;
-
-            var includeScopes = logging?.GetValue("Console:IncludeScopes", false);
-            if (!includeScopes.Value)
-                includeScopes = logging?.GetValue("IncludeScopes", false);
-
-            return includeScopes.GetValueOrDefault(false);
         }
     }
 }

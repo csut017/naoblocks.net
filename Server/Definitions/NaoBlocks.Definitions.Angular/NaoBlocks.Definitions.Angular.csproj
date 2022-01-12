@@ -4,7 +4,20 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="block_definitions.template" />
+    <None Remove="conversions.template" />
+    <None Remove="language.template" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="block_definitions.template" />
+    <EmbeddedResource Include="conversions.template" />
+    <EmbeddedResource Include="language.template" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
