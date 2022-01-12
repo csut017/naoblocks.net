@@ -15,7 +15,7 @@ export class ConfirmService {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: settings
     });
-  return new Observable<boolean>(subscriber => {
+    return new Observable<boolean>(subscriber => {
       dialogRef.afterClosed()
         .subscribe(result => {
           subscriber.next(!!result);

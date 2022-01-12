@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { ConfirmService } from 'src/app/services/confirm.service';
-import { SettingsService } from 'src/app/services/settings.service';
+import { ScriptLoaderService } from 'src/app/services/script-loader.service';
+import { environment } from 'src/environments/environment';
 
 declare var Blockly: any;
 
@@ -19,10 +20,13 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
   invalidBlocks: any[] = [];
   isLoading: boolean = true;
   isValid: boolean = true;
+  languageUrl: string = `${environment.apiURL}v1/ui/angular/language`;
   requireEvents: boolean = false;
   workspace: any;
 
   constructor(
+    private renderer: Renderer2,
+    private scriptService: ScriptLoaderService,
     private confirm: ConfirmService) { }
 
   ngOnChanges(_: SimpleChanges): void {
@@ -35,6 +39,9 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.initialiseWorkspace();
+
+    this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/block_definitions`);
+    this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/language`);
   }
 
   validateWorkspace(event?: any): void {
