@@ -75,8 +75,8 @@ namespace NaoBlocks.Engine
         /// Attempts to validate the command.
         /// </summary>
         /// <param name="session">The database session to use.</param>
-        /// <returns>The errors from validation. Empty if there are no errors.</returns>
         /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        /// <returns>The errors from validation. Empty if there are no errors.</returns>
         public virtual Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             return Task.FromResult(new List<CommandError>().AsEnumerable());

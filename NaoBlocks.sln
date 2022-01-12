@@ -29,9 +29,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Web.IntegrationTe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{C69830E7-01BB-4302-9FF5-25EEAD17B9AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Common", "Clients\NaoBlocks.Client.Common\NaoBlocks.Client.Common.csproj", "{DABA43FB-39D8-44AF-973F-C11EF014693C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Client.Common", "Clients\NaoBlocks.Client.Common\NaoBlocks.Client.Common.csproj", "{DABA43FB-39D8-44AF-973F-C11EF014693C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Common.Tests", "Tests\NaoBlocks.Client.Common.Tests\NaoBlocks.Client.Common.Tests.csproj", "{02C05524-EB7D-4887-9035-AEFCE6CB823A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Client.Common.Tests", "Tests\NaoBlocks.Client.Common.Tests\NaoBlocks.Client.Common.Tests.csproj", "{02C05524-EB7D-4887-9035-AEFCE6CB823A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Definitions.Angular", "Server\Definitions\NaoBlocks.Definitions.Angular\NaoBlocks.Definitions.Angular.csproj", "{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,10 @@ Global
 		{02C05524-EB7D-4887-9035-AEFCE6CB823A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02C05524-EB7D-4887-9035-AEFCE6CB823A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02C05524-EB7D-4887-9035-AEFCE6CB823A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{2D298A8A-E830-493E-AB15-F0B1CD797948} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 		{DABA43FB-39D8-44AF-973F-C11EF014693C} = {C69830E7-01BB-4302-9FF5-25EEAD17B9AD}
 		{02C05524-EB7D-4887-9035-AEFCE6CB823A} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
+		{78E86ECE-D1BE-4D3C-91FD-F22619A39F0D} = {5C41FF87-0F4C-4E69-82CE-A25FFA4F9657}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {486CBC41-CBAA-4E40-87BA-40F08D5DACAD}

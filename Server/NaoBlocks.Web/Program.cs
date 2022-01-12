@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 
+using Angular = NaoBlocks.Definitions.Angular;
 using Configuration = NaoBlocks.Web.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +80,9 @@ builder.Services.AddTransient<IPrincipal>(s =>
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
 ClientAddressList.Initialise();
+var uiManager = new UiManager();
+uiManager.Register<Angular.Definition>("angular");
+builder.Services.AddSingleton(uiManager);
 
 // Configure the application
 var app = builder.Build();

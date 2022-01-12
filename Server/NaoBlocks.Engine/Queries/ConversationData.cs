@@ -1,12 +1,11 @@
 ﻿using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Indices;
 using Raven.Client.Documents;
-using Raven.Client.Documents.Session;
 
 namespace NaoBlocks.Engine.Queries
 {
     /// <summary>
-    /// Queries for accessing robot data.
+    /// Queries for accessing conversation data.
     /// </summary>
     public class ConversationData
         : DataQuery
