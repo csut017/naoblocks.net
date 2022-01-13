@@ -1,8 +1,7 @@
-import { Component, Input, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { ConfirmService } from 'src/app/services/confirm.service';
-import { ScriptLoaderService } from 'src/app/services/script-loader.service';
 import { environment } from 'src/environments/environment';
 
 declare var Blockly: any;
@@ -25,8 +24,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
   workspace: any;
 
   constructor(
-    private renderer: Renderer2,
-    private scriptService: ScriptLoaderService,
     private confirm: ConfirmService) { }
 
   ngOnChanges(_: SimpleChanges): void {
@@ -39,9 +36,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.initialiseWorkspace();
-
-    this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/block_definitions`);
-    this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/language`);
   }
 
   validateWorkspace(event?: any): void {
@@ -135,19 +129,19 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
       console.log('[StudentHome] Configuring modals');
       let that = this;
       let settings = new ConfirmSettings('');
-      Blockly.alert = function (message: string, callback: any) {
+      Blockly.dialog.setAlert(function (message: string, callback: any) {
         settings.prompt = message;
         settings.showCancel = false;
         that.confirm.confirm(settings)
           .subscribe(_ => callback());
-      };
-      Blockly.confirm = function (message: string, callback: any) {
+      });
+      Blockly.dialog.setConfirm(function (message: string, callback: any) {
         settings.prompt = message;
         settings.showCancel = true;
         that.confirm.confirm(settings)
           .subscribe(result => callback(result));
-      };
-      // Blockly.prompt = function (message: string, defaultValue: any, callback: any) {
+      });
+      // Blockly.dialog.setPrompt(function (message: string, defaultValue: any, callback: any) {
       //   that.userInput.title = message;
       //   that.userInput.action = callback;
       //   that.userInput.showOk = true;
@@ -155,7 +149,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
       //   that.userInput.mode = userInputMode.prompt;
       //   that.userInput.value = defaultValue;
       //   that.userInput.open = true;
-      // };
+      // });
 
       console.log('[StudentHome] Adding validator');
       this.workspace.addChangeListener((evt: any) => this.validateWorkspace(evt));
