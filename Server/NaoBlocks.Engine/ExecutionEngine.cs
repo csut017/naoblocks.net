@@ -39,7 +39,15 @@ namespace NaoBlocks.Engine
         public async Task<CommandResult> ExecuteAsync(CommandBase command)
         {
             var result = await command.ExecuteAsync(this.session, this).ConfigureAwait(false);
-            this.Logger.LogInformation("Command executed");
+            if (result.WasSuccessful)
+            {
+                this.Logger.LogInformation("Command executed successfully");
+            }
+            else
+            {
+                this.Logger.LogInformation("Command execution failed");
+
+            }
             var log = new CommandLog
             {
                 WhenApplied = command.WhenExecuted,
@@ -102,7 +110,17 @@ namespace NaoBlocks.Engine
         /// </remarks>
         public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
         {
-            var errors = await command.ValidateAsync(this.session, this);
+            var errors = new List<CommandError>();
+            try
+            {
+                errors.AddRange(await command.ValidateAsync(this.session, this));
+            }
+            catch (Exception error)
+            {
+                this.Logger.LogWarning(error, "Command validation failed unexpectedly");
+                errors.Add(new CommandError(command.Number, "An unexpected error occurred during validation"));
+            }
+
             if (errors.Any())
             {
                 this.Logger.LogWarning("Command failed validation");

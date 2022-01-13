@@ -47,7 +47,35 @@ namespace NaoBlocks.Engine.Tests
             session.Verify(s => s.StoreAsync(It.IsAny<CommandLog>()), Times.Once);
             session.Verify(s => s.SaveChangesAsync(), Times.Once);
             Assert.Equal(new string[] {
-                    "INFORMATION: Command executed",
+                    "INFORMATION: Command executed successfully",
+                    "TRACE: Log saved"
+                }, logger.Messages.ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteHandlesUnexpectedError()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            database.Setup(d => d.StartSession()).Returns(session.Object);
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+            var command = new FakeCommand
+            {
+                Error = new Exception("Oops")
+            };
+
+            // Act
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(command.ExecuteCalled);
+            database.Verify(d => d.StartSession(), Times.Once);
+            session.Verify(s => s.StoreAsync(It.IsAny<CommandLog>()), Times.Once);
+            session.Verify(s => s.SaveChangesAsync(), Times.Once);
+            Assert.Equal(new string[] {
+                    "INFORMATION: Command execution failed",
                     "TRACE: Log saved"
                 }, logger.Messages.ToArray());
         }
@@ -112,6 +140,30 @@ namespace NaoBlocks.Engine.Tests
             Assert.True(command.ValidateCalled);
             Assert.Equal(new string[] {
                     "INFORMATION: Command validated"
+                }, logger.Messages.ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateHandlesUnexpectedError()
+        {
+            // Arrange
+            var database = new Mock<IDatabase>();
+            var session = new Mock<IDatabaseSession>();
+            var logger = new FakeLogger<ExecutionEngine>();
+            var engine = new ExecutionEngine(database.Object, session.Object, logger);
+            var command = new FakeCommand
+            {
+                OnValidation = () => throw new Exception("Oops")
+            };
+
+            // Act
+            await engine.ValidateAsync(command);
+
+            // Assert
+            Assert.True(command.ValidateCalled);
+            Assert.Equal(new string[] {
+                    "WARNING: Command validation failed unexpectedly",
+                    "WARNING: Command failed validation"
                 }, logger.Messages.ToArray());
         }
 
