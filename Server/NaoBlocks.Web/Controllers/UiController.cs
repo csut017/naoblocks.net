@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Dtos;
@@ -17,7 +18,7 @@ namespace NaoBlocks.Web.Controllers
     /// </summary>
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class UiController: ControllerBase
+    public class UiController : ControllerBase
     {
         private readonly ILogger<UiController> logger;
         private readonly IExecutionEngine executionEngine;
@@ -37,6 +38,23 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Deletes a UI definition.
+        /// </summary>
+        /// <param name="name">The name of the UI definition to delete.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpDelete("{name}")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<ExecutionResult>> Delete(string name)
+        {
+            this.logger.LogInformation($"Deleting UI definition '{name}'");
+            var command = new DeleteUIDefinition
+            {
+                Name = name
+            };
+            return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
         /// Retrieves a component for a UI.
         /// </summary>
         /// <param name="name">The name of the UI to retrieve the component for.</param>
@@ -45,7 +63,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}/{component}")]
         public async Task<ActionResult> GetComponent(string name, string component)
         {
-            this.logger.LogDebug($"Retrieving component {component} for {name}");
+            this.logger.LogDebug($"Retrieving component {component} for UI definition {name}");
 
             var definition = await this.executionEngine
                 .Query<UIDefinitionData>()
@@ -58,6 +76,54 @@ namespace NaoBlocks.Web.Controllers
 
             var stream = await definition.Definition!.GenerateAsync(component);
             return File(stream, ContentTypes.Txt);
+        }
+
+        /// <summary>
+        /// Adds a new UI definition.
+        /// </summary>
+        /// <param name="name">The name of the UI definition to add.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{name}")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<ExecutionResult>> Post(string name)
+        {
+            var json = string.Empty;
+            using (var reader = new StreamReader(this.Request.Body))
+            {
+                json = await reader.ReadToEndAsync();
+            }
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing UI definition"
+                });
+            }
+
+            this.logger.LogInformation($"Parsing UI definition for '{name}'");
+            IUIDefinition? definition;
+            try
+            {
+                definition = this.uiManager.Parse(name, json);
+            }
+            catch (ApplicationException error)
+            {
+                this.logger.LogWarning(error, "Unable to parse UI definition");
+                return this.BadRequest(new
+                {
+                    Error = "Invalid or corrupted UI definition"
+                });
+            }
+
+            this.logger.LogInformation($"Adding new UI definition '{name}'");
+            var command = new AddUIDefinition
+            {
+                Name = name,
+                Definition = definition!
+            };
+            return await this.executionEngine
+                .ExecuteForHttp(command);
         }
     }
 }

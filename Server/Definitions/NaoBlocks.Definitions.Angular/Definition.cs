@@ -21,7 +21,59 @@ namespace NaoBlocks.Definitions.Angular
         /// <returns>The errors from validation. Empty if there are no errors.</returns>
         public Task<IEnumerable<CommandError>> ValidateAsync(IExecutionEngine engine)
         {
-            throw new NotImplementedException();
+            var errors = new List<CommandError>();
+
+            if (!this.Blocks.Any())
+            {
+                errors.Add(new CommandError(0, "Definition is empty (must contain at least one block)"));
+                return Task.FromResult(errors.AsEnumerable());
+            }
+
+            var index = 0;
+            var blockIndex = new Dictionary<string, int>();
+            foreach (var block in this.Blocks)
+            {
+                index++;
+                var name = $"#{index}";
+                if (string.IsNullOrWhiteSpace(block.Name))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have a name (name)"));
+                }
+                else
+                {
+                    name = $"'{block.Name}' (#{index})";
+                    if (blockIndex.TryGetValue(block.Name, out var previous))
+                    {
+                        errors.Add(new CommandError(0, $"Block '{block.Name}' is duplicated (#{previous} and #{index})"));
+                    }
+                    else
+                    {
+                        blockIndex.Add(block.Name, index);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(block.AstName))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have an AST name (astName)"));
+                }
+
+                if (string.IsNullOrWhiteSpace(block.AstConverter))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have an AST generator (astConverter)"));
+                }
+
+                if (string.IsNullOrWhiteSpace(block.Definition))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have a block definition (definition)"));
+                }
+
+                if (string.IsNullOrWhiteSpace(block.Generator))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have a language generator (generator)"));
+                }
+            }
+
+            return Task.FromResult(errors.AsEnumerable());
         }
 
         /// <summary>
@@ -79,7 +131,7 @@ namespace NaoBlocks.Definitions.Angular
                 { "blocks", () =>
                 {
                     return string.Join(
-                        $"{Environment.NewLine}", 
+                        $"{Environment.NewLine}",
                         this.Blocks.Select(b => $"Blockly.NaoLang.{b.Name} = function (block) {{{Environment.NewLine}{b.Generator}{Environment.NewLine}}};"));
                 }}
             };

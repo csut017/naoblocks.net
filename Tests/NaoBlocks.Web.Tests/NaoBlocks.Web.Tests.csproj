@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
+    <ProjectReference Include="..\..\Server\Definitions\NaoBlocks.Definitions.Angular\NaoBlocks.Definitions.Angular.csproj" />
     <ProjectReference Include="..\..\Server\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
     <ProjectReference Include="..\..\Server\NaoBlocks.Web\NaoBlocks.Web.csproj" />
   </ItemGroup>

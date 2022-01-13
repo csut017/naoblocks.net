@@ -1,0 +1,42 @@
+@baseURL = https://localhost:5001/api/v1
+
+# @name login
+POST {{baseURL}}/session HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": "admin",
+  "password": "let-me-in"
+}
+
+###
+@authToken = {{login.response.body.output.token}}
+
+GET {{baseURL}}/ui/angular/language HTTP/1.1
+Content-Type: application/json; charset=utf-8
+
+###
+
+DELETE {{baseURL}}/ui/angular HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+###
+
+POST {{baseURL}}/ui/angular HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+{
+  "blocks": [
+    {
+      "name": "robot_wait",
+      "astName": "wait",
+      "astConverter": "new BlockDefinition('robot_wait', new ValueDefinition('TIME'))",
+      "definition": "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}",
+      "generator": "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+    }
+  ]
+}
+
+###

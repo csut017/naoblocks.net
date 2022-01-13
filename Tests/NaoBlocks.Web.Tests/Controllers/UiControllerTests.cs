@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
+using NaoBlocks.Common;
+using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
@@ -11,6 +13,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+
+using Angular = NaoBlocks.Definitions.Angular;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -61,6 +65,70 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteCallsDelete()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            engine.ExpectCommand<DeleteUIDefinition>();
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var response = await controller.Delete("angular");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task PostCallsAdds()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            manager.Register<Angular.Definition>("angular");
+            engine.ExpectCommand<AddUIDefinition>();
+            var controller = new UiController(logger, engine, manager);
+            controller.SetRequestBody("{}");
+
+            // Act
+            var response = await controller.Post("angular");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = Assert.IsType<AddUIDefinition>(engine.LastCommand);
+            Assert.Equal("angular", command.Name);
+            Assert.IsType<Angular.Definition>(command.Definition);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("bad")]
+        public async Task PostValidatesData(string body)
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            manager.Register<Angular.Definition>("angular");
+            engine.ExpectCommand<AddUIDefinition>();
+            var controller = new UiController(logger, engine, manager);
+            controller.SetRequestBody(body);
+
+            // Act
+            var response = await controller.Post("angular");
+
+            // Assert
+            var result = Assert.IsType<BadRequestObjectResult>(response.Result);
         }
     }
 }

@@ -1,5 +1,8 @@
+using Moq;
+using NaoBlocks.Engine;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -7,6 +10,150 @@ namespace NaoBlocks.Definitions.Angular.Tests
 {
     public class DefinitionTests
     {
+        [Fact]
+        public async Task ValidateAsyncChecksForNames()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                AstConverter = "astc",
+                AstName = "astn",
+                Definition = "def",
+                Generator = "gen"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block #1 does not have a name (name)"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksAllFields()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'test_block' (#1) does not have an AST name (astName)",
+                "Block 'test_block' (#1) does not have an AST generator (astConverter)",
+                "Block 'test_block' (#1) does not have a block definition (definition)",
+                "Block 'test_block' (#1) does not have a language generator (generator)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncHandlesAllFieldsMissing()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block #1 does not have a name (name)",
+                "Block #1 does not have an AST name (astName)",
+                "Block #1 does not have an AST generator (astConverter)",
+                "Block #1 does not have a block definition (definition)",
+                "Block #1 does not have a language generator (generator)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncPassesWhenAllFieldsAreSet()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                AstConverter = "astc",
+                AstName = "astn",
+                Definition = "def",
+                Generator = "gen"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Empty(ouput);
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksForDuplicates()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                AstConverter = "astc",
+                AstName = "astn",
+                Definition = "def",
+                Generator = "gen"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                AstConverter = "astc",
+                AstName = "astn",
+                Definition = "def",
+                Generator = "gen"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'test_block' is duplicated (#1 and #2)"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksForBlocks()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Definition is empty (must contain at least one block)"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
         [Fact]
         public async Task GenerateAsyncGeneratesAstConversions()
         {

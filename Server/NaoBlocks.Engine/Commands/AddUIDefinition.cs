@@ -47,6 +47,10 @@ namespace NaoBlocks.Engine.Commands
                 if (existing != null)
                 {
                     errors.Add(GenerateError("Definition already exists"));
+                }else
+                {
+                    errors.AddRange(
+                        await this.Definition.ValidateAsync(engine).ConfigureAwait(false));
                 }
             }
 

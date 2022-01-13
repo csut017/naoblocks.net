@@ -1,6 +1,7 @@
 ﻿using NaoBlocks.Common;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Engine.Tests.Commands
@@ -15,7 +16,8 @@ namespace NaoBlocks.Engine.Tests.Commands
 
         public Task<IEnumerable<CommandError>> ValidateAsync(IExecutionEngine engine)
         {
-            throw new System.NotImplementedException();
+            var errors = new List<CommandError>();
+            return Task.FromResult(errors.AsEnumerable());
         }
     }
 }

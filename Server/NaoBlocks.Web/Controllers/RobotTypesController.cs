@@ -21,7 +21,7 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class RobotTypesController : ControllerBase
     {
-        private readonly ILogger<RobotTypesController> _logger;
+        private readonly ILogger<RobotTypesController> logger;
         private readonly IExecutionEngine executionEngine;
         private readonly string rootFolder;
 
@@ -33,7 +33,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="hostingEnvironment">The web hosting environment.</param>
         public RobotTypesController(ILogger<RobotTypesController> logger, IExecutionEngine executionEngine, IWebHostEnvironment hostingEnvironment)
         {
-            this._logger = logger;
+            this.logger = logger;
             this.executionEngine = executionEngine;
             this.rootFolder = hostingEnvironment.WebRootPath;
         }
@@ -56,7 +56,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Adding new blockset for '{id}'");
+            this.logger.LogInformation($"Adding new blockset for '{id}'");
             var command = new AddBlockSet
             {
                 Name = value.Name,
@@ -75,7 +75,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this._logger.LogInformation($"Deleting robot type '{id}'");
+            this.logger.LogInformation($"Deleting robot type '{id}'");
             var command = new DeleteRobotType
             {
                 Name = id
@@ -107,7 +107,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Transfer.RobotType>> Get(string name)
         {
-            this._logger.LogDebug($"Retrieving robot type: {name}");
+            this.logger.LogDebug($"Retrieving robot type: {name}");
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(name)
@@ -117,7 +117,7 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             return Transfer.RobotType.FromModel(robotType);
         }
 
@@ -129,7 +129,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{id}/blocksets")]
         public async Task<ActionResult<ListResult<Data.NamedValue>>> GetBlockSets(string id)
         {
-            this._logger.LogDebug($"Retrieving blocksets for {id}");
+            this.logger.LogDebug($"Retrieving blocksets for {id}");
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
@@ -139,7 +139,7 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             var sets = robotType.BlockSets
                 .Select(bs => new Data.NamedValue { Name = bs.Name, Value = bs.BlockCategories })
                 .AsEnumerable();
@@ -169,7 +169,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation($"Updating robot type '{id}'");
             var command = new ImportToolbox
             {
                 Name = id,
@@ -191,13 +191,13 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ListResult<Transfer.RobotType>> List(int? page, int? size)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
-            this._logger.LogDebug($"Retrieving robot types: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug($"Retrieving robot types: page {pageNum} with size {pageSize}");
             var robotTypes = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrievePageAsync(pageNum, pageSize)
                 .ConfigureAwait(false);
             var count = robotTypes.Items?.Count() ?? 0;
-            this._logger.LogDebug($"Retrieved {count} robot types");
+            this.logger.LogDebug($"Retrieved {count} robot types");
             var result = new ListResult<Transfer.RobotType>
             {
                 Count = robotTypes.Count,
@@ -224,7 +224,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Adding new robot type '{robotType.Name}'");
+            this.logger.LogInformation($"Adding new robot type '{robotType.Name}'");
             var command = new AddRobotType
             {
                 Name = robotType.Name
@@ -253,7 +253,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation($"Updating robot type '{id}'");
             var command = new UpdateRobotType
             {
                 CurrentName = id,
@@ -274,7 +274,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> SetAsDefault(string? id)
         {
-            this._logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation($"Updating robot type '{id}'");
             var command = new SetDefaultRobotType
             {
                 Name = id

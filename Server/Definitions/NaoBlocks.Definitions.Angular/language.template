@@ -65,28 +65,4 @@ Blockly.NaoLang.generatePrefix = function () {
         : Blockly.NaoLang.prefix.repeat(Blockly.NaoLang.prefixLevel);
 }
 
-// Robot events
-Blockly.NaoLang.robot_on_button = function (block) {
-    var button = block.getFieldValue('BUTTON'),
-        innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),
-        code = button + 'Button{\n' +
-            innerCode +
-            '}\n';
-    return code;
-};
-Blockly.NaoLang.robot_on_start = function (block) {
-    var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),
-        code = 'start{\n' +
-            innerCode +
-            '}\n';
-    return code;
-};
-Blockly.NaoLang.robot_on_recognised = function (block) {
-    var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),
-        code = 'wordRecognised{\n' +
-            innerCode +
-            '}\n';
-    return code;
-};
-
 <[[blocks]]>
