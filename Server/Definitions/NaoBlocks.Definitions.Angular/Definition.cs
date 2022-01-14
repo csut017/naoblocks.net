@@ -15,6 +15,11 @@ namespace NaoBlocks.Definitions.Angular
         public IList<Block> Blocks { get; } = new List<Block>();
 
         /// <summary>
+        /// Gets the AST nodes.
+        /// </summary>
+        public IList<AstNode> Nodes { get; } = new List<AstNode>();
+
+        /// <summary>
         /// Validates the <see cref="IUIDefinition"/> instance.
         /// </summary>
         /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
@@ -23,10 +28,21 @@ namespace NaoBlocks.Definitions.Angular
         {
             var errors = new List<CommandError>();
 
+            ValidateBlocks(errors);
+            ValidateNodes(errors);
+            return Task.FromResult(errors.AsEnumerable());
+        }
+
+        /// <summary>
+        /// Performs the validation checks on the blocks.
+        /// </summary>
+        /// <param name="errors">The destination for any errors.</param>
+        private void ValidateBlocks(List<CommandError> errors)
+        {
             if (!this.Blocks.Any())
             {
-                errors.Add(new CommandError(0, "Definition is empty (must contain at least one block)"));
-                return Task.FromResult(errors.AsEnumerable());
+                errors.Add(new CommandError(0, "Definition does not contain any blocks"));
+                return;
             }
 
             var index = 0;
@@ -52,16 +68,6 @@ namespace NaoBlocks.Definitions.Angular
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(block.AstName))
-                {
-                    errors.Add(new CommandError(0, $"Block {name} does not have an AST name (astName)"));
-                }
-
-                if (string.IsNullOrWhiteSpace(block.AstConverter))
-                {
-                    errors.Add(new CommandError(0, $"Block {name} does not have an AST generator (astConverter)"));
-                }
-
                 if (string.IsNullOrWhiteSpace(block.Definition))
                 {
                     errors.Add(new CommandError(0, $"Block {name} does not have a block definition (definition)"));
@@ -72,8 +78,48 @@ namespace NaoBlocks.Definitions.Angular
                     errors.Add(new CommandError(0, $"Block {name} does not have a language generator (generator)"));
                 }
             }
+        }
 
-            return Task.FromResult(errors.AsEnumerable());
+        /// <summary>
+        /// Performs the validation checks on the nodes.
+        /// </summary>
+        /// <param name="errors">The destination for any errors.</param>
+        private void ValidateNodes(List<CommandError> errors)
+        {
+            if (!this.Nodes.Any())
+            {
+                errors.Add(new CommandError(0, "Definition does not contain any nodes"));
+                return;
+            }
+
+            var index = 0;
+            var nodeIndex = new Dictionary<string, int>();
+            foreach (var node in this.Nodes)
+            {
+                index++;
+                var name = $"#{index}";
+                if (string.IsNullOrWhiteSpace(node.Name))
+                {
+                    errors.Add(new CommandError(0, $"Node {name} does not have a name (name)"));
+                }
+                else
+                {
+                    name = $"'{node.Name}' (#{index})";
+                    if (nodeIndex.TryGetValue(node.Name, out var previous))
+                    {
+                        errors.Add(new CommandError(0, $"Node '{node.Name}' is duplicated (#{previous} and #{index})"));
+                    }
+                    else
+                    {
+                        nodeIndex.Add(node.Name, index);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(node.Converter))
+                {
+                    errors.Add(new CommandError(0, $"Node {name} does not have a converter (converter)"));
+                }
+            }
         }
 
         /// <summary>
@@ -115,9 +161,9 @@ namespace NaoBlocks.Definitions.Angular
         {
             var generators = new Dictionary<string, Func<string>>
             {
-                { "blocks", () =>
+                { "nodes", () =>
                 {
-                    return string.Join($",{Environment.NewLine}", this.Blocks.Select(b => $"'{b.AstName}': {b.AstConverter}"));
+                    return string.Join($",{Environment.NewLine}", this.Nodes.Select(n => $"'{n.Name}': {n.Converter}"));
                 }}
             };
             var output = TemplateGenerator.BuildFromTemplate<Definition>("conversions", generators);

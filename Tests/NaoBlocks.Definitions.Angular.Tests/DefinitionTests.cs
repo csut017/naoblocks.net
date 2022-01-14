@@ -18,10 +18,13 @@ namespace NaoBlocks.Definitions.Angular.Tests
             var definition = new Definition();
             definition.Blocks.Add(new Block
             {
-                AstConverter = "astc",
-                AstName = "astn",
                 Definition = "def",
                 Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
@@ -44,6 +47,11 @@ namespace NaoBlocks.Definitions.Angular.Tests
             {
                 Name = "test_block"
             });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -51,8 +59,6 @@ namespace NaoBlocks.Definitions.Angular.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "Block 'test_block' (#1) does not have an AST name (astName)",
-                "Block 'test_block' (#1) does not have an AST generator (astConverter)",
                 "Block 'test_block' (#1) does not have a block definition (definition)",
                 "Block 'test_block' (#1) does not have a language generator (generator)",
             }, ouput.Select(e => e.Error).ToArray());
@@ -67,6 +73,11 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
             });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -75,8 +86,6 @@ namespace NaoBlocks.Definitions.Angular.Tests
             Assert.Equal(new[]
             {
                 "Block #1 does not have a name (name)",
-                "Block #1 does not have an AST name (astName)",
-                "Block #1 does not have an AST generator (astConverter)",
                 "Block #1 does not have a block definition (definition)",
                 "Block #1 does not have a language generator (generator)",
             }, ouput.Select(e => e.Error).ToArray());
@@ -91,10 +100,13 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                AstConverter = "astc",
-                AstName = "astn",
                 Definition = "def",
                 Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
@@ -105,7 +117,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task ValidateAsyncChecksForDuplicates()
+        public async Task ValidateAsyncChecksForDuplicateBlocks()
         {
             // Arrange
             var engine = new Mock<IExecutionEngine>();
@@ -113,18 +125,19 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                AstConverter = "astc",
-                AstName = "astn",
                 Definition = "def",
                 Generator = "gen"
             });
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                AstConverter = "astc",
-                AstName = "astn",
                 Definition = "def",
                 Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
@@ -138,11 +151,27 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task ValidateAsyncChecksForBlocks()
+        public async Task ValidateAsyncChecksForDuplicateNode()
         {
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "def",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "first"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "second"
+            });
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -150,7 +179,104 @@ namespace NaoBlocks.Definitions.Angular.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "Definition is empty (must contain at least one block)"
+                "Node 'node' is duplicated (#1 and #2)"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksForBlocks()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Definition does not contain any blocks"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksForNodes()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "def",
+                Generator = "gen"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Definition does not contain any nodes"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksNodeNames()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "def",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode());
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Node #1 does not have a name (name)",
+                "Node #1 does not have a converter (converter)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksMissingFields()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "def",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "ast"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Node 'ast' (#1) does not have a converter (converter)",
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -159,11 +285,10 @@ namespace NaoBlocks.Definitions.Angular.Tests
         {
             // Arrange
             var definition = new Definition();
-            definition.Blocks.Add(new Block
+            definition.Nodes.Add(new AstNode
             {
-                Name = "robot_wait",
-                AstName = "wait",
-                AstConverter = "new BlockDefinition('robot_wait', new ValueDefinition('TIME'))"
+                Name = "wait",
+                Converter = "new BlockDefinition('robot_wait', new ValueDefinition('TIME'))"
             });
 
             // Act

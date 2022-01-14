@@ -1,7 +1,7 @@
 ﻿namespace NaoBlocks.Definitions.Angular
 {
     /// <summary>
-    /// Defines a toolbar category in the UI for a robot.
+    /// Defines a programmable block in the UI.
     /// </summary>
     public class Block
     {
@@ -25,21 +25,5 @@
         /// The definition contains the JSON definition of the code. This definition is used to configure the block in Blockly.
         /// </remarks>
         public string? Definition { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AST converter definition for the block.
-        /// </summary>
-        /// <remarks>
-        /// The AST converter definition is used to convert an AST representation into Blockly XML. The JavaScript will be directly downloaded into the client UI.
-        /// </remarks>
-        public string? AstConverter { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AST name for the converter.
-        /// </summary>
-        /// <remarks>
-        /// The AST name is the name of the function returned from the AST parser.
-        /// </remarks>
-        public string? AstName { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿export class AstConversionDefinitions {
     constructor() {
-        this.xmlBlocks = {
-            <[[blocks]]>
+        this.astNodes = {
+            <[[nodes]]>
         };
     }
 }
