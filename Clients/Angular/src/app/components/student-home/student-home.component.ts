@@ -8,6 +8,7 @@ import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
 import { ConfirmService } from 'src/app/services/confirm.service';
+import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { SettingsService } from 'src/app/services/settings.service';
 
 @Component({
@@ -17,6 +18,7 @@ import { SettingsService } from 'src/app/services/settings.service';
 })
 export class StudentHomeComponent extends HomeBase implements OnInit {
 
+  controller: ProgramControllerService = new ProgramControllerService();
   editorSettings: EditorSettings = new EditorSettings();
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
@@ -59,6 +61,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   playProgram() {
     this.isPlaying = true;
+    this.controller.play();
   }
 
   stopProgram() {

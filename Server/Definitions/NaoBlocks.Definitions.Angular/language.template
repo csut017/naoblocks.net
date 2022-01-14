@@ -36,12 +36,12 @@ Blockly.NaoLang.prefixLevel = 0;
 // Initialise code generation
 Blockly.NaoLang.init = function (workspace) {
     Blockly.NaoLang.prefixLevel = 1;
-    if (!Blockly.NaoLang.variableDB_) {
-        Blockly.NaoLang.variableDB_ = new Blockly.Names(Blockly.NaoLang.RESERVED_WORDS_);
+    if (!Blockly.NaoLang.nameDB_) {
+        Blockly.NaoLang.nameDB_ = new Blockly.Names(Blockly.NaoLang.RESERVED_WORDS_);
     } else {
-        Blockly.NaoLang.variableDB_.reset();
+        Blockly.NaoLang.nameDB_.reset();
     }
-    Blockly.NaoLang.variableDB_.setVariableMap(workspace.getVariableMap());
+    Blockly.NaoLang.nameDB_.setVariableMap(workspace.getVariableMap());
 };
 
 // Finish generation

@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { ConfirmService } from 'src/app/services/confirm.service';
+import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { environment } from 'src/environments/environment';
 
 declare var Blockly: any;
@@ -13,6 +14,7 @@ declare var Blockly: any;
 })
 export class BlocklyEditorComponent implements OnInit, OnChanges {
 
+  @Input() controller?: ProgramControllerService;
   @Input() editorSettings: EditorSettings = new EditorSettings();
   error: string = '';
   hasChanged: boolean = false;
@@ -32,6 +34,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
       this.workspace.updateToolbox(xml);
     }
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
+    this.controller?.onPlay.subscribe(() => this.play());
   }
 
   ngOnInit(): void {
@@ -73,6 +76,10 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
         this.error = 'All blocks must be connected';
       }
     }
+  }
+
+  play(): void {
+    let code = this.generateCode(true);
   }
 
   private buildToolbox(): string {
@@ -153,6 +160,21 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
 
       console.log('[StudentHome] Adding validator');
       this.workspace.addChangeListener((evt: any) => this.validateWorkspace(evt));
+    } finally {
+      console.groupEnd();
+    }
+  }
+
+  private generateCode(forRobot: boolean): string {
+    console.groupCollapsed('Generating code');
+    try {
+      var xml = Blockly.Xml.workspaceToDom(this.workspace);
+      console.log(Blockly.Xml.domToText(xml));
+      Blockly.NaoLang.addStart = !this.requireEvents;
+      Blockly.NaoLang.includeId = forRobot;
+      let generated = Blockly.NaoLang.workspaceToCode(this.workspace);
+      console.log(generated);
+      return generated;
     } finally {
       console.groupEnd();
     }
