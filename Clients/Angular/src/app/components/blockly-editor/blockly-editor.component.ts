@@ -1,8 +1,14 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
+import { RunSettings } from 'src/app/data/run-settings';
+import { StartupStatusTracker } from 'src/app/data/startup-status-tracker';
 import { ConfirmService } from 'src/app/services/confirm.service';
+import { ConnectionService } from 'src/app/services/connection.service';
+import { ExecutionStatusService } from 'src/app/services/execution-status.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
+import { ProgramService } from 'src/app/services/program.service';
+import { IServiceMessageUpdater, ServerMessageProcessorService } from 'src/app/services/server-message-processor.service';
 import { environment } from 'src/environments/environment';
 
 declare var Blockly: any;
@@ -12,20 +18,28 @@ declare var Blockly: any;
   templateUrl: './blockly-editor.component.html',
   styleUrls: ['./blockly-editor.component.scss']
 })
-export class BlocklyEditorComponent implements OnInit, OnChanges {
+export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessageUpdater {
 
   @Input() controller?: ProgramControllerService;
   @Input() editorSettings: EditorSettings = new EditorSettings();
   error: string = '';
   hasChanged: boolean = false;
   invalidBlocks: any[] = [];
+  isExecuting: boolean = false;
   isLoading: boolean = true;
+  isReady: boolean = false;
   isValid: boolean = true;
   languageUrl: string = `${environment.apiURL}v1/ui/angular/language`;
+  lastHighlightBlock?: string;
+  messageProcessor?: ServerMessageProcessorService;
   requireEvents: boolean = false;
+  startupStatus: StartupStatusTracker = new StartupStatusTracker();
   workspace: any;
 
   constructor(
+    private connection: ConnectionService,
+    private programService: ProgramService,
+    private executionStatus: ExecutionStatusService,
     private confirm: ConfirmService) { }
 
   ngOnChanges(_: SimpleChanges): void {
@@ -34,7 +48,10 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
       this.workspace.updateToolbox(xml);
     }
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
-    this.controller?.onPlay.subscribe(() => this.play());
+    if (!!this.controller && !this.isReady) {
+      this.isReady = true;
+      this.controller?.onPlay.subscribe(settings => this.play(settings));
+    }
   }
 
   ngOnInit(): void {
@@ -78,8 +95,55 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
     }
   }
 
-  play(): void {
+  private validateBlocks(): string | undefined {
+    var blocks = this.workspace.getTopBlocks();
+    if (!blocks.length) {
+      return 'There are no blocks in the current program!';
+    }
+
+    if (!this.requireEvents) {
+      if (blocks.length > 1) {
+        return 'All blocks must be joined!';
+      }
+    } else {
+      if (!this.isValid) {
+        return 'Program is not valid!';
+      }
+    }
+
+    return undefined;
+  }
+
+  play(runSettings: RunSettings): void {
+    this.messageProcessor = new ServerMessageProcessorService(this.connection, this, runSettings);
+    this.startupStatus.initialise();
+    this.executionStatus.show(this.startupStatus);
+    let validationResult = this.validateBlocks();
+    if (!!validationResult) {
+      this.onStepFailed(0, validationResult);
+      return;
+    }
+
+    this.controller!.isPlaying = true;
     let code = this.generateCode(true);
+    this.programService.compile(code)
+      .subscribe(result => {
+        if (!result.successful) {
+          this.onStepFailed(0, 'Unable to compile code');
+          return;
+        }
+
+        if (result.output?.errors) {
+          this.onStepFailed(0, 'There are errors in the code');
+          return;
+        }
+
+        this.messageProcessor!.storedProgram = result.output?.programId?.toString();
+        this.messageProcessor!.currentStartStep = 1;
+        this.onStepCompleted(0);
+        this.connection.start()
+          .subscribe(msg => this.messageProcessor!.processServerMessage(msg));
+      });
   }
 
   private buildToolbox(): string {
@@ -178,5 +242,42 @@ export class BlocklyEditorComponent implements OnInit, OnChanges {
     } finally {
       console.groupEnd();
     }
+  }
+
+  onCloseConnection(): void {
+    this.connection.close();
+  }
+
+  onErrorOccurred(message: string): void {
+    this.error = message;
+  }
+
+  onStepCompleted(step: number): number {
+    return this.startupStatus.completeStep(step);
+  }
+
+  onStateUpdate(): void {
+    this.isExecuting = this.messageProcessor?.isExecuting || false;
+    if (!this.isExecuting) this.controller!.isPlaying = false;
+  }
+
+  onStepFailed(step: number, reason: string): void {
+    this.startupStatus.failStep(step, reason);
+  }
+
+  onClearHighlight(): void {
+    if (this.lastHighlightBlock) {
+      this.workspace.highlightBlock(this.lastHighlightBlock, false);
+      this.lastHighlightBlock = undefined;
+    }
+  }
+
+  onHighlightBlock(id: string, action: string): void {
+    this.lastHighlightBlock = id;
+    this.workspace.highlightBlock(id, action === 'start');
+  }
+
+  onShowDebug(): void {
+    this.startupStatus.sendingToRobot = false;
   }
 }

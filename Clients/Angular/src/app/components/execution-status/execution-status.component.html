@@ -1,0 +1,23 @@
+<h1 mat-dialog-title>
+    Starting Program
+</h1>
+<div mat-dialog-content>
+    <ul>
+        <li *ngFor="let step of data.steps">
+            <div>
+                <span>{{step.title}}</span>
+                <span>{{step.description}}</span>
+            </div>
+        </li>
+    </ul>
+    <div *ngIf="data.startMessage">
+        <div>
+            <div>
+                {{data.startMessage}}
+            </div>
+        </div>
+    </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="doClose()">{{data.startMessage ? 'Close' : 'Cancel'}}</button>
+</div>

@@ -6,24 +6,24 @@
             <span class="app-title">NaoBlocks</span>
           </mat-toolbar>
         <mat-action-list *ngIf="showCommands">
-            <button mat-list-item (click)="playProgram()" *ngIf="!isPlaying">
+            <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
             </button>
-            <button mat-list-item (click)="stopProgram()" *ngIf="isPlaying">
+            <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying">
                 <mat-icon matListIcon aria-label="Stop current program">stop</mat-icon> Stop
             </button>
-            <mat-divider *ngIf="!isPlaying"></mat-divider>
-            <button mat-list-item (click)="deleteProgram()" *ngIf="!isPlaying">
+            <mat-divider *ngIf="!controller.isPlaying"></mat-divider>
+            <button mat-list-item (click)="deleteProgram()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Delete current program">delete_outline</mat-icon> Clear
             </button>
-            <button mat-list-item (click)="loadProgram()" *ngIf="!isPlaying">
+            <button mat-list-item (click)="loadProgram()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Load existing program">file_download</mat-icon> Load
             </button>
-            <button mat-list-item (click)="saveProgram()" *ngIf="!isPlaying">
+            <button mat-list-item (click)="saveProgram()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Save current program">publish</mat-icon> Save
             </button>
-            <mat-divider *ngIf="!isPlaying"></mat-divider>
-            <button mat-list-item (click)="showDebugSettings()" *ngIf="!isPlaying">
+            <mat-divider *ngIf="!controller.isPlaying"></mat-divider>
+            <button mat-list-item (click)="showDebugSettings()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Change execution settings">tune</mat-icon> Debug Settings
             </button>
         </mat-action-list>

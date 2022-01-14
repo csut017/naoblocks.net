@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, map, shareReplay } from 'rxjs';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { EditorSettings } from 'src/app/data/editor-settings';
+import { RunSettings } from 'src/app/data/run-settings';
 import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
@@ -25,7 +26,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       map(result => result.matches),
       shareReplay()
     );
-  isPlaying: boolean = false;
+  runSettings: RunSettings = new RunSettings();
   showCommands: boolean = true;
   title: string = '';
   view: string = '';
@@ -60,12 +61,11 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.changeView('blockly', 'Block Editor', true);  }
 
   playProgram() {
-    this.isPlaying = true;
-    this.controller.play();
+    this.controller.play(this.runSettings);
   }
 
   stopProgram() {
-    this.isPlaying = false;
+    this.controller.stop();
   }
 
   deleteProgram() {

@@ -37,6 +37,7 @@ import { SettingsStudentComponent } from './components/settings-student/settings
 import { ProgramSaveComponent } from './components/program-save/program-save.component';
 import { ProgramLoadComponent } from './components/program-load/program-load.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { ExecutionStatusComponent } from './components/execution-status/execution-status.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
     SettingsStudentComponent,
     ProgramSaveComponent,
     ProgramLoadComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ExecutionStatusComponent
   ],
   imports: [
     BrowserModule,
