@@ -1,5 +1,8 @@
-﻿using NaoBlocks.Common;
+﻿using Esprima;
+using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace NaoBlocks.Definitions.Angular
@@ -9,6 +12,8 @@ namespace NaoBlocks.Definitions.Angular
     /// </summary>
     public class Definition : IUIDefinition
     {
+        private readonly string[] keyWords = new[] { "SYSTEM" };
+
         /// <summary>
         /// Gets the blocks.
         /// </summary>
@@ -72,11 +77,68 @@ namespace NaoBlocks.Definitions.Angular
                 {
                     errors.Add(new CommandError(0, $"Block {name} does not have a block definition (definition)"));
                 }
+                else
+                {
+                    CheckAndTidyDefinition(block, errors, name);
+                }
 
                 if (string.IsNullOrWhiteSpace(block.Generator))
                 {
                     errors.Add(new CommandError(0, $"Block {name} does not have a language generator (generator)"));
                 }
+                else
+                {
+                    try
+                    {
+                        var parser = new JavaScriptParser(block.Generator);
+                        var program = parser.ParseScript();
+                    }
+                    catch
+                    {
+                        errors.Add(
+                            new CommandError(
+                                0,
+                                $"Block {name} has an invalid language generator (generator): must be valid JavaScript"));
+                    }
+                }
+            }
+        }
+
+        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
+        {
+            var isValid = false;
+            var definition = block.Definition!.Trim();
+            if (!string.IsNullOrWhiteSpace(definition))
+            {
+                if (keyWords.Contains(definition.ToUpperInvariant()))
+                {
+                    isValid = true;
+                }
+                else
+                {
+                    if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
+                    {
+                        try
+                        {
+                            var obj = JObject.Parse(definition);
+                            obj["type"] = block.Name;
+                            block.Definition = obj.ToString(Formatting.None);
+                            isValid = true;
+                        }
+                        catch
+                        {
+                            // Don't do anything, we were just checking if the JSON was valid
+                        }
+                    }
+                }
+            }
+
+            if (!isValid)
+            {
+                errors.Add(
+                    new CommandError(
+                        0,
+                        $"Block {name} has an invalid block definition (definition): must be valid JSON or one of [{string.Join(",", keyWords)}]"));
             }
         }
 
@@ -119,6 +181,21 @@ namespace NaoBlocks.Definitions.Angular
                 {
                     errors.Add(new CommandError(0, $"Node {name} does not have a converter (converter)"));
                 }
+                else
+                {
+                    try
+                    {
+                        var parser = new JavaScriptParser(node.Converter);
+                        var program = parser.ParseScript();
+                    }
+                    catch
+                    {
+                        errors.Add(
+                            new CommandError(
+                                0,
+                                $"Node {name} has an invalid converter (converter): must be valid JavaScript"));
+                    }
+                }
             }
         }
 
@@ -150,7 +227,7 @@ namespace NaoBlocks.Definitions.Angular
             {
                 { "blocks", () =>
                 {
-                    return string.Join($",{Environment.NewLine}", this.Blocks.Select(b => b.Definition));
+                    return string.Join($",{Environment.NewLine}", this.Blocks.Where(b => !"system".Equals(b.Definition, StringComparison.InvariantCultureIgnoreCase)).Select(b => b.Definition));
                 }}
             };
             var output = TemplateGenerator.BuildFromTemplate<Definition>("block_definitions", generators);

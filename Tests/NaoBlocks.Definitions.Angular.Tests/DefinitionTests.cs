@@ -18,7 +18,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             var definition = new Definition();
             definition.Blocks.Add(new Block
             {
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode
@@ -100,7 +100,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode
@@ -117,6 +117,106 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
+        public async Task ValidateAsyncFillsInDefinitionTypes()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            var block = new Block
+            {
+                Name = "test_block",
+                Definition = "{}",
+                Generator = "gen"
+            };
+            definition.Blocks.Add(block);
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
+
+            // Act
+            await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal("{\"type\":\"test_block\"}", block.Definition);
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksDefintionsAreJsonOrKeyword()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_one",
+                Definition = "random",
+                Generator = "gen"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_two",
+                Definition = "{\"type\":\"test_block\"}",
+                Generator = "gen"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_three",
+                Definition = "SYSTEM",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'block_one' (#1) has an invalid block definition (definition): must be valid JSON or one of [SYSTEM]",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksGeneratorIsValidJavascript()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_one",
+                Definition = "SYSTEM",
+                Generator = "=123"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_two",
+                Definition = "SYSTEM",
+                Generator = "console.log('hello')"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'block_one' (#1) has an invalid language generator (generator): must be valid JavaScript",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
         public async Task ValidateAsyncChecksForDuplicateBlocks()
         {
             // Arrange
@@ -125,13 +225,13 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode
@@ -159,7 +259,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode
@@ -214,7 +314,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
 
@@ -237,7 +337,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode());
@@ -262,7 +362,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "test_block",
-                Definition = "def",
+                Definition = "{}",
                 Generator = "gen"
             });
             definition.Nodes.Add(new AstNode
@@ -277,6 +377,39 @@ namespace NaoBlocks.Definitions.Angular.Tests
             Assert.Equal(new[]
             {
                 "Node 'ast' (#1) does not have a converter (converter)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksNodeConverterIsValidJavascript()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "{}",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "ast_1",
+                Converter = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "ast_2",
+                Converter = "=gen"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Node 'ast_2' (#2) has an invalid converter (converter): must be valid JavaScript",
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -366,6 +499,32 @@ namespace NaoBlocks.Definitions.Angular.Tests
             using var reader = new StreamReader(ouput);
             var body = await reader.ReadToEndAsync();
             var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_multiple_block_definition.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncIgnoresSystemBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_wait",
+                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_rest",
+                Definition = "SYSTEM"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("block_definitions");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
             Assert.Equal(expected, body);
         }
 

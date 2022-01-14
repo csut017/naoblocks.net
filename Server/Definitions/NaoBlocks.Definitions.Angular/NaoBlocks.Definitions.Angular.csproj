@@ -28,6 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Esprima" Version="2.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
     <ProjectReference Include="..\..\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
   </ItemGroup>
