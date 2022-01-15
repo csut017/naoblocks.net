@@ -83,6 +83,8 @@ ClientAddressList.Initialise();
 var uiManager = new UiManager();
 uiManager.Register<Angular.Definition>("angular");
 builder.Services.AddSingleton(uiManager);
+builder.Services.AddTransient<IEngineFactory, DefaultEngineFactory>();
+builder.Services.AddTransient<IMessageProcessor, MessageProcessor>();
 
 // Configure the application
 var app = builder.Build();

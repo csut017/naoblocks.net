@@ -1,5 +1,5 @@
 ﻿// Override the default soupid_ to provide a safe set of characters for the language generation
-Blockly.utils.genUid.soup_ = '!#$%()*+,-./:;=?@^_`{|}~' +
+Blockly.utils.idGenerator.soup = '!#$%()*+,-./:;=?@^_`{|}~' +
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 

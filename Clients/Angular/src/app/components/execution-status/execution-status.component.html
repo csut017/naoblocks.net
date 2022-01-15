@@ -5,19 +5,21 @@
     <ul class="steps">
         <li *ngFor="let step of data.steps">
             <div>
-                <mat-icon class="{{step.status}}">{{step.image}}</mat-icon>
+                <mat-icon class="{{step.status}}" [ngClass]="{'rotate': step.isCurrent }">{{step.image}}</mat-icon>
                 <span class="step-title">{{step.title}}</span>
                 <span class="step-description">{{step.description}}</span>
             </div>
         </li>
     </ul>
-    <div *ngIf="data.startMessage" class="error-message">
-        <mat-icon>error_outline</mat-icon>
-        <div class="inner">
-            {{data.startMessage}}
+    <div class="error-space">
+        <div *ngIf="data.startMessage" class="error-message">
+            <mat-icon>error_outline</mat-icon>
+            <div class="inner">
+                {{data.startMessage}}
+            </div>
         </div>
     </div>
 </div>
-<div mat-dialog-actions>
-    <button mat-button (click)="doClose()">{{data.startMessage ? 'Close' : 'Cancel'}}</button>
+<div mat-dialog-actions align="end">
+    <button mat-raised-button (click)="doClose()">{{data.startMessage ? 'Close' : 'Cancel'}}</button>
 </div>

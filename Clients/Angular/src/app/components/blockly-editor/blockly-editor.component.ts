@@ -122,7 +122,8 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
   play(runSettings: RunSettings): void {
     this.messageProcessor = new ServerMessageProcessorService(this.connection, this, runSettings);
     this.startupStatus.initialise();
-    this.executionStatus.show(this.startupStatus);
+    this.executionStatus.show(this.startupStatus)
+      .subscribe(_ => this.stop());
     let validationResult = this.validateBlocks();
     if (!!validationResult) {
       this.onStepFailed(0, validationResult);

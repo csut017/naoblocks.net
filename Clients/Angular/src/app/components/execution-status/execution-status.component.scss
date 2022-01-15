@@ -4,6 +4,7 @@
     padding: 6px;
     border-radius: 4px;
     min-height: 24px;
+    max-width: 30rem;
 
     mat-icon {
         float: left;
@@ -12,6 +13,10 @@
     .inner {
         padding-left: 30px;
     }
+}
+
+.error-space {
+    min-height: 40px;
 }
 
 .steps {
@@ -55,7 +60,7 @@
 
 .rotate {
     animation: rotation 2s infinite linear;
-    color: #0000aa;
+    color: #0000aa !important;
 }
 
 @keyframes rotation {
