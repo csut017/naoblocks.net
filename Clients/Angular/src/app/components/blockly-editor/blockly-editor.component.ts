@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { ControllerAction } from 'src/app/data/controller-action';
 import { EditorSettings } from 'src/app/data/editor-settings';
@@ -19,7 +19,7 @@ declare var Blockly: any;
   templateUrl: './blockly-editor.component.html',
   styleUrls: ['./blockly-editor.component.scss']
 })
-export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessageUpdater {
+export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit, IServiceMessageUpdater {
 
   @Input() controller?: ProgramControllerService;
   @Input() editorSettings: EditorSettings = new EditorSettings();
@@ -28,7 +28,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
   invalidBlocks: any[] = [];
   isExecuting: boolean = false;
   isLoading: boolean = true;
-  isReady: boolean = false;
   isValid: boolean = true;
   languageUrl: string = `${environment.apiURL}v1/ui/angular/language`;
   lastHighlightBlock?: string;
@@ -43,30 +42,30 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     private executionStatus: ExecutionStatusService,
     private confirm: ConfirmService) { }
 
+  ngAfterViewInit(): void {
+    this.controller!.onAction.subscribe(event => {
+      switch (event.action) {
+        case ControllerAction.play:
+          this.play(event.data);
+          break;
+
+        case ControllerAction.stop:
+          this.stop();
+          break;
+
+        case ControllerAction.clear:
+          this.clear();
+          break;
+      }
+    });
+}
+
   ngOnChanges(_: SimpleChanges): void {
     if (this.workspace) {
       let xml = this.buildToolbox();
       this.workspace.updateToolbox(xml);
     }
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
-    if (!!this.controller && !this.isReady) {
-      this.isReady = true;
-      this.controller.onAction.subscribe(event => {
-        switch (event.action) {
-          case ControllerAction.play:
-            this.play(event.data);
-            break;
-
-          case ControllerAction.stop:
-            this.stop();
-            break;
-
-          case ControllerAction.clear:
-            this.clear();
-            break;
-        }
-      });
-    }
   }
 
   ngOnInit(): void {
@@ -138,8 +137,12 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     this.controller!.isPlaying = false;
   }
 
-  play(runSettings: RunSettings): void {
-    this.messageProcessor = new ServerMessageProcessorService(this.connection, this, runSettings);
+  play(settings: RunSettings): void {
+    console.groupCollapsed('[BlocklyEditor] Playing program');
+    console.log(settings);
+    let code = this.generateCode(true);
+    console.groupEnd();
+    this.messageProcessor = new ServerMessageProcessorService(this.connection, this, settings);
     this.startupStatus.initialise();
     this.executionStatus.show(this.startupStatus)
       .subscribe(_ => this.stop());
@@ -150,7 +153,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     }
 
     this.controller!.isPlaying = true;
-    let code = this.generateCode(true);
     this.programService.compile(code)
       .subscribe(result => {
         if (!result.successful) {

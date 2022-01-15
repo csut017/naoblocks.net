@@ -58,16 +58,22 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onClosed(saved: boolean) {
-    this.changeView('blockly', 'Block Editor', true);  }
+    this.changeView('blockly', 'Block Editor', true);
+  }
 
+  onSettingsClosed(settings?: RunSettings) {
+    if (settings) this.runSettings = settings;
+    this.changeView('blockly', 'Block Editor', true);
+  }
+  
   playProgram() {
-        console.log('[StudentHome] Playing current program');
-        this.controller.play(this.runSettings);
+    console.log('[StudentHome] Playing current program');
+    this.controller.play(this.runSettings);
   }
 
   stopProgram() {
-        console.log('[StudentHome] Stopping current program');
-        this.controller.stop();
+    console.log('[StudentHome] Stopping current program');
+    this.controller.stop();
   }
 
   deleteProgram() {
