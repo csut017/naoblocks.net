@@ -3,7 +3,6 @@ import { ExecutionStatusStep } from "./execution-status-step";
 export class StartupStatusTracker {
     steps: ExecutionStatusStep[] = [];
     startMessage?: string;
-    sendingToRobot: boolean = false;
 
     initialise() {
         this.steps = [
@@ -14,7 +13,6 @@ export class StartupStatusTracker {
         ];
         this.steps[0].isCurrent = true;
         this.startMessage = undefined;
-        this.sendingToRobot = true;
     }
 
     completeStep(step: number): number {
@@ -34,14 +32,5 @@ export class StartupStatusTracker {
         this.steps[step].isCurrent = false;
         this.steps[step].image = 'error_outline';
         this.steps[step].status = 'error';
-    }
-
-    cancel(): boolean {
-        if (this.sendingToRobot) {
-            this.sendingToRobot = false;
-            return false;
-        }
-
-        return true;
     }
 }

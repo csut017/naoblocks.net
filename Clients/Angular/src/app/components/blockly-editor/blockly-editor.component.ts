@@ -50,7 +50,8 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
     if (!!this.controller && !this.isReady) {
       this.isReady = true;
-      this.controller?.onPlay.subscribe(settings => this.play(settings));
+      this.controller.onPlay.subscribe(settings => this.play(settings));
+      this.controller.onStop.subscribe(() => this.stop())
     }
   }
 
@@ -112,6 +113,10 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     }
 
     return undefined;
+  }
+
+  stop(): void {
+    this.controller!.isPlaying = false;
   }
 
   play(runSettings: RunSettings): void {
@@ -278,6 +283,5 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
   }
 
   onShowDebug(): void {
-    this.startupStatus.sendingToRobot = false;
   }
 }
