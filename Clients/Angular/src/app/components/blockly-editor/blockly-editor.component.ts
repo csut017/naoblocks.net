@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
+import { ControllerAction } from 'src/app/data/controller-action';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { RunSettings } from 'src/app/data/run-settings';
 import { StartupStatusTracker } from 'src/app/data/startup-status-tracker';
@@ -50,8 +51,21 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
     if (!!this.controller && !this.isReady) {
       this.isReady = true;
-      this.controller.onPlay.subscribe(settings => this.play(settings));
-      this.controller.onStop.subscribe(() => this.stop())
+      this.controller.onAction.subscribe(event => {
+        switch (event.action) {
+          case ControllerAction.play:
+            this.play(event.data);
+            break;
+
+          case ControllerAction.stop:
+            this.stop();
+            break;
+
+          case ControllerAction.clear:
+            this.clear();
+            break;
+        }
+      });
     }
   }
 
@@ -113,6 +127,11 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, IServiceMessag
     }
 
     return undefined;
+  }
+
+  clear(): void {
+    this.workspace.clear();
+    this.validateWorkspace();
   }
 
   stop(): void {

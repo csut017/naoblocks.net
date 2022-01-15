@@ -61,11 +61,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.changeView('blockly', 'Block Editor', true);  }
 
   playProgram() {
-    this.controller.play(this.runSettings);
+        console.log('[StudentHome] Playing current program');
+        this.controller.play(this.runSettings);
   }
 
   stopProgram() {
-    this.controller.stop();
+        console.log('[StudentHome] Stopping current program');
+        this.controller.stop();
   }
 
   deleteProgram() {
@@ -73,6 +75,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       .subscribe(result => {
         if (!result) return;
         console.log('[StudentHome] Clearing current program');
+        this.controller.clear();
       });
   }
 

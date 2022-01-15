@@ -1,4 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
+import { ControllerAction } from '../data/controller-action';
+import { ControllerEvent } from '../data/controller-event';
 import { RunSettings } from '../data/run-settings';
 
 @Injectable({
@@ -7,23 +9,30 @@ import { RunSettings } from '../data/run-settings';
 export class ProgramControllerService {
 
   private _isPlaying: boolean = false;
-  onPlay: EventEmitter<RunSettings> = new EventEmitter();
-  onStop: EventEmitter<any> = new EventEmitter();
+  onAction: EventEmitter<ControllerEvent> = new EventEmitter();
 
   constructor() { }
 
+  clear(): void {
+    let event = new ControllerEvent(ControllerAction.clear);
+    this.onAction.emit(event);
+  }
+
   play(settings: RunSettings): void {
-    this.onPlay.emit(settings);
+    let event = new ControllerEvent(ControllerAction.play);
+    event.data = settings;
+    this.onAction.emit(event);
   }
-  
+
   stop(): void {
-    this.onStop.emit();
+    let event = new ControllerEvent(ControllerAction.stop);
+    this.onAction.emit(event);
   }
-  
+
   public get isPlaying(): boolean {
     return this._isPlaying;
   }
-  
+
   public set isPlaying(value: boolean) {
     this._isPlaying = value;
   }
