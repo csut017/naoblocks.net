@@ -157,7 +157,7 @@ export class AuthenticationService extends ClientService {
     this.router.navigate(['/login'], {
       queryParams: {
         return: currentRoute,
-        reason: 'expired,'
+        reason: 'expired',
       }
     });
   return false;

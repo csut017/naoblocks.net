@@ -20,7 +20,8 @@ export class StartupStatusTracker {
     completeStep(step: number): number {
         if (step >= this.steps.length) return step;
         this.steps[step].isCurrent = false;
-        this.steps[step].image = 'success-standard';
+        this.steps[step].image = 'task_alt';
+        this.steps[step].status = 'success';
 
         if (++step >= this.steps.length) return step;
         this.steps[step].isCurrent = true;
@@ -31,7 +32,8 @@ export class StartupStatusTracker {
         this.startMessage = reason;
         if (!this.steps[step]) return;
         this.steps[step].isCurrent = false;
-        this.steps[step].image = 'error-standard';
+        this.steps[step].image = 'error_outline';
+        this.steps[step].status = 'error';
     }
 
     cancel(): boolean {
