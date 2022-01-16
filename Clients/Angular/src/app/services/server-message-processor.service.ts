@@ -97,7 +97,7 @@ export class ServerMessageProcessorService {
         console.groupCollapsed('[ServerMessageProcessorService] Debug message received');
         console.log(msg.values);
         console.groupEnd();
-        let sId = msg.values['sourceID'];
+        let sId = msg.values['sourceID'].replace(/\\/g, ']');
         let action = msg.values['status'];
         this.updater.onHighlightBlock(sId, action);
         break;

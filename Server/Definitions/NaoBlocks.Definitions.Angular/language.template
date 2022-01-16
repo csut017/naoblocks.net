@@ -1,9 +1,4 @@
-﻿// Override the default soupid_ to provide a safe set of characters for the language generation
-Blockly.utils.idGenerator.soup = '!#$%()*+,-./:;=?@^_`{|}~' +
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-
-Blockly.NaoLang = new Blockly.Generator('NaoLang');
+﻿Blockly.NaoLang = new Blockly.Generator('NaoLang');
 
 // Define the orders
 Blockly.NaoLang.ORDER_ATOMIC = 0;
@@ -56,7 +51,7 @@ Blockly.NaoLang.finish = function (code) {
 Blockly.NaoLang.scrub_ = function (block, code) {
     var nextBlock = block.nextConnection && block.nextConnection.targetBlock(),
         nextCode = Blockly.NaoLang.blockToCode(nextBlock);
-    return (Blockly.NaoLang.includeId ? '[' + block.id + ']' : '') + code + nextCode;
+    return (Blockly.NaoLang.includeId ? '[' + block.id.replace(/]/g, '\\') + ']' : '') + code + nextCode;
 };
 
 Blockly.NaoLang.generatePrefix = function () {

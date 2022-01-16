@@ -107,7 +107,7 @@ namespace NaoBlocks.Web.Controllers
 
             var programDetails = await this.executionEngine
                 .Query<CodeData>()
-                .RetrieveCodeAsync(user, program)
+                .RetrieveCodeAsync(userDetails.Id!, program)
                 .ConfigureAwait(false);
             if (programDetails == null) return NotFound();
 

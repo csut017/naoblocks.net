@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
 import { ControllerAction } from 'src/app/data/controller-action';
 import { EditorSettings } from 'src/app/data/editor-settings';
@@ -19,10 +20,12 @@ declare var Blockly: any;
   templateUrl: './blockly-editor.component.html',
   styleUrls: ['./blockly-editor.component.scss']
 })
-export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit, IServiceMessageUpdater {
+export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit, IServiceMessageUpdater, OnDestroy {
 
   @Input() controller?: ProgramControllerService;
   @Input() editorSettings: EditorSettings = new EditorSettings();
+  
+  controllerSubscription?: Subscription;
   error: string = '';
   hasChanged: boolean = false;
   invalidBlocks: any[] = [];
@@ -43,7 +46,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
     private confirm: ConfirmService) { }
 
   ngAfterViewInit(): void {
-    this.controller!.onAction.subscribe(event => {
+    this.controllerSubscription = this.controller!.onAction.subscribe(event => {
       switch (event.action) {
         case ControllerAction.play:
           this.play(event.data);
@@ -58,7 +61,13 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
           break;
       }
     });
-}
+    if (this.controller?.workspaceXml) Blockly.Xml.domToWorkspace(this.controller?.workspaceXml, this.workspace);;
+  }
+
+  ngOnDestroy(): void {
+    this.controllerSubscription?.unsubscribe();
+  }
+
 
   ngOnChanges(_: SimpleChanges): void {
     if (this.workspace) {
@@ -71,6 +80,24 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   ngOnInit(): void {
     this.initialiseWorkspace();
   }
+  
+  loadIntoWorkspace(xml: HTMLElement): void {
+    console.log('[StudentHome] Loading workspace');
+    try {
+      this.workspace.clear();
+      Blockly.Xml.domToWorkspace(xml, this.workspace);
+    } catch (err) {
+      console.log('[StudentHome] Load failed!');
+      console.error(err);
+    }
+    console.groupEnd();
+
+    var topBlocks = this.workspace.getTopBlocks();
+    if (topBlocks) {
+      var centreBlock = topBlocks[0];
+      this.workspace.centerOnBlock(centreBlock.id);
+    }
+  }
 
   validateWorkspace(event?: any): void {
     if (this.workspace.isDragging()) return;
@@ -79,6 +106,9 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
       (event.type == Blockly.Events.MOVE) ||
       (event.type == Blockly.Events.DELETE);
     if (!validate) return;
+
+    let xml = Blockly.Xml.workspaceToDom(this.workspace);
+    this.controller!.workspaceXml = xml;
 
     console.log('[StudentHome] Validating');
     this.hasChanged = true;
@@ -305,5 +335,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   onShowDebug(): void {
+    this.executionStatus.close();
   }
 }

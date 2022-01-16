@@ -10,6 +10,7 @@ export class ProgramControllerService {
 
   private _isPlaying: boolean = false;
   onAction: EventEmitter<ControllerEvent> = new EventEmitter();
+  workspaceXml?: string;
 
   constructor() { }
 
