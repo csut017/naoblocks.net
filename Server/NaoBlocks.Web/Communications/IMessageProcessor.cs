@@ -12,6 +12,6 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="client">The client that received the message.</param>
         /// <param name="message">The message to process.</param>
-        Task ProcessAsync(ClientConnection client, ClientMessage message);
+        Task ProcessAsync(IClientConnection client, ClientMessage message);
     }
 }

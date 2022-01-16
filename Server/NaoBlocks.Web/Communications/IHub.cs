@@ -9,36 +9,36 @@ namespace NaoBlocks.Web.Communications
         : IDisposable
     {
         /// <summary>
-        /// Adds a new <see cref="ClientConnection"/>.
+        /// Adds a new <see cref="IClientConnection"/>.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
-        void AddClient(ClientConnection client);
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        void AddClient(IClientConnection client);
 
         /// <summary>
-        /// Retrieves a <see cref="ClientConnection"/> instance by its identifier.
+        /// Retrieves a <see cref="IClientConnection"/> instance by its identifier.
         /// </summary>
         /// <param name="id">The client identifier.</param>
-        /// <returns>The <see cref="ClientConnection"/> if found, null otherwise.</returns>
-        ClientConnection? GetClient(long id);
+        /// <returns>The <see cref="IClientConnection"/> if found, null otherwise.</returns>
+        IClientConnection? GetClient(long id);
 
         /// <summary>
         /// Retrieves all the current connections.
         /// </summary>
         /// <param name="type">The client type to retrieve.</param>
         /// <returns>All the current connections of the specified type.</returns>
-        IEnumerable<ClientConnection> GetClients(ClientConnectionType type);
+        IEnumerable<IClientConnection> GetClients(ClientConnectionType type);
 
         /// <summary>
         /// Retrieves all the current connections regardless of type.
         /// </summary>
         /// <returns>All the current connections.</returns>
-        IEnumerable<ClientConnection> GetAllClients();
+        IEnumerable<IClientConnection> GetAllClients();
 
         /// <summary>
         /// Retrieves all the current monitor connections.
         /// </summary>
         /// <returns>All the current monitor connections.</returns>
-        IEnumerable<ClientConnection> GetMonitors();
+        IEnumerable<IClientConnection> GetMonitors();
 
         /// <summary>
         /// Sends a message to all connections.
@@ -62,19 +62,19 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Removes a client.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
-        void RemoveClient(ClientConnection client);
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        void RemoveClient(IClientConnection client);
 
         /// <summary>
-        /// Adds a new monitor <see cref="ClientConnection"/>.
+        /// Adds a new monitor <see cref="IClientConnection"/>.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
-        void AddMonitor(ClientConnection client);
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        void AddMonitor(IClientConnection client);
 
         /// <summary>
         /// Removes a monitor.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
-        void RemoveMonitor(ClientConnection client);
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        void RemoveMonitor(IClientConnection client);
     }
 }

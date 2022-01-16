@@ -13,7 +13,7 @@ namespace NaoBlocks.Web.Tests.Dtos
         [Fact]
         public void FromModelConvertsUserEntity()
         {
-            var entity = new ClientConnection(
+            var entity = new StandardClientConnection(
                 new Mock<WebSocket>().Object, 
                 ClientConnectionType.User, 
                 new Mock<IMessageProcessor>().Object)
@@ -32,7 +32,7 @@ namespace NaoBlocks.Web.Tests.Dtos
         [Fact]
         public void FromModelConvertsRobotEntity()
         {
-            var entity = new ClientConnection(
+            var entity = new StandardClientConnection(
                 new Mock<WebSocket>().Object,
                 ClientConnectionType.Robot,
                 new Mock<IMessageProcessor>().Object)

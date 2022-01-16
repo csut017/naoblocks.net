@@ -46,7 +46,6 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogDebug($"Listing connections");
             return ListResult.New(this.hub
                 .GetClients(type)
-                .Where(c => c != null)
                 .Select(CommunicationsClient.FromModel));
         }
 

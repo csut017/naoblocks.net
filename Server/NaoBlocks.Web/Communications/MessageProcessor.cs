@@ -61,7 +61,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="client">The client that received the message.</param>
         /// <param name="message">The message to process.</param>
-        public async Task ProcessAsync(ClientConnection client, ClientMessage message)
+        public async Task ProcessAsync(IClientConnection client, ClientMessage message)
         {
             if (this._processors.TryGetValue(message.Type, out TypeProcessor? processor) && (processor != null))
             {
@@ -101,7 +101,7 @@ namespace NaoBlocks.Web.Communications
         /// <returns>The <see cref="TypeProcessor"/> for sending the message.</returns>
         private TypeProcessor BroadcastMessage(ClientMessageType messageType, string logDescription, bool includeValues = false)
         {
-            return async (IExecutionEngine engine, ClientConnection client, ClientMessage message) =>
+            return async (IExecutionEngine engine, IClientConnection client, ClientMessage message) =>
             {
                 var valuesToCopy = includeValues ? message.Values : null;
                 await this.DoBroadcastMessage(engine, client, message, messageType, logDescription, valuesToCopy);
@@ -111,7 +111,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Performs the actual broadcast of the message.
         /// </summary>
-        private async Task DoBroadcastMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, IDictionary<string, string>? valuesToCopy)
+        private async Task DoBroadcastMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, IDictionary<string, string>? valuesToCopy)
         {
             var msg = GenerateResponse(message, messageType);
             if (valuesToCopy != null)
@@ -135,7 +135,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Handles a program downloaded message.
         /// </summary>
-        private async Task ProgramDownloaded(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task ProgramDownloaded(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             var valuesToCopy = new Dictionary<string, string>
             {
@@ -147,10 +147,10 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Sends a stop message to the robot.
         /// </summary>
-        private async Task StopProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task StopProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient))
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient))
             {
                 // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
                 client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
@@ -172,10 +172,10 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Triggers the transfer of a program on the robot.
         /// </summary>
-        private async Task TransferProgramToRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task TransferProgramToRobot(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
@@ -210,10 +210,10 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Starts program execution on a robot.
         /// </summary>
-        private async Task StartProgram(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task StartProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
 
             if (!message.Values.TryGetValue("program", out string? programId))
             {
@@ -250,7 +250,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Broadcasts a debug message.
         /// </summary>
-        private async Task RobotDebugMessage(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task RobotDebugMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             await this.DoBroadcastMessage(engine, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", message.Values);
             if (client.RobotDetails != null)
@@ -265,11 +265,11 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Attempts to allocate a robot.
         /// </summary>
-        private async Task AllocateRobot(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task AllocateRobot(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
 
-            ClientConnection? nextRobot = null;
+            IClientConnection? nextRobot = null;
             if ((client.User?.Settings != null) && (client.User.Settings.AllocationMode > 0))
             {
                 nextRobot = this.hub.GetClients(ClientConnectionType.Robot)
@@ -317,7 +317,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Attempts to authenticate a client (user or robot.)
         /// </summary>
-        private async Task Authenticate(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task Authenticate(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!message.Values.TryGetValue("token", out string? token))
             {
@@ -423,7 +423,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Updates the robot state.
         /// </summary>
-        private async Task UpdateRobotState(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private async Task UpdateRobotState(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
 
@@ -456,10 +456,10 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Handles an alert message.
         /// </summary>
-        private Task HandleAlertsRequest(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private Task HandleAlertsRequest(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-            if (!this.RetrieveRobot(client, message, out ClientConnection? robotClient)) return Task.CompletedTask;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return Task.CompletedTask;
 
             foreach (var alert in robotClient!.Notifications)
             {
@@ -479,7 +479,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Handles a broadcast message.
         /// </summary>
-        private Task HandleBroadcastAlert(IExecutionEngine engine, ClientConnection client, ClientMessage message)
+        private Task HandleBroadcastAlert(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return Task.CompletedTask;
 
@@ -507,7 +507,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Starts monitoring all clients.
         /// </summary>
-        private Task StartMonitoringAllClients(IExecutionEngine _, ClientConnection client, ClientMessage message)
+        private Task StartMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
 
@@ -524,7 +524,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Stop monitoring all clients.
         /// </summary>
-        private Task StopMonitoringAllClients(IExecutionEngine _, ClientConnection client, ClientMessage message)
+        private Task StopMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
 
@@ -574,9 +574,9 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Populates values in the <see cref="ClientMessage"/> based on the client.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to retrieve the values from.</param>
+        /// <param name="client">The <see cref="IClientConnection"/> to retrieve the values from.</param>
         /// <param name="msg">The <see cref="ClientMessage"/> to populate.</param>
-        private static void PopulateSourceValues(ClientConnection client, ClientMessage msg)
+        private static void PopulateSourceValues(IClientConnection client, ClientMessage msg)
         {
             msg.Values["SourceClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
             switch (client.Type)
@@ -675,13 +675,13 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Attempts to retrieve the <see cref="ClientConnection"/> instance to the robot.
+        /// Attempts to retrieve the <see cref="IClientConnection"/> instance to the robot.
         /// </summary>
         /// <param name="client">The client attempting to get the robot connection.</param>
         /// <param name="message">The source message (used to generate any errors).</param>
-        /// <param name="robotClient">The retrieved <see cref="ClientConnection"/> instance if found, null otherwise.</param>
+        /// <param name="robotClient">The retrieved <see cref="IClientConnection"/> instance if found, null otherwise.</param>
         /// <returns>True if the robot could be retrieved, false otherwise.</returns>
-        private bool RetrieveRobot(ClientConnection client, ClientMessage message, out ClientConnection? robotClient)
+        private bool RetrieveRobot(IClientConnection client, ClientMessage message, out IClientConnection? robotClient)
         {
             robotClient = null;
             if (!message.Values.TryGetValue("robot", out string? robotCode))
@@ -709,11 +709,11 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Validates the incoming request.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> instance the request is coming in on.</param>
+        /// <param name="client">The <see cref="IClientConnection"/> instance the request is coming in on.</param>
         /// <param name="message">The message to validate.</param>
         /// <param name="requiredRole">The required role, if any.</param>
         /// <returns>True if the request is valid, false otherwise.</returns>
-        private static bool ValidateRequest(ClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
+        private static bool ValidateRequest(IClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
         {
             if ((client.User == null) && (client.Robot == null))
             {
@@ -755,6 +755,6 @@ namespace NaoBlocks.Web.Communications
         /// <param name="client">The source client.</param>
         /// <param name="message">The incoming message.</param>
         /// <returns></returns>
-        private delegate Task TypeProcessor(IExecutionEngine engine, ClientConnection client, ClientMessage message);
+        private delegate Task TypeProcessor(IExecutionEngine engine, IClientConnection client, ClientMessage message);
     }
 }

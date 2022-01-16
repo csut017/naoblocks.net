@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Web.Communications;
+using System.Net.WebSockets;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -31,6 +32,16 @@ namespace NaoBlocks.Web.Controllers
             this._messageProcessor = messageProcessor;
         }
 
+
+        /// <summary>
+        /// Gets or sets the connection generator.
+        /// </summary>
+        /// <remarks>
+        /// This property is mainly to allow unit testing.
+        /// </remarks>
+        public Func<WebSocket, ClientConnectionType, IMessageProcessor, IClientConnection> GenerateConnection
+        { get; set; } = (socket, type, processor) => new StandardClientConnection(socket, type, processor);
+
         /// <summary>
         /// Attempts to start a new connection.
         /// </summary>
@@ -51,7 +62,7 @@ namespace NaoBlocks.Web.Controllers
             {
                 this._logger.LogInformation($"Accepting web socket request from {context.Connection.RemoteIpAddress}");
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                var client = new ClientConnection(webSocket, clientType, this._messageProcessor);
+                var client = this.GenerateConnection(webSocket, clientType, this._messageProcessor);
                 this._hub.AddClient(client);
                 await client.StartAsync();
                 client.Dispose();

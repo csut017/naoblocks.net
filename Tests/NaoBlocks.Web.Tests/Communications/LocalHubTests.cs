@@ -327,14 +327,14 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Empty(hub.GetMonitors());
         }
 
-        private static ClientConnection InitialiseClient(ClientConnectionType type = ClientConnectionType.Unknown)
+        private static StandardClientConnection InitialiseClient(ClientConnectionType type = ClientConnectionType.Unknown)
         {
             var hub = new Mock<IHub>();
             var logger = new FakeLogger<MessageProcessor>();
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new ClientConnection(socket.Object, type, processor);
+            var client = new StandardClientConnection(socket.Object, type, processor);
             return client;
         }
         private static string[] ConvertMessageValuesToTestableValues(ClientMessage? message)

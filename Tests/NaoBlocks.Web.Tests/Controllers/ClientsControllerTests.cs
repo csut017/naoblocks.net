@@ -23,10 +23,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                     new ClientMessage(),
                     new ClientMessage()
                 });
-            var client = new Mock<ClientConnection>(
-                new Mock<WebSocket>().Object,
-                ClientConnectionType.Robot,
-                new Mock<IMessageProcessor>().Object);
+            var client = new Mock<IClientConnection>();
             client.Setup(c => c.GetMessageLogAsync())
                 .Returns(Task.FromResult(messages));
             hub.Setup(h => h.GetClient(1))
@@ -52,7 +49,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ClientsController>();
             var hub = new Mock<IHub>();
             hub.Setup(h => h.GetClient(1))
-                .Returns((ClientConnection?)null);
+                .Returns((IClientConnection?)null);
             var controller = new ClientsController(
                 logger,
                 hub.Object);
@@ -89,7 +86,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var hub = new Mock<IHub>();
             hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
                 .Returns(new[] {
-                    new ClientConnection(
+                    new StandardClientConnection(
                         new Mock<WebSocket>().Object,
                         ClientConnectionType.Robot,
                         new Mock<IMessageProcessor>().Object)

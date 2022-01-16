@@ -9,25 +9,25 @@ namespace NaoBlocks.Web.Communications
     /// <summary>
     /// Defines a client connection.
     /// </summary>
-    public class ClientConnection
-        : IDisposable
+    public class StandardClientConnection
+        : IClientConnection
     {
         private readonly CancellationTokenSource cancellationSource = new CancellationTokenSource();
         private readonly IMessageProcessor messageProcessor;
         private readonly ConcurrentQueue<ClientMessage> queue = new ConcurrentQueue<ClientMessage>();
         private readonly WebSocket socket;
-        private readonly IList<ClientConnection> listeners = new List<ClientConnection>();
+        private readonly IList<IClientConnection> listeners = new List<IClientConnection>();
         private readonly IList<ClientMessage> messageLog = new List<ClientMessage>();
         private readonly object messageLogLock = new object();
         private bool isRunning;
 
         /// <summary>
-        /// Initialises a new <see cref="ClientConnection"/> instance.
+        /// Initialises a new <see cref="StandardClientConnection"/> instance.
         /// </summary>
         /// <param name="socket">The socket to use.</param>
         /// <param name="type">The type of client.</param>
         /// <param name="messageProcessor">The processor to use for handling incoming messages.</param>
-        public ClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
+        public StandardClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
         {
             this.socket = socket;
             this.Type = type;
@@ -67,7 +67,7 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves the current listeners.
         /// </summary>
         /// <returns>The current listeners.</returns>
-        public IEnumerable<ClientConnection> RetrieveListeners()
+        public IEnumerable<IClientConnection> RetrieveListeners()
         {
             var messages = this.listeners.ToArray();
             return messages;
@@ -89,7 +89,7 @@ namespace NaoBlocks.Web.Communications
         public bool IsClosing { get; private set; }
 
         /// <summary>
-        /// Gets or sets the associated for (for robot clients).
+        /// Gets or sets the associated robot details (for robot clients).
         /// </summary>
         public Robot? Robot { get; set; }
 
@@ -116,8 +116,8 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Adds a new listener for this client.
         /// </summary>
-        /// <param name="listener">The <see cref="ClientConnection"/> that will listen.</param>
-        public void AddListener(ClientConnection listener)
+        /// <param name="listener">The <see cref="IClientConnection"/> that will listen.</param>
+        public void AddListener(IClientConnection listener)
         {
             this.listeners.Add(listener);
             listener.Closed += (o, e) => this.RemoveListener(listener);
@@ -178,7 +178,7 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves the message log.
         /// </summary>
         /// <returns>The messages in the log.</returns>
-        public virtual Task<IReadOnlyCollection<ClientMessage>> GetMessageLogAsync()
+        public Task<IReadOnlyCollection<ClientMessage>> GetMessageLogAsync()
         {
             var clone = new ClientMessage[this.messageLog.Count];
             lock (this.messageLogLock)
@@ -204,8 +204,8 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Removes a listening client.
         /// </summary>
-        /// <param name="listener">The listening <see cref="ClientConnection"/> to remove.</param>
-        public void RemoveListener(ClientConnection listener)
+        /// <param name="listener">The listening <see cref="IClientConnection"/> to remove.</param>
+        public void RemoveListener(IClientConnection listener)
         {
             if (this.listeners.Contains(listener)) this.listeners.Remove(listener);
         }
@@ -255,7 +255,7 @@ namespace NaoBlocks.Web.Communications
         /// Disposes of the internal resources.
         /// </summary>
         /// <param name="disposing">True if the instance is being disposed.</param>
-        protected virtual void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
             if (disposing)
             {

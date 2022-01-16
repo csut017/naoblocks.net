@@ -42,7 +42,7 @@ namespace NaoBlocks.Web.Dtos
         /// </summary>
         /// <param name="value">The database entity.</param>
         /// <returns>A new <see cref="CommunicationsClient"/> instance containing the required properties.</returns>
-        public static CommunicationsClient FromModel(ClientConnection value)
+        public static CommunicationsClient FromModel(IClientConnection value)
         {
             return new CommunicationsClient
             {

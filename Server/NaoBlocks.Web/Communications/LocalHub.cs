@@ -8,18 +8,18 @@ namespace NaoBlocks.Web.Communications
     /// </summary>
     public class LocalHub : IHub
     {
-        private readonly IDictionary<long, ClientConnection> clients = new Dictionary<long, ClientConnection>();
+        private readonly IDictionary<long, IClientConnection> clients = new Dictionary<long, IClientConnection>();
         private long nextClientId;
         private bool disposedValue;
-        private readonly HashSet<ClientConnection> monitors = new();
+        private readonly HashSet<IClientConnection> monitors = new();
         private readonly ReaderWriterLockSlim clientsLock = new();
         private readonly ReaderWriterLockSlim monitorLock = new();
 
         /// <summary>
-        /// Adds a new <see cref="ClientConnection"/>.
+        /// Adds a new <see cref="IClientConnection"/>.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
-        public void AddClient(ClientConnection client)
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        public void AddClient(IClientConnection client)
         {
             var isLocked = false;
             try
@@ -47,16 +47,16 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Retrieves a <see cref="ClientConnection"/> instance by its identifier.
+        /// Retrieves a <see cref="IClientConnection"/> instance by its identifier.
         /// </summary>
         /// <param name="id">The client identifier.</param>
-        /// <returns>The <see cref="ClientConnection"/> if found, null otherwise.</returns>
-        public ClientConnection? GetClient(long id)
+        /// <returns>The <see cref="IClientConnection"/> if found, null otherwise.</returns>
+        public IClientConnection? GetClient(long id)
         {
             this.clientsLock.TryEnterReadLock(TimeSpan.FromSeconds(1));
             try
             {
-                return this.clients.TryGetValue(id, out ClientConnection? client) ? client : null;
+                return this.clients.TryGetValue(id, out IClientConnection? client) ? client : null;
             }
             finally
             {
@@ -69,7 +69,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="type">The client type to retrieve.</param>
         /// <returns>All the current connections.</returns>
-        public IEnumerable<ClientConnection> GetClients(ClientConnectionType type)
+        public IEnumerable<IClientConnection> GetClients(ClientConnectionType type)
         {
             this.clientsLock.EnterReadLock();
             try
@@ -90,7 +90,7 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves all the current connections regardless of type.
         /// </summary>
         /// <returns>All the current connections.</returns>
-        public IEnumerable<ClientConnection> GetAllClients()
+        public IEnumerable<IClientConnection> GetAllClients()
         {
             this.clientsLock.EnterReadLock();
             try
@@ -140,8 +140,8 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Removes a client.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
-        public void RemoveClient(ClientConnection client)
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        public void RemoveClient(IClientConnection client)
         {
             var isLocked = false;
             try
@@ -175,7 +175,7 @@ namespace NaoBlocks.Web.Communications
         /// Retrieves all the current monitor connections.
         /// </summary>
         /// <returns>All the current monitor connections.</returns>
-        public IEnumerable<ClientConnection> GetMonitors()
+        public IEnumerable<IClientConnection> GetMonitors()
         {
             this.monitorLock.EnterReadLock();
             try
@@ -191,10 +191,10 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Adds a new monitor <see cref="ClientConnection"/>.
+        /// Adds a new monitor <see cref="IClientConnection"/>.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to add.</param>
-        public void AddMonitor(ClientConnection client)
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        public void AddMonitor(IClientConnection client)
         {
             var isLocked = false;
             try
@@ -226,9 +226,9 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Generates the message for adding a client.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> that is being notified.</param>
+        /// <param name="client">The <see cref="IClientConnection"/> that is being notified.</param>
         /// <returns>A <see cref="ClientMessage"/> containing the details about the client.</returns>
-        private static ClientMessage GenerateAddClientMessage(ClientConnection client)
+        private static ClientMessage GenerateAddClientMessage(IClientConnection client)
         {
             var msg = new ClientMessage
             {
@@ -256,8 +256,8 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Removes a monitor.
         /// </summary>
-        /// <param name="client">The <see cref="ClientConnection"/> to remove.</param>
-        public void RemoveMonitor(ClientConnection client)
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        public void RemoveMonitor(IClientConnection client)
         {
             var isLocked = false;
             try
@@ -310,7 +310,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="clients">The clients to send the message to.</param>
-        private static void SendToAllInternal(ClientMessage message, IEnumerable<ClientConnection> clients)
+        private static void SendToAllInternal(ClientMessage message, IEnumerable<IClientConnection> clients)
         {
             foreach (var client in clients)
             {
