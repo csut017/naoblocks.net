@@ -19,6 +19,6 @@ export class ExecutionStatusComponent implements OnInit {
   }
 
   doClose(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(true);
   }
 }

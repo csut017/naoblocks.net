@@ -8,12 +8,46 @@ namespace NaoBlocks.Web.Communications
     /// </summary>
     public class LocalHub : IHub
     {
+        private readonly CancellationTokenSource cancellationSource = new();
         private readonly IDictionary<long, IClientConnection> clients = new Dictionary<long, IClientConnection>();
         private long nextClientId;
         private bool disposedValue;
         private readonly HashSet<IClientConnection> monitors = new();
         private readonly ReaderWriterLockSlim clientsLock = new();
         private readonly ReaderWriterLockSlim monitorLock = new();
+        private readonly ILogger<LocalHub> logger;
+
+        /// <summary>
+        /// Initialises a new <see cref="LocalHub"/> instance.
+        /// </summary>
+        public LocalHub(ILogger<LocalHub> logger)
+        {
+            Task.Run(async () => await this.CheckClientsAreAvailable(this.cancellationSource.Token));
+            this.logger = logger;
+        }
+
+        /// <summary>
+        /// Internal message processing loop to check robot clients are not in a stalled state.
+        /// </summary>
+        private async Task CheckClientsAreAvailable(CancellationToken cancelToken)
+        {
+            while (!cancelToken.IsCancellationRequested)
+            {
+                logger.LogInformation("Checking for stalled robots");
+                var clients = this.GetClients(ClientConnectionType.Robot);
+                var deadline = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(2));
+                foreach (var client in clients.Where(c => c.RobotDetails != null))
+                {
+                    if (!client.Status.IsAvailable && (client.RobotDetails!.LastUpdateTime < deadline))
+                    {
+                        logger.LogInformation($"Robot {client.Robot?.MachineName} appears to be stalled: sending stop message");
+                        client.SendMessage(new ClientMessage(ClientMessageType.StopProgram));
+                    }
+                }
+
+                await Task.Delay(TimeSpan.FromMinutes(2), cancelToken);
+            }
+        }
 
         /// <summary>
         /// Adds a new <see cref="IClientConnection"/>.
@@ -290,6 +324,8 @@ namespace NaoBlocks.Web.Communications
                 {
                     this.clientsLock.Dispose();
                     this.monitorLock.Dispose();
+                    this.cancellationSource.Cancel();
+                    this.cancellationSource.Dispose();
                 }
 
                 disposedValue = true;

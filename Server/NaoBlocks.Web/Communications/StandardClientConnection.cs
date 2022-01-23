@@ -287,7 +287,7 @@ namespace NaoBlocks.Web.Communications
                 }
                 else
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    Thread.Sleep(TimeSpan.FromSeconds(0.1));
                 }
             }
         }

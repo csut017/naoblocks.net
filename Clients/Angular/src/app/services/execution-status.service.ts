@@ -28,7 +28,7 @@ export class ExecutionStatusService {
     });
   }
 
-  close(): void {
-    this.dialogRef?.close();
+  close(isCancelling: false): void {
+    this.dialogRef?.close(isCancelling);
   }
 }

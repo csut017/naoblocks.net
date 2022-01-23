@@ -15,7 +15,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddClientAddsClient()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
 
             // Act
@@ -30,7 +30,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddClientSetsClientId()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
 
             // Act
@@ -45,7 +45,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void ClosingAClientRemovesIt()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
             hub.AddClient(client);
 
@@ -60,7 +60,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void GetClientHandlesMissingClient()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
 
             // Act
             var actual = hub.GetClient(1);
@@ -73,7 +73,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void GetClientsReturnsOnlyClientsOfType()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             hub.AddClient(client);
 
@@ -86,7 +86,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void GetAllClientsReturnsAllClients()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var robot = InitialiseClient(ClientConnectionType.Robot);
             var user = InitialiseClient(ClientConnectionType.User);
             hub.AddClient(robot);
@@ -104,7 +104,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void RemoveClientRemovesClient()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             hub.AddClient(client);
 
@@ -120,7 +120,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddClientMessagesMonitors()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var monitor = InitialiseClient(ClientConnectionType.User);
             var client = InitialiseClient(ClientConnectionType.Robot);
             hub.AddMonitor(monitor);
@@ -141,7 +141,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void RemoveClientMessagesMonitors()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             var monitor = InitialiseClient(ClientConnectionType.User);
             hub.AddClient(client);
@@ -164,7 +164,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void SendToMonitorsHandlesNoMonitors()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             hub.AddClient(client);
 
@@ -176,7 +176,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void SendToMonitorsSendsMessage()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             var monitor = InitialiseClient(ClientConnectionType.User);
             hub.AddClient(client);
@@ -196,7 +196,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void SendToAllSendsMessage()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var robot = InitialiseClient(ClientConnectionType.Robot);
             var user = InitialiseClient(ClientConnectionType.User);
             hub.AddClient(robot);
@@ -219,7 +219,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void SendToAllWithTypeSendsMessageToOnlyType()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var robot = InitialiseClient(ClientConnectionType.Robot);
             var user = InitialiseClient(ClientConnectionType.User);
             hub.AddClient(robot);
@@ -240,7 +240,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddMonitorAddsMonitor()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
 
             // Act
@@ -255,7 +255,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddMonitorNotifiesMonitorAboutUsers()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.User);
             client.User = new User { Name = "Mia", Role = UserRole.Student };
             hub.AddClient(client);
@@ -276,7 +276,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddMonitorNotifiesMonitorAboutRobots()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient(ClientConnectionType.Robot);
             client.Robot = new Robot
             {
@@ -301,7 +301,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void RemoveMonitorRemovesMonitor()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
 
             // Act
@@ -316,7 +316,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void ClosingMonitorRemovesMonitor()
         {
             // Arrange
-            using var hub = new LocalHub();
+            using var hub = new LocalHub(new FakeLogger<LocalHub>());
             var client = InitialiseClient();
 
             // Act

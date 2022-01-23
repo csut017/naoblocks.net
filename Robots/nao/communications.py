@@ -2,6 +2,7 @@ import logging
 import json
 import socket
 from threading import Lock, Thread
+import threading
 import time
 import traceback
 
@@ -211,6 +212,7 @@ class Communications(object):
 
         elif data['type'] == 2:
             logger.log('[Comms] Robot has been authenticated')
+            time.sleep(1)       # Need to add a delay as the server needs time to update the database after the first authentication
             self.send(501, {'state': 'Waiting'})
             self._conversationId = 0
 

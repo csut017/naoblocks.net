@@ -13,7 +13,10 @@ namespace NaoBlocks.Engine.Commands
     {
         private Robot? robot;
 
-        private Conversation? conversation;
+        /// <summary>
+        /// Gets or sets the associated conversation.
+        /// </summary>
+        public Conversation? Conversation { get; set; }
 
         /// <summary>
         /// Gets or sets the machine name of the robot.
@@ -41,14 +44,6 @@ namespace NaoBlocks.Engine.Commands
         public long ConversationId { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the command should skip the conversation check.
-        /// </summary>
-        /// <remarks>
-        /// The conversation check should only be skipped if the system has already verified the conversation exists.
-        /// </remarks>
-        public bool SkipConversationCheck { get; set; }
-
-        /// <summary>
         /// Validates the robot details.
         /// </summary>
         /// <param name="session">The database session to use.</param>
@@ -70,7 +65,7 @@ namespace NaoBlocks.Engine.Commands
             if (!errors.Any())
             {
                 this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
-                if (!this.SkipConversationCheck) await ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
+                if (this.Conversation == null) await ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
             }
 
             return errors.AsEnumerable();
@@ -84,8 +79,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.robot);
-            if (!this.SkipConversationCheck) ValidateExecutionState(this.conversation);
+            ValidateExecutionState(this.robot, this.Conversation);
 
             var log = await session.Query<RobotLog>()
                 .FirstOrDefaultAsync(rl => rl.RobotId == this.robot!.Id && rl.Conversation.ConversationId == this.ConversationId);
@@ -93,7 +87,7 @@ namespace NaoBlocks.Engine.Commands
             {
                 log = new RobotLog
                 {
-                    Conversation = this.conversation!,
+                    Conversation = this.Conversation!,
                     RobotId = this.robot!.Id,
                     WhenAdded = this.WhenExecuted
                 };
@@ -126,17 +120,17 @@ namespace NaoBlocks.Engine.Commands
         {
             var errors = new List<CommandError>();
             this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
-            if (!this.SkipConversationCheck) await this.ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
+            if (this.Conversation == null) await this.ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
             return errors.AsEnumerable();
         }
 
         private async Task ValidateAndRetrieveConversation(IDatabaseSession session, List<CommandError> errors)
         {
-            this.conversation = await session.Query<Conversation>()
+            this.Conversation = await session.Query<Conversation>()
                                 .FirstOrDefaultAsync(c => c.ConversationId == this.ConversationId);
-            if (this.conversation == null)
+            if (this.Conversation == null)
             {
-                errors.Add(this.GenerateError($"Unknown conversation"));
+                errors.Add(this.GenerateError($"Unknown conversation {this.ConversationId}"));
             }
         }
     }

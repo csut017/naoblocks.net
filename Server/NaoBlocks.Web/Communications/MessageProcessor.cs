@@ -157,6 +157,7 @@ namespace NaoBlocks.Web.Communications
                 return;
             }
 
+            logger.LogInformation($"Stopping program on {robotClient?.Robot?.MachineName}");
             var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
             robotClient!.SendMessage(clientMessage);
             if (robotClient.Robot != null)
@@ -232,6 +233,7 @@ namespace NaoBlocks.Web.Communications
                 opts = "{}";
             }
 
+            logger.LogInformation($"Starting program on {robotClient?.Robot?.MachineName}");
             var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
             clientMessage.Values.Add("program", programId);
             clientMessage.Values.Add("opts", opts);
@@ -260,6 +262,11 @@ namespace NaoBlocks.Web.Communications
                     client.RobotDetails.SourceIds.Add(sourceId);
                 }
             }
+
+            if (client.RobotDetails != null)
+            {
+                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
+            }
         }
 
         /// <summary>
@@ -269,6 +276,7 @@ namespace NaoBlocks.Web.Communications
         {
             if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
 
+            logger.LogInformation($"Attempting to allocate robot for {client.User?.Name}");
             IClientConnection? nextRobot = null;
             if ((client.User?.Settings != null) && (client.User.Settings.AllocationMode > 0))
             {
@@ -296,9 +304,11 @@ namespace NaoBlocks.Web.Communications
             {
                 this.logger.LogInformation($"No robots available for allocation");
                 client.SendMessage(GenerateResponse(message, ClientMessageType.NoRobotsAvailable));
+                logger.LogInformation($"Unable to allocate robot for {client.User?.Name}");
                 return;
             }
 
+            logger.LogInformation($"Allocated robot {nextRobot.Robot.MachineName} to {client.User?.Name}");
             nextRobot.Status.IsAvailable = false;
             nextRobot.Status.LastAllocatedTime = DateTime.UtcNow;
             nextRobot.AddListener(client);
@@ -319,6 +329,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         private async Task Authenticate(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
+            this.logger.LogInformation("Authenticating");
             if (!message.Values.TryGetValue("token", out string? token))
             {
                 client.SendMessage(GenerateErrorResponse(message, "Token is missing"));
@@ -373,15 +384,17 @@ namespace NaoBlocks.Web.Communications
                     return;
                 }
 
-                if (!await this.StartConversation(message, client, engine, new StartRobotConversation
+                this.logger.LogInformation($"Authenticated robot {client.Robot.MachineName}");
+                var conversation = await this.StartConversation(message, client, engine, new StartRobotConversation
                 {
                     Name = client.Robot.MachineName
-                }))
+                });
+                if (conversation == null)
                 {
                     return;
                 }
 
-                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, "Robot authenticated", false, true);
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, "Robot authenticated", false, conversation);
                 msg.Values["Type"] = "robot";
                 msg.Values["SubType"] = client.Robot!.Type?.Name ?? "Unknown";
                 msg.Values["Name"] = client.Robot!.FriendlyName;
@@ -397,10 +410,12 @@ namespace NaoBlocks.Web.Communications
                     return;
                 }
 
-                if (!await this.StartConversation(message, client, engine, new StartUserConversation
+                this.logger.LogInformation($"Authenticated user {client.User.Name}");
+                var conversation = await this.StartConversation(message, client, engine, new StartUserConversation
                 {
                     Name = client.User.Name
-                }))
+                });
+                if (conversation == null)
                 {
                     return;
                 }
@@ -420,7 +435,7 @@ namespace NaoBlocks.Web.Communications
         /// Attempts to start a conversation for the message stream.
         /// </summary>
         /// <returns>True if successful, false otherwise.</returns>
-        private async Task<bool> StartConversation(ClientMessage message, IClientConnection client, IExecutionEngine engine, CommandBase command)
+        private async Task<Conversation?> StartConversation(ClientMessage message, IClientConnection client, IExecutionEngine engine, CommandBase command)
         {
             var errors = new List<CommandError>();
             var result = await ValidateAndExecuteCommand(engine, errors, command);
@@ -432,11 +447,12 @@ namespace NaoBlocks.Web.Communications
                 }
 
                 client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
-                return false;
+                return null;
             }
 
-            message.ConversationId = result.As<Conversation>().Output!.ConversationId;
-            return true;
+            var conversation = result.As<Conversation>().Output!;
+            message.ConversationId = conversation.ConversationId;
+            return conversation;
         }
 
         /// <summary>
@@ -450,6 +466,7 @@ namespace NaoBlocks.Web.Communications
             {
                 client.Status.IsAvailable = state == "Waiting";
                 client.Status.Message = string.IsNullOrWhiteSpace(state) ? "Unknown" : state;
+                logger.LogInformation($"Updating state for {client.Robot?.MachineName} to {client.Status.Message}");
             }
             else
             {
@@ -469,6 +486,11 @@ namespace NaoBlocks.Web.Communications
             if (client.Robot != null)
             {
                 await AddToRobotLogAsync(engine, client.Robot.MachineName, message, $"State updated to {client.Status.Message}");
+            }
+
+            if (client.RobotDetails != null)
+            {
+                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
             }
         }
 
@@ -630,8 +652,8 @@ namespace NaoBlocks.Web.Communications
         /// <param name="message">The message that the line is being generated as a result of.</param>
         /// <param name="description">The description of the line.</param>
         /// <param name="skipValues">Whether to include the values or not.</param>
-        /// <param name="skipConversationCheck">Whether the command should check the conversation check or not.</param>
-        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false, bool skipConversationCheck = false)
+        /// <param name="conversation">An optional conversation to associate.</param>
+        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false, Conversation? conversation = null)
         {
             var errors = new List<CommandError>();
             if (message.ConversationId == null)
@@ -647,7 +669,7 @@ namespace NaoBlocks.Web.Communications
                     MachineName = machineName,
                     Description = description,
                     SourceMessageType = message.Type,
-                    SkipConversationCheck = skipConversationCheck
+                    Conversation = conversation
                 };
 
                 if (!skipValues)

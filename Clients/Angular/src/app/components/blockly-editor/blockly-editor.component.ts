@@ -6,7 +6,7 @@ import { EditorSettings } from 'src/app/data/editor-settings';
 import { RunSettings } from 'src/app/data/run-settings';
 import { StartupStatusTracker } from 'src/app/data/startup-status-tracker';
 import { ConfirmService } from 'src/app/services/confirm.service';
-import { ConnectionService } from 'src/app/services/connection.service';
+import { ClientMessage, ClientMessageType, ConnectionService } from 'src/app/services/connection.service';
 import { ExecutionStatusService } from 'src/app/services/execution-status.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { ProgramService } from 'src/app/services/program.service';
@@ -24,7 +24,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
 
   @Input() controller?: ProgramControllerService;
   @Input() editorSettings: EditorSettings = new EditorSettings();
-  
+
   controllerSubscription?: Subscription;
   error: string = '';
   hasChanged: boolean = false;
@@ -80,7 +80,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   ngOnInit(): void {
     this.initialiseWorkspace();
   }
-  
+
   loadIntoWorkspace(xml: HTMLElement): void {
     console.log('[StudentHome] Loading workspace');
     try {
@@ -164,7 +164,15 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   stop(): void {
-    this.controller!.isPlaying = false;
+    if (!this.messageProcessor?.isExecuting) {
+      this.controller!.isPlaying = false;
+      return;
+    }
+
+    let msg = new ClientMessage(ClientMessageType.StopProgram);
+    msg.conversationId = this.messageProcessor?.lastConversationId;
+    msg.values['robot'] = this.messageProcessor?.assignedRobot || '';
+    this.connection.send(msg);
   }
 
   play(settings: RunSettings): void {
@@ -175,7 +183,13 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
     this.messageProcessor = new ServerMessageProcessorService(this.connection, this, settings);
     this.startupStatus.initialise();
     this.executionStatus.show(this.startupStatus)
-      .subscribe(_ => this.stop());
+      .subscribe(isCancelling => {
+        if (!!this.startupStatus.startMessage) {
+          this.controller!.isPlaying = false;
+        } else if (isCancelling) {
+          this.stop();
+        }
+      });
     let validationResult = this.validateBlocks();
     if (!!validationResult) {
       this.onStepFailed(0, validationResult);
@@ -335,6 +349,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   onShowDebug(): void {
-    this.executionStatus.close();
+    this.executionStatus.close(false);
   }
 }
