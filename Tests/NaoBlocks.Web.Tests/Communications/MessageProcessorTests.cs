@@ -31,7 +31,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Unknown);
@@ -55,7 +55,7 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Throws(new Exception("error"));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.ProgramStarted);
@@ -80,7 +80,7 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Returns((engine, session.Object));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.ProgramStarted);
@@ -1022,6 +1022,8 @@ namespace NaoBlocks.Web.Tests.Communications
                     UserId = "robots/1"
                 }));
             engine.RegisterQuery(sessionQuery.Object);
+            engine.ExpectCommand<StartRobotConversation>(CommandResult.New(1, new Data.Conversation { ConversationId = 2 }));
+            engine.ExpectCommand<AddToRobotLog>();
             var robotQuery = new Mock<RobotData>();
             robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
                 .Returns(Task.FromResult<Data.Robot?>(new Data.Robot()));
@@ -1059,6 +1061,8 @@ namespace NaoBlocks.Web.Tests.Communications
                     UserId = "robots/1"
                 }));
             engine.RegisterQuery(sessionQuery.Object);
+            engine.ExpectCommand<StartRobotConversation>(CommandResult.New(1, new Data.Conversation { ConversationId = 2 }));
+            engine.ExpectCommand<AddToRobotLog>();
             var robotQuery = new Mock<RobotData>();
             robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
                 .Returns(Task.FromResult<Data.Robot?>(new Data.Robot { FriendlyName = "Mia" }));
@@ -1097,6 +1101,8 @@ namespace NaoBlocks.Web.Tests.Communications
                     UserId = "robots/1"
                 }));
             engine.RegisterQuery(sessionQuery.Object);
+            engine.ExpectCommand<StartRobotConversation>(CommandResult.New(1, new Data.Conversation { ConversationId = 2 }));
+            engine.ExpectCommand<AddToRobotLog>();
             var robotQuery = new Mock<RobotData>();
             robotQuery.Setup(q => q.RetrieveByIdAsync("robots/1"))
                 .Returns(Task.FromResult<Data.Robot?>(new Data.Robot
@@ -1163,7 +1169,7 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartConversation>();
+            engine.ExpectCommand<StartUserConversation>();
             engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
 
             // Act
@@ -1195,7 +1201,7 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartConversation>();
+            engine.ExpectCommand<StartUserConversation>();
             engine.OnExecute = c => new CommandResult(1, "Failed");
 
             // Act
@@ -1235,7 +1241,7 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartConversation>();
+            engine.ExpectCommand<StartUserConversation>();
             engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
 
             // Act
@@ -1453,7 +1459,7 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Returns((engine, session.Object));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, type, processor);
+            var client = new StandardClientConnection(socket.Object, type, processor, new FakeLogger<StandardClientConnection>());
             return (engine, processor, client);
         }
 
@@ -1464,7 +1470,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor);
+            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
             client.AddListener(listener);
             return listener;
         }
@@ -1476,7 +1482,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, type, processor);
+            var client = new StandardClientConnection(socket.Object, type, processor, new FakeLogger<StandardClientConnection>());
             return client;
         }
 

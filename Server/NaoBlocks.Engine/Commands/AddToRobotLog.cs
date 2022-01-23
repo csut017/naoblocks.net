@@ -41,6 +41,14 @@ namespace NaoBlocks.Engine.Commands
         public long ConversationId { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the command should skip the conversation check.
+        /// </summary>
+        /// <remarks>
+        /// The conversation check should only be skipped if the system has already verified the conversation exists.
+        /// </remarks>
+        public bool SkipConversationCheck { get; set; }
+
+        /// <summary>
         /// Validates the robot details.
         /// </summary>
         /// <param name="session">The database session to use.</param>
@@ -62,7 +70,7 @@ namespace NaoBlocks.Engine.Commands
             if (!errors.Any())
             {
                 this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
-                await ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
+                if (!this.SkipConversationCheck) await ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
             }
 
             return errors.AsEnumerable();
@@ -76,7 +84,8 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.robot, this.conversation);
+            ValidateExecutionState(this.robot);
+            if (!this.SkipConversationCheck) ValidateExecutionState(this.conversation);
 
             var log = await session.Query<RobotLog>()
                 .FirstOrDefaultAsync(rl => rl.RobotId == this.robot!.Id && rl.Conversation.ConversationId == this.ConversationId);
@@ -117,7 +126,7 @@ namespace NaoBlocks.Engine.Commands
         {
             var errors = new List<CommandError>();
             this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
-            await this.ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
+            if (!this.SkipConversationCheck) await this.ValidateAndRetrieveConversation(session, errors).ConfigureAwait(false);
             return errors.AsEnumerable();
         }
 

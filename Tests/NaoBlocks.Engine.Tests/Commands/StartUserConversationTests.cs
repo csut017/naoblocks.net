@@ -6,12 +6,12 @@ using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
 {
-    public class StartConversationTests : DatabaseHelper
+    public class StartUserConversationTests : DatabaseHelper
     {
         [Fact]
         public async Task ValidationChecksInputs()
         {
-            var command = new StartConversation();
+            var command = new StartUserConversation();
             var engine = new FakeEngine();
             var errors = await engine.ValidateAsync(command);
             Assert.Equal(new[] { "Name is required" }, FakeEngine.GetErrors(errors));
@@ -20,7 +20,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ValidatePassesChecks()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };
@@ -34,7 +34,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ValidateChecksForExistingUser()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };
@@ -48,7 +48,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ExecuteAddsSystemValues()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };
@@ -77,7 +77,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ExecuteUpdatesSystemValues()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };
@@ -108,7 +108,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task ExecuteChecksInitialState()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = " Bob "
             };
@@ -121,7 +121,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task RestoreFailsIfUserIsMissing()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };
@@ -135,7 +135,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [Fact]
         public async Task RestoreReloadsUser()
         {
-            var command = new StartConversation
+            var command = new StartUserConversation
             {
                 Name = "Bob"
             };

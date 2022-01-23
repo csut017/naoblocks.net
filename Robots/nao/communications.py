@@ -1,7 +1,7 @@
 import logging
 import json
 import socket
-from threading import Thread
+from threading import Lock, Thread
 import time
 import traceback
 
@@ -38,6 +38,9 @@ class Communications(object):
         self._closing = False
         self._engine = None
         self._ws = None
+        self._lock = Lock()
+        self._is_running = False
+
 
     def start(self, address, pwd=None, verify=True, secure=True, name=None):
         self._verify = verify
@@ -152,7 +155,13 @@ class Communications(object):
         self._engine.configure(opts)
         self.send(102, {})
         self.send(501, {'state': 'Running'})
+        self._lock.acquire()
+        self._is_running = True
+        self._lock.release()
         self._engine.run(self._ast)
+        self._lock.acquire()
+        self._is_running = False
+        self._lock.release()
         self.send(202 if self._engine.is_cancelled else 103, {})
         self.send(501, {'state': 'Waiting'})
         self._conversationId = 0
@@ -189,9 +198,16 @@ class Communications(object):
             thrd.start()
 
         elif data['type'] == 201:
-            logger.log('[Comms] Cancelling current run')
-            self.send(501, {'state': 'Cancelling'})
-            self._engine.cancel()
+            self._lock.acquire()
+            is_running = self._is_running
+            self._lock.release()
+
+            if is_running:
+                logger.log('[Comms] Cancelling current run')
+                self.send(501, {'state': 'Cancelling'})
+                self._engine.cancel()
+            else:
+                logger.log('[Comms] Ignoring cancellation - already completed')
 
         elif data['type'] == 2:
             logger.log('[Comms] Robot has been authenticated')

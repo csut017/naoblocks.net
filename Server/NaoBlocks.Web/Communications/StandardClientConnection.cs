@@ -12,13 +12,14 @@ namespace NaoBlocks.Web.Communications
     public class StandardClientConnection
         : IClientConnection
     {
-        private readonly CancellationTokenSource cancellationSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource cancellationSource = new();
         private readonly IMessageProcessor messageProcessor;
-        private readonly ConcurrentQueue<ClientMessage> queue = new ConcurrentQueue<ClientMessage>();
+        private readonly ILogger<StandardClientConnection> logger;
+        private readonly ConcurrentQueue<ClientMessage> queue = new();
         private readonly WebSocket socket;
         private readonly IList<IClientConnection> listeners = new List<IClientConnection>();
         private readonly IList<ClientMessage> messageLog = new List<ClientMessage>();
-        private readonly object messageLogLock = new object();
+        private readonly object messageLogLock = new();
         private bool isRunning;
 
         /// <summary>
@@ -27,11 +28,13 @@ namespace NaoBlocks.Web.Communications
         /// <param name="socket">The socket to use.</param>
         /// <param name="type">The type of client.</param>
         /// <param name="messageProcessor">The processor to use for handling incoming messages.</param>
-        public StandardClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor)
+        /// <param name="logger">The logger to use.</param>
+        public StandardClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<StandardClientConnection> logger)
         {
             this.socket = socket;
             this.Type = type;
             this.messageProcessor = messageProcessor;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -138,6 +141,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         public void Close()
         {
+            this.logger.LogInformation($"Closing socket connection {this.Id}: server closed");
             this.cancellationSource.Cancel();
             if (this.isRunning)
             {
@@ -215,6 +219,7 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         public async Task StartAsync()
         {
+            this.logger.LogInformation($"Starting socket connection {this.Id}");
             this.IsClosing = false;
             this.isRunning = true;
             var pushTask = Task.Run(async () => await this.PushMessagesAsync(this.cancellationSource.Token));
@@ -224,7 +229,10 @@ namespace NaoBlocks.Web.Communications
                 {
                     var (response, message) = await this.ReceiveFullMessageAsync(this.cancellationSource.Token);
                     if (response.MessageType == WebSocketMessageType.Close)
+                    {
+                        this.logger.LogInformation($"Closing socket connection {this.Id}: client closed");
                         break;
+                    }
 
                     if (message.Any())
                     {
@@ -241,6 +249,7 @@ namespace NaoBlocks.Web.Communications
                 switch (ex.WebSocketErrorCode)
                 {
                     case WebSocketError.ConnectionClosedPrematurely:
+                        this.logger.LogInformation($"Closing socket connection {this.Id}: closed on error");
                         this.isRunning = false;
                         this.Closed?.Invoke(this, EventArgs.Empty);
                         break;

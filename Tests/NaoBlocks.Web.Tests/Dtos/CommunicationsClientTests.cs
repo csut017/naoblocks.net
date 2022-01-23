@@ -16,7 +16,8 @@ namespace NaoBlocks.Web.Tests.Dtos
             var entity = new StandardClientConnection(
                 new Mock<WebSocket>().Object, 
                 ClientConnectionType.User, 
-                new Mock<IMessageProcessor>().Object)
+                new Mock<IMessageProcessor>().Object, 
+                new FakeLogger<StandardClientConnection>())
             {
                 Id = 1,
                 User = new Data.User { Name = "Mia" }
@@ -35,7 +36,8 @@ namespace NaoBlocks.Web.Tests.Dtos
             var entity = new StandardClientConnection(
                 new Mock<WebSocket>().Object,
                 ClientConnectionType.Robot,
-                new Mock<IMessageProcessor>().Object)
+                new Mock<IMessageProcessor>().Object,
+                new FakeLogger<StandardClientConnection>())
             {
                 Id = 3,
                 Robot = new Data.Robot { MachineName = "karetao" }

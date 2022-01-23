@@ -89,7 +89,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                     new StandardClientConnection(
                         new Mock<WebSocket>().Object,
                         ClientConnectionType.Robot,
-                        new Mock<IMessageProcessor>().Object)
+                        new Mock<IMessageProcessor>().Object, 
+                        new FakeLogger<StandardClientConnection>())
                 });
             var controller = new ClientsController(
                 logger,

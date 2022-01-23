@@ -48,7 +48,7 @@ namespace NaoBlocks.Engine.Generators
             var table = generator.AddTable("Logs");
             var data = await this.Session.Query<RobotLog>()
                 .Include(rl => rl.RobotId)
-                .Where(rl => rl.Conversation.UserId == this.User.Id)
+                .Where(rl => rl.Conversation.SourceId == this.User.Id)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

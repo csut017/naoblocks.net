@@ -9,7 +9,13 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "--test",
+                "--ignoreSSL",
+                "--server=localhost:5001",
+                "--password=one"
+            ]
         }
     ]
 }

@@ -5,21 +5,20 @@ using Raven.Client.Documents;
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
-    /// A command for clearing all program logs for a user.
+    /// A command for starting a conversation for a robot.
     /// </summary>
-    public class ClearProgramLogs
-        : UserCommandBase
+    public class StartRobotConversation
+        : RobotCommandBase
     {
-        private User? user;
+        private Robot? robot;
 
         /// <summary>
-        /// Gets or sets the user name.
+        /// Gets or sets the robot machine name.
         /// </summary>
-        public string? UserName { get; set; }
-
+        public string? Name { get; set; }
 
         /// <summary>
-        /// Validates the snapshot.
+        /// Validates the robot via their machine name.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
@@ -27,21 +26,23 @@ namespace NaoBlocks.Engine.Commands
         public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
-            if (string.IsNullOrWhiteSpace(this.UserName))
+
+            if (string.IsNullOrWhiteSpace(this.Name))
             {
-                errors.Add(this.GenerateError($"Username is required"));
+                errors.Add(this.GenerateError($"Name is required"));
             }
 
             if (!errors.Any())
             {
-                this.user = await this.ValidateAndRetrieveUser(session, this.UserName, UserRole.User, errors);
+                this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors)
+                    .ConfigureAwait(false);
             }
 
             return errors.AsEnumerable();
         }
 
         /// <summary>
-        /// Stores the snapshot in the database.
+        /// Stores the program in the database.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
@@ -49,26 +50,25 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.user);
-            var snapshots = await session.Query<CodeProgram>()
-                .Where(cp => cp.UserId == this.user!.Id)
-                .ToListAsync()
-                .ConfigureAwait(false);
-            foreach (var snapshot in snapshots)
-            {
-                session.Delete(snapshot);
-            }
+            ValidateExecutionState(this.robot);
 
-            var logs = await session.Query<RobotLog>()
-                .Where(cp => cp.Conversation.SourceId == this.user!.Id)
-                .ToListAsync()
-                .ConfigureAwait(false);
-            foreach (var log in logs)
+            var systemValues = await session.Query<SystemValues>().FirstOrDefaultAsync();
+            if (systemValues == null)
             {
-                session.Delete(log);
+                systemValues = new SystemValues();
+                await session.StoreAsync(systemValues);
             }
+            var conversationId = ++systemValues.NextConversationId;
+            var conversation = new Conversation
+            {
+                ConversationId = conversationId,
+                SourceId = this.robot!.Id,
+                SourceName = this.robot.MachineName,
+                SourceType = "Robot"
+            };
+            await session.StoreAsync(conversation);
 
-            return CommandResult.New(this.Number);
+            return CommandResult.New(this.Number, conversation);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace NaoBlocks.Engine.Commands
         public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
-            this.user = await this.ValidateAndRetrieveUser(session, this.UserName, UserRole.User, errors).ConfigureAwait(false);
+            this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors).ConfigureAwait(false);
             return errors.AsEnumerable();
         }
     }

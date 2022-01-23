@@ -5,9 +5,9 @@ using Raven.Client.Documents;
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
-    /// A command for starting a conversation.
+    /// A command for starting a conversation for a user.
     /// </summary>
-    public class StartConversation
+    public class StartUserConversation
         : UserCommandBase
     {
         private User? person;
@@ -18,7 +18,7 @@ namespace NaoBlocks.Engine.Commands
         public string? Name { get; set; }
 
         /// <summary>
-        /// Validates the user via their name and password.
+        /// Validates the user via their name.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
@@ -62,8 +62,9 @@ namespace NaoBlocks.Engine.Commands
             var conversation = new Conversation
             {
                 ConversationId = conversationId,
-                UserId = this.person!.Id,
-                UserName = this.person.Name
+                SourceId = this.person!.Id,
+                SourceName = this.person.Name,
+                SourceType = "User"
             };
             await session.StoreAsync(conversation);
 

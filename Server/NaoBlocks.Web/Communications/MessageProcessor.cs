@@ -367,18 +367,24 @@ namespace NaoBlocks.Web.Communications
                 client.Robot = await engine.Query<RobotData>()
                     .RetrieveByIdAsync(userSession.UserId)
                     .ConfigureAwait(false);
-                if (client.Robot != null)
-                {
-                    await AddToRobotLogAsync(engine, client.Robot.MachineName, message, "Robot authenticated", false);
-                    msg.Values["Type"] = "robot";
-                    msg.Values["SubType"] = client.Robot!.Type?.Name ?? "Unknown";
-                    msg.Values["Name"] = client.Robot!.FriendlyName;
-                }
-                else
+                if (client.Robot == null)
                 {
                     client.SendMessage(GenerateErrorResponse(message, "Session is invalid: missing robot"));
                     return;
                 }
+
+                if (!await this.StartConversation(message, client, engine, new StartRobotConversation
+                {
+                    Name = client.Robot.MachineName
+                }))
+                {
+                    return;
+                }
+
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, "Robot authenticated", false, true);
+                msg.Values["Type"] = "robot";
+                msg.Values["SubType"] = client.Robot!.Type?.Name ?? "Unknown";
+                msg.Values["Name"] = client.Robot!.FriendlyName;
             }
             else
             {
@@ -391,23 +397,13 @@ namespace NaoBlocks.Web.Communications
                     return;
                 }
 
-                var command = new StartConversation
+                if (!await this.StartConversation(message, client, engine, new StartUserConversation
                 {
                     Name = client.User.Name
-                };
-                var errors = new List<CommandError>();
-                var result = await ValidateAndExecuteCommand(engine, errors, command);
-                if (errors.Any())
+                }))
                 {
-                    foreach (var error in errors)
-                    {
-                        this.Logger.LogWarning($"Authenticate error: {error.Error}");
-                    }
-
-                    client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
                     return;
                 }
-                message.ConversationId = result.As<Conversation>().Output!.ConversationId;
 
                 msg.Values["Type"] = "user";
                 msg.Values["SubType"] = client.User.Role.ToString();
@@ -418,6 +414,29 @@ namespace NaoBlocks.Web.Communications
             client.LogMessage(msg);
             this.hub.SendToMonitors(msg);
             client.SendMessage(GenerateResponse(message, ClientMessageType.Authenticated));
+        }
+
+        /// <summary>
+        /// Attempts to start a conversation for the message stream.
+        /// </summary>
+        /// <returns>True if successful, false otherwise.</returns>
+        private async Task<bool> StartConversation(ClientMessage message, IClientConnection client, IExecutionEngine engine, CommandBase command)
+        {
+            var errors = new List<CommandError>();
+            var result = await ValidateAndExecuteCommand(engine, errors, command);
+            if (errors.Any())
+            {
+                foreach (var error in errors)
+                {
+                    this.Logger.LogWarning($"Authenticate error: {error.Error}");
+                }
+
+                client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
+                return false;
+            }
+
+            message.ConversationId = result.As<Conversation>().Output!.ConversationId;
+            return true;
         }
 
         /// <summary>
@@ -611,7 +630,8 @@ namespace NaoBlocks.Web.Communications
         /// <param name="message">The message that the line is being generated as a result of.</param>
         /// <param name="description">The description of the line.</param>
         /// <param name="skipValues">Whether to include the values or not.</param>
-        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false)
+        /// <param name="skipConversationCheck">Whether the command should check the conversation check or not.</param>
+        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false, bool skipConversationCheck = false)
         {
             var errors = new List<CommandError>();
             if (message.ConversationId == null)
@@ -626,7 +646,8 @@ namespace NaoBlocks.Web.Communications
                     ConversationId = message.ConversationId!.Value,
                     MachineName = machineName,
                     Description = description,
-                    SourceMessageType = message.Type
+                    SourceMessageType = message.Type,
+                    SkipConversationCheck = skipConversationCheck
                 };
 
                 if (!skipValues)

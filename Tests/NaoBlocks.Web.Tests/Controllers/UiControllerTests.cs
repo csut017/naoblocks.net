@@ -128,7 +128,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post("angular");
 
             // Assert
-            var result = Assert.IsType<BadRequestObjectResult>(response.Result);
+            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
     }
 }

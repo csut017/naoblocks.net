@@ -334,7 +334,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, type, processor);
+            var client = new StandardClientConnection(socket.Object, type, processor, new FakeLogger<StandardClientConnection>());
             return client;
         }
         private static string[] ConvertMessageValuesToTestableValues(ClientMessage? message)

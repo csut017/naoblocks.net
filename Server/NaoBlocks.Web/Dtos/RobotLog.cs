@@ -44,14 +44,14 @@ namespace NaoBlocks.Web.Dtos
             var robotLog = new RobotLog
             {
                 ConversationId = value.Conversation.ConversationId,
-                UserName = value.Conversation.UserName,
+                UserName = value.Conversation.SourceName,
                 WhenAdded = value.WhenAdded,
                 WhenLastUpdated = value.WhenLastUpdated
             };
             if (converstion != null)
             {
                 robotLog.ConversationId = converstion.ConversationId;
-                robotLog.UserName = converstion.UserName;
+                robotLog.UserName = converstion.SourceName;
             }
             if (includeLines)
             {

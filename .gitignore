@@ -6,4 +6,4 @@ Tests/*/coveragereport/*.*
 Tests/Coverage/*.*
 Utilities/paths.csv
 Utilities/swagger.json
-Robots/nao/*.pyc
+Robots/nao/**/*.pyc

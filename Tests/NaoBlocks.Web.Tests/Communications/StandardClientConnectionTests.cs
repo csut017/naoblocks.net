@@ -10,16 +10,17 @@ using Xunit;
 
 namespace NaoBlocks.Web.Tests.Communications
 {
-    public class ClientConnectionTests
+    public class StandardClientConnectionTests
     {
         [Fact]
         public void SendMessageQueuesMessage()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
             var message = new ClientMessage();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.SendMessage(message);
@@ -32,10 +33,11 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddListenerAddsAListener()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
-            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
+            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.AddListener(listener);
@@ -48,10 +50,11 @@ namespace NaoBlocks.Web.Tests.Communications
         public void RemoveListenerRemovesAnExistingListener()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
-            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
+            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.AddListener(listener);
@@ -65,10 +68,11 @@ namespace NaoBlocks.Web.Tests.Communications
         public void RemoveListenerHandlesMissingListener()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
-            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
+            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.RemoveListener(listener);
@@ -81,9 +85,10 @@ namespace NaoBlocks.Web.Tests.Communications
         public void CloseFiresEventIfNotRunning()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
             var closeCalled = false;
             client.Closed += (o, e) => closeCalled = true;
 
@@ -99,10 +104,11 @@ namespace NaoBlocks.Web.Tests.Communications
         public void DisposeCleansUp()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.Dispose()).Verifiable();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.Dispose();
@@ -115,6 +121,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncStartsProcessingLoop()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .Returns((ArraySegment<byte> s, CancellationToken c) =>
@@ -123,7 +130,7 @@ namespace NaoBlocks.Web.Tests.Communications
                     return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
                 });
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var task = Task.Run(async () => await client.StartAsync());
@@ -138,6 +145,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncHandlesIncomingMessage()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var message = new ClientMessage(ClientMessageType.ProgramTransferred);
             var first = true;
@@ -155,7 +163,7 @@ namespace NaoBlocks.Web.Tests.Communications
                     return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Text, true));
                 });
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
             processor.Setup(p => p.ProcessAsync(client, It.IsAny<ClientMessage>()))
                 .Verifiable();
 
@@ -173,6 +181,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncSendsMessages()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var message = new ClientMessage(ClientMessageType.ProgramTransferred);
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
@@ -182,7 +191,7 @@ namespace NaoBlocks.Web.Tests.Communications
                     return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Text, true));
                 });
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             client.SendMessage(new ClientMessage(ClientMessageType.ProgramTransferred));
@@ -199,6 +208,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncHandlesSocketClose()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .Returns(() =>
@@ -206,7 +216,7 @@ namespace NaoBlocks.Web.Tests.Communications
                     return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
                 });
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var task = Task.Run(async () => await client.StartAsync());
@@ -222,11 +232,12 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncHandlesCloseError()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .Throws(new WebSocketException(WebSocketError.ConnectionClosedPrematurely));
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var task = Task.Run(async () => await client.StartAsync());
@@ -240,11 +251,12 @@ namespace NaoBlocks.Web.Tests.Communications
         public void StartAsyncHandlesGeneralError()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .Throws(new Exception());
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var task = Task.Run(async () => await client.StartAsync());
@@ -258,6 +270,7 @@ namespace NaoBlocks.Web.Tests.Communications
         public void ClosedEventIsCalled()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             socket.Setup(s => s.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .Returns((ArraySegment<byte> s, CancellationToken c) =>
@@ -266,7 +279,7 @@ namespace NaoBlocks.Web.Tests.Communications
                     return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
                 });
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
             var closedCalled = false;
             client.Closed += (o, e) => { closedCalled = true; };
 
@@ -283,9 +296,10 @@ namespace NaoBlocks.Web.Tests.Communications
         public void LogMessageAddsAMessage()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Authenticate);
@@ -300,9 +314,10 @@ namespace NaoBlocks.Web.Tests.Communications
         public void LogMessageCapsAt100()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             for (var loop = 0; loop < 105; loop++)
@@ -320,11 +335,12 @@ namespace NaoBlocks.Web.Tests.Communications
         public void NotifyListenersAddsAMessageToAllListeners()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
-            var listener1 = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
-            var listener2 = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
+            var listener1 = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
+            var listener2 = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
             client.AddListener(listener1);
             client.AddListener(listener2);
 
@@ -341,9 +357,10 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddNotificationAddsMessage()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             var notification = new NotificationAlert();
@@ -357,9 +374,10 @@ namespace NaoBlocks.Web.Tests.Communications
         public void AddNotificationLimitsNumberOfStoredNotifications()
         {
             // Arrange
+            var logger = new FakeLogger<StandardClientConnection>();
             var socket = new Mock<WebSocket>();
             var processor = new Mock<IMessageProcessor>();
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object);
+            var client = new StandardClientConnection(socket.Object, ClientConnectionType.User, processor.Object, logger);
 
             // Act
             for (var loop = 0; loop < 30; loop++)

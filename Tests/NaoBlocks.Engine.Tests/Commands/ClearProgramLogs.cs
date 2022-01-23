@@ -112,7 +112,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 new RobotLog {
                     Conversation = new Conversation
                     {
-                        UserId = "Tahi"
+                        SourceId = "Tahi"
                     }
                 });
 

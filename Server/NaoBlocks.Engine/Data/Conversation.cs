@@ -11,14 +11,19 @@
         public long ConversationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the user involved in the conversation.
+        /// Gets or sets the id of the source involved in the conversation.
         /// </summary>
-        public string? UserId { get; set; }
+        public string? SourceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the user.
+        /// Gets or sets the name of the source.
         /// </summary>
-        public string? UserName { get; set; }
+        public string? SourceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of source (User or Robot).
+        /// </summary>
+        public string? SourceType { get; set; }
 
         /// <summary>
         /// Gets the uninitialised conversation.

@@ -49,6 +49,7 @@ namespace NaoBlocks.Web.Tests
                 Assert.True(this.expectedCommands.Any(), "Unexpected command call");
                 var nextCommand = this.expectedCommands.Dequeue();
                 Assert.Equal(nextCommand.Type, command.GetType());
+                return Task.FromResult(nextCommand.Result);
             }
 
             this.LastCommand = command;
@@ -96,9 +97,17 @@ namespace NaoBlocks.Web.Tests
         public void ExpectCommand<TCommand>()
             where TCommand : CommandBase
         {
-            this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand)));
+            this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand), CommandResult.New(1)));
             this.useExpectedCommand = true;
         }
+
+        public void ExpectCommand<TCommand>(CommandResult result)
+            where TCommand : CommandBase
+        {
+            this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand), result));
+            this.useExpectedCommand = true;
+        }
+
 
         public void Verify()
         {
@@ -107,12 +116,15 @@ namespace NaoBlocks.Web.Tests
 
         private class CommandCall
         {
-            public CommandCall(Type type)
+            public CommandCall(Type type, CommandResult result)
             {
-                Type = type;
+                this.Type = type;
+                this.Result = result;
             }
 
-            public Type Type { get; set; } 
+            public Type Type { get; private set; }
+
+            public CommandResult Result { get; private set; }
         }
 
         /// <summary>

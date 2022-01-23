@@ -28,8 +28,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(userQuery.Object);
             engine.RegisterQuery(codeQuery.Object);
             userQuery.Setup(q => q.RetrieveByNameAsync("Mia"))
-                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Mia" }));
-            codeQuery.Setup(q => q.RetrieveCodeAsync("Mia", 1))
+                .Returns(Task.FromResult((Data.User?)new Data.User { Id = "users/1", Name = "Mia" }));
+            codeQuery.Setup(q => q.RetrieveCodeAsync("users/1", 1))
                 .Returns(Task.FromResult((Data.CodeProgram?)new Data.CodeProgram { Code = "go()"}));
             engine.OnExecute = c => CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult()));
             var controller = new CodeController(

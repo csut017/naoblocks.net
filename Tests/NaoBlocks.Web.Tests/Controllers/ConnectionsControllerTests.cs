@@ -3,12 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,7 +19,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object);
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
             SetupControllerContext(controller, true);
 
             var connection = new Mock<IClientConnection>();
@@ -50,7 +46,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object);
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
             var response = SetupControllerContext(controller, false);
 
             // Act
@@ -67,7 +63,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object);
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
             var response = SetupControllerContext(controller, false);
 
             // Act

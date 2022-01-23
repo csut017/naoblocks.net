@@ -38,7 +38,7 @@ namespace NaoBlocks.Web.Tests.Dtos
                 Conversation = new Data.Conversation
                 {
                     ConversationId = 10,
-                    UserName = "Moana"
+                    SourceName = "Moana"
                 }
             };
             var dto = Transfer.RobotLog.FromModel(entity, false, null);
@@ -61,7 +61,7 @@ namespace NaoBlocks.Web.Tests.Dtos
             var conversation = new Data.Conversation
             {
                 ConversationId = 5,
-                UserName = "Mia"
+                SourceName = "Mia"
             };
             var dto = Transfer.RobotLog.FromModel(entity, false, conversation);
             Assert.Equal(now, dto.WhenLastUpdated);
@@ -82,13 +82,13 @@ namespace NaoBlocks.Web.Tests.Dtos
                 Conversation = new Data.Conversation
                 {
                     ConversationId = 10,
-                    UserName = "Moana"
+                    SourceName = "Moana"
                 }
             };
             var conversation = new Data.Conversation
             {
                 ConversationId = 5,
-                UserName = "Mia"
+                SourceName = "Mia"
             };
             var dto = Transfer.RobotLog.FromModel(entity, false, conversation);
             Assert.Equal(now, dto.WhenLastUpdated);

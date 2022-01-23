@@ -18,7 +18,7 @@ namespace NaoBlocks.Engine.Tests.Generators
             // Arrange
             var student = new User { Name = "Mia", Id = "users/1" };
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
-            var conversation = new Conversation { ConversationId = 1124, UserId = student.Id };
+            var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             var timeOff = 0;
             (var log1, timeOff) = this.GenerateLog(conversation, robot, timeOff, "tahi", "rua", "toru");
             (var log2, _) = this.GenerateLog(conversation, robot, timeOff, "wha", "rima");
@@ -71,7 +71,7 @@ Number,When Added,Name,Program
         {
             var student = new User { Name = "Mia", Id = "users/1" };
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
-            var conversation = new Conversation { ConversationId = 1124, UserId = student.Id };
+            var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             using var store = InitialiseDatabase(
                 student,
                 robot,

@@ -96,6 +96,9 @@ export class ConnectionService extends ClientService {
       return;
     }
 
+    console.groupCollapsed('[Connection] Sending message');
+    console.log(msg);
+    console.groupEnd();
     const data = JSON.stringify(msg);
     this.socket.send(data);
   }
