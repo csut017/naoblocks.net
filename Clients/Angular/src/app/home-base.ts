@@ -4,16 +4,12 @@ import { Router } from '@angular/router';
 import { ViewChild, Directive } from '@angular/core';
 import { User } from './data/user';
 import { AboutComponent } from './components/about/about.component';
-import { ChangeRoleComponent } from './components/change-role/change-role.component';
-import { ChangeViewComponent } from './components/change-view/change-view.component';
 import { ChangeRoleService } from './services/change-role.service';
 
 @Directive()
 export class HomeBase {
 
     @ViewChild(AboutComponent) about?: AboutComponent;
-    @ViewChild(ChangeRoleComponent) roleSelector?: ChangeRoleComponent;
-    @ViewChild(ChangeViewComponent) viewSelector?: ChangeViewComponent;
 
     hasAccess: boolean = false;
     currentUser?: User;
@@ -41,15 +37,6 @@ export class HomeBase {
         let role = (<any>UserRole)[currentRole];
         console.log('[HomeBase] Changing Role');
         this.changeRoleService.show(role);
-    }
-
-    canChangeView(): boolean {
-        return true;
-    }
-
-    openChangeView(): void {
-        console.log('[HomeBase] Changing View');
-        this.viewSelector?.show();
     }
 
     openAbout(): void {

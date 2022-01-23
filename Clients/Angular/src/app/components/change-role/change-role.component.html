@@ -1,7 +1,7 @@
 <mat-nav-list>
     <div *ngFor="let role of roles">
         <a href="{{generateUrl(role)}}" mat-list-item *ngIf="canAccess(role)" (click)="changeRole($event, role)">
-            <mat-icon>{{isCurrent(role) ? 'web_asset' : 'preview'}}</mat-icon>
+            <mat-icon>{{isCurrent(role) ? 'preview' : 'web_asset'}}</mat-icon>
             <span mat-line>{{format(role)}}</span>
         </a>
     </div>

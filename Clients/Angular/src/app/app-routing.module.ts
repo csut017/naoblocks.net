@@ -17,6 +17,7 @@ const routes: Routes = [
 
   // Private (authenticated) routes
   { path: 'student', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'student/:view', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'teacher', component: TeacherHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'teacher/:view', component: TeacherHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },

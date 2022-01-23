@@ -38,14 +38,15 @@ namespace NaoBlocks.Engine
         /// <returns>The result of execution.</returns>
         public async Task<CommandResult> ExecuteAsync(CommandBase command)
         {
+            var name = command.GetType().Name;
             var result = await command.ExecuteAsync(this.session, this).ConfigureAwait(false);
             if (result.WasSuccessful)
             {
-                this.Logger.LogInformation("Command executed successfully");
+                this.Logger.LogInformation($"Command {name} executed successfully");
             }
             else
             {
-                this.Logger.LogInformation("Command execution failed");
+                this.Logger.LogInformation($"Command {name} execution failed");
 
             }
             var log = new CommandLog
@@ -110,6 +111,7 @@ namespace NaoBlocks.Engine
         /// </remarks>
         public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
         {
+            var name = command.GetType().Name;
             var errors = new List<CommandError>();
             try
             {
@@ -123,11 +125,11 @@ namespace NaoBlocks.Engine
 
             if (errors.Any())
             {
-                this.Logger.LogWarning("Command failed validation");
+                this.Logger.LogWarning($"Command {name} failed validation");
             }
             else
             {
-                this.Logger.LogInformation("Command validated");
+                this.Logger.LogInformation($"Command {name} validated");
             }
             return errors;
         }

@@ -2,9 +2,9 @@
     <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
         [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
         <mat-toolbar color="primary">
-            <span mat-card-avatar class="app-icon"></span> 
+            <span mat-card-avatar class="app-icon"></span>
             <span class="app-title">NaoBlocks</span>
-          </mat-toolbar>
+        </mat-toolbar>
         <mat-action-list *ngIf="showCommands">
             <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying">
                 <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
@@ -12,14 +12,14 @@
             <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying">
                 <mat-icon matListIcon aria-label="Stop current program">stop</mat-icon> Stop
             </button>
-            <mat-divider *ngIf="!controller.isPlaying"></mat-divider>
-            <button mat-list-item (click)="deleteProgram()" *ngIf="!controller.isPlaying">
+            <mat-divider *ngIf="!controller.isPlaying && showFileCommands"></mat-divider>
+            <button mat-list-item (click)="deleteProgram()" *ngIf="!controller.isPlaying && showFileCommands">
                 <mat-icon matListIcon aria-label="Delete current program">delete_outline</mat-icon> Clear
             </button>
-            <button mat-list-item (click)="loadProgram()" *ngIf="!controller.isPlaying">
+            <button mat-list-item (click)="loadProgram()" *ngIf="!controller.isPlaying && showFileCommands">
                 <mat-icon matListIcon aria-label="Load existing program">file_download</mat-icon> Load
             </button>
-            <button mat-list-item (click)="saveProgram()" *ngIf="!controller.isPlaying">
+            <button mat-list-item (click)="saveProgram()" *ngIf="!controller.isPlaying && showFileCommands">
                 <mat-icon matListIcon aria-label="Save current program">publish</mat-icon> Save
             </button>
             <mat-divider *ngIf="!controller.isPlaying"></mat-divider>
@@ -82,8 +82,14 @@
         </mat-toolbar>
 
         <div [ngSwitch]="view">
-            <app-blockly-editor *ngSwitchCase="'blockly'" [editorSettings]="editorSettings" [controller]="controller"></app-blockly-editor>
-            <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onSettingsClosed($event)" [settings]="runSettings"></app-settings-debug>
+            <div *ngSwitchCase="'editor'" [ngSwitch]="editorView">
+                <app-blockly-editor *ngSwitchCase="'blockly'" [editorSettings]="editorSettings"
+                    [controller]="controller"></app-blockly-editor>
+                <app-tangible-editor *ngSwitchCase="'tangibles'" [editorSettings]="editorSettings"
+                    [controller]="controller"></app-tangible-editor>
+            </div>
+            <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onSettingsClosed($event)"
+                [settings]="runSettings"></app-settings-debug>
             <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event)"></app-settings-student>
             <app-program-load *ngSwitchCase="'load-program'" (closed)="onClosed($event)"></app-program-load>
             <app-program-save *ngSwitchCase="'save-program'" (closed)="onClosed($event)"></app-program-save>

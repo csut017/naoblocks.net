@@ -38,6 +38,7 @@ import { ProgramSaveComponent } from './components/program-save/program-save.com
 import { ProgramLoadComponent } from './components/program-load/program-load.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { ExecutionStatusComponent } from './components/execution-status/execution-status.component';
+import { TangibleEditorComponent } from './components/tangible-editor/tangible-editor.component';
 
 @NgModule({
   declarations: [
@@ -70,7 +71,8 @@ import { ExecutionStatusComponent } from './components/execution-status/executio
     ProgramSaveComponent,
     ProgramLoadComponent,
     ConfirmDialogComponent,
-    ExecutionStatusComponent
+    ExecutionStatusComponent,
+    TangibleEditorComponent
   ],
   imports: [
     BrowserModule,

@@ -56,7 +56,7 @@ namespace NaoBlocks.Engine.Database
         /// </summary>
         public IDatabaseSession StartSession()
         {
-            this.logger.LogInformation("Starting a new database session.");
+            this.logger.LogDebug("Starting a new database session.");
             var session = this.store.OpenAsyncSession();
             return new RavenDbDatabaseSession(session);
         }

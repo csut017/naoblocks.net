@@ -3,6 +3,7 @@
         "Blockly",
         "elem",
         "Robo",
+        "topcodes",
         "trashcan"
     ]
 }

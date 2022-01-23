@@ -61,7 +61,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
           break;
       }
     });
-    if (this.controller?.workspaceXml) Blockly.Xml.domToWorkspace(this.controller?.workspaceXml, this.workspace);;
+    if (this.controller?.lastWorkspace) Blockly.Xml.domToWorkspace(this.controller?.lastWorkspace, this.workspace);;
   }
 
   ngOnDestroy(): void {
@@ -82,12 +82,12 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   loadIntoWorkspace(xml: HTMLElement): void {
-    console.log('[StudentHome] Loading workspace');
+    console.log('[BlocklyEditor] Loading workspace');
     try {
       this.workspace.clear();
       Blockly.Xml.domToWorkspace(xml, this.workspace);
     } catch (err) {
-      console.log('[StudentHome] Load failed!');
+      console.log('[BlocklyEditor] Load failed!');
       console.error(err);
     }
     console.groupEnd();
@@ -108,9 +108,9 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
     if (!validate) return;
 
     let xml = Blockly.Xml.workspaceToDom(this.workspace);
-    this.controller!.workspaceXml = xml;
+    this.controller!.lastWorkspace = xml;
 
-    console.log('[StudentHome] Validating');
+    console.log('[BlocklyEditor] Validating');
     this.hasChanged = true;
     this.error = '';
 
@@ -169,6 +169,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
       return;
     }
 
+    console.log('[BlocklyEditor] Stopping program');
     let msg = new ClientMessage(ClientMessageType.StopProgram);
     msg.conversationId = this.messageProcessor?.lastConversationId;
     msg.values['robot'] = this.messageProcessor?.assignedRobot || '';
@@ -259,7 +260,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   private configureEditor(): void {
     console.groupCollapsed('Initialising blockly editor');
     try {
-      console.log('[StudentHome] Defining colours');
+      console.log('[BlocklyEditor] Defining colours');
       Blockly.FieldColour.COLOURS = [
         '#f00', '#0f0',
         '#00f', '#ff0',
@@ -268,7 +269,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
       ];
       Blockly.FieldColour.COLUMNS = 2;
 
-      console.log('[StudentHome] Configuring modals');
+      console.log('[BlocklyEditor] Configuring modals');
       let that = this;
       let settings = new ConfirmSettings('');
       Blockly.dialog.setAlert(function (message: string, callback: any) {
@@ -293,7 +294,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
       //   that.userInput.open = true;
       // });
 
-      console.log('[StudentHome] Adding validator');
+      console.log('[BlocklyEditor] Adding validator');
       this.workspace.addChangeListener((evt: any) => this.validateWorkspace(evt));
     } finally {
       console.groupEnd();

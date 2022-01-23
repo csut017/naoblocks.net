@@ -1,13 +1,15 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, map, shareReplay } from 'rxjs';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
+import { EditorDefinition } from 'src/app/data/editor-definition';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { RunSettings } from 'src/app/data/run-settings';
 import { HomeBase } from 'src/app/home-base';
 import { AuthenticationService, UserRole } from 'src/app/services/authentication.service';
 import { ChangeRoleService } from 'src/app/services/change-role.service';
+import { ChangeViewService } from 'src/app/services/change-view.service';
 import { ConfirmService } from 'src/app/services/confirm.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { SettingsService } from 'src/app/services/settings.service';
@@ -21,6 +23,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   controller: ProgramControllerService = new ProgramControllerService();
   editorSettings: EditorSettings = new EditorSettings();
+  editorView: string = 'blockly';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
@@ -28,17 +31,31 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     );
   runSettings: RunSettings = new RunSettings();
   showCommands: boolean = true;
+  showFileCommands: boolean = true;
   title: string = '';
   view: string = '';
+
+
+  private editorDefinitions: EditorDefinition[] = [
+    new EditorDefinition('blockly', 'Block Editor', true),
+    new EditorDefinition('tangibles', 'Tangible Editor', false),
+  ];
+  private editors: { [index: string]: EditorDefinition } = {};
 
   constructor(authenticationService: AuthenticationService,
     router: Router,
     changeRoleService: ChangeRoleService,
+    private changeViewService: ChangeViewService,
+    private route: ActivatedRoute,
     private confirm: ConfirmService,
     private settingsService: SettingsService,
     private breakpointObserver: BreakpointObserver) {
     super(authenticationService, router, changeRoleService);
-    this.changeView('blockly', 'Block Editor', true);
+    this.editorDefinitions.forEach(e => this.editors[e.name] = e);
+    this.changeView('editor', this.editors[this.editorView].title, true);
+    this.route.paramMap.subscribe(params => {
+      this.changeEditorView(params.get('view') || this.editorDefinitions[0].name);
+    });
   }
 
   ngOnInit(): void {
@@ -58,14 +75,30 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   }
 
   onClosed(saved: boolean) {
-    this.changeView('blockly', 'Block Editor', true);
+    this.changeView('editor', this.editors[this.editorView].title, true);
   }
 
   onSettingsClosed(settings?: RunSettings) {
     if (settings) this.runSettings = settings;
-    this.changeView('blockly', 'Block Editor', true);
+    this.changeView('editor', this.editors[this.editorView].title, true);
   }
-  
+
+  canChangeView(): boolean {
+    return true;
+  }
+
+  openChangeView(): void {
+    console.log('[StudentHome] Changing View');
+    this.changeViewService
+      ?.show(this.editorView, this.editorDefinitions)
+      .subscribe(view => {
+        if (!!view) {
+          console.log('[StudentHome] New view is ' + view);
+          this.changeEditorView(view);
+        }
+      });
+  }
+
   playProgram() {
     console.log('[StudentHome] Playing current program');
     this.controller.play(this.runSettings);
@@ -97,5 +130,13 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.view = view;
     this.title = title;
     this.showCommands = showCommands;
+  }
+
+  private changeEditorView(view: string) {
+    this.editorView = view;
+    const editor = this.editors[this.editorView];
+    this.changeView('editor', editor.title, true);
+    this.showFileCommands = editor.fileCommands;
+    this.router.navigate(['student', view], {});
   }
 }
