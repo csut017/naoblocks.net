@@ -22,11 +22,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<SnapshotsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Snapshot())
-            };
-            engine.ExpectCommand<StoreSnapshot>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreSnapshot>(
+                CommandResult.New(1, new Data.Snapshot()));
             var controller = new SnapshotsController(
                 logger,
                 engine);
@@ -65,11 +63,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<SnapshotsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Snapshot())
-            };
-            engine.ExpectCommand<StoreSnapshot>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreSnapshot>(
+                CommandResult.New(1, new Data.Snapshot()));
             var controller = new SnapshotsController(
                 logger,
                 engine);

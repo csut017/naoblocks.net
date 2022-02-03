@@ -192,11 +192,9 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.SystemValues { DefaultAddress = "1234" })
-            };
-            engine.ExpectCommand<StoreDefaultAddress>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreDefaultAddress>(
+                CommandResult.New(1, new Data.SystemValues { DefaultAddress = "1234" }));
             var controller = new SystemController(
                 logger,
                 engine,

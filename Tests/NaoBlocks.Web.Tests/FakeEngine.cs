@@ -21,9 +21,6 @@ namespace NaoBlocks.Web.Tests
         private readonly Dictionary<Type, DataQuery> queries = new();
         private readonly Dictionary<Type, ReportGenerator> generators = new();
         private readonly Queue<CommandCall> expectedCommands = new();
-        private bool useExpectedCommand;
-
-        public Func<CommandBase, CommandResult>? OnExecute { get; set; }
 
         public Func<CommandBase, IEnumerable<CommandError>>? OnValidate { get; set; }
 
@@ -44,18 +41,11 @@ namespace NaoBlocks.Web.Tests
 
         public Task<CommandResult> ExecuteAsync(CommandBase command)
         {
-            if (this.useExpectedCommand)
-            {
-                Assert.True(this.expectedCommands.Any(), "Unexpected command call");
-                var nextCommand = this.expectedCommands.Dequeue();
-                Assert.Equal(nextCommand.Type, command.GetType());
-                return Task.FromResult(nextCommand.Result);
-            }
-
             this.LastCommand = command;
-            return Task.FromResult(this.OnExecute == null 
-                ? CommandResult.New(command.Number) 
-                : this.OnExecute(command));
+            Assert.True(this.expectedCommands.Any(), "Unexpected command call");
+            var nextCommand = this.expectedCommands.Dequeue();
+            Assert.Equal(nextCommand.Type, command.GetType());
+            return Task.FromResult(nextCommand.Result);
         }
 
         public Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
@@ -98,16 +88,13 @@ namespace NaoBlocks.Web.Tests
             where TCommand : CommandBase
         {
             this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand), CommandResult.New(1)));
-            this.useExpectedCommand = true;
         }
 
         public void ExpectCommand<TCommand>(CommandResult result)
             where TCommand : CommandBase
         {
             this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand), result));
-            this.useExpectedCommand = true;
         }
-
 
         public void Verify()
         {

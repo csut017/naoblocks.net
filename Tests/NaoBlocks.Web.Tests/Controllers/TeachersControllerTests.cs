@@ -163,11 +163,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.User())
-            };
-            engine.ExpectCommand<AddUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new TeachersController(
                 logger,
                 engine);
@@ -207,11 +205,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<TeachersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.User())
-            };
-            engine.ExpectCommand<UpdateUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<UpdateUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new TeachersController(
                 logger,
                 engine);

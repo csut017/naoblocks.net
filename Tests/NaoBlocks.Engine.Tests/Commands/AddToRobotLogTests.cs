@@ -67,7 +67,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "Unknown conversation" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Unknown conversation 14916" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
             var errors = await engine.RestoreAsync(command);
-            Assert.Equal(new[] { "Unknown conversation" }, FakeEngine.GetErrors(errors));
+            Assert.Equal(new[] { "Unknown conversation 14916" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]

@@ -1,3 +1,5 @@
+import { TangibleDefinition } from "./TangibleDefinition";
+
 export class Block {
     id: string = '';
     highlight: boolean = false;
@@ -7,8 +9,8 @@ export class Block {
         public action: string) {
     }
 
-    initialise(id: number): Block {
-        let block = new Block(this.image, this.text, this.action);
+    static initialise(id: number, definition: TangibleDefinition): Block {
+        let block = new Block(definition.image, definition.text, definition.action);
         block.id = 'b_' + id;
         return block;
     }

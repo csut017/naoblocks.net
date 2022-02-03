@@ -1,17 +1,21 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { forkJoin, Subscription } from 'rxjs';
 import { Block } from 'src/app/data/block';
 import { ControllerAction } from 'src/app/data/controller-action';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { RunSettings } from 'src/app/data/run-settings';
 import { StartupStatusTracker } from 'src/app/data/startup-status-tracker';
+import { TangibleDefinition } from 'src/app/data/TangibleDefinition';
 import { ConfirmService } from 'src/app/services/confirm.service';
 import { ClientMessage, ClientMessageType, ConnectionService } from 'src/app/services/connection.service';
 import { ExecutionStatusService } from 'src/app/services/execution-status.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { ProgramService } from 'src/app/services/program.service';
+import { ScriptLoaderService } from 'src/app/services/script-loader.service';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from 'src/app/services/server-message-processor.service';
+import { environment } from 'src/environments/environment';
 
+declare var Tangibles: any;
 declare var TopCodes: any;
 
 @Component({
@@ -37,7 +41,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   messageProcessor?: ServerMessageProcessorService;
   startupStatus: StartupStatusTracker = new StartupStatusTracker();
 
-  private blockMapping: { [index: number]: Block } = {};
+  private tangiblesMapping: { [index: number]: TangibleDefinition } = {};
   private context?: CanvasRenderingContext2D | null;
   private isInitialised: boolean = false;
 
@@ -47,7 +51,10 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     private connection: ConnectionService,
     private programService: ProgramService,
     private executionStatus: ExecutionStatusService,
-    private confirm: ConfirmService) { }
+    private renderer: Renderer2,
+    private scriptLoader: ScriptLoaderService,
+    private confirm: ConfirmService) {
+  }
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
@@ -67,11 +74,19 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   ngOnInit(): void {
-    console.log('[TangibleEditor] retrieving context');
+    console.log('[TangibleEditor] Retrieving block definitions');
+    this.scriptLoader.loadScript(this.renderer, `${environment.apiURL}v1/ui/tangibles/all`)
+      .subscribe(_ => {
+        this.tangiblesMapping = {};
+        Tangibles.blocks.forEach((tangible: TangibleDefinition) => {
+          this.tangiblesMapping[tangible.number] = tangible;
+        });
+      });
+
+    console.log('[TangibleEditor] Retrieving canvas');
     this.context = this.videoCanvas?.nativeElement.getContext('2d');
 
     this.lastState = this.generateCode(false);
-    // setInterval(() => this.storeState(), 10000);
   }
 
   ngAfterViewInit(): void {
@@ -201,8 +216,8 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     let number = 1000;
     for (let tag of tags) {
       // Filter the tags: only include those tags with a mapping and are close to the previous x position
-      let defn = this.blockMapping[tag.code];
-      if (!defn) {
+      let definition = this.tangiblesMapping[tag.code];
+      if (!definition) {
         console.groupCollapsed('[TangibleEditor] Unknown tag');
         console.log(tag.code);
         console.groupEnd();
@@ -215,7 +230,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
         }
       }
 
-      output.push(defn.initialise(number++));
+      output.push(Block.initialise(number++, definition));
       last = tag;
     }
 

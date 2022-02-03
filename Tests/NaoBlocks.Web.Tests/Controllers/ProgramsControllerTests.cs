@@ -428,11 +428,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
-            };
-            engine.ExpectCommand<StoreProgram>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreProgram>(
+                CommandResult.New(2, new Data.CodeProgram { }));
             var controller = new ProgramsController(
                 logger,
                 engine);
@@ -462,11 +460,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
-            };
-            engine.ExpectCommand<StoreProgram>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreProgram>(
+                CommandResult.New(2, new Data.CodeProgram { }));
             var controller = new ProgramsController(
                 logger,
                 engine);
@@ -496,11 +492,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = (c) => CommandResult.New(2, new Data.CodeProgram { })
-            };
-            engine.ExpectCommand<StoreProgram>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreProgram>(
+                CommandResult.New(2, new Data.CodeProgram { }));
             var controller = new ProgramsController(
                 logger,
                 engine);

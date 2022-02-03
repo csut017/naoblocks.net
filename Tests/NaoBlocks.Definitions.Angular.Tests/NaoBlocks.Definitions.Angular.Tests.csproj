@@ -12,7 +12,6 @@
     <None Remove="expected_language.txt" />
     <None Remove="expected_multiple_block_definition.txt" />
     <None Remove="expected_single_block_definition.txt" />
-    <None Remove="test.template" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,10 +19,6 @@
     <EmbeddedResource Include="expected_language.txt" />
     <EmbeddedResource Include="expected_multiple_block_definition.txt" />
     <EmbeddedResource Include="expected_single_block_definition.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="test.template" />
   </ItemGroup>
 
   <ItemGroup>

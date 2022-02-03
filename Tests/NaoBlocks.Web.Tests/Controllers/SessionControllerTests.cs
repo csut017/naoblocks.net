@@ -103,11 +103,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.UserSettings())
-            };
-            engine.ExpectCommand<StoreSettings>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreSettings>(
+                CommandResult.New(1, new Data.UserSettings()));
 
             var query = new Mock<RobotTypeData>();
             engine.RegisterQuery(query.Object);
@@ -377,17 +375,15 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Session
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartRobotSession>(
+                CommandResult.New(1, new Data.Session
                 {
                     IsRobot = true,
                     WhenExpires = new DateTime(2100, 12, 30, 13, 0, 0),
                     UserId = "robots/1",
                     Id = "sessions/10"
-                })
-            };
-            engine.ExpectCommand<StartRobotSession>();
+                }));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {
@@ -447,10 +443,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => new CommandResult(2, "error")
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartRobotSession>(
+                new CommandResult(2, "error"));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {
@@ -479,18 +474,16 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Session
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartUserSession>(
+                CommandResult.New(1, new Data.Session
                 {
                     IsRobot = false,
                     WhenExpires = new DateTime(2100, 12, 30, 13, 0, 0),
                     UserId = "users/1",
                     Id = "sessions/10",
                     Role = Data.UserRole.Student
-                })
-            };
-            engine.ExpectCommand<StartUserSession>();
+                }));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {
@@ -550,10 +543,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => new CommandResult(2, "error")
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartUserSession>(
+                new CommandResult(2, "error"));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {
@@ -582,18 +574,16 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Session
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartUserSessionViaToken>(
+                CommandResult.New(1, new Data.Session
                 {
                     IsRobot = false,
                     WhenExpires = new DateTime(2100, 12, 30, 13, 0, 0),
                     UserId = "users/1",
                     Id = "sessions/10",
                     Role = Data.UserRole.Teacher
-                })
-            };
-            engine.ExpectCommand<StartUserSessionViaToken>();
+                }));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {
@@ -651,10 +641,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var loggerMock = new FakeLogger<SessionController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => new CommandResult(2, "error")
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartUserSession>(
+                new CommandResult(2, "error"));
             var config = DefineSecuritySettings();
             var controller = new SessionController(loggerMock, engine, config.Object)
             {

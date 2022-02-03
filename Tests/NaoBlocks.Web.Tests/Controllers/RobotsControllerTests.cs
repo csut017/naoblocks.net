@@ -255,11 +255,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<RobotsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Robot())
-            };
-            engine.ExpectCommand<AddRobot>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddRobot>(
+                CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
                 engine);
@@ -298,11 +296,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<RobotsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Robot())
-            };
-            engine.ExpectCommand<UpdateRobot>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<UpdateRobot>(
+                CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
                 engine);
@@ -343,11 +339,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<RobotsController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.Robot())
-            };
-            engine.ExpectCommand<RegisterRobot>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<RegisterRobot>(
+                CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
                 engine);

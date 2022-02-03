@@ -83,11 +83,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<UsersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.User())
-            };
-            engine.ExpectCommand<UpdateUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<UpdateUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new UsersController(
                 logger,
                 engine);
@@ -128,17 +126,10 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PutConvertsRole(string roleText, Data.UserRole expected)
         {
             // Arrange
-            Data.UserRole actual = Data.UserRole.Administrator;
             var logger = new FakeLogger<UsersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c =>
-                {
-                    actual = ((UpdateUser)c).Role;
-                    return CommandResult.New(1, new Data.User());
-                }
-            };
-            engine.ExpectCommand<UpdateUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<UpdateUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new UsersController(
                 logger,
                 engine);
@@ -150,7 +141,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             var result = Assert.IsType<ExecutionResult<Transfer.User>>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
-            Assert.Equal(expected, actual);
+            var command = Assert.IsType<UpdateUser>(engine.LastCommand);
+            Assert.Equal(expected, command.Role);
         }
 
         [Fact]
@@ -158,11 +150,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<UsersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.User())
-            };
-            engine.ExpectCommand<AddUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new UsersController(
                 logger,
                 engine);
@@ -203,17 +193,10 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PostConvertsRole(string roleText, Data.UserRole expected)
         {
             // Arrange
-            Data.UserRole actual = Data.UserRole.Administrator;
             var logger = new FakeLogger<UsersController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c =>
-                {
-                    actual = ((AddUser)c).Role;
-                    return CommandResult.New(1, new Data.User());
-                }
-            };
-            engine.ExpectCommand<AddUser>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddUser>(
+                CommandResult.New(1, new Data.User()));
             var controller = new UsersController(
                 logger,
                 engine);
@@ -225,7 +208,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             var result = Assert.IsType<ExecutionResult<Transfer.User>>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
-            Assert.Equal(expected, actual);
+            var command = Assert.IsType<AddUser>(engine.LastCommand);
+            Assert.Equal(expected, command.Role);
         }
 
         [Fact]

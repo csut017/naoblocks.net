@@ -16,19 +16,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="block_definitions.template" />
-		<None Remove="conversions.template" />
-		<None Remove="language.template" />
+	  <None Remove="all.template" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="block_definitions.template" />
-		<EmbeddedResource Include="conversions.template" />
-		<EmbeddedResource Include="language.template" />
+	  <EmbeddedResource Include="all.template" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Esprima" Version="2.1.2" />
+	  <PackageReference Include="Esprima" Version="2.1.2" />
 	</ItemGroup>
 
 	<ItemGroup>

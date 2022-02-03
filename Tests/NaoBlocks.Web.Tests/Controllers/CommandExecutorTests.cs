@@ -17,6 +17,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task ExecuteForHttpHandlesSuccess()
         {
             var engine = new FakeEngine();
+            engine.ExpectCommand<FakeCommand>();
             var controller = new ControllerShell();
             var response = await controller.ExecuteForHttp(engine);
             var result = Assert.IsType<ExecutionResult>(response.Value);
@@ -42,10 +43,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         [Fact]
         public async Task ExecuteForHttpHandlesExecutionFailure()
         {
-            var engine = new FakeEngine
-            {
-                OnExecute = c => new CommandResult(1, "no go")
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<FakeCommand>(
+                new CommandResult(1, "no go"));
             var controller = new ControllerShell();
             var response = await controller.ExecuteForHttp(engine);
             var httpResult = Assert.IsType<ObjectResult>(response.Result);
@@ -59,10 +59,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         [Fact]
         public async Task ExecuteForHttpWithMapperHandlesSuccess()
         {
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new SystemValues { DefaultAddress = "1234" })
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<FakeCommand>(
+                CommandResult.New(1, new SystemValues { DefaultAddress = "1234" }));
             var controller = new ControllerShell();
             var response = await controller.ExecuteForHttp<SystemValues, string>(engine, sv => sv!.DefaultAddress);
             var result = Assert.IsType<ExecutionResult<string>>(response.Value);
@@ -89,10 +88,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         [Fact]
         public async Task ExecuteForHttpWithMapperHandlesExecutionFailure()
         {
-            var engine = new FakeEngine
-            {
-                OnExecute = c => new CommandResult(1, "no go")
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<FakeCommand>(
+                new CommandResult(1, "no go"));
             var controller = new ControllerShell();
             var response = await controller.ExecuteForHttp<SystemValues, string>(engine, sv => sv!.DefaultAddress);
             var httpResult = Assert.IsType<ObjectResult>(response.Result);
@@ -107,18 +105,18 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             public async Task<ActionResult<ExecutionResult>> ExecuteForHttp(IExecutionEngine engine)
             {
-                var command = new Mock<CommandBase>();
+                var command = new FakeCommand();
                 return await engine
-                    .ExecuteForHttp(command.Object)
+                    .ExecuteForHttp(command)
                     .ConfigureAwait(false);
             }
 
             public async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(IExecutionEngine engine, Func<TIn, TOut> mapper)
                 where TIn : class
             {
-                var command = new Mock<CommandBase>();
+                var command = new FakeCommand();
                 return await engine
-                    .ExecuteForHttp(command.Object, mapper)
+                    .ExecuteForHttp(command, mapper)
                     .ConfigureAwait(false);
             }
         }

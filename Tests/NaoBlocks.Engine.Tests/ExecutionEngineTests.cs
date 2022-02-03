@@ -47,7 +47,7 @@ namespace NaoBlocks.Engine.Tests
             session.Verify(s => s.StoreAsync(It.IsAny<CommandLog>()), Times.Once);
             session.Verify(s => s.SaveChangesAsync(), Times.Once);
             Assert.Equal(new string[] {
-                    "INFORMATION: Command executed successfully",
+                    "INFORMATION: Command FakeCommand executed successfully",
                     "TRACE: Log saved"
                 }, logger.Messages.ToArray());
         }
@@ -75,7 +75,7 @@ namespace NaoBlocks.Engine.Tests
             session.Verify(s => s.StoreAsync(It.IsAny<CommandLog>()), Times.Once);
             session.Verify(s => s.SaveChangesAsync(), Times.Once);
             Assert.Equal(new string[] {
-                    "INFORMATION: Command execution failed",
+                    "INFORMATION: Command FakeCommand execution failed",
                     "TRACE: Log saved"
                 }, logger.Messages.ToArray());
         }
@@ -139,7 +139,7 @@ namespace NaoBlocks.Engine.Tests
             // Assert
             Assert.True(command.ValidateCalled);
             Assert.Equal(new string[] {
-                    "INFORMATION: Command validated"
+                    "INFORMATION: Command FakeCommand validated"
                 }, logger.Messages.ToArray());
         }
 
@@ -163,7 +163,7 @@ namespace NaoBlocks.Engine.Tests
             Assert.True(command.ValidateCalled);
             Assert.Equal(new string[] {
                     "WARNING: Command validation failed unexpectedly",
-                    "WARNING: Command failed validation"
+                    "WARNING: Command FakeCommand failed validation"
                 }, logger.Messages.ToArray());
         }
 
@@ -186,7 +186,7 @@ namespace NaoBlocks.Engine.Tests
             // Assert
             Assert.True(command.ValidateCalled);
             Assert.Equal(new string[] {
-                    "WARNING: Command failed validation"
+                    "WARNING: Command FakeCommand failed validation"
                 }, logger.Messages.ToArray());
         }
 

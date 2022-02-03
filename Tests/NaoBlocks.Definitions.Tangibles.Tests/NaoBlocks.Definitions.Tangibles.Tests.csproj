@@ -7,30 +7,21 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-
   <ItemGroup>
-    <None Remove="test.template" />
+    <None Remove="expected_language.txt" />
+    <None Remove="expected_multiple_block_definition.txt" />
+    <None Remove="expected_single_block_definition.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="test.template" />
+    <EmbeddedResource Include="expected_language.txt" />
+    <EmbeddedResource Include="expected_multiple_block_definition.txt" />
+    <EmbeddedResource Include="expected_single_block_definition.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.msbuild" Version="3.1.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="RavenDB.TestDriver" Version="5.2.4" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -43,7 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Server\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
+    <ProjectReference Include="..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
+    <ProjectReference Include="..\..\Server\Definitions\NaoBlocks.Definitions.Tangibles\NaoBlocks.Definitions.Tangibles.csproj" />
   </ItemGroup>
 
 </Project>

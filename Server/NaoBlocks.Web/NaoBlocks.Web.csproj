@@ -31,6 +31,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
 		<ProjectReference Include="..\Definitions\NaoBlocks.Definitions.Angular\NaoBlocks.Definitions.Angular.csproj" />
+		<ProjectReference Include="..\Definitions\NaoBlocks.Definitions.Tangibles\NaoBlocks.Definitions.Tangibles.csproj" />
 		<ProjectReference Include="..\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
 	</ItemGroup>
 

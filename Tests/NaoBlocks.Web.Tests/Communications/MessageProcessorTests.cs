@@ -157,13 +157,8 @@ namespace NaoBlocks.Web.Tests.Communications
         {
             // Arrange
             var (engine, processor, client) = InitialiseTestProcessor();
-            AddToRobotLog? command = null;
-            engine.OnExecute = c =>
-            {
-                command = c as AddToRobotLog;
-                return CommandResult.New(3);
-            };
-            engine.ExpectCommand<AddToRobotLog>();
+            engine.ExpectCommand<AddToRobotLog>(
+                CommandResult.New(3));
             client.Robot = new Data.Robot();
 
             // Act
@@ -175,6 +170,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             engine.Verify();
+            var command = Assert.IsType<AddToRobotLog>(engine.LastCommand);
             Assert.Equal("14916", command?.Values.FirstOrDefault(nv => nv.Name == "programId")?.Value);
         }
 
@@ -269,7 +265,8 @@ namespace NaoBlocks.Web.Tests.Communications
         {
             // Arrange
             var (engine, processor, client) = InitialiseTestProcessor();
-            engine.OnExecute = c => new CommandResult(1, "Command error");
+            engine.ExpectCommand<AddToRobotLog>(
+                new CommandResult(1, "Command error"));
             client.Robot = new Data.Robot();
 
             // Act
@@ -476,9 +473,9 @@ namespace NaoBlocks.Web.Tests.Communications
         }
 
         [Theory]
-        [InlineData(ClientMessageType.StopProgram, "")]
+        [InlineData(ClientMessageType.StopProgram, "", "INFORMATION: Stopping program on ")]
         [InlineData(ClientMessageType.TransferProgram, "program=14916")]
-        [InlineData(ClientMessageType.StartProgram, "program=14916", "INFORMATION: Starting program 14916 with {}")]
+        [InlineData(ClientMessageType.StartProgram, "program=14916", "INFORMATION: Starting program on ", "INFORMATION: Starting program 14916 with {}")]
         public async Task ProcessAsyncWarnsIfRobotNotSet(ClientMessageType inputMessage, string parameters, params string[] extraMessages)
         {
             // Arrange
@@ -512,13 +509,8 @@ namespace NaoBlocks.Web.Tests.Communications
             var (hub, robotClient) = InitialiseHubConnection(14916);
             robotClient.Robot = new Data.Robot { MachineName = "Mihīni" };
             var (engine, processor, client) = InitialiseTestProcessor(hub: hub);
-            AddToRobotLog? command = null;
-            engine.OnExecute = c =>
-            {
-                command = c as AddToRobotLog;
-                return CommandResult.New(3);
-            };
-            engine.ExpectCommand<AddToRobotLog>();
+            engine.ExpectCommand<AddToRobotLog>(
+                CommandResult.New(3));
             client.User = new Data.User();
 
             // Act
@@ -531,6 +523,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             engine.Verify();
+            var command = Assert.IsType<AddToRobotLog>(engine.LastCommand);
             Assert.Equal("Mihīni", command?.MachineName);
             Assert.Equal(logMessage, command?.Description);
         }
@@ -843,13 +836,8 @@ namespace NaoBlocks.Web.Tests.Communications
         {
             // Arrange
             var (engine, processor, client) = InitialiseTestProcessor();
-            AddToRobotLog? command = null;
-            engine.OnExecute = c =>
-            {
-                command = c as AddToRobotLog;
-                return CommandResult.New(3);
-            };
-            engine.ExpectCommand<AddToRobotLog>();
+            engine.ExpectCommand<AddToRobotLog>(
+                CommandResult.New(3));
             client.Robot = new Data.Robot();
 
             // Act
@@ -861,6 +849,7 @@ namespace NaoBlocks.Web.Tests.Communications
 
             // Assert
             engine.Verify();
+            var command = Assert.IsType<AddToRobotLog>(engine.LastCommand);
             Assert.Equal(expected, command?.Description);
         }
 
@@ -1169,8 +1158,8 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartUserConversation>();
-            engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
+            engine.ExpectCommand<StartUserConversation>(
+                CommandResult.New(1, new Data.Conversation { ConversationId = 1 }));
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
@@ -1201,8 +1190,8 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartUserConversation>();
-            engine.OnExecute = c => new CommandResult(1, "Failed");
+            engine.ExpectCommand<StartUserConversation>(
+                new CommandResult(1, "Failed"));
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
@@ -1241,8 +1230,8 @@ namespace NaoBlocks.Web.Tests.Communications
             userQuery.Setup(q => q.RetrieveByIdAsync("users/1"))
                 .Returns(Task.FromResult<Data.User?>(new Data.User { Name = "Mia" }));
             engine.RegisterQuery(userQuery.Object);
-            engine.ExpectCommand<StartUserConversation>();
-            engine.OnExecute = c => CommandResult.New(1, new Data.Conversation { ConversationId = 1 });
+            engine.ExpectCommand<StartUserConversation>(
+                CommandResult.New(1, new Data.Conversation { ConversationId = 1 }));
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Authenticate, new { token });
@@ -1262,6 +1251,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
             client.User = new Data.User
             {
+                Name = "Mia",
                 Settings = new Data.UserSettings
                 {
                     AllocationMode = 1,
@@ -1279,6 +1269,7 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Equal(
                 new[] {
                     "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Attempting to allocate robot for Mia",
                     "INFORMATION: Robot Mihīni is not available for allocation"
                 },
                 RetrieveLogMessages(processor));
@@ -1292,6 +1283,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
             client.User = new Data.User
             {
+                Name = "Mia",
                 Settings = new Data.UserSettings
                 {
                     AllocationMode = 0
@@ -1308,8 +1300,10 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Equal(
                 new[] {
                     "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Attempting to allocate robot for Mia",
                     "DEBUG: Randomly selecting robot",
-                    "INFORMATION: No robots available for allocation"
+                    "INFORMATION: No robots available for allocation",
+                    "INFORMATION: Unable to allocate robot for Mia"
                 },
                 RetrieveLogMessages(processor));
         }
@@ -1324,9 +1318,11 @@ namespace NaoBlocks.Web.Tests.Communications
             robot.Robot = new Data.Robot { MachineName = "Mihīni" };
             hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
                 .Returns(new[] { robot });
-            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            engine.ExpectCommand<AddToRobotLog>();
             client.User = new Data.User
             {
+                Name = "Mia",
                 Settings = new Data.UserSettings
                 {
                     AllocationMode = 1,
@@ -1344,6 +1340,7 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Equal(
                 new[] {
                     "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Attempting to allocate robot for Mia",
                     "INFORMATION: Robot Mihīni is not available for allocation"
                 },
                 RetrieveLogMessages(processor));
@@ -1360,9 +1357,11 @@ namespace NaoBlocks.Web.Tests.Communications
             robot.Robot = new Data.Robot { MachineName = "Mihīni" };
             hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
                 .Returns(new[] { robot });
-            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            engine.ExpectCommand<AddToRobotLog>();
             client.User = new Data.User
             {
+                Name = "Mia",
                 Settings = new Data.UserSettings
                 {
                     AllocationMode = 1,
@@ -1381,6 +1380,8 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Equal(
                 new[] {
                     "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Attempting to allocate robot for Mia", 
+                    "INFORMATION: Allocated robot Mihīni to Mia",
                     "INFORMATION: Allocated robot 2"
                 },
                 RetrieveLogMessages(processor));
@@ -1397,9 +1398,11 @@ namespace NaoBlocks.Web.Tests.Communications
             robot.Robot = new Data.Robot { MachineName = "Mihīni" };
             hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
                 .Returns(new[] { robot });
-            var (_, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            var (engine, processor, client) = InitialiseTestProcessor(hub: hub.Object);
+            engine.ExpectCommand<AddToRobotLog>();
             client.User = new Data.User
             {
+                Name = "Mia",
                 Settings = new Data.UserSettings
                 {
                     AllocationMode = 0
@@ -1417,7 +1420,9 @@ namespace NaoBlocks.Web.Tests.Communications
             Assert.Equal(
                 new[] {
                     "INFORMATION: Processing message type RequestRobot",
+                    "INFORMATION: Attempting to allocate robot for Mia",
                     "DEBUG: Randomly selecting robot",
+                    "INFORMATION: Allocated robot Mihīni to Mia",
                     "INFORMATION: Allocated robot 2"
                 },
                 RetrieveLogMessages(processor));

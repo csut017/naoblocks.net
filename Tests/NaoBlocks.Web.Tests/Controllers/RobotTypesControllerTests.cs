@@ -25,11 +25,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task AddBlockSetCallsCommand()
         {
             // Arrange
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.RobotType())
-            };
-            engine.ExpectCommand<AddBlockSet>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddBlockSet>(
+                CommandResult.New(1, new Data.RobotType()));
             var controller = InitialiseController(engine);
 
             // Act
@@ -220,11 +218,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task ImportToolboxCallsCommand()
         {
             // Arrange
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.RobotType())
-            };
-            engine.ExpectCommand<ImportToolbox>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ImportToolbox>(
+                CommandResult.New(1, new Data.RobotType()));
             var controller = InitialiseController(engine);
             controller.SetRequestBody(ToolBoxXml);
 
@@ -302,11 +298,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PostCallsAddsRobot()
         {
             // Arrange
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.RobotType())
-            };
-            engine.ExpectCommand<AddRobotType>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddRobotType>(
+                CommandResult.New(1, new Data.RobotType()));
             var controller = InitialiseController(engine);
 
             // Act
@@ -338,11 +332,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task PutCallsCommand()
         {
             // Arrange
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.RobotType())
-            };
-            engine.ExpectCommand<UpdateRobotType>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<UpdateRobotType>(
+                CommandResult.New(1, new Data.RobotType()));
             var controller = InitialiseController(engine);
 
             // Act
@@ -362,11 +354,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task SetAsDefaultCallsCommand()
         {
             // Arrange
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.RobotType())
-            };
-            engine.ExpectCommand<SetDefaultRobotType>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<SetDefaultRobotType>(
+                CommandResult.New(1, new Data.RobotType()));
             var controller = InitialiseController(engine);
 
             // Act

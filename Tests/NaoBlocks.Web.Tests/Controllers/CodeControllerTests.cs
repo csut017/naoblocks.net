@@ -31,7 +31,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult((Data.User?)new Data.User { Id = "users/1", Name = "Mia" }));
             codeQuery.Setup(q => q.RetrieveCodeAsync("users/1", 1))
                 .Returns(Task.FromResult((Data.CodeProgram?)new Data.CodeProgram { Code = "go()"}));
-            engine.OnExecute = c => CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult()));
+            engine.ExpectCommand<CompileCode>(
+                CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult())));
             var controller = new CodeController(
                 logger,
                 engine);
@@ -95,10 +96,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<CodeController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult()))
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<CompileCode>(
+                CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult())));
             var controller = new CodeController(
                 logger,
                 engine);
@@ -120,10 +120,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var logger = new FakeLogger<CodeController>();
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult()))
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<CompileCode>(
+                CommandResult.New(1, new Data.CompiledCodeProgram(new ParseResult())));
             var controller = new CodeController(
                 logger,
                 engine);
@@ -150,10 +149,9 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(2, new Data.CompiledCodeProgram(new ParseResult())),
                 CommandResult.New(3, new Data.CodeProgram { Number = 14916 })
             };
-            var engine = new FakeEngine
-            {
-                OnExecute = c => CommandResult.New(1, results.AsEnumerable())
-            };
+            var engine = new FakeEngine();
+            engine.ExpectCommand<Batch>(
+                CommandResult.New(1, results.AsEnumerable()));
             var controller = new CodeController(
                 logger,
                 engine);

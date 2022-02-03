@@ -1,0 +1,4 @@
+﻿let Tangibles = {};
+Tangibles.blocks = [<[[blocks]]>];
+Tangibles.NaoLang = {};
+<[[language]]>

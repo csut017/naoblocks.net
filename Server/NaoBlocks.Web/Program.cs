@@ -10,6 +10,7 @@ using System.Security.Principal;
 
 using Angular = NaoBlocks.Definitions.Angular;
 using Configuration = NaoBlocks.Web.Configuration;
+using Tangibles = NaoBlocks.Definitions.Tangibles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +83,7 @@ builder.Services.AddSingleton<IHub, LocalHub>();
 ClientAddressList.Initialise();
 var uiManager = new UiManager();
 uiManager.Register<Angular.Definition>("angular");
+uiManager.Register<Tangibles.Definition>("tangibles");
 builder.Services.AddSingleton(uiManager);
 builder.Services.AddTransient<IEngineFactory, DefaultEngineFactory>();
 builder.Services.AddTransient<IMessageProcessor, MessageProcessor>();
