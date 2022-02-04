@@ -85,7 +85,12 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
 
     console.log('[TangibleEditor] Retrieving canvas');
     this.context = this.videoCanvas?.nativeElement.getContext('2d');
-
+    if (this.context) {
+      this.context.textAlign = 'center';
+      this.context.textBaseline = 'middle'
+      this.context.font = 'bold 36px serif';
+      this.context.fillText('Initialising, please wait...', 320, 240);
+    }
     this.lastState = this.generateCode(false);
   }
 
@@ -205,7 +210,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     this.cameraStarted = false;
     TopCodes.startStopVideoScan('video-canvas');
     setTimeout(() => {
-      this.context!.fillStyle = "#ddd";
+      this.context!.fillStyle = "#fff";
       this.context!.fillRect(0, 0, 640, 480);
     }, 100);
   }
@@ -238,10 +243,15 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   highlightTags(topcodes: any): void {
-    this.context!.fillStyle = "rgba(255, 0, 0, 0.3)";
+    if (!this.context) {
+      console.error('Unable to retrieve Canvas context');
+      return;
+    }
+
+    this.context.fillStyle = "rgba(255, 0, 0, 0.3)";
     for (let loop = 0; loop < topcodes.length; loop++) {
-      this.context!.beginPath();
-      this.context!.arc(
+      this.context.beginPath();
+      this.context.arc(
         topcodes[loop].x,
         topcodes[loop].y,
         topcodes[loop].radius,
@@ -249,8 +259,16 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
         Math.PI * 2,
         true
       );
-      this.context!.fill();
+      this.context.fill();
     }
+
+    this.context.textAlign = 'right';
+    this.context.textBaseline = 'top'
+    this.context.font = '12px serif';
+    this.context.fillStyle = "rgb(0, 0, 0)";
+    this.context.fillText(this.isInFlippedMode ? 'Flipped' : 'Normal', 635, 5);
+    this.context.fillStyle = "rgb(255, 255, 255)";
+    this.context.fillText(this.isInFlippedMode ? 'Flipped' : 'Normal', 634, 4);
   }
 
   private generateCode(forRobot: boolean): string {

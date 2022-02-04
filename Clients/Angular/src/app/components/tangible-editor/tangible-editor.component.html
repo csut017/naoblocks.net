@@ -1,37 +1,12 @@
-<mat-grid-list cols="2" rowHeight="500px">
-    <mat-grid-tile>
-        <div style="overflow-x: auto; height: 500px;">
-            <canvas #videoCanvas id="video-canvas" width="640" height="480">
-            </canvas>
-        </div>
-    </mat-grid-tile>
-    <mat-grid-tile>
-        <div class="tangible" [ngClass]="{'highlight': block.highlight}" *ngFor="let block of blocks">
-            <img src="/assets/img/{{block.image}}.png">
-            <p>{{block.text}}</p>
-        </div>
-    </mat-grid-tile>
-</mat-grid-list>
-
-<div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-2': !isInDebugMode, 'hide-from-view': !isInDebugMode}">
-    <div class="card">
-        <div class="card-block">
-            <div class="card-text">
-            </div>
-        </div>
+<div class="tangible-editor">
+    <div class="video" [ngClass]="{'visible': isInDebugMode}">
+        <canvas #videoCanvas id="video-canvas" width="640" height="480">
+        </canvas>
     </div>
-</div>
-<div [ngClass]="{'clr-col-6': isInDebugMode, 'clr-col-8': !isInDebugMode}">
-    <div class="card">
-        <div class="card-block">
-            <div class="card-text">
-                <div class="tile-display">
-                    <div class="tangible" [ngClass]="{'highlight': block.highlight}" *ngFor="let block of blocks">
-                        <img src="/assets/img/{{block.image}}.png">
-                        <p>{{block.text}}</p>
-                    </div>
-                </div>
-            </div>
+    <div class="tangible">
+        <div class="block" [ngClass]="{'highlight': block.highlight}" *ngFor="let block of blocks">
+            <img src="{{block.imageData()}}">
+            <p>{{block.text}}</p>
         </div>
     </div>
 </div>

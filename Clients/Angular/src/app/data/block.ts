@@ -19,4 +19,8 @@ export class Block {
         if (!forRobot || !this.id) return this.action;
         return `[${this.id}]${this.action}`;
     }
+
+    imageData(): string {
+        return 'data:image/png;base64,' + this.image;
+    }
 }
