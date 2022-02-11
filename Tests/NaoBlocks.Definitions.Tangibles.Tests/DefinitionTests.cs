@@ -11,6 +11,23 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
     public class DefinitionTests
     {
         [Fact]
+        public async Task ValidateAsyncChecksForBlocks()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Definition does not contain any blocks"
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
         public async Task ValidateAsyncChecksForNames()
         {
             // Arrange
@@ -32,7 +49,6 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             }, ouput.Select(e => e.Error).ToArray());
         }
 
-
         [Fact]
         public async Task ValidateAsyncChecksAllFields()
         {
@@ -52,6 +68,35 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             {
                 "Block 'test_block' (#1) does not have a block definition (definition)",
                 "Block 'test_block' (#1) does not have a language generator (generator)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Theory]
+        [InlineData("={}")]
+        [InlineData("{}=")]
+        [InlineData("{=}")]
+        [InlineData("=[]")]
+        [InlineData("[]=")]
+        [InlineData("[=]")]
+        public async Task ValidateAsyncChecksForInvalidJson(string json)
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = json,
+                Generator = "return '';"
+            });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'test_block' (#1) has an invalid block definition (definition): must be valid JSON",
             }, ouput.Select(e => e.Error).ToArray());
         }
 

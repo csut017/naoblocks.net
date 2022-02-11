@@ -219,18 +219,33 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     let output: Block[] = [];
     let last: any;
     let number = 1000;
+    if (!tags.length) return output;
+
+    // Sort the tags so we process from top to bottom, then left to right
+    tags.sort((b1, b2) => {
+      let yOffset = (b1.y - b2.y);
+      if (Math.abs(yOffset) < 10) {
+        return b2.x - b1.x;
+      } else {
+        return yOffset;
+      }
+    });
+
     for (let tag of tags) {
       // Filter the tags: only include those tags with a mapping and are close to the previous x position
       let definition = this.tangiblesMapping[tag.code];
       if (!definition) {
-        console.groupCollapsed('[TangibleEditor] Unknown tag');
-        console.log(tag.code);
-        console.groupEnd();
+        console.log(`[TangibleEditor] Unknown tag ${tag.code}`);
+        last = tag;
         continue;
       }
 
       if (last) {
-        if ((tag.x > last.x + 10) && (tag.x < last.x - 10)) {
+        // We'll allow for a little bit of an offset
+        const xOffset = Math.abs(tag.x - last.x);
+
+        if (xOffset > 10) {
+          console.log(`[TangibleEditor] Skipping tag ${tag.code} due to x offset ${xOffset}`);
           continue;
         }
       }
