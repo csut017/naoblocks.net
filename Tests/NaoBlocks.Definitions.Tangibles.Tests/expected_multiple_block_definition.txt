@@ -1,3 +1,9 @@
-﻿let Tangibles = {
-	Blocks: [{"id":1},{"id":2}]
+﻿Tangibles = {};
+Tangibles.blocks = [{"id":1},{"id":2}];
+Tangibles.NaoLang = {};
+Tangibles.NaoLang.robot_wait = function (block) {
+return 'wait()';
+};
+Tangibles.NaoLang.robot_rest = function (block) {
+return 'rest()';
 };

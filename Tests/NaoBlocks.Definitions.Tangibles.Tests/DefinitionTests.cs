@@ -213,27 +213,6 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         }
 
         [Fact]
-        public async Task GenerateAsyncGeneratesLanguage()
-        {
-            // Arrange
-            var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Name = "robot_wait",
-                Generator = "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
-            });
-
-            // Act
-            var ouput = await definition.GenerateAsync("language");
-
-            // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_language.txt");
-            Assert.Equal(expected, body);
-        }
-
-        [Fact]
         public async Task GenerateAsyncGeneratesBlockDefinitionsForSingleBlock()
         {
             // Arrange
@@ -241,11 +220,12 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "robot_wait",
-                Definition = "{\"id\":1}"
+                Definition = "{\"id\":1}",
+                Generator = "return 'wait()';"
             });
 
             // Act
-            var ouput = await definition.GenerateAsync("blocks");
+            var ouput = await definition.GenerateAsync("all");
 
             // Assert
             using var reader = new StreamReader(ouput);
@@ -262,16 +242,18 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             definition.Blocks.Add(new Block
             {
                 Name = "robot_wait",
-                Definition = "{\"id\":1}"
+                Definition = "{\"id\":1}",
+                Generator = "return 'wait()';"
             });
             definition.Blocks.Add(new Block
             {
                 Name = "robot_rest",
-                Definition = "{\"id\":2}"
+                Definition = "{\"id\":2}",
+                Generator = "return 'rest()';"
             });
 
             // Act
-            var ouput = await definition.GenerateAsync("blocks");
+            var ouput = await definition.GenerateAsync("all");
 
             // Assert
             using var reader = new StreamReader(ouput);
