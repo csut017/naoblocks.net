@@ -20,8 +20,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="RavenDB.Client" Version="5.3.1" />
-    <PackageReference Include="RavenDB.Embedded" Version="5.3.1" />
+    <PackageReference Include="RavenDB.Client" Version="5.3.101" />
+    <PackageReference Include="RavenDB.Embedded" Version="5.3.101" />
   </ItemGroup>
 
   <ItemGroup>

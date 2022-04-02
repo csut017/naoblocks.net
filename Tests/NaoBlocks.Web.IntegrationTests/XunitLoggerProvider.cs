@@ -3,13 +3,13 @@ using Xunit.Abstractions;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
-    public sealed class XunitLoggerProvider 
+    public sealed class XunitLoggerProvider
         : ILoggerProvider, ISupportExternalScope
     {
         private readonly ITestOutputHelper _output;
         private readonly bool _useScopes;
 
-        private IExternalScopeProvider _scopes;
+        private IExternalScopeProvider? scopes;
 
         public XunitLoggerProvider(ITestOutputHelper output, bool useScopes)
         {
@@ -19,7 +19,7 @@ namespace NaoBlocks.Web.IntegrationTests
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, _scopes, categoryName, _useScopes);
+            return new XunitLogger(_output, this.scopes, categoryName, _useScopes);
         }
 
         public void Dispose()
@@ -28,7 +28,7 @@ namespace NaoBlocks.Web.IntegrationTests
 
         public void SetScopeProvider(IExternalScopeProvider scopes)
         {
-            _scopes = scopes;
+            this.scopes = scopes;
         }
     }
 }

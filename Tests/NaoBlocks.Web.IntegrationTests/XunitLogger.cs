@@ -7,27 +7,32 @@ namespace NaoBlocks.Web.IntegrationTests
 {
     public sealed class XunitLogger : ILogger
     {
+        private const string Critical = "crit";
+        private const string Debug = "dbug";
+        private const string Error = "fail";
+        private const string Info = "info";
         private const string ScopeDelimiter = "=> ";
         private const string Spacer = "      ";
 
         private const string Trace = "trce";
-        private const string Debug = "dbug";
-        private const string Info = "info";
         private const string Warn = "warn";
-        private const string Error = "fail";
-        private const string Critical = "crit";
+        private readonly string categoryName;
+        private readonly ITestOutputHelper output;
+        private readonly IExternalScopeProvider? scopes;
+        private readonly bool useScopes;
 
-        private readonly string _categoryName;
-        private readonly bool _useScopes;
-        private readonly ITestOutputHelper _output;
-        private readonly IExternalScopeProvider _scopes;
-
-        public XunitLogger(ITestOutputHelper output, IExternalScopeProvider scopes, string categoryName, bool useScopes)
+        public XunitLogger(ITestOutputHelper output, IExternalScopeProvider? scopes, string categoryName, bool useScopes)
         {
-            _output = output;
-            _scopes = scopes;
-            _categoryName = categoryName;
-            _useScopes = useScopes;
+            this.output = output;
+            this.scopes = scopes;
+            this.categoryName = categoryName;
+            this.useScopes = useScopes;
+        }
+
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            if (this.scopes == null) return new Scope();
+            return this.scopes.Push(state);
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -35,13 +40,8 @@ namespace NaoBlocks.Web.IntegrationTests
             return logLevel != LogLevel.None;
         }
 
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            return _scopes.Push(state);
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
-            Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
         {
             var sb = new StringBuilder();
 
@@ -50,30 +50,37 @@ namespace NaoBlocks.Web.IntegrationTests
                 case LogLevel.Trace:
                     sb.Append(Trace);
                     break;
+
                 case LogLevel.Debug:
                     sb.Append(Debug);
                     break;
+
                 case LogLevel.Information:
                     sb.Append(Info);
                     break;
+
                 case LogLevel.Warning:
                     sb.Append(Warn);
                     break;
+
                 case LogLevel.Error:
                     sb.Append(Error);
                     break;
+
                 case LogLevel.Critical:
                     sb.Append(Critical);
                     break;
+
                 case LogLevel.None:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
             }
 
-            sb.Append(": ").Append(_categoryName).Append('[').Append(eventId).Append(']').AppendLine();
+            sb.Append(": ").Append(categoryName).Append('[').Append(eventId).Append(']').AppendLine();
 
-            if (_useScopes && TryAppendScopes(sb))
+            if (useScopes && TryAppendScopes(sb))
                 sb.AppendLine();
 
             sb.Append(Spacer);
@@ -87,24 +94,50 @@ namespace NaoBlocks.Web.IntegrationTests
             }
 
             var message = sb.ToString();
-            _output.WriteLine(message);
+            output.WriteLine(message);
         }
 
         private bool TryAppendScopes(StringBuilder sb)
         {
             var scopes = false;
-            _scopes.ForEachScope((callback, state) =>
+            if (this.scopes != null)
             {
-                if (!scopes)
+                this.scopes.ForEachScope((callback, state) =>
                 {
-                    state.Append(Spacer);
-                    scopes = true;
-                }
+                    if (!scopes)
+                    {
+                        state.Append(Spacer);
+                        scopes = true;
+                    }
 
-                state.Append(ScopeDelimiter);
-                state.Append(callback);
-            }, sb);
+                    state.Append(ScopeDelimiter);
+                    state.Append(callback);
+                }, sb);
+            }
             return scopes;
+        }
+
+        public class Scope : IDisposable
+        {
+            private bool disposedValue;
+
+            public void Dispose()
+            {
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                    }
+
+                    disposedValue = true;
+                }
+            }
         }
     }
 }
