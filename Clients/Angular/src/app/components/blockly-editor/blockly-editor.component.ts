@@ -68,7 +68,6 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
     this.controllerSubscription?.unsubscribe();
   }
 
-
   ngOnChanges(_: SimpleChanges): void {
     if (this.workspace) {
       let xml = this.buildToolbox();

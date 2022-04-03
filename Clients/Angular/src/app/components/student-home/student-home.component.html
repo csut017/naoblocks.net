@@ -74,15 +74,15 @@
             <button mat-stroked-button (click)="openChangeRole('Student')">Change Role</button>
         </mat-toolbar>
 
-        <mat-toolbar color="warn" *ngIf="editorSettings.isLoaded && !editorSettings.isSystemInitialised">
-            <button mat-icon-button aria-label="No default robot error">
-                <mat-icon>error_outline</mat-icon>
-            </button>
-            <span>The system has not been completely initialised - there is no default robot type
-                <a mat-stroked-button [routerLink]="['/administrator', 'Robot Types']" class="configure-button" *ngIf="isAdmin">
-                    Configure
-                </a>
-            </span>
+        <mat-toolbar color="warn"
+            *ngIf="editorSettings.isLoaded && (!editorSettings.isSystemInitialised || !editorSettings.toolbox)">
+            <mat-icon class="error-icon">error_outline</mat-icon>
+            <span *ngIf="!editorSettings.isSystemInitialised">The system has not been completely initialised - there is no default robot type. </span>
+            <span *ngIf="editorSettings.isSystemInitialised && !editorSettings.toolbox">The current robot type does not have a toolbox. </span>
+            <a mat-stroked-button [routerLink]="['/administrator', 'Robot Types']" class="configure-button"
+                *ngIf="isAdmin">
+                Configure
+            </a>
         </mat-toolbar>
 
         <div [ngSwitch]="view">

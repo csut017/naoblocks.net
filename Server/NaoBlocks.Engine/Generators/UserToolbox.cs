@@ -15,7 +15,7 @@ namespace NaoBlocks.Engine.Generators
         /// </summary>
         /// <param name="format">The export format.</param>
         /// <returns>The output <see cref="Stream"/> containing the generated data.</returns>
-        public async override Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
+        public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
             var user = this.User!;
             var robotType = new RobotType();
@@ -105,7 +105,7 @@ namespace NaoBlocks.Engine.Generators
 
             var document = new XDocument(rootEl);
             var stream = new MemoryStream();
-            document.Save(stream, SaveOptions.DisableFormatting);
+            if (!(document?.Root?.IsEmpty ?? true)) document.Save(stream, SaveOptions.DisableFormatting);
             stream.Seek(0, SeekOrigin.Begin);
             return Tuple.Create((Stream)stream, $"Toolbox-{this.User.Name}.xml");
         }
