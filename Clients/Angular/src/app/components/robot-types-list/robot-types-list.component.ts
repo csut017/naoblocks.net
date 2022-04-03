@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RobotType } from 'src/app/data/robot-type';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -10,6 +10,9 @@ import { DeletionConfirmationService } from 'src/app/services/deletion-confirmat
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { forkJoin } from 'rxjs';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
+import { ImportService } from 'src/app/services/import.service';
+import { ImportSettings } from 'src/app/data/import-settings';
+import { ImportStatus } from 'src/app/data/import-status';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -18,7 +21,7 @@ import { MultilineMessageService } from 'src/app/services/multiline-message.serv
 })
 export class RobotTypesListComponent implements OnInit {
 
-  columns: string[] = ['select', 'name', 'isDefault'];
+  columns: string[] = ['select', 'name', 'isDefault', 'toolbox'];
   currentItem?: RobotType;
   dataSource: MatTableDataSource<RobotType> = new MatTableDataSource();
   hasSystemDefault: boolean = true;
@@ -32,6 +35,7 @@ export class RobotTypesListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
     private multilineMessage: MultilineMessageService,
+    private importService: ImportService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -106,8 +110,110 @@ export class RobotTypesListComponent implements OnInit {
     this.currentItem = this.selection.selected[0];
   }
 
-  import(): void {
+  importToolbox(): void {
+    let settings = new ImportSettings(this.selection.selected, this.doSendToolbox, this);
+    settings.prompt = 'Select the toolbox to import:';
+    settings.title = 'Import Toolbox';
+    this.importService.start(settings)
+      .subscribe(result => {
 
+      });
+  }
+
+  doSendToolbox(status: ImportStatus, settings: ImportSettings<RobotType>): void {
+    const multipler = 100 / status.files.length;
+    let emitter = new EventEmitter<number>();
+    emitter.subscribe((pos: number) => {
+      status.uploadProgress = pos * multipler;
+      if (status.isUploadCancelling) {
+        status.uploadStatus = `Cancelled toolbox upload`;
+        status.uploadState = 2;
+        status.isUploading = false;
+        status.isUploadCompleted = true;
+        status.uploadProgress = 100;
+      }
+
+      if (pos < status.files.length) {
+        const file = status.files[pos];
+        status.uploadStatus = `Uploading ${file.name}...`;
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          console.log('[RobotTypesList] Read toolbox file');
+          const data = e.target.result;
+          forkJoin(settings.items.map(rt => settings.owner.robotTypeService.storeToolbox(rt, data)))
+            .subscribe(results => {
+              emitter.emit(pos + 1);
+            });
+
+        };
+        console.log('[RobotTypesList] Reading toolbox file');
+        reader.readAsText(file);
+      } else {
+        status.uploadStatus = `Imported robot type toolbox`;
+        status.uploadState = 2;
+        status.isUploading = false;
+        status.isUploadCompleted = true;
+        status.uploadProgress = 100;
+      }
+    });
+    emitter.emit(0);
+  }
+
+  importPackage(): void {
+    let settings = new ImportSettings(this.selection.selected, this.doSendPackage, this);
+    settings.prompt = 'Select the packages you would like to import:';
+    settings.title = 'Import Packages';
+    settings.allowMultiple = true;
+    this.importService.start(settings)
+      .subscribe(result => {
+
+      });
+  }
+
+  doSendPackage(status: ImportStatus, settings: ImportSettings<RobotType>): void {
+    const multipler = 100 / status.files.length;
+    let emitter = new EventEmitter<number>();
+    emitter.subscribe((pos: number) => {
+      status.uploadProgress = pos * multipler;
+      if (status.isUploadCancelling) {
+        status.uploadStatus = `Cancelled package upload`;
+        status.uploadState = 2;
+        status.isUploading = false;
+        status.isUploadCompleted = true;
+        status.uploadProgress = 100;
+      }
+
+      if (pos < status.files.length) {
+        const file = status.files[pos];
+        status.uploadStatus = `Uploading ${file.name}...`;
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          console.log('[RobotTypesList] Read package file');
+          const data = e.target.result;
+          forkJoin(settings.items.map(rt => settings.owner.robotTypeService.uploadPackageFile(rt, file.name, data)))
+            .subscribe(results => {
+              emitter.emit(pos + 1);
+            });
+
+        };
+        console.log('[RobotTypesList] Reading package file');
+        reader.readAsText(file);
+      } else {
+        status.uploadStatus = `Generating package list...`;
+        status.uploadState = 1;
+        forkJoin(settings.items.map(rt => settings.owner.robotTypeService.generatePackageList(rt)))
+          .subscribe(results => {
+            status.uploadStatus = `Imported robot type package`;
+            status.uploadState = 2;
+            status.isUploading = false;
+            status.isUploadCompleted = true;
+            status.uploadProgress = 100;
+          });
+      }
+    });
+    emitter.emit(0);
   }
 
   setSystemDefault(): void {

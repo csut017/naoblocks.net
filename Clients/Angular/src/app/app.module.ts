@@ -40,6 +40,7 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
 import { ExecutionStatusComponent } from './components/execution-status/execution-status.component';
 import { TangibleEditorComponent } from './components/tangible-editor/tangible-editor.component';
 import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
+import { ImportDialogComponent } from './components/import-dialog/import-dialog.component';
 
 @NgModule({
   declarations: [
@@ -74,7 +75,8 @@ import { SystemInitialisationComponent } from './components/system-initialisatio
     ConfirmDialogComponent,
     ExecutionStatusComponent,
     TangibleEditorComponent,
-    SystemInitialisationComponent
+    SystemInitialisationComponent,
+    ImportDialogComponent
   ],
   imports: [
     BrowserModule,

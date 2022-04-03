@@ -8,14 +8,19 @@ namespace NaoBlocks.Web.Dtos
     public class RobotType
     {
         /// <summary>
-        /// Gets or sets the name of the robot type.
+        /// Gets or sets whether this type has a toolbox.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public bool? HasToolbox { get; set; }
 
         /// <summary>
         /// Gets or sets whether this type is the default robot type.
         /// </summary>
         public bool? IsDefault { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the robot type.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the categories in the toolbox.
@@ -33,7 +38,8 @@ namespace NaoBlocks.Web.Dtos
             var output = new RobotType
             {
                 Name = value.Name,
-                IsDefault = value.IsDefault
+                IsDefault = value.IsDefault,
+                HasToolbox = value.Toolbox.Any()
             };
 
             if (includeDetails)
