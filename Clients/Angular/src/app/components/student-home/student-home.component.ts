@@ -29,12 +29,12 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
       map(result => result.matches),
       shareReplay()
     );
+  isAdmin: boolean = false;
   runSettings: RunSettings = new RunSettings();
   showCommands: boolean = true;
   showFileCommands: boolean = true;
   title: string = '';
   view: string = '';
-
 
   private editorDefinitions: EditorDefinition[] = [
     new EditorDefinition('blockly', 'Block Editor', true),
@@ -60,6 +60,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
 
   ngOnInit(): void {
     this.checkAccess(UserRole.Student);
+    this.isAdmin = this.authenticationService.canAccess(UserRole.Administrator);
     this.settingsService.get()
       .subscribe(s => {
         this.editorSettings = s.output || new EditorSettings();

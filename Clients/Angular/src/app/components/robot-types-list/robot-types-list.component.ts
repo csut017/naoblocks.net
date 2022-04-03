@@ -21,6 +21,7 @@ export class RobotTypesListComponent implements OnInit {
   columns: string[] = ['select', 'name', 'isDefault'];
   currentItem?: RobotType;
   dataSource: MatTableDataSource<RobotType> = new MatTableDataSource();
+  hasSystemDefault: boolean = true;
   isLoading: boolean = true;
   isNew: boolean = true;
   selection = new SelectionModel<RobotType>(true, []);
@@ -92,8 +93,11 @@ export class RobotTypesListComponent implements OnInit {
         this.dataSource.data = this.dataSource
           .data
           .filter(el => !successful.includes(el));
+        this.updateDefaultRobotMessage();
       });
-
+  }
+  updateDefaultRobotMessage() {
+    this.hasSystemDefault = !!this.dataSource.data.find(rt => rt.isDefault);
   }
 
   edit(): void {
@@ -117,6 +121,7 @@ export class RobotTypesListComponent implements OnInit {
         } else {
           this.snackBar.open(`ERROR: Unable to set ${robotType.name} as system default`);
         }
+        this.updateDefaultRobotMessage();
       });
   }
 
@@ -130,6 +135,7 @@ export class RobotTypesListComponent implements OnInit {
         this.snackBar.open(`Updated robot type '${this.currentItem!.name}'`);
       }
       this.currentItem!.id = this.currentItem!.name;
+      this.updateDefaultRobotMessage();
     }
   }
 
@@ -140,6 +146,7 @@ export class RobotTypesListComponent implements OnInit {
         if (!this.authenticationService.checkHttpResponse(data)) return;
         this.dataSource = new MatTableDataSource(data.items);
         this.isLoading = false;
+        this.hasSystemDefault = !!data.items.find(rt => rt.isDefault);
       });
   }
 

@@ -78,7 +78,11 @@
             <button mat-icon-button aria-label="No default robot error">
                 <mat-icon>error_outline</mat-icon>
             </button>
-            <span>The system has not been completely initialised - there is no default robot type</span>
+            <span>The system has not been completely initialised - there is no default robot type
+                <a mat-stroked-button [routerLink]="['/administrator', 'Robot Types']" class="configure-button" *ngIf="isAdmin">
+                    Configure
+                </a>
+            </span>
         </mat-toolbar>
 
         <div [ngSwitch]="view">

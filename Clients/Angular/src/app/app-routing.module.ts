@@ -9,11 +9,13 @@ import { AdministratorHomeComponent } from './components/administrator-home/admi
 import { StudentHomeComponent } from './components/student-home/student-home.component';
 import { TeacherHomeComponent } from './components/teacher-home/teacher-home.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
+import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
 
 const routes: Routes = [
   // Public (no authentication) routes
   { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'initialisation', component: SystemInitialisationComponent },
 
   // Private (authenticated) routes
   { path: 'student', component: StudentHomeComponent, canActivate: [AuthenticationGuardService] },

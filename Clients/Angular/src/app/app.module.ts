@@ -39,6 +39,7 @@ import { ProgramLoadComponent } from './components/program-load/program-load.com
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { ExecutionStatusComponent } from './components/execution-status/execution-status.component';
 import { TangibleEditorComponent } from './components/tangible-editor/tangible-editor.component';
+import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
 
 @NgModule({
   declarations: [
@@ -72,7 +73,8 @@ import { TangibleEditorComponent } from './components/tangible-editor/tangible-e
     ProgramLoadComponent,
     ConfirmDialogComponent,
     ExecutionStatusComponent,
-    TangibleEditorComponent
+    TangibleEditorComponent,
+    SystemInitialisationComponent
   ],
   imports: [
     BrowserModule,

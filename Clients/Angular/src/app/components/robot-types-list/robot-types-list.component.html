@@ -59,6 +59,11 @@
             </div>
         </div>
 
+        <mat-error class="missing-default" *ngIf="!hasSystemDefault">
+            <mat-icon>warning</mat-icon>
+            There is no system default robot type.
+        </mat-error>
+
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
 
             <ng-container matColumnDef="name">
