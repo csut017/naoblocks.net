@@ -3,6 +3,7 @@ using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Text;
 
 namespace NaoBlocks.Definitions.Angular
@@ -10,6 +11,8 @@ namespace NaoBlocks.Definitions.Angular
     /// <summary>
     /// Defines the UI components for an Angular application
     /// </summary>
+    [DisplayName("Angular: Blockly")]
+    [Description("Angular blockly components.")]
     public class Definition : IUIDefinition
     {
         private readonly string[] keyWords = new[] { "SYSTEM" };
@@ -25,6 +28,22 @@ namespace NaoBlocks.Definitions.Angular
         public IList<AstNode> Nodes { get; } = new List<AstNode>();
 
         /// <summary>
+        /// Generates a component from the definition.
+        /// </summary>
+        /// <param name="component">The component name.</param>
+        /// <returns>A <see cref="Stream"/> containing the definition.</returns>
+        public Task<Stream> GenerateAsync(string component)
+        {
+            return component.ToLowerInvariant() switch
+            {
+                "block_definitions" => ConvertToStreamAsync(this.GenerateBlockDefinitions()),
+                "conversions" => ConvertToStreamAsync(this.GenerateConversions()),
+                "language" => ConvertToStreamAsync(this.GenerateLanguage()),
+                _ => throw new ApplicationException($"Unknown content type '{component}'"),
+            };
+        }
+
+        /// <summary>
         /// Validates the <see cref="IUIDefinition"/> instance.
         /// </summary>
         /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
@@ -36,6 +55,91 @@ namespace NaoBlocks.Definitions.Angular
             ValidateBlocks(errors);
             ValidateNodes(errors);
             return Task.FromResult(errors.AsEnumerable());
+        }
+
+        private static Task<Stream> ConvertToStreamAsync(string content)
+        {
+            return Task.FromResult(
+                (Stream)new MemoryStream(Encoding.UTF8.GetBytes(content)));
+        }
+
+        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
+        {
+            var isValid = false;
+            var definition = block.Definition!.Trim();
+            if (!string.IsNullOrWhiteSpace(definition))
+            {
+                if (keyWords.Contains(definition.ToUpperInvariant()))
+                {
+                    isValid = true;
+                }
+                else
+                {
+                    if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
+                    {
+                        try
+                        {
+                            var obj = JObject.Parse(definition);
+                            obj["type"] = block.Name;
+                            block.Definition = obj.ToString(Formatting.None);
+                            isValid = true;
+                        }
+                        catch
+                        {
+                            // Don't do anything, we were just checking if the JSON was valid
+                        }
+                    }
+                }
+            }
+
+            if (!isValid)
+            {
+                errors.Add(
+                    new CommandError(
+                        0,
+                        $"Block {name} has an invalid block definition (definition): must be valid JSON or one of [{string.Join(",", keyWords)}]"));
+            }
+        }
+
+        private string GenerateBlockDefinitions()
+        {
+            var generators = new Dictionary<string, Func<string>>
+            {
+                { "blocks", () =>
+                {
+                    return string.Join($",{Environment.NewLine}", this.Blocks.Where(b => !"system".Equals(b.Definition, StringComparison.InvariantCultureIgnoreCase)).Select(b => b.Definition));
+                }}
+            };
+            var output = TemplateGenerator.BuildFromTemplate<Definition>("block_definitions", generators);
+            return output;
+        }
+
+        private string GenerateConversions()
+        {
+            var generators = new Dictionary<string, Func<string>>
+            {
+                { "nodes", () =>
+                {
+                    return string.Join($",{Environment.NewLine}", this.Nodes.Select(n => $"'{n.Name}': {n.Converter}"));
+                }}
+            };
+            var output = TemplateGenerator.BuildFromTemplate<Definition>("conversions", generators);
+            return output;
+        }
+
+        private string GenerateLanguage()
+        {
+            var generators = new Dictionary<string, Func<string>>
+            {
+                { "blocks", () =>
+                {
+                    return string.Join(
+                        $"{Environment.NewLine}",
+                        this.Blocks.Select(b => $"Blockly.NaoLang.{b.Name} = function (block) {{{Environment.NewLine}{b.Generator}{Environment.NewLine}}};"));
+                }}
+            };
+            var output = TemplateGenerator.BuildFromTemplate<Definition>("language", generators);
+            return output;
         }
 
         /// <summary>
@@ -104,44 +208,6 @@ namespace NaoBlocks.Definitions.Angular
             }
         }
 
-        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
-        {
-            var isValid = false;
-            var definition = block.Definition!.Trim();
-            if (!string.IsNullOrWhiteSpace(definition))
-            {
-                if (keyWords.Contains(definition.ToUpperInvariant()))
-                {
-                    isValid = true;
-                }
-                else
-                {
-                    if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
-                    {
-                        try
-                        {
-                            var obj = JObject.Parse(definition);
-                            obj["type"] = block.Name;
-                            block.Definition = obj.ToString(Formatting.None);
-                            isValid = true;
-                        }
-                        catch
-                        {
-                            // Don't do anything, we were just checking if the JSON was valid
-                        }
-                    }
-                }
-            }
-
-            if (!isValid)
-            {
-                errors.Add(
-                    new CommandError(
-                        0,
-                        $"Block {name} has an invalid block definition (definition): must be valid JSON or one of [{string.Join(",", keyWords)}]"));
-            }
-        }
-
         /// <summary>
         /// Performs the validation checks on the nodes.
         /// </summary>
@@ -197,69 +263,6 @@ namespace NaoBlocks.Definitions.Angular
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Generates a component from the definition.
-        /// </summary>
-        /// <param name="component">The component name.</param>
-        /// <returns>A <see cref="Stream"/> containing the definition.</returns>
-        public Task<Stream> GenerateAsync(string component)
-        {
-            return component.ToLowerInvariant() switch
-            {
-                "block_definitions" => ConvertToStreamAsync(this.GenerateBlockDefinitions()),
-                "conversions" => ConvertToStreamAsync(this.GenerateConversions()),
-                "language" => ConvertToStreamAsync(this.GenerateLanguage()),
-                _ => throw new ApplicationException($"Unknown content type '{component}'"),
-            };
-        }
-
-        private static Task<Stream> ConvertToStreamAsync(string content)
-        {
-            return Task.FromResult(
-                (Stream)new MemoryStream(Encoding.UTF8.GetBytes(content)));
-        }
-
-        private string GenerateBlockDefinitions()
-        {
-            var generators = new Dictionary<string, Func<string>>
-            {
-                { "blocks", () =>
-                {
-                    return string.Join($",{Environment.NewLine}", this.Blocks.Where(b => !"system".Equals(b.Definition, StringComparison.InvariantCultureIgnoreCase)).Select(b => b.Definition));
-                }}
-            };
-            var output = TemplateGenerator.BuildFromTemplate<Definition>("block_definitions", generators);
-            return output;
-        }
-
-        private string GenerateConversions()
-        {
-            var generators = new Dictionary<string, Func<string>>
-            {
-                { "nodes", () =>
-                {
-                    return string.Join($",{Environment.NewLine}", this.Nodes.Select(n => $"'{n.Name}': {n.Converter}"));
-                }}
-            };
-            var output = TemplateGenerator.BuildFromTemplate<Definition>("conversions", generators);
-            return output;
-        }
-
-        private string GenerateLanguage()
-        {
-            var generators = new Dictionary<string, Func<string>>
-            {
-                { "blocks", () =>
-                {
-                    return string.Join(
-                        $"{Environment.NewLine}",
-                        this.Blocks.Select(b => $"Blockly.NaoLang.{b.Name} = function (block) {{{Environment.NewLine}{b.Generator}{Environment.NewLine}}};"));
-                }}
-            };
-            var output = TemplateGenerator.BuildFromTemplate<Definition>("language", generators);
-            return output;
         }
     }
 }

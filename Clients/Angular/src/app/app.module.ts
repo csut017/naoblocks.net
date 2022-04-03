@@ -41,6 +41,7 @@ import { ExecutionStatusComponent } from './components/execution-status/executio
 import { TangibleEditorComponent } from './components/tangible-editor/tangible-editor.component';
 import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
 import { ImportDialogComponent } from './components/import-dialog/import-dialog.component';
+import { UserInterfaceConfigurationComponent } from './components/user-interface-configuration/user-interface-configuration.component';
 
 @NgModule({
   declarations: [
@@ -76,7 +77,8 @@ import { ImportDialogComponent } from './components/import-dialog/import-dialog.
     ExecutionStatusComponent,
     TangibleEditorComponent,
     SystemInitialisationComponent,
-    ImportDialogComponent
+    ImportDialogComponent,
+    UserInterfaceConfigurationComponent
   ],
   imports: [
     BrowserModule,

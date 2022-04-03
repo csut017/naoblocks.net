@@ -129,7 +129,6 @@ export class RobotsListComponent implements OnInit {
       });
   }
 
-
   private generateCountText(count: number): string {
     const text = count == 1
       ? '1 robot'

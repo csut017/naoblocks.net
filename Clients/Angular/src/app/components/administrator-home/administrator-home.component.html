@@ -29,6 +29,9 @@
             <a mat-list-item href="#" (click)="changeView($event, 'Configuration')">
                 <mat-icon aria-label="System configuration" class="menu-icon">construction</mat-icon> Configuration
             </a>
+            <a mat-list-item href="#" (click)="changeView($event, 'User Interfaces')">
+                <mat-icon aria-label="User Interfaces" class="menu-icon">smart_button</mat-icon> User Interfaces
+            </a>
         </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -76,6 +79,7 @@
             <app-robot-types-list *ngSwitchCase="'Robot Types'"></app-robot-types-list>
             <app-users-list *ngSwitchCase="'Users'"></app-users-list>
             <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
+            <app-user-interface-configuration *ngSwitchCase="'User Interfaces'"></app-user-interface-configuration>
             <div *ngSwitchDefault class="unknown-view">
                 <mat-card>
                     <mat-card-title>

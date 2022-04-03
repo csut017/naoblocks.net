@@ -10,7 +10,6 @@ using NaoBlocks.Web.Helpers;
 
 using Data = NaoBlocks.Engine.Data;
 
-
 namespace NaoBlocks.Web.Controllers
 {
     /// <summary>
@@ -20,8 +19,8 @@ namespace NaoBlocks.Web.Controllers
     [ApiController]
     public class UiController : ControllerBase
     {
-        private readonly ILogger<UiController> logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<UiController> logger;
         private readonly UiManager uiManager;
 
         /// <summary>
@@ -76,6 +75,32 @@ namespace NaoBlocks.Web.Controllers
 
             var stream = await definition.Definition!.GenerateAsync(component);
             return File(stream, ContentTypes.Txt);
+        }
+
+        /// <summary>
+        /// Retrieves a page of UI definitions.
+        /// </summary>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the UI definitions.</returns>
+        [HttpGet]
+        public Task<ListResult<Dtos.UIDefinition>> List(int? page, int? size)
+        {
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
+            this.logger.LogDebug($"Retrieving UI definitions: page {pageNum} with size {pageSize}");
+            var definitions = this.uiManager.ListRegistered();
+            var count = definitions.Count();
+            this.logger.LogDebug($"Retrieved {count} definitions");
+            var result = new ListResult<Dtos.UIDefinition>
+            {
+                Count = count,
+                Page = pageNum,
+                Items = definitions
+                    .OrderBy(def => def.Key)
+                    .Skip(pageSize * pageNum)
+                    .Take(pageSize)
+            };
+            return Task.FromResult(result);
         }
 
         /// <summary>

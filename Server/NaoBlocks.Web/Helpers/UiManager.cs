@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Engine;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace NaoBlocks.Web.Helpers
 {
@@ -11,14 +12,23 @@ namespace NaoBlocks.Web.Helpers
         private readonly Dictionary<string, Type> definitions = new();
 
         /// <summary>
-        /// Registers a new <see cref="IUIDefinition"/> type.
+        /// Lists all the registered definitions.
         /// </summary>
-        /// <typeparam name="TUi">The <see cref="IUIDefinition"/> type.</typeparam>
-        /// <param name="name">The name of the definition.</param>
-        public void Register<TUi>(string name)
-            where TUi : IUIDefinition
+        /// <returns>The definitions.</returns>
+        public IEnumerable<Dtos.UIDefinition> ListRegistered()
         {
-            this.definitions[name] = typeof(TUi);
+            return this.definitions.Select(def =>
+            {
+                var nameAttrib = def.Value.GetCustomAttributes(typeof(DisplayNameAttribute), false).FirstOrDefault() as DisplayNameAttribute;
+                var descriptionAttrib = def.Value.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() as DescriptionAttribute;
+                var definition = new Dtos.UIDefinition
+                {
+                    Description = descriptionAttrib?.Description ?? string.Empty,
+                    Name = nameAttrib?.DisplayName ?? "<Unknown>",
+                    Key = def.Key
+                };
+                return definition;
+            }).ToArray();
         }
 
         /// <summary>
@@ -40,6 +50,17 @@ namespace NaoBlocks.Web.Helpers
             {
                 throw new ApplicationException("Unable to parse definition", error);
             }
+        }
+
+        /// <summary>
+        /// Registers a new <see cref="IUIDefinition"/> type.
+        /// </summary>
+        /// <typeparam name="TUi">The <see cref="IUIDefinition"/> type.</typeparam>
+        /// <param name="name">The name of the definition.</param>
+        public void Register<TUi>(string name)
+            where TUi : IUIDefinition
+        {
+            this.definitions[name] = typeof(TUi);
         }
     }
 }

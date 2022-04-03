@@ -3,6 +3,7 @@ using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Text;
 
 namespace NaoBlocks.Definitions.Tangibles
@@ -10,24 +11,14 @@ namespace NaoBlocks.Definitions.Tangibles
     /// <summary>
     /// Defines the UI components for an Angular application
     /// </summary>
+    [DisplayName("Tangibles")]
+    [Description("Components for using within the tangibles viewer.")]
     public class Definition : IUIDefinition
     {
         /// <summary>
         /// Gets the blocks.
         /// </summary>
         public IList<Block> Blocks { get; } = new List<Block>();
-
-        /// <summary>
-        /// Validates the <see cref="IUIDefinition"/> instance.
-        /// </summary>
-        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
-        /// <returns>The errors from validation. Empty if there are no errors.</returns>
-        public Task<IEnumerable<CommandError>> ValidateAsync(IExecutionEngine engine)
-        {
-            var errors = new List<CommandError>();
-            ValidateBlocks(errors);
-            return Task.FromResult(errors.AsEnumerable());
-        }
 
         /// <summary>
         /// Generates a component from the definition.
@@ -43,10 +34,53 @@ namespace NaoBlocks.Definitions.Tangibles
             };
         }
 
+        /// <summary>
+        /// Validates the <see cref="IUIDefinition"/> instance.
+        /// </summary>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        /// <returns>The errors from validation. Empty if there are no errors.</returns>
+        public Task<IEnumerable<CommandError>> ValidateAsync(IExecutionEngine engine)
+        {
+            var errors = new List<CommandError>();
+            ValidateBlocks(errors);
+            return Task.FromResult(errors.AsEnumerable());
+        }
+
         private static Task<Stream> ConvertToStreamAsync(string content)
         {
             return Task.FromResult(
                 (Stream)new MemoryStream(Encoding.UTF8.GetBytes(content)));
+        }
+
+        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
+        {
+            var isValid = false;
+            var definition = block.Definition!.Trim();
+            if (!string.IsNullOrWhiteSpace(definition))
+            {
+                if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
+                {
+                    try
+                    {
+                        var obj = JObject.Parse(definition);
+                        obj["type"] = block.Name;
+                        block.Definition = obj.ToString(Formatting.None);
+                        isValid = true;
+                    }
+                    catch
+                    {
+                        // Don't do anything, we were just checking if the JSON was valid
+                    }
+                }
+            }
+
+            if (!isValid)
+            {
+                errors.Add(
+                    new CommandError(
+                        0,
+                        $"Block {name} has an invalid block definition (definition): must be valid JSON"));
+            }
         }
 
         private string GenerateAll()
@@ -131,37 +165,6 @@ namespace NaoBlocks.Definitions.Tangibles
                                 $"Block {name} has an invalid language generator (generator): must be valid JavaScript"));
                     }
                 }
-            }
-        }
-
-        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
-        {
-            var isValid = false;
-            var definition = block.Definition!.Trim();
-            if (!string.IsNullOrWhiteSpace(definition))
-            {
-                if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
-                {
-                    try
-                    {
-                        var obj = JObject.Parse(definition);
-                        obj["type"] = block.Name;
-                        block.Definition = obj.ToString(Formatting.None);
-                        isValid = true;
-                    }
-                    catch
-                    {
-                        // Don't do anything, we were just checking if the JSON was valid
-                    }
-                }
-            }
-
-            if (!isValid)
-            {
-                errors.Add(
-                    new CommandError(
-                        0,
-                        $"Block {name} has an invalid block definition (definition): must be valid JSON"));
             }
         }
     }
