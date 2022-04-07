@@ -1,4 +1,4 @@
-import { TangibleDefinition } from "./TangibleDefinition";
+import { TangibleDefinition } from "./tangible-definition";
 
 declare var Tangibles: any;
 

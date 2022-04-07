@@ -76,7 +76,7 @@ export class RobotTypeService extends ClientService {
         tap(_ => this.log(`Set '${robotType.name}' as the system default`)),
         catchError(this.handleError('setSystemDefault', msg => new ExecutionResult<RobotType>(robotType, msg)))
       );
-}
+  }
 
   delete(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;

@@ -5,7 +5,7 @@ import { ControllerAction } from 'src/app/data/controller-action';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { RunSettings } from 'src/app/data/run-settings';
 import { StartupStatusTracker } from 'src/app/data/startup-status-tracker';
-import { TangibleDefinition } from 'src/app/data/TangibleDefinition';
+import { TangibleDefinition } from 'src/app/data/tangible-definition';
 import { ConfirmService } from 'src/app/services/confirm.service';
 import { ClientMessage, ClientMessageType, ConnectionService } from 'src/app/services/connection.service';
 import { ExecutionStatusService } from 'src/app/services/execution-status.service';

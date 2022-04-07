@@ -38,6 +38,7 @@
                 <mat-icon class="upload-status-icon" *ngIf="status.uploadState==0">cloud_upload</mat-icon>
                 <mat-icon class="upload-status-icon" *ngIf="status.uploadState==1"></mat-icon>
                 <mat-icon class="upload-status-icon" *ngIf="status.uploadState==2">cloud_done</mat-icon>
+                <mat-icon class="upload-status-icon" *ngIf="status.uploadState==3">cloud_off</mat-icon>
                 {{status.uploadStatus}}
             </h3>
             <mat-progress-bar mode="determinate" [value]="status.uploadProgress"></mat-progress-bar>

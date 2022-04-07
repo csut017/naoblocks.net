@@ -1,3 +1,5 @@
+import { ImportError } from "./import-error";
+
 export class ImportStatus {
     files: any[] = [];
     isUploadCancelling: boolean = false;
@@ -6,4 +8,9 @@ export class ImportStatus {
     uploadProgress: number = 0;
     uploadState: number = 0;
     uploadStatus: string = '...';
+    errors: ImportError[] = [];
+
+    addError(position: number, message: string) {
+        this.errors.push(new ImportError(position, message));
+    }
 }
