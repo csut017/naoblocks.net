@@ -42,6 +42,7 @@ import { TangibleEditorComponent } from './components/tangible-editor/tangible-e
 import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
 import { ImportDialogComponent } from './components/import-dialog/import-dialog.component';
 import { UserInterfaceConfigurationComponent } from './components/user-interface-configuration/user-interface-configuration.component';
+import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +79,8 @@ import { UserInterfaceConfigurationComponent } from './components/user-interface
     TangibleEditorComponent,
     SystemInitialisationComponent,
     ImportDialogComponent,
-    UserInterfaceConfigurationComponent
+    UserInterfaceConfigurationComponent,
+    UserSettingsComponent
   ],
   imports: [
     BrowserModule,

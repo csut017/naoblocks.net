@@ -14,12 +14,12 @@ export class SettingsStudentComponent implements OnInit {
   form: FormGroup;
   isSaving: boolean = false;
 
-  constructor() { 
+  constructor() {
     this.form = new FormGroup({
       name: new FormControl('', [Validators.required]),
       type: new FormControl('', []),
     });
-  }
+   }
 
   ngOnInit(): void {
   }

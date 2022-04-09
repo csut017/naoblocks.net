@@ -10,7 +10,7 @@
     </div>
     <mat-card>
         <mat-card-content>
-            TODO
+            <app-user-settings (closed)="doClose()" [showAllocation]="true"></app-user-settings>
             
             <mat-error *ngIf="errors.length > 0" class="lower-1">
                 There were some errors saving the robot type:
