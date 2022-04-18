@@ -1,8 +1,14 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, OnInit } from '@angular/core';
+import { DefaultFlexOrderDirective } from '@angular/flex-layout';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { forkJoin } from 'rxjs';
+import { DeletionItems } from 'src/app/data/deletion-items';
 import { Student } from 'src/app/data/student';
+import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
+import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 import { StudentService } from 'src/app/services/student.service';
 
 @Component({
@@ -12,16 +18,83 @@ import { StudentService } from 'src/app/services/student.service';
 })
 export class StudentsListComponent implements OnInit {
 
-  columns: string[] = ['select', 'name', 'role', 'whenAdded'];
+  columns: string[] = ['select', 'name', 'whenAdded'];
+  currentItem?: Student;
   dataSource: MatTableDataSource<Student> = new MatTableDataSource();
   isLoading: boolean = true;
+  isNew: boolean = true;
   selection = new SelectionModel<Student>(true, []);
+  view: string = 'list';
 
   constructor(private studentService: StudentService,
+    private snackBar: MatSnackBar,
+    private deleteConfirm: DeletionConfirmationService,
+    private multilineMessage: MultilineMessageService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
     this.loadList();
+  }
+
+  add() {
+    this.view = 'editor';
+    this.isNew = true;
+    this.currentItem = new Student(true);
+  }
+
+  delete(): void {
+    this.deleteConfirm.confirm(new DeletionItems('student', this.selection.selected.map(item => item.name || '')))
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        this.doDelete();
+      });
+  }
+
+  doDelete(): void {
+    forkJoin(this.selection.selected.map(s => this.studentService.delete(s)))
+      .subscribe(results => {
+        let successful = results.filter(r => r.successful).map(r => r.output);
+        let failed = results.filter(r => !r.successful);
+        let messages: string[] = [];
+        if (successful.length !== 0) {
+          messages.push(`Deleted ${this.generateCountText(successful.length)}`);
+        }
+
+        if (failed.length !== 0) {
+          messages.push(`Failed to delete ${this.generateCountText(failed.length)}`);
+        }
+
+        this.multilineMessage.show(messages);
+        this.selection.clear();
+        this.dataSource.data = this.dataSource
+          .data
+          .filter(el => !successful.includes(el));
+      });
+
+  }
+  
+  edit(): void {
+    const item = this.selection.selected[0];
+    if (!item?.isFullyLoaded) {
+      this.studentService.get(item.id!)
+        .subscribe(student => {
+          if (student.successful) {
+            item.isFullyLoaded = true;
+            item.settings = student.output!.settings;
+            this.doEdit(item);
+          } else {
+            this.snackBar.open(`Unable to retrieve student details!`);
+          }
+        });
+    } else {
+        this.doEdit(item);
+    }
+  }
+
+  private doEdit(item: Student): void {
+    this.view = 'editor';
+    this.isNew = false;
+    this.currentItem = item;
   }
 
   isAllSelected() {
@@ -46,6 +119,19 @@ export class StudentsListComponent implements OnInit {
     return `${this.selection.isSelected(row) ? 'deselect' : 'select'} ${row.name}`;
   }
 
+  onClosed(saved: boolean) {
+    this.view = 'list';
+    if (saved) {
+      if (this.isNew) {
+        this.dataSource.data = [...this.dataSource.data, this.currentItem!];
+        this.snackBar.open(`Added student '${this.currentItem!.name}'`);
+      } else {
+        this.snackBar.open(`Updated student '${this.currentItem!.name}'`);
+      }
+      this.currentItem!.id = this.currentItem!.name;
+    }
+  }
+
   private loadList(): void {
     this.isLoading = true;
     this.studentService.list()
@@ -55,4 +141,10 @@ export class StudentsListComponent implements OnInit {
       });
   }
 
+  private generateCountText(count: number): string {
+    const text = count == 1
+      ? '1 student'
+      : `${count} students`
+    return text;
+  }
 }

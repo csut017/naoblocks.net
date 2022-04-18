@@ -82,6 +82,9 @@ export class UserSettingsComponent implements OnInit {
     }
   }
 
+  save(): void {
+    this.internalSettings.robotType = this.form.get('type')?.value;
+  }
 }
 
 class InterfaceHelper {
