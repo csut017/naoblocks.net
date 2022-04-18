@@ -5,6 +5,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthenticationInterceptor } from './authentication-interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material.module';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -91,6 +92,7 @@ import { UserSettingsComponent } from './components/user-settings/user-settings.
     HttpClientModule,
     MaterialModule,
     LayoutModule,
+    FlexLayoutModule,
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
