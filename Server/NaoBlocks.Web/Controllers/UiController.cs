@@ -107,10 +107,11 @@ namespace NaoBlocks.Web.Controllers
         /// Adds a new UI definition.
         /// </summary>
         /// <param name="name">The name of the UI definition to add.</param>
+        /// <param name="replace">Whether to replace the existing definition or not. To replace must be "yes" (case-insensitive).</param>
         /// <returns>The result of execution.</returns>
         [HttpPost("{name}")]
         [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<ExecutionResult>> Post(string name)
+        public async Task<ActionResult<ExecutionResult>> Post(string name, string? replace = null)
         {
             var json = string.Empty;
             using (var reader = new StreamReader(this.Request.Body))
@@ -142,11 +143,20 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogInformation($"Adding new UI definition '{name}'");
-            var command = new AddUIDefinition
+            CommandBase command = new AddUIDefinition
             {
                 Name = name,
                 Definition = definition!
             };
+            if (string.Equals("yes", replace, StringComparison.InvariantCultureIgnoreCase))
+            {
+                command = new Batch(
+                    new DeleteUIDefinition
+                    {
+                        Name = name
+                    },
+                    command);
+            }
             return await this.executionEngine
                 .ExecuteForHttp(command);
         }

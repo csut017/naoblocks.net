@@ -42,8 +42,11 @@ export class UiService extends ClientService {
       );
   }
 
-  import(definition: UIDefinition, toolbox: string): Observable<ExecutionResult<any>> {
-    const url = `${environment.apiURL}v1/ui/${definition.key}`;
+  import(definition: UIDefinition, toolbox: string, replace: boolean): Observable<ExecutionResult<any>> {
+    let url = `${environment.apiURL}v1/ui/${definition.key}`;
+    if (replace) {
+      url += '?replace=yes';
+    }
     this.log(`Importing definition for UI ${definition.name}`);
     return this.http.post<ExecutionResult<any>>(url, toolbox)
       .pipe(

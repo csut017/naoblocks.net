@@ -16,10 +16,51 @@ using Xunit;
 
 using Angular = NaoBlocks.Definitions.Angular;
 
+using Data = NaoBlocks.Engine.Data;
+
 namespace NaoBlocks.Web.Tests.Controllers
 {
     public class UiControllerTests
     {
+        [Fact]
+        public async Task DeleteCallsDelete()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            engine.ExpectCommand<DeleteUIDefinition>();
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var response = await controller.Delete("angular");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task GetComponentHandlesMissingDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)null));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.GetComponent("angular", "converter");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
         [Fact]
         public async Task GetComponentRetrievesComponent()
         {
@@ -48,46 +89,28 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetComponentHandlesMissingDefinition()
+        public async Task ListRetrievesAllRegistered()
         {
             // Arrange
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
             var manager = new UiManager();
-            var query = new Mock<UIDefinitionData>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrieveByNameAsync("angular"))
-                .Returns(Task.FromResult((UIDefinition?)null));
+            manager.Register<Angular.Definition>("angular");
             var controller = new UiController(logger, engine, manager);
 
             // Act
-            var result = await controller.GetComponent("angular", "converter");
+            var response = await controller.List(null, null);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result);
+            Assert.Equal(1, response.Count);
+            Assert.Equal(0, response.Page);
+            Assert.Equal(
+                new[] { "angular=>Angular: Blockly" },
+                response.Items?.Select(d => $"{d.Key}=>{d.Name}").ToArray());
         }
 
         [Fact]
-        public async Task DeleteCallsDelete()
-        {
-            // Arrange
-            var logger = new FakeLogger<UiController>();
-            var engine = new FakeEngine();
-            var manager = new UiManager();
-            engine.ExpectCommand<DeleteUIDefinition>();
-            var controller = new UiController(logger, engine, manager);
-
-            // Act
-            var response = await controller.Delete("angular");
-
-            // Assert
-            var result = Assert.IsType<ExecutionResult>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
-        }
-
-        [Fact]
-        public async Task PostCallsAdds()
+        public async Task PostCallsAdd()
         {
             // Arrange
             var logger = new FakeLogger<UiController>();
@@ -108,6 +131,36 @@ namespace NaoBlocks.Web.Tests.Controllers
             var command = Assert.IsType<AddUIDefinition>(engine.LastCommand);
             Assert.Equal("angular", command.Name);
             Assert.IsType<Angular.Definition>(command.Definition);
+        }
+
+        [Theory]
+        [InlineData("yes")]
+        [InlineData("yEs")]
+        [InlineData("YES")]
+        public async Task PostCallsBatch(string replace)
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            manager.Register<Angular.Definition>("angular");
+            engine.ExpectCommand<Batch>();
+            var controller = new UiController(logger, engine, manager);
+            controller.SetRequestBody("{}");
+
+            // Act
+            var response = await controller.Post("angular", replace);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var batch = Assert.IsType<Batch>(engine.LastCommand);
+            var deleteCommand = Assert.IsType<DeleteUIDefinition>(batch.Commands[0]);
+            Assert.Equal("angular", deleteCommand.Name);
+            var addCommand = Assert.IsType<AddUIDefinition>(batch.Commands[1]);
+            Assert.Equal("angular", addCommand.Name);
+            Assert.IsType<Angular.Definition>(addCommand.Definition);
         }
 
         [Theory]
