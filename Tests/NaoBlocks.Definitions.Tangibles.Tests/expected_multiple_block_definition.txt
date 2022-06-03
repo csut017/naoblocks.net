@@ -1,9 +1,9 @@
 ﻿Tangibles = {};
-Tangibles.blocks = [{"id":1},{"id":2}];
+Tangibles.blocks = {"1":{"name":"block_one","image":"data"},"2":{"name":"block_two","image":"data"},"3":{"name":"block_two","image":"data"}};
 Tangibles.NaoLang = {};
-Tangibles.NaoLang.robot_wait = function (block) {
-return 'wait()';
+Tangibles.NaoLang.block_one = function (block) {
+gen()
 };
-Tangibles.NaoLang.robot_rest = function (block) {
-return 'rest()';
+Tangibles.NaoLang.block_two = function (block) {
+gen()
 };

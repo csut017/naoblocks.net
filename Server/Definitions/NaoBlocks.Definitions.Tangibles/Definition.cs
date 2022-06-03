@@ -1,8 +1,6 @@
 ﻿using Esprima;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Text;
 
@@ -52,35 +50,23 @@ namespace NaoBlocks.Definitions.Tangibles
                 (Stream)new MemoryStream(Encoding.UTF8.GetBytes(content)));
         }
 
-        private void CheckAndTidyDefinition(Block block, List<CommandError> errors, string name)
+        /// <summary>
+        /// Generates the block definition to include in the template.
+        /// </summary>
+        /// <param name="block">The <see cref="Block"/> to generate the definition for.</param>
+        /// <param name="number">The topcode number for the block</param>
+        /// <returns>The textual definition of the <see cref="Block"/>.</returns>
+        private static string GenerateBlockDefinition(Block block, int number)
         {
-            var isValid = false;
-            var definition = block.Definition!.Trim();
-            if (!string.IsNullOrWhiteSpace(definition))
-            {
-                if ((definition.StartsWith("{") && definition.EndsWith("}")) || (definition.StartsWith("[") && definition.EndsWith("]")))
-                {
-                    try
-                    {
-                        var obj = JObject.Parse(definition);
-                        obj["type"] = block.Name;
-                        block.Definition = obj.ToString(Formatting.None);
-                        isValid = true;
-                    }
-                    catch
-                    {
-                        // Don't do anything, we were just checking if the JSON was valid
-                    }
-                }
-            }
-
-            if (!isValid)
-            {
-                errors.Add(
-                    new CommandError(
-                        0,
-                        $"Block {name} has an invalid block definition (definition): must be valid JSON"));
-            }
+            var builder = new StringBuilder();
+            builder.Append("\"");
+            builder.Append(number);
+            builder.Append("\":{\"name\":\"");
+            builder.Append(block.Name);
+            builder.Append("\",\"image\":\"");
+            builder.Append(block.Image);
+            builder.Append("\"}");
+            return builder.ToString();
         }
 
         private string GenerateAll()
@@ -89,7 +75,9 @@ namespace NaoBlocks.Definitions.Tangibles
             {
                 { "blocks", () =>
                 {
-                    return string.Join($",", this.Blocks.Where(b => !"system".Equals(b.Definition, StringComparison.InvariantCultureIgnoreCase)).Select(b => b.Definition));
+                    return string.Join(
+                        ",",
+                        this.Blocks.SelectMany(b => b.Numbers.Select(n => GenerateBlockDefinition(b, n))));
                 }},
                 { "language", () =>
                 {
@@ -116,6 +104,7 @@ namespace NaoBlocks.Definitions.Tangibles
 
             var index = 0;
             var blockIndex = new Dictionary<string, int>();
+            var numberIndex = new Dictionary<int, string>();
             foreach (var block in this.Blocks)
             {
                 index++;
@@ -137,13 +126,28 @@ namespace NaoBlocks.Definitions.Tangibles
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(block.Definition))
+                if (!block.Numbers.Any())
                 {
-                    errors.Add(new CommandError(0, $"Block {name} does not have a block definition (definition)"));
+                    errors.Add(new CommandError(0, $"Block {name} does not define any TopCode numbers (numbers)"));
                 }
                 else
                 {
-                    CheckAndTidyDefinition(block, errors, name);
+                    foreach (var number in block.Numbers)
+                    {
+                        if (numberIndex.TryGetValue(number, out var previous))
+                        {
+                            errors.Add(new CommandError(0, $"Duplicate TopCode number {number} detected in {name} and {previous}"));
+                        }
+                        else
+                        {
+                            numberIndex.Add(number, name);
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(block.Image))
+                {
+                    errors.Add(new CommandError(0, $"Block {name} does not have an image to display (image)"));
                 }
 
                 if (string.IsNullOrWhiteSpace(block.Generator))

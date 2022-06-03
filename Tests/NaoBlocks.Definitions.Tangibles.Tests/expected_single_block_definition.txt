@@ -1,6 +1,6 @@
 ﻿Tangibles = {};
-Tangibles.blocks = [{"id":1}];
+Tangibles.blocks = {"1":{"name":"block_one","image":"data://"}};
 Tangibles.NaoLang = {};
-Tangibles.NaoLang.robot_wait = function (block) {
-return 'wait()';
+Tangibles.NaoLang.block_one = function (block) {
+gen
 };

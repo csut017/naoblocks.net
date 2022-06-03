@@ -6,11 +6,6 @@
     public class Block
     {
         /// <summary>
-        /// Gets or sets the name of the block.
-        /// </summary>
-        public string? Name { get; set; }
-
-        /// <summary>
         /// Gets or sets the NaoLang generator code for the block.
         /// </summary>
         /// <remarks>
@@ -19,11 +14,57 @@
         public string? Generator { get; set; }
 
         /// <summary>
-        /// Gets or sets the JSON definition of the block.
+        /// Gets or sets the image of the block.
         /// </summary>
         /// <remarks>
-        /// The definition contains the JSON definition of the code. This definition is used to configure the block in the editor.
+        /// The image is a data URL containing the image of the block.
         /// </remarks>
-        public string? Definition { get; set; }
+        public string? Image { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the block.
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
+        /// Gets the TopCodes numbers.
+        /// </summary>
+        /// <remarks>
+        /// Each block must have one or more TopCodes numbers.
+        /// </remarks>
+        public IList<int> Numbers { get; private set; } = new List<int>();
+
+        /// <summary>
+        /// Generates a new <see cref="Block"/> definition.
+        /// </summary>
+        /// <param name="number">The top code number.</param>
+        /// <param name="name">The name of the block.</param>
+        /// <param name="image">A data URL containing the image.</param>
+        /// <param name="generator">The generator to use.</param>
+        /// <returns>The new <see cref="Block"/> definition.</returns>
+        public static Block New(int number, string? name, string? image, string? generator)
+        {
+            return New(new[] { number }, name, image, generator);
+        }
+
+        /// <summary>
+        /// Generates a new <see cref="Block"/> definition.
+        /// </summary>
+        /// <param name="numbers">The top code numbers.</param>
+        /// <param name="name">The name of the block.</param>
+        /// <param name="image">A data URL containing the image.</param>
+        /// <param name="generator">The generator to use.</param>
+        /// <returns>The new <see cref="Block"/> definition.</returns>
+        public static Block New(int[] numbers, string? name, string? image, string? generator)
+        {
+            var block = new Block
+            {
+                Name = name,
+                Image = image,
+                Generator = generator,
+                Numbers = new List<int>(numbers)
+            };
+            return block;
+        }
     }
 }
