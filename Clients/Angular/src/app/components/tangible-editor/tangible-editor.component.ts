@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { forkJoin, Subscription } from 'rxjs';
 import { Block } from 'src/app/data/block';
 import { ControllerAction } from 'src/app/data/controller-action';
@@ -53,6 +54,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     private executionStatus: ExecutionStatusService,
     private renderer: Renderer2,
     private scriptLoader: ScriptLoaderService,
+    private sanitizer: DomSanitizer,
     private confirm: ConfirmService) {
   }
 
@@ -250,7 +252,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
         }
       }
 
-      output.push(Block.initialise(number++, definition));
+      output.push(Block.initialise(number++, definition, this.sanitizer));
       last = tag;
     }
 

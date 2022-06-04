@@ -18,15 +18,37 @@ namespace NaoBlocks.Engine
         public string? Id { get; set; }
 
         /// <summary>
+        /// Gets or sets whether any validation errors should be ignored.
+        /// </summary>
+        [JsonIgnore]
+        public bool IgnoreValidationErrors { get; set; }
+
+        /// <summary>
         /// Gets or sets the command number.
         /// </summary>
         public int Number { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets whether validation failed.
+        /// </summary>
+        [JsonIgnore]
+        public bool ValidationFailed { get; set; }
 
         /// <summary>
         /// Gets or sets when the command was executed.
         /// </summary>
         [JsonIgnore]
         public DateTime WhenExecuted { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Checks if the command can be rolled back.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>True if the command can be rolled back (reversed), false otherwise.</returns>
+        public virtual Task<bool> CheckCanRollbackAsync(IDatabaseSession session)
+        {
+            return Task.FromResult(false);
+        }
 
         /// <summary>
         /// Attempts to execute the command.
@@ -52,13 +74,13 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
-        /// Checks if the command can be rolled back.
+        /// Attempts to restore the command from a saved state.
         /// </summary>
         /// <param name="session">The database session to use.</param>
-        /// <returns>True if the command can be rolled back (reversed), false otherwise.</returns>
-        public virtual Task<bool> CheckCanRollbackAsync(IDatabaseSession session)
+        /// <returns>The errors from restoring the state. Empty if there are no errors.</returns>
+        public virtual Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
         {
-            return Task.FromResult(false);
+            return Task.FromResult(new List<CommandError>().AsEnumerable());
         }
 
         /// <summary>
@@ -83,13 +105,19 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
-        /// Attempts to restore the command from a saved state.
+        /// Validates that a state object has been set prior to execution.
         /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>The errors from restoring the state. Empty if there are no errors.</returns>
-        public virtual Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        /// <param name="state">The state object to check.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the state variable is null.</exception>
+        protected static void ValidateExecutionState(params object?[] state)
         {
-            return Task.FromResult(new List<CommandError>().AsEnumerable());
+            foreach (object? entity in state)
+            {
+                if (entity == null)
+                {
+                    throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
+                }
+            }
         }
 
         /// <summary>
@@ -108,22 +136,6 @@ namespace NaoBlocks.Engine
         protected CommandError GenerateError(string error)
         {
             return new CommandError(this.Number, error);
-        }
-
-        /// <summary>
-        /// Validates that a state object has been set prior to execution.
-        /// </summary>
-        /// <param name="state">The state object to check.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the state variable is null.</exception>
-        protected static void ValidateExecutionState(params object?[] state)
-        {
-            foreach (object? entity in state)
-            {
-                if (entity == null)
-                {
-                    throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
-                }
-            }
         }
     }
 }

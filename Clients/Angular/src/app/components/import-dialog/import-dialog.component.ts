@@ -41,6 +41,7 @@ export class ImportDialogComponent implements OnInit {
   startUpload(): void {
     this.status.isUploading = true;
     this.status.uploadState = 0;
+    this.status.errors = [];
     this.status.uploadProgress = 0;
     this.data.uploadAction(this.status, this.data);
   }

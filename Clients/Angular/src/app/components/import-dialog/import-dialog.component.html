@@ -51,4 +51,5 @@
     <button mat-button [disabled]="status.isUploading" *ngIf="!status.isUploadCompleted"
         (click)="startUpload()">Upload</button>
     <button mat-button *ngIf="status.isUploadCompleted" [mat-dialog-close]="true">Close</button>
+    <button mat-button *ngIf="status.isUploadCompleted && data.allowReImport" (click)="startUpload()">Retry</button>
 </mat-dialog-actions>

@@ -28,14 +28,16 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>The errors from child commands.</returns>
         /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             var number = 0;
             foreach (var command in this.Commands)
             {
                 command.Number = number++;
-                errors.AddRange(await command.ValidateAsync(session, engine).ConfigureAwait(false));
+                var commandErrors = await command.ValidateAsync(session, engine).ConfigureAwait(false);
+                if (!command.IgnoreValidationErrors) errors.AddRange(commandErrors);
+                command.ValidationFailed = commandErrors.Any();
             }
 
             return errors.AsEnumerable();
@@ -50,7 +52,9 @@ namespace NaoBlocks.Engine.Commands
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var results = new List<CommandResult>();
-            foreach (var command in this.Commands)
+            // If validation failed for one or more commands, then we should it when executing
+            // This works because validation will fail unless IgnoreValidationErrors is set
+            foreach (var command in this.Commands.Where(c => !c.ValidationFailed))
             {
                 var result = await command.ExecuteAsync(session, engine).ConfigureAwait(false);
                 results.Add(result);

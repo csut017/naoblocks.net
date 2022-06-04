@@ -18,12 +18,30 @@ namespace NaoBlocks.Engine.Commands
         public string? Name { get; set; }
 
         /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.definition = await session.Query<UIDefinition>()
+                .FirstOrDefaultAsync(d => d.Name == this.Name)
+                .ConfigureAwait(false);
+            if (this.definition == null)
+            {
+                errors.Add(GenerateError("Definition does not exist"));
+            }
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Attempts to retrieve the robot type.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
 
@@ -33,12 +51,12 @@ namespace NaoBlocks.Engine.Commands
             }
             else
             {
-                this.definition =  await session.Query<UIDefinition>()
+                this.definition = await session.Query<UIDefinition>()
                     .FirstOrDefaultAsync(d => d.Name == this.Name)
                     .ConfigureAwait(false);
                 if (this.definition == null)
                 {
-                    errors.Add(GenerateError("Definition does not exist"));
+                    errors.Add(GenerateError($"Definition '{definition?.Name}' does not exist"));
                 }
             }
 
@@ -57,24 +75,6 @@ namespace NaoBlocks.Engine.Commands
             ValidateExecutionState(this.definition);
             session.Delete(this.definition);
             return Task.FromResult(CommandResult.New(this.Number, this.definition!));
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.definition = await session.Query<UIDefinition>()
-                .FirstOrDefaultAsync(d => d.Name == this.Name)
-                .ConfigureAwait(false);
-            if (this.definition == null)
-            {
-                errors.Add(GenerateError("Definition does not exist"));
-            }
-            return errors.AsEnumerable();
         }
     }
 }

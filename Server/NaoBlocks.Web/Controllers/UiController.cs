@@ -4,11 +4,7 @@ using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
-using NaoBlocks.Web.Communications;
-using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
-
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -143,16 +139,19 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogInformation($"Adding new UI definition '{name}'");
+            var replaceExisting = string.Equals("yes", replace, StringComparison.InvariantCultureIgnoreCase);
             CommandBase command = new AddUIDefinition
             {
                 Name = name,
-                Definition = definition!
+                Definition = definition!,
+                IgnoreExisting = replaceExisting
             };
-            if (string.Equals("yes", replace, StringComparison.InvariantCultureIgnoreCase))
+            if (replaceExisting)
             {
                 command = new Batch(
                     new DeleteUIDefinition
                     {
+                        IgnoreValidationErrors = true,
                         Name = name
                     },
                     command);

@@ -5,7 +5,7 @@
     </div>
     <div class="tangible">
         <div class="block" [ngClass]="{'highlight': block.highlight}" *ngFor="let block of blocks">
-            <img src="{{block.imageData()}}">
+            <img [src]="block.imageData()">
             <p>{{block.text}}</p>
         </div>
     </div>

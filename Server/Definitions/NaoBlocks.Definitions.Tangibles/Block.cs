@@ -35,6 +35,11 @@
         public IList<int> Numbers { get; private set; } = new List<int>();
 
         /// <summary>
+        /// Gets or sets the text of the block.
+        /// </summary>
+        public string? Text { get; set; }
+
+        /// <summary>
         /// Generates a new <see cref="Block"/> definition.
         /// </summary>
         /// <param name="number">The top code number.</param>

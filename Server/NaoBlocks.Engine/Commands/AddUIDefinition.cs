@@ -1,6 +1,7 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
 using Raven.Client.Documents;
+using Newtonsoft.Json;
 
 namespace NaoBlocks.Engine.Commands
 {
@@ -16,6 +17,12 @@ namespace NaoBlocks.Engine.Commands
         public IUIDefinition? Definition { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to ignore an existing definition.
+        /// </summary>
+        [JsonIgnore]
+        public bool IgnoreExisting { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the definition.
         /// </summary>
         public string? Name { get; set; }
@@ -26,7 +33,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
 
@@ -39,7 +46,7 @@ namespace NaoBlocks.Engine.Commands
             {
                 errors.Add(GenerateError("Definition is required"));
             }
-            else 
+            else if (!this.IgnoreExisting)
             {
                 var existing = await session.Query<UIDefinition>()
                     .FirstOrDefaultAsync(d => d.Name == this.Name)
@@ -47,7 +54,8 @@ namespace NaoBlocks.Engine.Commands
                 if (existing != null)
                 {
                     errors.Add(GenerateError("Definition already exists"));
-                }else
+                }
+                else
                 {
                     errors.AddRange(
                         await this.Definition.ValidateAsync(engine).ConfigureAwait(false));
@@ -64,7 +72,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         /// <param name="engine"></param>
-        protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
+        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var definition = new UIDefinition
             {

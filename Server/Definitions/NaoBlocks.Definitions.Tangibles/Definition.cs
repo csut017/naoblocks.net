@@ -13,10 +13,17 @@ namespace NaoBlocks.Definitions.Tangibles
     [Description("Components for using within the tangibles viewer.")]
     public class Definition : IUIDefinition
     {
+        private readonly Dictionary<string, ImageDefinition> images = new Dictionary<string, ImageDefinition>();
+
         /// <summary>
         /// Gets the blocks.
         /// </summary>
         public IList<Block> Blocks { get; } = new List<Block>();
+
+        /// <summary>
+        /// Gets the images.
+        /// </summary>
+        public IList<ImageDefinition> Images { get; } = new List<ImageDefinition>();
 
         /// <summary>
         /// Generates a component from the definition.
@@ -25,6 +32,12 @@ namespace NaoBlocks.Definitions.Tangibles
         /// <returns>A <see cref="Stream"/> containing the definition.</returns>
         public Task<Stream> GenerateAsync(string component)
         {
+            this.images.Clear();
+            foreach (var image in this.Images)
+            {
+                this.images[image.Name!] = image;
+            }
+
             return component.ToLowerInvariant() switch
             {
                 "all" => ConvertToStreamAsync(this.GenerateAll()),
@@ -50,25 +63,6 @@ namespace NaoBlocks.Definitions.Tangibles
                 (Stream)new MemoryStream(Encoding.UTF8.GetBytes(content)));
         }
 
-        /// <summary>
-        /// Generates the block definition to include in the template.
-        /// </summary>
-        /// <param name="block">The <see cref="Block"/> to generate the definition for.</param>
-        /// <param name="number">The topcode number for the block</param>
-        /// <returns>The textual definition of the <see cref="Block"/>.</returns>
-        private static string GenerateBlockDefinition(Block block, int number)
-        {
-            var builder = new StringBuilder();
-            builder.Append("\"");
-            builder.Append(number);
-            builder.Append("\":{\"name\":\"");
-            builder.Append(block.Name);
-            builder.Append("\",\"image\":\"");
-            builder.Append(block.Image);
-            builder.Append("\"}");
-            return builder.ToString();
-        }
-
         private string GenerateAll()
         {
             var generators = new Dictionary<string, Func<string>>
@@ -91,6 +85,29 @@ namespace NaoBlocks.Definitions.Tangibles
         }
 
         /// <summary>
+        /// Generates the block definition to include in the template.
+        /// </summary>
+        /// <param name="block">The <see cref="Block"/> to generate the definition for.</param>
+        /// <param name="number">The topcode number for the block</param>
+        /// <returns>The textual definition of the <see cref="Block"/>.</returns>
+        private string GenerateBlockDefinition(Block block, int number)
+        {
+            var builder = new StringBuilder();
+            builder.Append("{\"number\":");
+            builder.Append(number);
+            builder.Append(",\"type\":\"");
+            builder.Append(block.Name);
+            builder.Append("\",\"text\":\"");
+            builder.Append(block.Text ?? block.Name);
+            builder.Append("\",\"image\":\"");
+            var image = block.Image ?? String.Empty;
+            if (image.StartsWith("->")) image = this.images[image[2..]].Image;
+            builder.Append(image);
+            builder.Append("\"}");
+            return builder.ToString();
+        }
+
+        /// <summary>
         /// Performs the validation checks on the blocks.
         /// </summary>
         /// <param name="errors">The destination for any errors.</param>
@@ -101,6 +118,8 @@ namespace NaoBlocks.Definitions.Tangibles
                 errors.Add(new CommandError(0, "Definition does not contain any blocks"));
                 return;
             }
+
+            // TODO: Validate images
 
             var index = 0;
             var blockIndex = new Dictionary<string, int>();
@@ -148,6 +167,10 @@ namespace NaoBlocks.Definitions.Tangibles
                 if (string.IsNullOrWhiteSpace(block.Image))
                 {
                     errors.Add(new CommandError(0, $"Block {name} does not have an image to display (image)"));
+                }
+                else
+                {
+                    // TODO: validate image links
                 }
 
                 if (string.IsNullOrWhiteSpace(block.Generator))

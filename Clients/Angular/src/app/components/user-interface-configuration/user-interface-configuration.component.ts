@@ -63,16 +63,14 @@ export class UserInterfaceConfigurationComponent implements OnInit {
           const data = e.target.result;
           const definition = settings.items[0]; // There should be only one definition
           const service: UiService = settings.owner.uiService;
-          service.delete(definition)            // We need to delete the prior definition first
-            .subscribe(_ =>                     // But we don't care if it fails (there may not be a definition), any errors will be caught in the import 
-              service.import(definition, data)
-                .subscribe((results: ExecutionResult<UIDefinition>) => {
-                  if (!results.successful) {
-                    results.allErrors().forEach((err: string) => status.addError(0, err));
-                  }
+          service.import(definition, data, true)
+            .subscribe((results: ExecutionResult<UIDefinition>) => {
+              if (!results.successful) {
+                results.allErrors().forEach((err: string) => status.addError(0, err));
+              }
 
-                  emitter.emit(pos + 1);
-                }));
+              emitter.emit(pos + 1);
+            });
         };
         console.log('[UserInterfaceConfigurationComponent] Reading definition file');
         reader.readAsText(file);
@@ -83,6 +81,7 @@ export class UserInterfaceConfigurationComponent implements OnInit {
         } else {
           status.uploadStatus = `UI definition import failed: ` + status.errors.map(err => err.message).join(',');
           status.uploadState = 3;
+          settings.allowReImport = true;
         }
         status.isUploading = false;
         status.isUploadCompleted = true;

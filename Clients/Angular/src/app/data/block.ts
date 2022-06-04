@@ -1,3 +1,4 @@
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { TangibleDefinition } from "./tangible-definition";
 
 declare var Tangibles: any;
@@ -8,11 +9,12 @@ export class Block {
 
     constructor(public image: string, 
         public text: string, 
-        public name: string) {
+        public name: string,
+        private sanitizer: DomSanitizer) {
     }
 
-    static initialise(id: number, definition: TangibleDefinition): Block {
-        let block = new Block(definition.image, definition.text, definition.type);
+    static initialise(id: number, definition: TangibleDefinition, sanitizer: DomSanitizer): Block {
+        let block = new Block(definition.image, definition.text, definition.type, sanitizer);
         block.id = 'b_' + id;
         return block;
     }
@@ -29,7 +31,7 @@ export class Block {
         return `[${this.id}]${code}`;
     }
 
-    imageData(): string {
-        return 'data:image/png;base64,' + this.image;
+    imageData(): SafeResourceUrl {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(`data:image/png;base64, ${this.image}`);
     }
 }
