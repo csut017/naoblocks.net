@@ -289,10 +289,16 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   private generateCode(forRobot: boolean): string {
+    try {
+      // Try to intialise in a try-catch as Tangibles may not be loaded yet
+      Tangibles.NaoLang.init();
+    } catch {
+      return '';
+    }
+
     let blockCodes = this.blocks.map(b => b.generateCode(forRobot));
-    let code = "reset()\nstart{\n" +
-      blockCodes.join('\n') +
-      "\n}\ngo()\n";
+    let code = Tangibles.NaoLang.finish(
+      blockCodes.join(''));
 
     console.groupCollapsed('[TangibleEditor] Generated code');
     console.log(code);

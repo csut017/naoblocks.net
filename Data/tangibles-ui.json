@@ -5,7 +5,7 @@
             "numbers": [283],
             "image": "->question",
             "text": "Lie down",
-            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "dance",
@@ -19,14 +19,28 @@
             "numbers": [157],
             "image": "->question",
             "text": "Sit down",
-            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'position(\\'Sit\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "stand",
             "numbers": [31],
             "image": "->question",
             "text": "Stand up",
-            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "wave",
+            "numbers": [47],
+            "image": "->question",
+            "text": "Wave",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wave()\\n';"
+        },
+        {
+            "name": "kiaora",
+            "numbers": [331],
+            "image": "->question",
+            "text": "Say 'Kia ora'",
+            "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         }
     ],
     "images": [
