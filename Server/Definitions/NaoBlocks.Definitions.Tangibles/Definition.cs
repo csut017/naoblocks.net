@@ -119,9 +119,40 @@ namespace NaoBlocks.Definitions.Tangibles
                 return;
             }
 
-            // TODO: Validate images
-
+            var imageKeys = new Dictionary<string, int>();
             var index = 0;
+            foreach (var image in this.Images)
+            {
+                index++;
+                var name = $"#{index}";
+                if (string.IsNullOrEmpty(image.Name))
+                {
+                    errors.Add(new CommandError(0, $"Image {name} does not have a name (name)"));
+                }
+                else
+                {
+                    name = $"'{image.Name}' (#{index})";
+                    if (imageKeys.TryGetValue(image.Name, out var key))
+                    {
+                        errors.Add(new CommandError(0, $"Image '{image.Name}' is duplicated (#{key} and #{index})"));
+                    }
+                    else
+                    {
+                        imageKeys.Add(image.Name, index);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(image.Image))
+                {
+                    errors.Add(new CommandError(0, $"Image {name} is missing image data (image)"));
+                }
+                else if (!image.Image.StartsWith("data:image/png;base64,"))
+                {
+                    errors.Add(new CommandError(0, $"Image {name} has an invalid image (image): must be an image data URI"));
+                }
+            }
+
+            index = 0;
             var blockIndex = new Dictionary<string, int>();
             var numberIndex = new Dictionary<int, string>();
             foreach (var block in this.Blocks)
@@ -170,7 +201,20 @@ namespace NaoBlocks.Definitions.Tangibles
                 }
                 else
                 {
-                    // TODO: validate image links
+                    string image = block.Image;
+                    var isLink = image.StartsWith("->");
+                    if (!(isLink || image.StartsWith("data:image/png;base64,")))
+                    {
+                        errors.Add(new CommandError(0, $"Block {name} has an invalid image (image): must be an image data URI or a link (->)"));
+                    }
+                    else if (isLink)
+                    {
+                        var linkName = image[2..];
+                        if (!imageKeys.ContainsKey(linkName))
+                        {
+                            errors.Add(new CommandError(0, $"Block {name} has an invalid image (image): linked image '{linkName}' does not exist"));
+                        }
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(block.Generator))

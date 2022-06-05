@@ -1,5 +1,5 @@
 ﻿Tangibles = {};
-Tangibles.blocks = [{"number":1,"type":"block_one","text":"block_one","image":"image"}];
+Tangibles.blocks = [{"number":1,"type":"block_one","text":"block_one","image":"linked"}];
 Tangibles.NaoLang = {};
 Tangibles.NaoLang.block_one = function (block) {
 gen

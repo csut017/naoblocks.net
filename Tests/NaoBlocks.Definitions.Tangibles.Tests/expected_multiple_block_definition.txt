@@ -1,5 +1,5 @@
 ﻿Tangibles = {};
-Tangibles.blocks = {"1":{"name":"block_one","image":"data"},"2":{"name":"block_two","image":"data"},"3":{"name":"block_two","image":"data"}};
+Tangibles.blocks = [{"number":1,"type":"block_one","text":"block_one","image":"image"},{"number":2,"type":"block_two","text":"Block #2","image":"image"},{"number":3,"type":"block_two","text":"Block #2","image":"image"}];
 Tangibles.NaoLang = {};
 Tangibles.NaoLang.block_one = function (block) {
 gen()

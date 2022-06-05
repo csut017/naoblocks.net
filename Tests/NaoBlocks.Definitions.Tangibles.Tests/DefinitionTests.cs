@@ -10,6 +10,8 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
 {
     public class DefinitionTests
     {
+        private const string imageRedDot = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+
         [Fact]
         public async Task GenerateAsyncFailsWithUnknown()
         {
@@ -28,8 +30,10 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         {
             // Arrange
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "block_one", "data", "gen()"));
-            definition.Blocks.Add(Block.New(new[] { 2, 3 }, "block_two", "data", "gen()"));
+            definition.Blocks.Add(Block.New(1, "block_one", "image", "gen()"));
+            var block = Block.New(new[] { 2, 3 }, "block_two", "image", "gen()");
+            block.Text = "Block #2";
+            definition.Blocks.Add(block);
 
             // Act
             var ouput = await definition.GenerateAsync("all");
@@ -46,7 +50,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         {
             // Arrange
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "block_one", "data://", "gen"));
+            definition.Blocks.Add(Block.New(1, "block_one", "image", "gen"));
 
             // Act
             var ouput = await definition.GenerateAsync("all");
@@ -55,6 +59,25 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             using var reader = new StreamReader(ouput);
             var body = await reader.ReadToEndAsync();
             var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesBlockDefinitionsWithLinkedImage()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", "->image", "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Name = "image", Image = "linked" });
+
+            // Act
+            var ouput = await definition.GenerateAsync("all");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_linked_image_definition.txt");
             Assert.Equal(expected, body);
         }
 
@@ -82,6 +105,49 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         }
 
         [Fact]
+        public async Task ValidateAsyncChecksBlockImagesAreDataOrLinks()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", "rubbish", "gen"));
+            definition.Blocks.Add(Block.New(2, "block_two", imageRedDot, "gen"));
+            definition.Blocks.Add(Block.New(3, "block_three", "->image", "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Name = "image", Image = imageRedDot });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'block_one' (#1) has an invalid image (image): must be an image data URI or a link (->)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksBlockImagesLinkExists()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", "->one", "gen"));
+            definition.Blocks.Add(Block.New(2, "block_two", "->two", "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Name = "one", Image = imageRedDot });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Block 'block_two' (#2) has an invalid image (image): linked image 'two' does not exist",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
         public async Task ValidateAsyncChecksForBlocks()
         {
             // Arrange
@@ -104,8 +170,8 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "test_block", "data://", "gen"));
-            definition.Blocks.Add(Block.New(2, "test_block", "data://", "gen"));
+            definition.Blocks.Add(Block.New(1, "test_block", imageRedDot, "gen"));
+            definition.Blocks.Add(Block.New(2, "test_block", imageRedDot, "gen"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -123,8 +189,8 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "block_one", "data://", "gen"));
-            definition.Blocks.Add(Block.New(1, "block_two", "data://", "gen"));
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "gen"));
+            definition.Blocks.Add(Block.New(1, "block_two", imageRedDot, "gen"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -142,9 +208,9 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "block_one", "data://", "gen"));
-            definition.Blocks.Add(Block.New(2, "block_two", "data://", "gen"));
-            definition.Blocks.Add(Block.New(new[] { 1, 2 }, "block_three", "data://", "gen"));
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "gen"));
+            definition.Blocks.Add(Block.New(2, "block_two", imageRedDot, "gen"));
+            definition.Blocks.Add(Block.New(new[] { 1, 2 }, "block_three", imageRedDot, "gen"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -163,7 +229,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, null, "ignore", "ignore"));
+            definition.Blocks.Add(Block.New(1, null, imageRedDot, "ignore"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -181,8 +247,8 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "block_one", "data://", "=123"));
-            definition.Blocks.Add(Block.New(2, "block_two", "data://", "console.log('hello')"));
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "=123"));
+            definition.Blocks.Add(Block.New(2, "block_two", imageRedDot, "console.log('hello')"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -191,6 +257,71 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             Assert.Equal(new[]
             {
                 "Block 'block_one' (#1) has an invalid language generator (generator): must be valid JavaScript",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksImagesHaveAName()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Image = imageRedDot });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Image #1 does not have a name (name)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksImagesHaveAValidImageDefinition()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Name = "first", Image = "rubbish" });
+            definition.Images.Add(
+                new ImageDefinition { Name = "second" });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Image 'first' (#1) has an invalid image (image): must be an image data URI",
+                "Image 'second' (#2) is missing image data (image)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksImagesHaveUniqueNames()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            definition.Blocks.Add(Block.New(1, "block_one", imageRedDot, "gen"));
+            definition.Images.Add(
+                new ImageDefinition { Name = "first", Image = imageRedDot });
+            definition.Images.Add(
+                new ImageDefinition { Name = "first", Image = imageRedDot });
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Image 'first' is duplicated (#1 and #2)"
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -223,7 +354,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(Block.New(1, "test_block", "data://", "gen"));
+            definition.Blocks.Add(Block.New(1, "test_block", imageRedDot, "gen"));
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);

@@ -30,7 +30,7 @@ namespace NaoBlocks.Engine.Commands
                 .ConfigureAwait(false);
             if (this.definition == null)
             {
-                errors.Add(GenerateError("Definition does not exist"));
+                errors.Add(GenerateError($"Definition '{this.Name}' does not exist"));
             }
             return errors.AsEnumerable();
         }
@@ -56,7 +56,7 @@ namespace NaoBlocks.Engine.Commands
                     .ConfigureAwait(false);
                 if (this.definition == null)
                 {
-                    errors.Add(GenerateError($"Definition '{definition?.Name}' does not exist"));
+                    errors.Add(GenerateError($"Definition '{this.Name}' does not exist"));
                 }
             }
 

@@ -8,12 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="expected_linked_image_definition.txt" />
     <None Remove="expected_multiple_block_definition.txt" />
     <None Remove="expected_single_block_definition.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="expected_multiple_block_definition.txt" />
+    <EmbeddedResource Include="expected_linked_image_definition.txt" />
     <EmbeddedResource Include="expected_single_block_definition.txt" />
   </ItemGroup>
 
