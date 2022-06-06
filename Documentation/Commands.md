@@ -1,3 +1,9 @@
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+
 # Commands (Robot Functonality/Blocks)
 
 This page lists all the blocks that are available and their current stage of testing.
