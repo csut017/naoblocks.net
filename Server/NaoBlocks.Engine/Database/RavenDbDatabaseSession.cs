@@ -9,8 +9,9 @@ namespace NaoBlocks.Engine.Database
     public class RavenDbDatabaseSession
         : IDatabaseSession
     {
-        private bool disposedValue;
+        private readonly Dictionary<string, object> cache = new();
         private readonly IAsyncDocumentSession session;
+        private bool disposedValue;
 
         /// <summary>
         /// Starts a new <see cref="RavenDbDatabaseSession"/> instance.
@@ -19,6 +20,19 @@ namespace NaoBlocks.Engine.Database
         public RavenDbDatabaseSession(IAsyncDocumentSession session)
         {
             this.session = session;
+        }
+
+        /// <summary>
+        /// Caches an item that can be used within a command.
+        /// </summary>
+        /// <typeparam name="T">The type of the item.</typeparam>
+        /// <param name="key">The key of the item.</param>
+        /// <param name="item">The item to cache.</param>
+        public void CacheItem<T>(string key, T item)
+            where T : class
+        {
+            var fullKey = $"{typeof(T).FullName}->{key}";
+            this.cache[fullKey] = item;
         }
 
         /// <summary>
@@ -38,6 +52,24 @@ namespace NaoBlocks.Engine.Database
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Retrieve an item from the command cache.
+        /// </summary>
+        /// <typeparam name="T">The type of the item.</typeparam>
+        /// <param name="key">The key of the item.</param>
+        /// <returns>The item, if found, otherwise null.</returns>
+        public T? GetFromCache<T>(string key)
+            where T : class
+        {
+            var fullKey = $"{typeof(T).FullName}->{key}";
+            if (!this.cache.TryGetValue(fullKey, out var value))
+            {
+                return null;
+            }
+
+            return value as T;
         }
 
         /// <summary>

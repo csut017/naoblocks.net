@@ -1,7 +1,7 @@
-﻿using NaoBlocks.Engine.Data;
-using Raven.Client.Documents.Indexes;
+﻿using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,8 +9,9 @@ namespace NaoBlocks.Engine.Tests
 {
     internal class MockingRavenDbWrapper : IDatabaseSession
     {
-        private IAsyncDocumentSession? ravenDbSession;
+        private readonly Dictionary<string, object> cache = new();
         private object? lastModifiedEntity;
+        private IAsyncDocumentSession? ravenDbSession;
 
         public MockingRavenDbWrapper(IAsyncDocumentSession? ravenDbSession)
         {
@@ -24,6 +25,13 @@ namespace NaoBlocks.Engine.Tests
         public bool SavedChangedCalled { get; private set; }
 
         public bool StoreCalled { get; private set; }
+
+        public void CacheItem<T>(string key, T item)
+            where T : class
+        {
+            var fullKey = $"{typeof(T).FullName}->{key}";
+            this.cache[fullKey] = item;
+        }
 
         public void Delete<T>(T entity)
         {
@@ -41,6 +49,33 @@ namespace NaoBlocks.Engine.Tests
             {
                 this.ravenDbSession.Dispose();
             }
+        }
+
+        public T? GetFromCache<T>(string key)
+                    where T : class
+        {
+            var fullKey = $"{typeof(T).FullName}->{key}";
+            if (!this.cache.TryGetValue(fullKey, out var value))
+            {
+                return null;
+            }
+
+            return value as T;
+        }
+
+        public object? GetLastModifiedEntity()
+        {
+            return this.lastModifiedEntity;
+        }
+
+        public async Task<T?> LoadAsync<T>(string id)
+        {
+            if (this.ravenDbSession != null)
+            {
+                return await this.ravenDbSession.LoadAsync<T>(id);
+            }
+
+            throw new NotImplementedException("Using load requires a RavenDB session");
         }
 
         public IQueryable<T> Query<T>()
@@ -83,21 +118,6 @@ namespace NaoBlocks.Engine.Tests
             {
                 await this.ravenDbSession.StoreAsync(entity);
             }
-        }
-
-        public object? GetLastModifiedEntity()
-        {
-            return this.lastModifiedEntity;
-        }
-
-        public async Task<T?> LoadAsync<T>(string id)
-        {
-            if (this.ravenDbSession != null)
-            {
-                return await this.ravenDbSession.LoadAsync<T>(id);
-            }
-
-            throw new NotImplementedException("Using load requires a RavenDB session");
         }
     }
 }

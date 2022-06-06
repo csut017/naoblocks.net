@@ -77,12 +77,13 @@ export class SystemService extends ClientService {
     );
   }
 
-  initialise(adminPassword: string): Observable<SystemVersion> {
+  initialise(adminPassword: string, useDefaultUi: boolean, addNaoRobot: boolean): Observable<SystemVersion> {
     const url = `${environment.apiURL}v1/system/initialise`;
     this.log('Initialising application');
     let data = {
-      name: 'admin',
-      password: adminPassword
+      useDefaultUi: useDefaultUi,
+      password: adminPassword,
+      addNaoRobot: addNaoRobot
     };
     return this.http.post<SystemVersion>(url, data).pipe(
       catchError(this.handleError('initialise', msg => new SystemVersion(msg))),

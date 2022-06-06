@@ -28,7 +28,7 @@ namespace NaoBlocks.Engine.Commands
         public string? Name { get; set; }
 
         /// <summary>
-        /// Attempts to retrieve the robot type.
+        /// Attempts to validate the definition.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>

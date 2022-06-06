@@ -24,6 +24,15 @@
                     Please provide a valid password
                 </mat-error>
             </mat-form-field>
+            <div>
+                Options
+            </div>
+            <div>
+                <mat-slide-toggle formControlName="useDefaultUi">Use default User Interface commands</mat-slide-toggle>
+            </div>
+            <div>
+                <mat-slide-toggle formControlName="addNaoRobot">Use Nao robot definition</mat-slide-toggle>
+            </div>
         </mat-card-content>
         <mat-card-actions>
             <button mat-stroked-button type="submit" *ngIf="!initialising">

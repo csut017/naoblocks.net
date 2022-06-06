@@ -20,6 +20,11 @@ namespace NaoBlocks.Engine.Commands
         public string? Definition { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to ignore any missing robot and only check if during execution.
+        /// </summary>
+        public bool IgnoreMissingRobotType { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the robot type the toolbox is for.
         /// </summary>
         public string? Name { get; set; }
@@ -46,7 +51,10 @@ namespace NaoBlocks.Engine.Commands
         public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            if (!this.IgnoreMissingRobotType)
+            {
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            }
 
             if (string.IsNullOrWhiteSpace(this.Definition))
             {
@@ -75,8 +83,14 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         /// <param name="engine"></param>
-        protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
+        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
+            if (this.IgnoreMissingRobotType)
+            {
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, new List<CommandError>()).ConfigureAwait(false);
+                if (this.robotType == null) this.robotType = session.GetFromCache<RobotType>(this.Name ?? String.Empty);
+            }
+
             ValidateExecutionState(this.robotType);
             ValidateExecutionState(this.document);
             var categories = this.document!
@@ -89,7 +103,7 @@ namespace NaoBlocks.Engine.Commands
                 this.robotType.Toolbox.Add(category);
             }
 
-            return Task.FromResult(CommandResult.New(this.Number, this.robotType));
+            return CommandResult.New(this.Number, this.robotType);
         }
 
         private ToolboxBlock ParseBlock(XElement blockEl, int elOrder)

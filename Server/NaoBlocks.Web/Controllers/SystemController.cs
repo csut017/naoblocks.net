@@ -23,9 +23,10 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class SystemController : ControllerBase
     {
-        private readonly IExecutionEngine executionEngine;
         private readonly IHub communicationsHub;
+        private readonly IExecutionEngine executionEngine;
         private readonly ILogger<SystemController> logger;
+        private readonly UiManager uiManager;
 
         /// <summary>
         /// Initialise a new <see cref="SystemController"/> instance.
@@ -33,47 +34,13 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="logger">The logger to use.</param>
         /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
         /// <param name="hub">The client communications hub.</param>
-        public SystemController(ILogger<SystemController> logger, IExecutionEngine executionEngine, IHub hub)
+        /// <param name="uiManager">The <see cref="UiManager"/> to use.</param>
+        public SystemController(ILogger<SystemController> logger, IExecutionEngine executionEngine, IHub hub, UiManager uiManager)
         {
             this.logger = logger;
             this.executionEngine = executionEngine;
             this.communicationsHub = hub;
-        }
-
-        /// <summary>
-        /// Attempts to initialise the system.
-        /// </summary>
-        /// <param name="administrator">The initial administrator settings.</param>
-        /// <returns>A success <see cref="ExecutionResult"/> if the system was initialised, otherwise an error <see cref="ExecutionResult"/>.</returns>
-        [HttpPost("system/initialise")]
-        [AllowAnonymous]
-        public async Task<ActionResult<ExecutionResult>> Initialise(Transfer.User administrator)
-        {
-            this.logger.LogWarning("Initialising system");
-
-            var hasUsers = await this.executionEngine
-                .Query<UserData>()
-                .CheckForAnyAsync();
-            if (hasUsers)
-            {
-                return new BadRequestObjectResult(new ExecutionResult
-                {
-                    ValidationErrors = new[] {
-                        new CommandError(0, "System already initialised")
-                    }
-                }); ;
-            }
-
-            var command = new AddUser
-            {
-                Name = administrator.Name,
-                Password = administrator.Password,
-                Role = Data.UserRole.Administrator
-            };
-
-            return await this.executionEngine
-                .ExecuteForHttp(command)
-                .ConfigureAwait(false);
+            this.uiManager = uiManager;
         }
 
         /// <summary>
@@ -111,6 +78,91 @@ namespace NaoBlocks.Web.Controllers
             return Task.FromResult((ActionResult)file);
         }
 
+        /// <summary>
+        /// Retrieves the site configuration options.
+        /// </summary>
+        /// <returns>A <see cref="Transfer.SiteConfiguration"/> containing the configuration details.</returns>
+        [HttpGet("system/config")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Transfer.SiteConfiguration>> GetSiteConfiguration()
+        {
+            this.logger.LogInformation($"Retrieving site configuration");
+            var settings = await this.executionEngine
+                .Query<SystemData>()
+                .RetrieveSystemValuesAsync();
+            return new Transfer.SiteConfiguration
+            {
+                DefaultAddress = settings.DefaultAddress
+            };
+        }
+
+        /// <summary>
+        /// Attempts to initialise the system.
+        /// </summary>
+        /// <param name="settings">The initial settings.</param>
+        /// <returns>A success <see cref="ExecutionResult"/> if the system was initialised, otherwise an error <see cref="ExecutionResult"/>.</returns>
+        [HttpPost("system/initialise")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ExecutionResult>> Initialise(Transfer.InitialisationSettings settings)
+        {
+            this.logger.LogWarning("Initialising system");
+
+            var hasUsers = await this.executionEngine
+                .Query<UserData>()
+                .CheckForAnyAsync();
+            if (hasUsers)
+            {
+                return new BadRequestObjectResult(new ExecutionResult
+                {
+                    ValidationErrors = new[] {
+                        new CommandError(0, "System already initialised")
+                    }
+                }); ;
+            }
+
+            CommandBase command = new AddUser
+            {
+                Name = "admin",
+                Password = settings.Password,
+                Role = Data.UserRole.Administrator
+            };
+            var useBatch = false;
+            var commands = new List<CommandBase>
+                {
+                    command
+                };
+            if (settings.UseDefaultUi)
+            {
+                foreach (var ui in this.uiManager.ListRegistered())
+                {
+                    var template = this.uiManager.ReadTemplate(ui.Key);
+                    commands.Add(new AddUIDefinition
+                    {
+                        Definition = this.uiManager.Parse(ui.Key, template),
+                        Name = ui.Key,
+                        IgnoreExisting = true
+                    });
+                }
+                useBatch = true;
+            }
+
+            if (settings.AddNaoRobot)
+            {
+                commands.Add(new AddRobotType { Name = "Nao" });
+                commands.Add(new SetDefaultRobotType { Name = "Nao", IgnoreMissingRobotType = true });
+                commands.Add(new ImportToolbox { Name = "Nao", Definition = Resources.Manager.NaoToolbox, IgnoreMissingRobotType = true });
+            }
+
+            if (useBatch)
+            {
+                command = new Batch(commands.ToArray());
+            }
+
+            return await this.executionEngine
+                .ExecuteForHttp(command)
+                .ConfigureAwait(false);
+        }
+
         //[HttpGet("system/status")]
         //[Authorize("Administrator")]
         //public Task<ActionResult<Transfer.SystemStatus>> SystemStatus()
@@ -142,47 +194,6 @@ namespace NaoBlocks.Web.Controllers
         //}
 
         /// <summary>
-        /// Retrieves the current API version and status.
-        /// </summary>
-        /// <returns>A <see cref="VersionInformation"/> instance.</returns>
-        [HttpGet("version")]
-        [AllowAnonymous]
-        public async Task<ActionResult<VersionInformation>> Version()
-        {
-            var isInitialised = await this.executionEngine
-                .Query<UserData>()
-                .CheckForAnyAsync()
-                .ConfigureAwait(false);
-
-            this.logger.LogInformation("Retrieving system version number");
-            return new VersionInformation
-            {
-                Version = Assembly.GetEntryAssembly()
-                    !.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                    !.InformationalVersion,
-                Status = isInitialised ? "ready" : "pending"
-            };
-        }
-
-        /// <summary>
-        /// Retrieves the site configuration options.
-        /// </summary>
-        /// <returns>A <see cref="Transfer.SiteConfiguration"/> containing the configuration details.</returns>
-        [HttpGet("system/config")]
-        [AllowAnonymous]
-        public async Task<ActionResult<Transfer.SiteConfiguration>> GetSiteConfiguration()
-        {
-            this.logger.LogInformation($"Retrieving site configuration");
-            var settings = await this.executionEngine
-                .Query<SystemData>()
-                .RetrieveSystemValuesAsync();
-            return new Transfer.SiteConfiguration
-            {
-                DefaultAddress = settings.DefaultAddress
-            };
-        }
-
-        /// <summary>
         /// Sets the default site address.
         /// </summary>
         /// <param name="config">The configuration options containing the site address.</param>
@@ -207,6 +218,29 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp<Data.SystemValues, Transfer.SiteConfiguration>(
                 command,
                 result => new Transfer.SiteConfiguration { DefaultAddress = result?.DefaultAddress });
+        }
+
+        /// <summary>
+        /// Retrieves the current API version and status.
+        /// </summary>
+        /// <returns>A <see cref="VersionInformation"/> instance.</returns>
+        [HttpGet("version")]
+        [AllowAnonymous]
+        public async Task<ActionResult<VersionInformation>> Version()
+        {
+            var isInitialised = await this.executionEngine
+                .Query<UserData>()
+                .CheckForAnyAsync()
+                .ConfigureAwait(false);
+
+            this.logger.LogInformation("Retrieving system version number");
+            return new VersionInformation
+            {
+                Version = Assembly.GetEntryAssembly()
+                    !.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    !.InformationalVersion,
+                Status = isInitialised ? "ready" : "pending"
+            };
         }
 
         //[HttpGet("system/qrcode")]

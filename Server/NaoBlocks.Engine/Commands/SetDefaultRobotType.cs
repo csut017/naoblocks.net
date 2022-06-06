@@ -13,9 +13,26 @@ namespace NaoBlocks.Engine.Commands
         private RobotType? robotType;
 
         /// <summary>
+        /// Gets or sets whether to ignore any missing robot and only check if during execution.
+        /// </summary>
+        public bool IgnoreMissingRobotType { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the default robot type.
         /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            return errors.AsEnumerable();
+        }
 
         /// <summary>
         /// Attempts to retrieve the robot type.
@@ -23,10 +40,13 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            if (!this.IgnoreMissingRobotType)
+            {
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            }
             return errors.AsEnumerable();
         }
 
@@ -39,6 +59,12 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
+            if (this.IgnoreMissingRobotType)
+            {
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, new List<CommandError>()).ConfigureAwait(false);
+                if (this.robotType == null) this.robotType = session.GetFromCache<RobotType>(this.Name ?? String.Empty);
+            }
+
             ValidateExecutionState(this.robotType);
             var existingDefaultRobotType = await session.Query<RobotType>()
                 .FirstOrDefaultAsync(type => type.IsDefault);
@@ -53,18 +79,6 @@ namespace NaoBlocks.Engine.Commands
             }
 
             return CommandResult.New(this.Number, this.robotType!);
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
-            return errors.AsEnumerable();
         }
     }
 }

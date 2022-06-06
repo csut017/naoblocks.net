@@ -19,104 +19,6 @@ namespace NaoBlocks.Web.Tests.Controllers
     [Collection("ClientAddressList tests")]
     public class SystemControllerTests
     {
-        [Theory]
-        [InlineData(true, "ready")]
-        [InlineData(false, "pending")]
-        public async Task VersionReturnsSystemState(bool hasUsers, string expected)
-        {
-            // Arrange
-            var logger = new FakeLogger<SystemController>();
-            var hub = new Mock<IHub>();
-            var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(hasUsers));
-            var controller = new SystemController(
-                logger,
-                engine,
-                hub.Object);
-
-            // Act
-            var response = await controller.Version();
-
-            // Assert
-            Assert.NotNull(response.Value);
-            Assert.False(string.IsNullOrEmpty(response.Value?.Version), "Version has not been set");
-            Assert.Equal(expected, response.Value?.Status);
-        }
-
-        [Fact]
-        public async Task InitialiseFailsWhenSystemHasUsers()
-        {
-            // Arrange
-            var logger = new FakeLogger<SystemController>();
-            var hub = new Mock<IHub>();
-            var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(true));
-            var controller = new SystemController(
-                logger,
-                engine,
-                hub.Object);
-
-            // Act
-            var response = await controller.Initialise(new User());
-
-            // Assert
-            var httpResult = Assert.IsType<BadRequestObjectResult>(response.Result);
-            var result = Assert.IsType<ExecutionResult>(httpResult.Value);
-            Assert.Contains("System already initialised", TestHelpers.ExtractValidationErrors(result));
-        }
-
-        [Fact]
-        public async Task InitialiseCallsAddUser()
-        {
-            // Arrange
-            var logger = new FakeLogger<SystemController>();
-            var hub = new Mock<IHub>();
-            var engine = new FakeEngine();
-            var query = new Mock<UserData>();
-            engine.RegisterQuery(query.Object);
-            engine.ExpectCommand<AddUser>();
-            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(false));
-            var controller = new SystemController(
-                logger,
-                engine,
-                hub.Object);
-
-            // Act
-            var response = await controller.Initialise(new User());
-
-            // Assert
-            var result = Assert.IsType<ExecutionResult>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
-        }
-
-        [Fact]
-        public async Task ClientAddressesRetrievesAddresses()
-        {
-            // Arrange
-            var logger = new FakeLogger<SystemController>();
-            var hub = new Mock<IHub>();
-            var engine = new FakeEngine();
-            var controller = new SystemController(
-                logger,
-                engine,
-                hub.Object);
-            ClientAddressList.Clear();
-            ClientAddressList.Add("Test Address");
-
-            // Act
-            var response = await controller.ClientAddresses();
-
-            // Assert
-            var result = Assert.IsType<ListResult<string>>(response.Value);
-            Assert.Equal(1, result.Count);
-            Assert.Equal(new[] { "Test Address" }, result.Items);
-        }
-
         [Fact]
         public async Task ClientAddressesFileRetrievesTextFile()
         {
@@ -124,10 +26,12 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
             var controller = new SystemController(
                 logger,
                 engine,
-                hub.Object);
+                hub.Object,
+                manager.Object);
             ClientAddressList.Clear();
             ClientAddressList.Add("http://test");
             ClientAddressList.Add("https://test");
@@ -145,6 +49,31 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task ClientAddressesRetrievesAddresses()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object,
+                manager.Object);
+            ClientAddressList.Clear();
+            ClientAddressList.Add("Test Address");
+
+            // Act
+            var response = await controller.ClientAddresses();
+
+            // Assert
+            var result = Assert.IsType<ListResult<string>>(response.Value);
+            Assert.Equal(1, result.Count);
+            Assert.Equal(new[] { "Test Address" }, result.Items);
+        }
+
+        [Fact]
         public async Task GetSiteConfigurationRetrievesAddress()
         {
             // Arrange
@@ -153,11 +82,13 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var query = new Mock<SystemData>();
             engine.RegisterQuery(query.Object);
+            var manager = new Mock<UiManager>();
             query.Setup(q => q.RetrieveSystemValuesAsync()).Returns(Task.FromResult(new Data.SystemValues { DefaultAddress = "123" }));
             var controller = new SystemController(
                 logger,
                 engine,
-                hub.Object);
+                hub.Object,
+                manager.Object);
 
             // Act
             var response = await controller.GetSiteConfiguration();
@@ -168,22 +99,56 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task SetDefaultAddressHandlesNoData()
+        public async Task InitialiseCallsAddUser()
         {
             // Arrange
             var logger = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            engine.RegisterQuery(query.Object);
+            engine.ExpectCommand<AddUser>();
+            var manager = new Mock<UiManager>();
+            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(false));
             var controller = new SystemController(
                 logger,
                 engine,
-                hub.Object);
+                hub.Object,
+                manager.Object);
 
             // Act
-            var response = await controller.SetDefaultAddress(null);
+            var response = await controller.Initialise(new InitialisationSettings());
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task InitialiseFailsWhenSystemHasUsers()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(true));
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object,
+                manager.Object);
+
+            // Act
+            var response = await controller.Initialise(new InitialisationSettings());
+
+            // Assert
+            var httpResult = Assert.IsType<BadRequestObjectResult>(response.Result);
+            var result = Assert.IsType<ExecutionResult>(httpResult.Value);
+            Assert.Contains("System already initialised", TestHelpers.ExtractValidationErrors(result));
         }
 
         [Fact]
@@ -195,10 +160,12 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             engine.ExpectCommand<StoreDefaultAddress>(
                 CommandResult.New(1, new Data.SystemValues { DefaultAddress = "1234" }));
+            var manager = new Mock<UiManager>();
             var controller = new SystemController(
                 logger,
                 engine,
-                hub.Object);
+                hub.Object,
+                manager.Object);
 
             // Act
             var response = await controller.SetDefaultAddress(
@@ -211,6 +178,54 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Equal("1234", result?.Output?.DefaultAddress);
         }
 
+        [Fact]
+        public async Task SetDefaultAddressHandlesNoData()
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object,
+                manager.Object);
+
+            // Act
+            var response = await controller.SetDefaultAddress(null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Theory]
+        [InlineData(true, "ready")]
+        [InlineData(false, "pending")]
+        public async Task VersionReturnsSystemState(bool hasUsers, string expected)
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(hasUsers));
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object,
+                manager.Object);
+
+            // Act
+            var response = await controller.Version();
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.False(string.IsNullOrEmpty(response.Value?.Version), "Version has not been set");
+            Assert.Equal(expected, response.Value?.Status);
+        }
 
         [Fact]
         public async Task WhoAmIFailsIfUserNotSet()
@@ -219,7 +234,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var loggerMock = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
-            var controller = new SystemController(loggerMock, engine, hub.Object);
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(loggerMock, engine, hub.Object, manager.Object);
 
             // Act
             var response = await controller.WhoAmI();
@@ -236,7 +252,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var loggerMock = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
-            var controller = new SystemController(loggerMock, engine, hub.Object);
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(loggerMock, engine, hub.Object, manager.Object);
             engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
 
             // Act

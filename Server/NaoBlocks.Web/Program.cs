@@ -11,6 +11,7 @@ using System.Security.Principal;
 using Angular = NaoBlocks.Definitions.Angular;
 using Configuration = NaoBlocks.Web.Configuration;
 using Tangibles = NaoBlocks.Definitions.Tangibles;
+using ResourceManager = NaoBlocks.Web.Resources.Manager;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,8 +83,8 @@ builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
 ClientAddressList.Initialise();
 var uiManager = new UiManager();
-uiManager.Register<Angular.Definition>("angular");
-uiManager.Register<Tangibles.Definition>("tangibles");
+uiManager.Register<Angular.Definition>("angular", () => ResourceManager.AngularUITemplate);
+uiManager.Register<Tangibles.Definition>("tangibles", () => ResourceManager.TangiblesUITemplate);
 builder.Services.AddSingleton(uiManager);
 builder.Services.AddTransient<IEngineFactory, DefaultEngineFactory>();
 builder.Services.AddTransient<IMessageProcessor, MessageProcessor>();
@@ -119,6 +120,7 @@ app.Run();
 /// Make the Program class explicit so it can be accessed by tests
 /// </summary>
 #pragma warning disable CA1050 // We need to expore Program as a class so it can be used in the integration tests
+
 public partial class Program
 #pragma warning restore CA1050
 { }

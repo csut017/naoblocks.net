@@ -21,7 +21,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Name))
@@ -53,6 +53,7 @@ namespace NaoBlocks.Engine.Commands
             };
 
             await session.StoreAsync(robot).ConfigureAwait(false);
+            session.CacheItem(robot.Name, robot);
             return CommandResult.New(this.Number, robot);
         }
     }

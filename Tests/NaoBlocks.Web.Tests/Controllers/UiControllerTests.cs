@@ -95,7 +95,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
             var manager = new UiManager();
-            manager.Register<Angular.Definition>("angular");
+            manager.Register<Angular.Definition>("angular", () => "default");
             var controller = new UiController(logger, engine, manager);
 
             // Act
@@ -116,7 +116,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
             var manager = new UiManager();
-            manager.Register<Angular.Definition>("angular");
+            manager.Register<Angular.Definition>("angular", () => "default");
             engine.ExpectCommand<AddUIDefinition>();
             var controller = new UiController(logger, engine, manager);
             controller.SetRequestBody("{}");
@@ -143,7 +143,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
             var manager = new UiManager();
-            manager.Register<Angular.Definition>("angular");
+            manager.Register<Angular.Definition>("angular", () => "default");
             engine.ExpectCommand<Batch>();
             var controller = new UiController(logger, engine, manager);
             controller.SetRequestBody("{}");
@@ -172,7 +172,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
             var manager = new UiManager();
-            manager.Register<Angular.Definition>("angular");
+            manager.Register<Angular.Definition>("angular", () => "default");
             engine.ExpectCommand<AddUIDefinition>();
             var controller = new UiController(logger, engine, manager);
             controller.SetRequestBody(body);

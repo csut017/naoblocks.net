@@ -22,7 +22,9 @@ export class SystemInitialisationComponent implements OnInit {
     private router: Router,
     builder: FormBuilder) {
     this.form = builder.group({
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      useDefaultUi: [true],
+      addNaoRobot: [true]
     });
   }
 
@@ -33,10 +35,12 @@ export class SystemInitialisationComponent implements OnInit {
 
   onSubmit() {
     const password = this.form.get('password')?.value;
+    const useDefaultUi = this.form.get('useDefaultUi')?.value || true;
+    const addNaoRobot = this.form.get('addNaoRobot')?.valid || true;
     if (password) {
       console.log('Initialising system');
       this.initialising = true;
-      this.systemService.initialise(password)
+      this.systemService.initialise(password, useDefaultUi, addNaoRobot)
         .subscribe(data => this.handleLogin(data));
     }
   }

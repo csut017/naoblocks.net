@@ -22,6 +22,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="..\..\Data\nao-toolbox.xml" Link="Resources\nao-toolbox.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="..\..\Data\angular-ui.json" Link="Resources\angular-ui.json" />
+	  <EmbeddedResource Include="..\..\Data\tangibles-ui.json" Link="Resources\tangibles-ui.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
