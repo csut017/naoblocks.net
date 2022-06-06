@@ -61,8 +61,8 @@ This page lists all the blocks that are available and their current stage of tes
 | Block | NaoLang Construct | To NaoLang | From NaoLang | Robot
 |-|-|:-:|:-:|:-:|
 | Repeat `[number]` time do `<action>` | loop(`[number]`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](Images/Status-Working.png) | ![Working](Images/Status-Working.png) | ![Unknown](Images/Status-Unknown.png)
-| Repeat `{while}` `<condition>` do `<action>` | while(`<condition>`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](Images/Status-Working.png) | ![Functionality Broken](Images/broken.png) | ![Unknown](Images/Status-Unknown.png)
-| Repeat `{until}` `<condition>` do `<action>` | while(not(`<condition>`)){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](Images/Status-Working.png) | ![Functionality Broken](Images/broken.png) | ![Unknown](Images/Status-Unknown.png)
+| Repeat `{while}` `<condition>` do `<action>` | while(`<condition>`){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](Images/Status-Working.png) | ![Functionality Broken](Images/Status-Broken.png) | ![Unknown](Images/Status-Unknown.png)
+| Repeat `{until}` `<condition>` do `<action>` | while(not(`<condition>`)){<br>&nbsp;&nbsp;&nbsp;`<action>`<br>} | ![Working](Images/Status-Working.png) | ![Functionality Broken](Images/Status-Broken.png) | ![Unknown](Images/Status-Unknown.png)
 
 ## Maths Blocks
 
