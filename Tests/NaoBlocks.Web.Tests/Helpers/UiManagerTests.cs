@@ -62,5 +62,19 @@ namespace NaoBlocks.Web.Tests.Helpers
             // Assert
             Assert.Equal("UI angular does not exist", error.Message);
         }
+
+        [Fact]
+        public void ReadTemplateGetsTemplateName()
+        {
+            // Arrange
+            var manager = new UiManager();
+            manager.Register<FakeUIDefinition>("angular", () => "default");
+
+            // Act
+            var data = manager.ReadTemplate("angular");
+
+            // Assert
+            Assert.Equal("default", data);
+        }
     }
 }

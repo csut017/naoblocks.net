@@ -30,7 +30,11 @@ namespace NaoBlocks.Engine.Commands
         public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            if (!this.IgnoreMissingRobotType)
+            {
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            }
+
             return errors.AsEnumerable();
         }
 

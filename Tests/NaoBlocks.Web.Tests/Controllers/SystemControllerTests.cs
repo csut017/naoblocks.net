@@ -8,11 +8,13 @@ using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 using Data = NaoBlocks.Engine.Data;
+using ResourceManager = NaoBlocks.Web.Resources.Manager;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -123,6 +125,45 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<ExecutionResult>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
             engine.Verify();
+        }
+
+        [Theory]
+        [InlineData(true, false, "AddUser", "AddUIDefinition")]
+        [InlineData(false, true, "AddUser", "AddRobotType", "SetDefaultRobotType", "ImportToolbox")]
+        [InlineData(true, true, "AddUser", "AddUIDefinition", "AddRobotType", "SetDefaultRobotType", "ImportToolbox")]
+        public async Task InitialiseCallsBatchCommands(bool useUiDefinitions, bool addNaoRobot, params string[] expectedCommands)
+        {
+            // Arrange
+            var logger = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var query = new Mock<UserData>();
+            engine.RegisterQuery(query.Object);
+            engine.ExpectCommand<Batch>();
+            var manager = new UiManager();
+            manager.Register<Definitions.Angular.Definition>("Angular", () => ResourceManager.AngularUITemplate);
+            query.Setup(q => q.CheckForAnyAsync()).Returns(Task.FromResult(false));
+            var controller = new SystemController(
+                logger,
+                engine,
+                hub.Object,
+                manager);
+
+            // Act
+            var response = await controller.Initialise(new InitialisationSettings
+            {
+                AddNaoRobot = addNaoRobot,
+                UseDefaultUi = useUiDefinitions
+            });
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var batchCommand = Assert.IsType<Batch>(engine.LastCommand);
+            Assert.Equal(
+                expectedCommands,
+                batchCommand.Commands.Select(c => c.GetType().Name).ToArray());
         }
 
         [Fact]

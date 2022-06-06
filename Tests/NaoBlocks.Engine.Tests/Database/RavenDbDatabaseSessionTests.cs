@@ -12,6 +12,38 @@ namespace NaoBlocks.Engine.Tests.Database
     public class RavenDbDatabaseSessionTests
     {
         [Fact]
+        public void CheckCacheHandlesMissingItem()
+        {
+            // Arrange
+            var session = new Mock<IAsyncDocumentSession>();
+            using var db = new RavenDbDatabaseSession(session.Object);
+
+            // Act
+            var user = new User();
+            db.CacheItem("Karetao", user);
+            var item = db.GetFromCache<User>("Mihīni");
+
+            // Assert
+            Assert.Null(item);
+        }
+
+        [Fact]
+        public void CheckCacheReturnsExistingItem()
+        {
+            // Arrange
+            var session = new Mock<IAsyncDocumentSession>();
+            using var db = new RavenDbDatabaseSession(session.Object);
+
+            // Act
+            var user = new User();
+            db.CacheItem("Karetao", user);
+            var item = db.GetFromCache<User>("Karetao");
+
+            // Assert
+            Assert.Same(user, item);
+        }
+
+        [Fact]
         public void DeleteCallsSession()
         {
             // Arrange
@@ -80,23 +112,6 @@ namespace NaoBlocks.Engine.Tests.Database
         }
 
         [Fact]
-        public async Task StoreAsyncCallsSession()
-        {
-            // Arrange
-            var session = new Mock<IAsyncDocumentSession>();
-            session.Setup(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-                .Verifiable();
-            using var db = new RavenDbDatabaseSession(session.Object);
-
-            // Act
-            var user = new User();
-            await db.StoreAsync(user);
-
-            // Assert
-            session.Verify();
-        }
-
-        [Fact]
         public async Task SaveChangesAsyncCallsSession()
         {
             // Arrange
@@ -108,6 +123,23 @@ namespace NaoBlocks.Engine.Tests.Database
             // Act
             var user = new User();
             await db.SaveChangesAsync();
+
+            // Assert
+            session.Verify();
+        }
+
+        [Fact]
+        public async Task StoreAsyncCallsSession()
+        {
+            // Arrange
+            var session = new Mock<IAsyncDocumentSession>();
+            session.Setup(s => s.StoreAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+                .Verifiable();
+            using var db = new RavenDbDatabaseSession(session.Object);
+
+            // Act
+            var user = new User();
+            await db.StoreAsync(user);
 
             // Assert
             session.Verify();
