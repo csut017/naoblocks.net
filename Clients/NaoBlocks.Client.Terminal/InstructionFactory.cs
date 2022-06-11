@@ -38,6 +38,28 @@ namespace NaoBlocks.Client.Terminal
         }
 
         /// <summary>
+        /// Retrieves all the instructions.
+        /// </summary>
+        /// <returns>An enumerable of all the instructions.</returns>
+        public IEnumerable<InstructionBase> List()
+        {
+            foreach (var instruction in this.instructions.Keys)
+            {
+                InstructionBase? instance = null;
+                try
+                {
+                    instance = this.Retrieve(instruction);
+                }
+                catch
+                {
+                    // We have a wierd end case where some of the commands will fail to initialise (mainly
+                    // due to unit tests), so we'll just say we'll ignore broken instructions
+                }
+                if (instance != null) yield return instance;
+            }
+        }
+
+        /// <summary>
         /// Retrieves an instance of an instruction.
         /// </summary>
         /// <param name="name">The name of the instruction.</param>
@@ -65,6 +87,7 @@ namespace NaoBlocks.Client.Terminal
             }
 
             instance.Name = instruction.Item1.Name;
+            if (!string.IsNullOrWhiteSpace(instruction.Item1.Description)) instance.Description = instruction.Item1.Description;
             return instance;
         }
     }

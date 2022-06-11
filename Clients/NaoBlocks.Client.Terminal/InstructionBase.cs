@@ -11,6 +11,11 @@
         public string? Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the instruction factory.
+        /// </summary>
+        public InstructionFactory? Factory { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the command.
         /// </summary>
         public string Name { get; internal set; } = string.Empty;

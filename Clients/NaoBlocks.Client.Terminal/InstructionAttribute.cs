@@ -11,13 +11,20 @@
         /// Defines a new <see cref="InstructionAttribute"/> instance.
         /// </summary>
         /// <param name="name">The name of the instruction.</param>
-        public InstructionAttribute(string name)
+        /// <param name="description">The description of the instruction.</param>
+        public InstructionAttribute(string name, string? description = null)
         {
             this.Name = name;
+            Description = description;
         }
 
         /// <summary>
-        /// Gets the name of an instruction.
+        /// Gets the description of the instruction.
+        /// </summary>
+        public string? Description { get; }
+
+        /// <summary>
+        /// Gets the name of the instruction.
         /// </summary>
         public string Name { get; }
     }

@@ -15,6 +15,25 @@
         }
 
         [Fact]
+        public void ListRetrievesAllInstructions()
+        {
+            // Arrange
+            var factory = new InstructionFactory();
+            factory.Initialise<TestInstruction>();
+
+            // Act
+            var instructions = factory
+                .List()
+                .Select(i => i.Name)
+                .ToArray();
+
+            // Assert
+            Assert.Equal(
+                new[] { "TestHelp", "Test" },
+                instructions);
+        }
+
+        [Fact]
         public void RetrieveHandlesFailingInstruction()
         {
             // Arrange
@@ -67,6 +86,20 @@
             // Assert
             Assert.NotNull(instruction);
             Assert.Equal(TestInstruction.InstructionName, instruction?.Name);
+        }
+
+        [Fact]
+        public void RetrieveSetsDescription()
+        {
+            // Arrange
+            var factory = new InstructionFactory();
+            factory.Initialise<TestInstruction>();
+
+            // Act
+            var instruction = factory.Retrieve(TestHelpInstruction.InstructionName);
+
+            // Assert
+            Assert.Equal("Test help instruction", instruction?.Description);
         }
     }
 }

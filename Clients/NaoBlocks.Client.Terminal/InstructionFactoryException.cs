@@ -24,14 +24,5 @@ namespace NaoBlocks.Client.Terminal
         public InstructionFactoryException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
-
-        /// <summary>
-        /// Initialise a <see cref="IndexOutOfRangeException"/> from serialisation.
-        /// </summary>
-        /// <param name="info">The information.</param>
-        /// <param name="context">The context.</param>
-        protected InstructionFactoryException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }
