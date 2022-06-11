@@ -37,9 +37,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Angul
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Angular.Tests", "Tests\NaoBlocks.Definitions.Angular.Tests\NaoBlocks.Definitions.Angular.Tests.csproj", "{F99DE830-DC29-4060-AC3D-977368B1B330}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Definitions.Tangibles", "Server\Definitions\NaoBlocks.Definitions.Tangibles\NaoBlocks.Definitions.Tangibles.csproj", "{B8B3FEC7-24D7-456D-8423-09D19661B018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Tangibles", "Server\Definitions\NaoBlocks.Definitions.Tangibles\NaoBlocks.Definitions.Tangibles.csproj", "{B8B3FEC7-24D7-456D-8423-09D19661B018}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Definitions.Tangibles.Tests", "Tests\NaoBlocks.Definitions.Tangibles.Tests\NaoBlocks.Definitions.Tangibles.Tests.csproj", "{AA7FECEC-2075-4E68-9315-FC9103B97DC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Tangibles.Tests", "Tests\NaoBlocks.Definitions.Tangibles.Tests\NaoBlocks.Definitions.Tangibles.Tests.csproj", "{AA7FECEC-2075-4E68-9315-FC9103B97DC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Terminal", "Clients\NaoBlocks.Client.Terminal\NaoBlocks.Client.Terminal.csproj", "{693F259C-718A-4717-88E8-0C359EE57DD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Terminal.Tests", "Tests\NaoBlocks.Client.Terminal.Tests\NaoBlocks.Client.Terminal.Tests.csproj", "{7A690640-3DFF-443B-8A62-F7E4C4FB2579}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +111,14 @@ Global
 		{AA7FECEC-2075-4E68-9315-FC9103B97DC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA7FECEC-2075-4E68-9315-FC9103B97DC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA7FECEC-2075-4E68-9315-FC9103B97DC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{693F259C-718A-4717-88E8-0C359EE57DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{693F259C-718A-4717-88E8-0C359EE57DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{693F259C-718A-4717-88E8-0C359EE57DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{693F259C-718A-4717-88E8-0C359EE57DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A690640-3DFF-443B-8A62-F7E4C4FB2579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A690640-3DFF-443B-8A62-F7E4C4FB2579}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A690640-3DFF-443B-8A62-F7E4C4FB2579}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A690640-3DFF-443B-8A62-F7E4C4FB2579}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +139,8 @@ Global
 		{F99DE830-DC29-4060-AC3D-977368B1B330} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 		{B8B3FEC7-24D7-456D-8423-09D19661B018} = {5C41FF87-0F4C-4E69-82CE-A25FFA4F9657}
 		{AA7FECEC-2075-4E68-9315-FC9103B97DC5} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
+		{693F259C-718A-4717-88E8-0C359EE57DD9} = {C69830E7-01BB-4302-9FF5-25EEAD17B9AD}
+		{7A690640-3DFF-443B-8A62-F7E4C4FB2579} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {486CBC41-CBAA-4E40-87BA-40F08D5DACAD}
