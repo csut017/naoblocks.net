@@ -23,7 +23,7 @@
         /// <summary>
         /// Retrieves the help text for the instruction.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An enumerable containing one string per line of text.</returns>
         public virtual IEnumerable<string> RetrieveHelpText()
         {
             return Array.Empty<string>();

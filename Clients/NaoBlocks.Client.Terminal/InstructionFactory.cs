@@ -43,7 +43,7 @@ namespace NaoBlocks.Client.Terminal
         /// <returns>An enumerable of all the instructions.</returns>
         public IEnumerable<InstructionBase> List()
         {
-            foreach (var instruction in this.instructions.Keys)
+            foreach (var instruction in this.instructions.Keys.OrderBy(key => key))
             {
                 InstructionBase? instance = null;
                 try

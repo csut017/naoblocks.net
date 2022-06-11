@@ -29,7 +29,7 @@
 
             // Assert
             Assert.Equal(
-                new[] { "TestHelp", "Test" },
+                new[] { "Test", "TestHelp" },
                 instructions);
         }
 

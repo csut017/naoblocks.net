@@ -15,6 +15,20 @@
         private InstructionBase? instruction;
 
         /// <summary>
+        /// Retrieves the help text for the instruction.
+        /// </summary>
+        /// <returns>An enumerable containing one string per line of text.</returns>
+        public override IEnumerable<string> RetrieveHelpText()
+        {
+            return new[]
+            {
+                "Syntax: help [instruction]",
+                string.Empty,
+                "Retrieves the help information"
+            };
+        }
+
+        /// <summary>
         /// Runs the instruction.
         /// </summary>
         /// <param name="console">The console for writing any output.</param>

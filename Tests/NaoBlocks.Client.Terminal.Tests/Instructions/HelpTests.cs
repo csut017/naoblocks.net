@@ -7,6 +7,19 @@ namespace NaoBlocks.Client.Terminal.Tests.Instructions
         private const string invalidNumberOfArguments = "ERROR: Invalid number of arguments. Syntax is help [instruction]";
 
         [Fact]
+        public void RetreivesTheText()
+        {
+            // Arrange
+            var instruction = InitialiseInstruction();
+
+            // Act
+            var text = instruction.RetrieveHelpText();
+
+            // Assert
+            Assert.NotEmpty(text);
+        }
+
+        [Fact]
         public async Task RunAsyncChecksItsInternalState()
         {
             // Arrange
@@ -54,7 +67,7 @@ namespace NaoBlocks.Client.Terminal.Tests.Instructions
             // Assert
             Assert.Equal(0, result);
             Assert.Equal(
-                new[] { "INFO: TestHelp: Test help instruction", "INFO: Test" },
+                new[] { "INFO: Test", "INFO: TestHelp: Test help instruction" },
                 console.Output);
         }
 
