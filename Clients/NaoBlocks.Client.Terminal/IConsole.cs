@@ -12,9 +12,9 @@
         void WriteError(string message);
 
         /// <summary>
-        /// Writes a message to the console.
+        /// Writes one or more messages to the console.
         /// </summary>
-        /// <param name="message">The message to write.</param>
-        void WriteMessage(string message);
+        /// <param name="messages">The messages to write.</param>
+        void WriteMessage(params string[] messages);
     }
 }

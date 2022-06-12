@@ -4,19 +4,20 @@ namespace NaoBlocks.Client.Terminal.Tests.Instructions
 {
     public class HelpTests
     {
-        private const string invalidNumberOfArguments = "ERROR: Invalid number of arguments. Syntax is help [instruction]";
+        private const string invalidNumberOfArguments = $"ERROR: Invalid number of arguments.:INFO::INFO: Usage is {App.ApplicationName} help [instruction]";
 
         [Fact]
-        public void RetreivesTheText()
+        public void DisplayHelpTextDisplaysTheHelpText()
         {
             // Arrange
             var instruction = InitialiseInstruction();
+            var console = new TestConsole();
 
             // Act
-            var text = instruction.RetrieveHelpText();
+            instruction.DisplayHelpText(console);
 
             // Assert
-            Assert.NotEmpty(text);
+            Assert.NotEmpty(console.Output);
         }
 
         [Fact]
@@ -50,7 +51,7 @@ namespace NaoBlocks.Client.Terminal.Tests.Instructions
             // Assert
             Assert.Equal(0, result);
             Assert.Equal(
-                new[] { "INFO: TestHelp: Test help instruction", "INFO: This is some helpful text" },
+                new[] { "INFO:", "INFO: TestHelp: Test help instruction", "INFO:", "INFO: This is some helpful text" },
                 console.Output);
         }
 
@@ -67,7 +68,16 @@ namespace NaoBlocks.Client.Terminal.Tests.Instructions
             // Assert
             Assert.Equal(0, result);
             Assert.Equal(
-                new[] { "INFO: Test", "INFO: TestHelp: Test help instruction" },
+                new[] {
+                    "INFO:",
+                    "INFO: Usage: NaoBlocks [instruction]",
+                    "INFO:",
+                    "INFO: Instructions:",
+                    "INFO: \tTest",
+                    "INFO: \tTestHelp: Test help instruction",
+                    "INFO:",
+                    "INFO: Use NaoBlocks help [instruction] to display the options for an instruction"
+                },
                 console.Output);
         }
 

@@ -6,6 +6,11 @@
     public class App
         : IDisposable
     {
+        /// <summary>
+        /// The name of the application.
+        /// </summary>
+        public const string ApplicationName = "NaoBlocks";
+
         private bool disposedValue;
         private InstructionFactory instructionFactory = new();
         private Func<string, InstructionBase?> instructionResolver;

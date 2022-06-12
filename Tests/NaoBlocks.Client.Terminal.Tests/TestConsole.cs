@@ -15,9 +15,19 @@
             this.messages.Add($"ERROR: {message}");
         }
 
-        public void WriteMessage(string message)
+        public void WriteMessage(params string[] messages)
         {
-            this.messages.Add($"INFO: {message}");
+            if (messages.Length == 0)
+            {
+                this.messages.Add("INFO:");
+            }
+            else
+            {
+                foreach (var message in messages)
+                {
+                    this.messages.Add($"INFO: {message}");
+                }
+            }
         }
     }
 }

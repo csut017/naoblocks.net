@@ -3,10 +3,12 @@
     public partial class InstructionBaseTests
     {
         [Fact]
-        public void RetrieveHelpTextRetrievesEmptyArray()
+        public void DisplayHelpTextDisplaysNothing()
         {
             var instruction = new TestInstruction();
-            Assert.Empty(instruction.RetrieveHelpText());
+            var console = new TestConsole();
+            instruction.DisplayHelpText(console);
+            Assert.Empty(console.Output);
         }
     }
 }

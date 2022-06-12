@@ -15,17 +15,16 @@
         private InstructionBase? instruction;
 
         /// <summary>
-        /// Retrieves the help text for the instruction.
+        /// Displays the help text.
         /// </summary>
-        /// <returns>An enumerable containing one string per line of text.</returns>
-        public override IEnumerable<string> RetrieveHelpText()
+        /// <param name="console">The console to write to.</param>
+        public override void DisplayHelpText(IConsole console)
         {
-            return new[]
-            {
-                "Syntax: help [instruction]",
+            console.WriteMessage(
+                $"Usage: {App.ApplicationName} help [instruction]",
                 string.Empty,
-                "Retrieves the help information"
-            };
+                "Options:",
+                "\t[instruction]\tThe name of the instruction to display the help information");
         }
 
         /// <summary>
@@ -35,26 +34,27 @@
         /// <returns>The return code from the instruction.</returns>
         public override Task<int> RunAsync(IConsole console)
         {
-            if (this.Factory == null)
-            {
-                throw new InvalidOperationException("Instruction is in an invalid state: this should not happen when it is called from App!");
-            }
-
+            this.CheckFactoryIsSet();
+            console.WriteMessage();
             if (this.instruction == null)
             {
-                foreach (var instruction in this.Factory.List())
+                console.WriteMessage($"Usage: {App.ApplicationName} [instruction]");
+                console.WriteMessage();
+                console.WriteMessage("Instructions:");
+                foreach (var instruction in this.Factory!.List())
                 {
-                    console.WriteMessage(GenerateNameLine(instruction));
+                    console.WriteMessage("\t" + GenerateNameLine(instruction));
                 }
+
+                console.WriteMessage();
+                console.WriteMessage($"Use {App.ApplicationName} help [instruction] to display the options for an instruction");
 
                 return Task.FromResult(0);
             }
 
             console.WriteMessage(GenerateNameLine(instruction));
-            foreach (var line in instruction.RetrieveHelpText())
-            {
-                console.WriteMessage(line ?? String.Empty);
-            }
+            console.WriteMessage();
+            instruction.DisplayHelpText(console);
             return Task.FromResult(0);
         }
 
@@ -66,21 +66,19 @@
         /// <returns>True if the instruction is valid; false otherwise.</returns>
         public override bool Validate(IConsole console, string[] args)
         {
-            if (this.Factory == null)
-            {
-                throw new InvalidOperationException("Instruction is in an invalid state: this should not happen when it is called from App!");
-            }
-
+            this.CheckFactoryIsSet();
             var count = args.Length;
             if (count > 2)
             {
-                console.WriteError("Invalid number of arguments. Syntax is help [instruction]");
+                console.WriteError("Invalid number of arguments.");
+                console.WriteMessage();
+                console.WriteMessage($"Usage is {App.ApplicationName} help [instruction]");
                 return false;
             }
 
             if (count == 2)
             {
-                this.instruction = this.Factory.Retrieve(args[1]);
+                this.instruction = this.Factory!.Retrieve(args[1]);
                 if (this.instruction == null)
                 {
                     console.WriteError("Unknown instruction 'unknown'");

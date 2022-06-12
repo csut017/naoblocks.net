@@ -6,9 +6,9 @@
     {
         public const string InstructionName = "TestHelp";
 
-        public override IEnumerable<string> RetrieveHelpText()
+        public override void DisplayHelpText(IConsole console)
         {
-            return new[] { "This is some helpful text" };
+            console.WriteMessage("This is some helpful text");
         }
 
         public override Task<int> RunAsync(IConsole console)
