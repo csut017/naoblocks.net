@@ -41,6 +41,119 @@
             "image": "->question",
             "text": "Say 'Kia ora'",
             "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "Iforelse",
+            "numbers": [171],
+            "image": "->question",
+            "text": "If/else",
+            "generator": ";"
+        },
+        {
+            "name": "endif",
+            "numbers": [59],
+            "image": "->question",
+            "text": "End if",
+            "generator": ""
+        },
+        {
+            "name": "for",
+            "numbers": [61],
+            "image": "->question",
+            "text": "For",
+            "generator": ""
+        }
+        ,
+        {
+            "name": "endfor",
+            "numbers": [79],
+            "image": "->question",
+            "text": "End for",
+            "generator": ""
+        },
+        {
+            "name": "while",
+            "numbers": [87],
+            "image": "->question",
+            "text": "While",
+            "generator": ""
+        },
+        {
+            "name": "endwhile",
+            "numbers": [61],
+            "image": "->question",
+            "text": "End while",
+            "generator": ""
+        },
+        {
+            "name": "not",
+            "numbers": [93],
+            "image": "->question",
+            "text": "Not",
+            "generator": ""
+        },
+        {
+            "name": "condition",
+            "numbers": [103],
+            "image": "->question",
+            "text": "Conditions",
+            "generator": ""
+        },
+        {
+            "name": "number",
+            "numbers": [107],
+            "image": "->question",
+            "text": "Number",
+            "generator": ""
+        },
+        {
+            "name": "endelse",
+            "numbers": [109],
+            "image": "->question",
+            "text": "End else",
+            "generator": ""
+        },
+        {
+            "name": "walk",
+            "numbers": [115],
+            "image": "->question",
+            "text": "Walk",
+            "generator": ""
+        },
+        {
+            "name": "turn",
+            "numbers": [117],
+            "image": "->question",
+            "text": "Turn",
+            "generator": ""
+        },
+        {
+            "name": "turndirection",
+            "numbers": [121],
+            "image": "->question",
+            "text": "Turn direction",
+            "generator": ""
+        },
+        {
+            "name": "point",
+            "numbers": [143],
+            "image": "->question",
+            "text": "Pointing",
+            "generator": ""
+        },
+        {
+            "name": "move",
+            "numbers": [155],
+            "image": "->question",
+            "text": "Move",
+            "generator": ""
+        },
+        {
+            "name": "movedirection",
+            "numbers": [169],
+            "image": "->question",
+            "text": "Move direction",
+            "generator": ""
         }
     ],
     "images": [
