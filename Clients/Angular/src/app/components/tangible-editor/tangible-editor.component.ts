@@ -217,6 +217,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     }, 100);
   }
 
+  // TODO: Need to add accounting horrizontal
   generateBlockList(tags: any[]): Block[] {
     let output: Block[] = [];
     let last: any;
@@ -242,15 +243,16 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
         continue;
       }
 
-      if (last) {
-        // We'll allow for a little bit of an offset
-        const xOffset = Math.abs(tag.x - last.x);
+      // Code for linearity executions
+      // if (last) {
+      //   // We'll allow for a little bit of an offset
+      //   const xOffset = Math.abs(tag.x - last.x);
 
-        if (xOffset > 10) {
-          console.log(`[TangibleEditor] Skipping tag ${tag.code} due to x offset ${xOffset}`);
-          continue;
-        }
-      }
+      //   if (xOffset > 10) {
+      //     console.log(`[TangibleEditor] Skipping tag ${tag.code} due to x offset ${xOffset}`);
+      //     continue;
+      //   }
+      // }
 
       output.push(Block.initialise(number++, definition, this.sanitizer));
       last = tag;
