@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Client.Terminal
+﻿using NaoBlocks.Client.Common;
+
+namespace NaoBlocks.Client.Terminal
 {
     /// <summary>
     /// The base class for all user instructions.

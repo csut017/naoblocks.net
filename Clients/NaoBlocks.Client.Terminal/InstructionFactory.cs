@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using NaoBlocks.Client.Common;
+using System.Reflection;
 
 namespace NaoBlocks.Client.Terminal
 {
@@ -9,6 +10,31 @@ namespace NaoBlocks.Client.Terminal
     {
         private readonly Dictionary<string, Tuple<InstructionAttribute, Type>> instructions = new();
         private bool isInitialised;
+
+        /// <summary>
+        /// An action to perform any connection initialisation code.
+        /// </summary>
+        public Action<Connection> OnInitialiseConnection { get; set; } = connection => { };
+
+        /// <summary>
+        /// Gets or sets the server address.
+        /// </summary>
+        public string ServerAddress { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the server password.
+        /// </summary>
+        public string ServerPassword { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Checks if the server address is valid.
+        /// </summary>
+        /// <returns>True if the address is valid, false otherwise.</returns>
+        public bool CheckIfAddressIsValid()
+        {
+            return this.ServerAddress.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase) ||
+                   this.ServerAddress.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase);
+        }
 
         /// <summary>
         /// Initialises this factory.
@@ -89,6 +115,21 @@ namespace NaoBlocks.Client.Terminal
             instance.Name = instruction.Item1.Name;
             if (!string.IsNullOrWhiteSpace(instruction.Item1.Description)) instance.Description = instruction.Item1.Description;
             return instance;
+        }
+
+        /// <summary>
+        /// Initialises a new connection to a server.
+        /// </summary>
+        /// <returns>The connection.</returns>
+        public Connection RetrieveConnection()
+        {
+            if (string.IsNullOrWhiteSpace(this.ServerAddress)) throw new ConnectionException("Server address had not been set");
+            if (!this.CheckIfAddressIsValid()) throw new ConnectionException("Invalid server address");
+            var useSecure = this.ServerAddress.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase);
+            var address = this.ServerAddress[(useSecure ? 8 : 7)..];
+            var connection = new Connection(address, this.ServerPassword, useSecure);
+            this.OnInitialiseConnection(connection);
+            return connection;
         }
     }
 }

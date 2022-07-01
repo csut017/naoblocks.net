@@ -2,6 +2,27 @@
 {
     public class InstructionFactoryTests
     {
+        [Theory]
+        [InlineData("", false)]
+        [InlineData("ftp://server", false)]
+        [InlineData("rubbish", false)]
+        [InlineData("http://server", true)]
+        [InlineData("https://server", true)]
+        [InlineData("HTTPS://server", true)]
+        public void CheckIfAddressIsValidChecksTheAddress(string serverAddress, bool isValid)
+        {
+            // Arrange
+            var factory = new InstructionFactory();
+            factory.Initialise<TestInstruction>();
+
+            // Act
+            factory.ServerAddress = serverAddress;
+            var result = factory.CheckIfAddressIsValid();
+
+            // Assert
+            Assert.Equal(isValid, result);
+        }
+
         [Fact]
         public void InitialiseCanOnlyBeCalledOnce()
         {
@@ -31,6 +52,43 @@
             Assert.Equal(
                 new[] { "Test", "TestHelp" },
                 instructions);
+        }
+
+        [Theory]
+        [InlineData("https://secure", true)]
+        [InlineData("http://open", false)]
+        public void RetrieveConnectionStartsAConnection(string address, bool isSecure)
+        {
+            // Arrange
+            var factory = new InstructionFactory();
+            factory.Initialise<TestInstruction>();
+
+            // Act
+            factory.ServerAddress = address;
+            var connection = factory.RetrieveConnection();
+
+            // Assert
+            Assert.NotNull(connection);
+            Assert.Equal(isSecure, connection.IsSecure);
+        }
+
+        [Theory]
+        [InlineData("", "Server address had not been set")]
+        [InlineData("ftp://server", "Invalid server address")]
+        [InlineData("rubbish", "Invalid server address")]
+        public void RetrieveConnectionValidatesSettings(string serverAddress, string errorMessage)
+        {
+            // Arrange
+            var factory = new InstructionFactory();
+            factory.Initialise<TestInstruction>();
+
+            // Act
+            factory.ServerAddress = serverAddress;
+            var error = Assert.Throws<ConnectionException>(
+                () => factory.RetrieveConnection());
+
+            // Assert
+            Assert.Equal(errorMessage, error.Message);
         }
 
         [Fact]

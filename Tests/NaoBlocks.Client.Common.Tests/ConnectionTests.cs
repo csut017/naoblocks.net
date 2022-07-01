@@ -14,100 +14,29 @@ namespace NaoBlocks.Client.Common.Tests
 {
     public class ConnectionTests
     {
-        [Fact]
-        public void InitialiseWebSocketReturnsWrapper()
-        {
-            // Arrange
-            using var connection = new Connection("localhost", "1234");
-
-            // Act
-            using var socket = connection.InitialiseWebSocket();
-
-            // Assert
-            Assert.IsType<ClientWebSocketWrapper>(socket);
-        }
-
-        [Fact]
-        public void InitialiseHttpClientReturnsClient()
-        {
-            // Arrange
-            using var connection = new Connection("localhost", "1234");
-
-            // Act
-            using var client = connection.InitialiseHttpClient();
-
-            // Assert
-            Assert.IsType<HttpClient>(client);
-        }
-
-        [Fact]
-        public async Task DisconnectAsyncWorksWhenDisconnected()
-        {
-            // Arrange
-            using var connection = new Connection("localhost", "1234");
-
-            // Act
-            await connection.DisconnectAsync();
-
-            // Assert
-            Assert.False(connection.IsConnected);
-        }
-
-        [Fact]
-        public async Task SendMessageAsyncFailsWhenNotConnected()
-        {
-            // Arrange
-            using var connection = new Connection("localhost", "1234");
-
-            // Act
-            await Assert.ThrowsAsync<ApplicationException>(async () => await connection.SendMessageAsync(new ClientMessage()));
-        }
-
-        [Fact]
-        public async Task RetrieveCodeAsyncHandlesInvalidSourceMessage()
-        {
-            // Arrange
-            using var connection = new Connection("localhost", "1234");
-
-            // Act
-            var nodes = await connection.RetrieveCodeAsync(new ClientMessage(ClientMessageType.Authenticate));
-
-            // Assert
-            Assert.Empty(nodes);
-        }
-
         [Theory]
-        [InlineData(true, "https://localhost/api/v1/code/Mia/987")]
-        [InlineData(false, "http://localhost/api/v1/code/Mia/987")]
-        public async Task RetrieveCodeAsyncHandlesData(bool isSecure, string expectedUrl)
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CallingConnectionAsyncTwiceIsIgnored(bool withDelay)
         {
             // Arrange
             var client = new FakeHttpMessageHandler();
             client.AddOutgoing(
                 HttpStatusCode.OK,
-                GenerateProgramResponse(
-                            GenerateFunctionNode("reset"),
-                            GenerateFunctionNode("go")));
-            using var connection = new Connection("localhost", "1234", useSecure: isSecure);
+                JsonConvert.SerializeObject(new VersionInformation()));
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
+            using var connection = new Connection("localhost", "1234");
             connection.InitialiseHttpClient = () => new HttpClient(client);
-            var message = new ClientMessage(
-                ClientMessageType.DownloadProgram,
-                new
-                {
-                    user = "Mia",
-                    program = "987"
-                });
+            connection.InitialiseWebSocket = () => socket;
 
             // Act
-            var nodes = await connection.RetrieveCodeAsync(message);
-
-            // Assert
-            Assert.Equal(new[] {
-                    "Function:reset", 
-                    "Function:go"
-                },nodes.Select(n => n.ToString()).ToArray());
-            var targetUrl = client.IncomingMessages.FirstOrDefault()?.RequestUri?.ToString();
-            Assert.Equal(expectedUrl, targetUrl);
+            await connection.ConnectAsync();
+            if (withDelay) await Task.Delay(TimeSpan.FromSeconds(0.5));
+            await connection.ConnectAsync();
+            await connection.DisconnectAsync();
         }
 
         [Fact]
@@ -131,10 +60,37 @@ namespace NaoBlocks.Client.Common.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "https://localhost/api/v1/version", 
+                "https://localhost/api/v1/version",
                 "https://localhost/api/v1/session"
             }, client.IncomingMessages.Select(r => r.RequestUri?.ToString()).ToArray());
             Assert.Equal("Unable to login", error?.Message);
+        }
+
+        [Fact]
+        public async Task ConnectAsyncHandlesLoginFailure()
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                JsonConvert.SerializeObject(new VersionInformation()));
+            client.AddOutgoing(
+                HttpStatusCode.BadRequest,
+                GenerateLoginResponse(string.Empty, "Cannot login"));
+            using var connection = new Connection("localhost", "1234");
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+
+            // Act
+            var error = await Assert.ThrowsAsync<HttpRequestException>(
+                async () => await connection.ConnectAsync());
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "https://localhost/api/v1/version",
+                "https://localhost/api/v1/session"
+            }, client.IncomingMessages.Select(r => r.RequestUri?.ToString()).ToArray());
+            Assert.Equal("Response status code does not indicate success: 400 (Bad Request).", error?.Message);
         }
 
         [Fact]
@@ -188,30 +144,32 @@ namespace NaoBlocks.Client.Common.Tests
         }
 
         [Fact]
-        public async Task ConnectAsyncHandlesLoginFailure()
+        public async Task ConnectAsyncRetrievesVersion()
         {
             // Arrange
             var client = new FakeHttpMessageHandler();
             client.AddOutgoing(
                 HttpStatusCode.OK,
-                JsonConvert.SerializeObject(new VersionInformation()));
+                JsonConvert.SerializeObject(new VersionInformation
+                {
+                    Version = "1.2.3.4"
+                }));
             client.AddOutgoing(
-                HttpStatusCode.BadRequest,
-                GenerateLoginResponse(string.Empty, "Cannot login"));
+                HttpStatusCode.OK,
+                GenerateLoginResponse("welcome"));
+            var socket = new FakeWebSocketClient();
             using var connection = new Connection("localhost", "1234");
             connection.InitialiseHttpClient = () => new HttpClient(client);
+            connection.InitialiseWebSocket = () => socket;
 
             // Act
-            var error = await Assert.ThrowsAsync<HttpRequestException>(
-                async () => await connection.ConnectAsync());
+            await connection.ConnectAsync();
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            Assert.True(connection.IsConnected, "Expected to be connected");
 
             // Assert
-            Assert.Equal(new[]
-            {
-                "https://localhost/api/v1/version", 
-                "https://localhost/api/v1/session"
-            }, client.IncomingMessages.Select(r => r.RequestUri?.ToString()).ToArray());
-            Assert.Equal("Response status code does not indicate success: 400 (Bad Request).", error?.Message);
+            Assert.Equal("1.2.3.4", connection.ServerVersion);
+            await connection.DisconnectAsync();
         }
 
         [Theory]
@@ -247,29 +205,17 @@ namespace NaoBlocks.Client.Common.Tests
             Assert.Equal($"{wsPrefix}://localhost/api/v1/connections/robot", socket.Address);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task CallingConnectionAsyncTwiceIsIgnored(bool withDelay)
+        [Fact]
+        public async Task DisconnectAsyncWorksWhenDisconnected()
         {
             // Arrange
-            var client = new FakeHttpMessageHandler();
-            client.AddOutgoing(
-                HttpStatusCode.OK,
-                JsonConvert.SerializeObject(new VersionInformation()));
-            client.AddOutgoing(
-                HttpStatusCode.OK,
-                GenerateLoginResponse("welcome"));
-            var socket = new FakeWebSocketClient();
             using var connection = new Connection("localhost", "1234");
-            connection.InitialiseHttpClient = () => new HttpClient(client);
-            connection.InitialiseWebSocket = () => socket;
 
             // Act
-            await connection.ConnectAsync();
-            if (withDelay) await Task.Delay(TimeSpan.FromSeconds(0.5));
-            await connection.ConnectAsync();
             await connection.DisconnectAsync();
+
+            // Assert
+            Assert.False(connection.IsConnected);
         }
 
         [Fact]
@@ -338,7 +284,80 @@ namespace NaoBlocks.Client.Common.Tests
         }
 
         [Fact]
-        public async Task ConnectAsyncRetrievesVersion()
+        public void InitialiseHttpClientReturnsClient()
+        {
+            // Arrange
+            using var connection = new Connection("localhost", "1234");
+
+            // Act
+            using var client = connection.InitialiseHttpClient();
+
+            // Assert
+            Assert.IsType<HttpClient>(client);
+        }
+
+        [Fact]
+        public void InitialiseWebSocketReturnsWrapper()
+        {
+            // Arrange
+            using var connection = new Connection("localhost", "1234");
+
+            // Act
+            using var socket = connection.InitialiseWebSocket();
+
+            // Assert
+            Assert.IsType<ClientWebSocketWrapper>(socket);
+        }
+
+        [Theory]
+        [InlineData(true, "https://localhost/api/v1/code/Mia/987")]
+        [InlineData(false, "http://localhost/api/v1/code/Mia/987")]
+        public async Task RetrieveCodeAsyncHandlesData(bool isSecure, string expectedUrl)
+        {
+            // Arrange
+            var client = new FakeHttpMessageHandler();
+            client.AddOutgoing(
+                HttpStatusCode.OK,
+                GenerateProgramResponse(
+                            GenerateFunctionNode("reset"),
+                            GenerateFunctionNode("go")));
+            using var connection = new Connection("localhost", "1234", useSecure: isSecure);
+            connection.InitialiseHttpClient = () => new HttpClient(client);
+            var message = new ClientMessage(
+                ClientMessageType.DownloadProgram,
+                new
+                {
+                    user = "Mia",
+                    program = "987"
+                });
+
+            // Act
+            var nodes = await connection.RetrieveCodeAsync(message);
+
+            // Assert
+            Assert.Equal(new[] {
+                    "Function:reset",
+                    "Function:go"
+                }, nodes.Select(n => n.ToString()).ToArray());
+            var targetUrl = client.IncomingMessages.FirstOrDefault()?.RequestUri?.ToString();
+            Assert.Equal(expectedUrl, targetUrl);
+        }
+
+        [Fact]
+        public async Task RetrieveCodeAsyncHandlesInvalidSourceMessage()
+        {
+            // Arrange
+            using var connection = new Connection("localhost", "1234");
+
+            // Act
+            var nodes = await connection.RetrieveCodeAsync(new ClientMessage(ClientMessageType.Authenticate));
+
+            // Assert
+            Assert.Empty(nodes);
+        }
+
+        [Fact]
+        public async Task RetrieveServerVersionWorks()
         {
             // Arrange
             var client = new FakeHttpMessageHandler();
@@ -348,22 +367,24 @@ namespace NaoBlocks.Client.Common.Tests
                 {
                     Version = "1.2.3.4"
                 }));
-            client.AddOutgoing(
-                HttpStatusCode.OK,
-                GenerateLoginResponse("welcome"));
-            var socket = new FakeWebSocketClient();
             using var connection = new Connection("localhost", "1234");
             connection.InitialiseHttpClient = () => new HttpClient(client);
-            connection.InitialiseWebSocket = () => socket;
 
             // Act
-            await connection.ConnectAsync();
-            await Task.Delay(TimeSpan.FromSeconds(0.5));
-            Assert.True(connection.IsConnected, "Expected to be connected");
+            var version = await connection.RetrieveServerVersion();
 
             // Assert
-            Assert.Equal("1.2.3.4", connection.ServerVersion);
-            await connection.DisconnectAsync();
+            Assert.Equal(version?.Version, "1.2.3.4");
+        }
+
+        [Fact]
+        public async Task SendMessageAsyncFailsWhenNotConnected()
+        {
+            // Arrange
+            using var connection = new Connection("localhost", "1234");
+
+            // Act
+            await Assert.ThrowsAsync<ApplicationException>(async () => await connection.SendMessageAsync(new ClientMessage()));
         }
 
         private static AstNode GenerateFunctionNode(string name)
@@ -372,14 +393,6 @@ namespace NaoBlocks.Client.Common.Tests
                 AstNodeType.Function,
                 new Token(TokenType.Identifier, name),
                 string.Empty);
-        }
-
-        private static StringContent GenerateProgramResponse(params AstNode[] nodes)
-        {
-            var program = new CompiledCodeProgram(nodes);
-            var message = ExecutionResult.New(program);
-            var json = JsonConvert.SerializeObject(message);
-            return new StringContent(json);
         }
 
         private static StringContent GenerateLoginResponse(string token, params string[] errors)
@@ -392,6 +405,14 @@ namespace NaoBlocks.Client.Common.Tests
 
             response.ExecutionErrors = errors.Select((e, c) => new CommandError(c, e)).ToArray();
             var json = JsonConvert.SerializeObject(response);
+            return new StringContent(json);
+        }
+
+        private static StringContent GenerateProgramResponse(params AstNode[] nodes)
+        {
+            var program = new CompiledCodeProgram(nodes);
+            var message = ExecutionResult.New(program);
+            var json = JsonConvert.SerializeObject(message);
             return new StringContent(json);
         }
     }

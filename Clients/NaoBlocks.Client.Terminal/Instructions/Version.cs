@@ -5,7 +5,7 @@
     /// </summary>
     [Instruction("version", "Retrieves the server version")]
     public class Version
-        : InstructionBase
+        : ServerInstructionBase
     {
         /// <summary>
         /// Displays the help text.
@@ -25,10 +25,13 @@
         /// </summary>
         /// <param name="console">The console for writing any output.</param>
         /// <returns>The return code from the instruction.</returns>
-        public override Task<int> RunAsync(IConsole console)
+        public override async Task<int> RunAsync(IConsole console)
         {
             this.CheckFactoryIsSet();
-            throw new NotImplementedException();
+            var connection = this.Factory!.RetrieveConnection();
+            var version = await connection.RetrieveServerVersion();
+            console.WriteMessage($"The current version is {version.Version}");
+            return 0;
         }
 
         /// <summary>
@@ -40,16 +43,32 @@
         public override bool Validate(IConsole console, string[] args)
         {
             this.CheckFactoryIsSet();
-            var (posArgs, namedArgs) = ParseNamedArgs(args);
+            var (posArgs, _) = ParseNamedArgs(args);
             if (posArgs.Length != 2)
             {
-                console.WriteError("Invalid number of arguments.");
-                console.WriteMessage();
-                console.WriteMessage($"Usage is {App.ApplicationName} version <SERVER> [options]");
+                WriteErrorMessage(console, "Invalid number of arguments.");
+                return false;
+            }
+
+            this.Factory!.ServerAddress = posArgs[1];
+            if (!this.Factory.CheckIfAddressIsValid())
+            {
+                WriteErrorMessage(console, "Invalid server address - must start with https:// or http://");
                 return false;
             }
 
             return true;
+        }
+
+        private static void WriteErrorMessage(IConsole console, params string[] messages)
+        {
+            foreach (var message in messages)
+            {
+                console.WriteError(message);
+            }
+
+            console.WriteMessage();
+            console.WriteMessage($"Usage is {App.ApplicationName} version <SERVER> [options]");
         }
     }
 }

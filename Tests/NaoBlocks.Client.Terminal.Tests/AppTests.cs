@@ -40,7 +40,7 @@ namespace NaoBlocks.Client.Terminal.Tests
 
             // Assert
             Assert.Contains(
-                "INFO: help: Displays the help information",
+                "INFO: \thelp: Displays the help information",
                 console.Output);
         }
 

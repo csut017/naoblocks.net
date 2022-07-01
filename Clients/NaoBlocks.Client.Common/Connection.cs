@@ -16,13 +16,12 @@ namespace NaoBlocks.Client.Common
     {
         private const int receiveBufferSize = 8192;
         private readonly string address;
+        private readonly Subject<ClientMessage> messageReceived = new();
         private readonly string password;
-        private readonly bool useSecure;
         private readonly string robotName;
         private CancellationTokenSource? cancellation;
-        private IWebSocket? webSocket;
         private string token = string.Empty;
-        private readonly Subject<ClientMessage> messageReceived = new();
+        private IWebSocket? webSocket;
 
         /// <summary>
         /// Initialiase a new <see cref="Connection"/> instance.
@@ -36,7 +35,7 @@ namespace NaoBlocks.Client.Common
             this.OnMessageReceived = this.messageReceived.AsObservable();
             this.address = address;
             this.password = password;
-            this.useSecure = useSecure;
+            this.IsSecure = useSecure;
             this.robotName = robotName ?? Environment.MachineName;
         }
 
@@ -49,12 +48,9 @@ namespace NaoBlocks.Client.Common
         }
 
         /// <summary>
-        /// Gets or sets a function for initialising a new <see cref="WebSocket"/> instance.
+        /// An event handler for when the connection is closed.
         /// </summary>
-        /// <remarks>
-        /// This property is mainly for allowing unit tests on the <see cref="Connection"/> class.
-        /// </remarks>
-        public Func<IWebSocket> InitialiseWebSocket { get; set; } = () => new ClientWebSocketWrapper(new ClientWebSocket());
+        public event EventHandler? OnClosed;
 
         /// <summary>
         /// Gets or sets a function for initialising a new <see cref="HttpClient"/> instance.
@@ -63,6 +59,34 @@ namespace NaoBlocks.Client.Common
         /// This property is mainly for allowing unit tests on the <see cref="Connection"/> class.
         /// </remarks>
         public Func<HttpClient> InitialiseHttpClient { get; set; } = () => new HttpClient();
+
+        /// <summary>
+        /// Gets or sets a function for initialising a new <see cref="WebSocket"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// This property is mainly for allowing unit tests on the <see cref="Connection"/> class.
+        /// </remarks>
+        public Func<IWebSocket> InitialiseWebSocket { get; set; } = () => new ClientWebSocketWrapper(new ClientWebSocket());
+
+        /// <summary>
+        /// Gets whether the connection is connected to the server.
+        /// </summary>
+        public bool IsConnected { get; private set; } = false;
+
+        /// <summary>
+        /// Gets whether the connection is secure (uses HTTPS).
+        /// </summary>
+        public bool IsSecure { get; private set; } = false;
+
+        /// <summary>
+        /// An observable connecting the received messages.
+        /// </summary>
+        public IObservable<ClientMessage> OnMessageReceived { get; private set; }
+
+        /// <summary>
+        /// Gets the current server version.
+        /// </summary>
+        public string ServerVersion { get; private set; } = string.Empty;
 
         /// <summary>
         /// Attempts to connect to the server.
@@ -77,28 +101,25 @@ namespace NaoBlocks.Client.Common
                 else this.webSocket.Dispose();
             }
 
-            // Get the server version first
             this.token = string.Empty;
             using (var httpClient = this.InitialiseHttpClient())
             {
-                var versionAddress = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/version";
-                var response = await httpClient.GetAsync(versionAddress);
-                response.EnsureSuccessStatusCode();
-                var json = await response.Content.ReadAsStringAsync();
-                var versionInfo = JsonConvert.DeserializeObject<VersionInformation>(json);
+                // Get the server version first
+                var versionInfo = await this.DoRetrieveServerVersion(httpClient);
                 this.ServerVersion = string.IsNullOrEmpty(versionInfo?.Version) ? "<Unknown>" : versionInfo!.Version;
 
                 // Then authenticate
-                var loginAddress = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/session";
+                var loginAddress = $"{(this.IsSecure ? "https" : "http")}://{this.address}/api/v1/session";
                 var req = new
                 {
                     name = this.robotName,
                     password,
                     role = "robot"
                 };
-                response = await httpClient.PostAsJsonAsync(loginAddress, req);
+
+                var response = await httpClient.PostAsJsonAsync(loginAddress, req);
                 response.EnsureSuccessStatusCode();
-                json = await response.Content.ReadAsStringAsync();
+                var json = await response.Content.ReadAsStringAsync();
                 var sessionInfo = JsonConvert.DeserializeObject<ExecutionResult<UserSessionResult>>(json);
                 if (sessionInfo?.Successful ?? false) this.token = sessionInfo?.Output?.Token ?? string.Empty;
                 if (string.IsNullOrEmpty(this.token))
@@ -111,7 +132,7 @@ namespace NaoBlocks.Client.Common
             // Open the websocket and start processing messages
             this.webSocket = this.InitialiseWebSocket();
             this.cancellation = new CancellationTokenSource();
-            var socketAddress = $"{(this.useSecure ? "wss" : "ws")}://{this.address}/api/v1/connections/robot";
+            var socketAddress = $"{(this.IsSecure ? "wss" : "ws")}://{this.address}/api/v1/connections/robot";
             await this.webSocket.ConnectAsync(new Uri(socketAddress), this.cancellation.Token);
 #pragma warning disable CS4014 // We want this call to run in the background, so we don't care that we continue immediately
             Task.Factory.StartNew(this.ReceiveLoop, this.cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -132,6 +153,15 @@ namespace NaoBlocks.Client.Common
             }
 
             this.CleanUpAfterDisconnect();
+        }
+
+        /// <summary>
+        /// Cleans up the resources for this <see cref="Connection"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -160,13 +190,70 @@ namespace NaoBlocks.Client.Common
         public async Task<AstNode[]> RetrieveCodeAsync(string userName, string programNumber)
         {
             using var client = this.InitialiseHttpClient();
-            var address = $"{(this.useSecure ? "https" : "http")}://{this.address}/api/v1/code/{userName}/{programNumber}";
+            var address = $"{(this.IsSecure ? "https" : "http")}://{this.address}/api/v1/code/{userName}/{programNumber}";
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.token);
             var response = await client.GetAsync(address);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
             var program = JsonConvert.DeserializeObject<ExecutionResult<CompiledCodeProgram>>(json);
             return program?.Output?.Nodes?.ToArray() ?? Array.Empty<AstNode>();
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the current server version.
+        /// </summary>
+        /// <returns>A <see cref="VersionInformation"/> instance containing the version information.</returns>
+        public async Task<VersionInformation> RetrieveServerVersion()
+        {
+            using var httpClient = this.InitialiseHttpClient();
+            var version = await this.DoRetrieveServerVersion(httpClient);
+            return version;
+        }
+
+        /// <summary>
+        /// Sends a message to the server.
+        /// </summary>
+        /// <param name="message">The <see cref="ClientMessage"/> to send.</param>
+        public async Task SendMessageAsync(ClientMessage message)
+        {
+            if (this.webSocket == null) throw new ApplicationException("Unable to send message: no websocket");
+
+            var cancellationToken = this.cancellation?.Token ?? CancellationToken.None;
+            var data = message.ToArray();
+            await this.webSocket.SendAsync(data, WebSocketMessageType.Text, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Cleans up the resources for this <see cref="Connection"/> instance.
+        /// </summary>
+        /// <param name="disposing">Whether the instance is being disposed or not.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            this.DisconnectAsync().Wait();
+        }
+
+        /// <summary>
+        /// Clean up all the resources for the socket and any downloaded details.
+        /// </summary>
+        private void CleanUpAfterDisconnect()
+        {
+            this.IsConnected = false;
+            this.ServerVersion = string.Empty;
+            this.token = string.Empty;
+            this.webSocket?.Dispose();
+            this.webSocket = null;
+            this.cancellation?.Dispose();
+            this.cancellation = null;
+        }
+
+        private async Task<VersionInformation> DoRetrieveServerVersion(HttpClient httpClient)
+        {
+            var versionAddress = $"{(this.IsSecure ? "https" : "http")}://{this.address}/api/v1/version";
+            var response = await httpClient.GetAsync(versionAddress);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+            var versionInfo = JsonConvert.DeserializeObject<VersionInformation>(json);
+            return versionInfo!;
         }
 
         /// <summary>
@@ -216,71 +303,6 @@ namespace NaoBlocks.Client.Common
             {
                 outputStream?.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Clean up all the resources for the socket and any downloaded details.
-        /// </summary>
-        private void CleanUpAfterDisconnect()
-        {
-            this.IsConnected = false;
-            this.ServerVersion = string.Empty;
-            this.token = string.Empty;
-            this.webSocket?.Dispose();
-            this.webSocket = null;
-            this.cancellation?.Dispose();
-            this.cancellation = null;
-        }
-
-        /// <summary>
-        /// Gets whether the connection is connected to the server.
-        /// </summary>
-        public bool IsConnected { get; private set; } = false;
-
-        /// <summary>
-        /// Gets the current server version.
-        /// </summary>
-        public string ServerVersion { get; private set; } = string.Empty;
-
-        /// <summary>
-        /// An event handler for when the connection is closed.
-        /// </summary>
-        public event EventHandler? OnClosed;
-
-        /// <summary>
-        /// An observable connecting the received messages.
-        /// </summary>
-        public IObservable<ClientMessage> OnMessageReceived { get; private set; }
-
-        /// <summary>
-        /// Sends a message to the server.
-        /// </summary>
-        /// <param name="message">The <see cref="ClientMessage"/> to send.</param>
-        public async Task SendMessageAsync(ClientMessage message)
-        {
-            if (this.webSocket == null) throw new ApplicationException("Unable to send message: no websocket");
-
-            var cancellationToken = this.cancellation?.Token ?? CancellationToken.None;
-            var data = message.ToArray();
-            await this.webSocket.SendAsync(data, WebSocketMessageType.Text, true, cancellationToken);
-        }
-
-        /// <summary>
-        /// Cleans up the resources for this <see cref="Connection"/> instance.
-        /// </summary>
-        /// <param name="disposing">Whether the instance is being disposed or not.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            this.DisconnectAsync().Wait();
-        }
-
-        /// <summary>
-        /// Cleans up the resources for this <see cref="Connection"/> instance.
-        /// </summary>
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }
