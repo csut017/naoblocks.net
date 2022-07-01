@@ -61,7 +61,7 @@
             "numbers": [61],
             "image": "->question",
             "text": "For",
-            "generator": ""
+            "generator": "var code ='loop(' ;return Tangibles.NaoLang.generatePrefix() + code "
         }
         ,
         {
@@ -69,7 +69,7 @@
             "numbers": [79],
             "image": "->question",
             "text": "End for",
-            "generator": ""
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '}\\n'"
         },
         {
             "name": "while",
@@ -80,7 +80,7 @@
         },
         {
             "name": "endwhile",
-            "numbers": [61],
+            "numbers": [91],
             "image": "->question",
             "text": "End while",
             "generator": ""
@@ -100,11 +100,11 @@
             "generator": ""
         },
         {
-            "name": "number",
+            "name": "one",
             "numbers": [107],
             "image": "->question",
-            "text": "Number",
-            "generator": ""
+            "text": "1",
+            "generator": "var code ='1){\\n'; return Tangibles.NaoLang.generatePrefix() + code "
         },
         {
             "name": "endelse",
