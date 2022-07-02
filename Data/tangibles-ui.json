@@ -104,7 +104,7 @@
             "numbers": [107],
             "image": "->question",
             "text": "1",
-            "generator": "var code ='1){\\n'; return Tangibles.NaoLang.generatePrefix() + code "
+            "generator": "var code ='1){'; return Tangibles.NaoLang.generatePrefix() + code"
         },
         {
             "name": "endelse",
@@ -118,7 +118,7 @@
             "numbers": [115],
             "image": "->question",
             "text": "Walk",
-            "generator": ""
+            "generator": "var code ='walk(1,0) \\n'; return Tangibles.NaoLang.generatePrefix() + code"
         },
         {
             "name": "turn",
