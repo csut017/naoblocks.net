@@ -94,7 +94,7 @@
             </div>
             <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onSettingsClosed($event)"
                 [settings]="runSettings"></app-settings-debug>
-            <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event)"></app-settings-student>
+            <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event)" [settings]="editorSettings"></app-settings-student>
             <app-program-load *ngSwitchCase="'load-program'" (closed)="onClosed($event)"></app-program-load>
             <app-program-save *ngSwitchCase="'save-program'" (closed)="onClosed($event)"></app-program-save>
         </div>

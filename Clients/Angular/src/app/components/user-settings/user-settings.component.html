@@ -5,7 +5,7 @@
             <mat-card-content>
                 <mat-form-field class="fill-width">
                     <mat-label>Type</mat-label>
-                    <select matNativeControl formControlName="type" required>
+                    <select matNativeControl formControlName="type" required (change)="onRobotTypeChange()">
                         <option></option>
                         <option *ngFor="let type of types" value="{{type.name}}">{{type.name}}</option>
                     </select>
@@ -18,10 +18,10 @@
                 <div *ngIf="showAllocation">
                     <mat-form-field class="fill-width">
                         <mat-label>Allocation Mode</mat-label>
-                        <select matNativeControl formControlName="allocationMode" required>
-                            <option value="any">Any robot</option>
-                            <option value="require">Require robot</option>
-                            <option value="prefer">Prefer robot</option>
+                        <select matNativeControl formControlName="allocationMode" required (change)="onAllocationModeChange()">
+                            <option value="0">Any robot</option>
+                            <option value="1" *ngIf="!!robots.length">Require robot</option>
+                            <option value="2" *ngIf="!!robots.length">Prefer robot</option>
                         </select>
                         <mat-error>
                             Please select an allocation mode
@@ -29,7 +29,7 @@
                         <mat-hint>Which robot will the student use</mat-hint>
                     </mat-form-field>
 
-                    <mat-form-field class="fill-width" *ngIf="settings.allocationMode">
+                    <mat-form-field class="fill-width" *ngIf="allocationMode">
                         <mat-label>Type</mat-label>
                         <select matNativeControl formControlName="robotId" required>
                             <option></option>
@@ -52,9 +52,9 @@
             <mat-card-content>
                 <mat-form-field class="fill-width" *ngIf="showConfiguration">
                     <mat-label>Configuration Mode</mat-label>
-                    <select matNativeControl formControlName="configMode" required>
+                    <select matNativeControl formControlName="configMode" required (change)="onConfigurationModeChange()">
                         <option value="1">Standard</option>
-                        <option value="2">Custom</option>
+                        <option value="2" *ngIf="!!this.blockSets.length">Custom</option>
                     </select>
                     <mat-error>
                         Please select a configuration mode
@@ -65,19 +65,19 @@
                 <div *ngIf="configurationMode == 2">
                     <mat-form-field class="fill-width">
                         <mat-label>Custom Set</mat-label>
-                        <select clrSelect name="customBlockSet" [(ngModel)]="settings.customBlockSet">
+                        <select matNativeControl formControlName="customBlockSet" required>
                             <option value="{{set.value}}" *ngFor="let set of blockSets">{{set.name}}</option>
                         </select>
-                        <mat-hint>A custom set of blocks to use</mat-hint>
+                        <mat-hint>The custom set of blocks to use</mat-hint>
                     </mat-form-field>
                 </div>
 
                 <div *ngIf="configurationMode == 1">
                     <mat-form-field class="fill-width">
                         <mat-label>Interface Style</mat-label>
-                        <select matNativeControl formControlName="interfaceStyle" required>
-                            <option value="2">Simple Blocks</option>
+                        <select matNativeControl formControlName="interfaceStyle" required (change)="onInterfaceStyleChange()">
                             <option value="1">Default Blocks</option>
+                            <option value="2">Simple Blocks</option>
                             <option value="3">Event Blocks</option>
                         </select>
                         <mat-error>
