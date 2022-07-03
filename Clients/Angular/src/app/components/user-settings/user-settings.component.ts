@@ -84,15 +84,12 @@ export class UserSettingsComponent implements OnInit {
     if (robotType != this.lastRobotType) {
       this.lastRobotType = robotType;
       this.robots = [];
+      this.blockSets = [];
       if (this.lastRobotType) {
         this.robotService.listType(this.lastRobotType)
           .subscribe(data => {
             this.robots = data.items;
           })
-      }
-
-      this.blockSets = [];
-      if (this.lastRobotType) {
         this.robotTypeService.listBlockSets(this.lastRobotType)
           .subscribe(r => {
             this.blockSets = r.items;
@@ -109,7 +106,21 @@ export class UserSettingsComponent implements OnInit {
     this.interfaceStyle = parseInt(this.form.get('interfaceStyle')?.value);
   }
 
-  save(): void {
-    this.internalSettings.robotType = this.form.get('type')?.value;
+  save(): UserSettings {
+    let settings = new UserSettings();
+    settings.robotType = this.form.get('type')?.value;
+    settings.allocationMode = this.form.get('allocationMode')?.value;
+    settings.robotId = this.form.get('robotId')?.value;
+    this.configurationMode = this.form.get('configMode')?.value;
+    let interfaceStyle = this.form.get('interfaceStyle')?.value;
+    settings.simple = interfaceStyle == 2;
+    settings.events = interfaceStyle == 3;
+    settings.dances = this.form.get('displayDances')?.value;
+    settings.conditionals = this.form.get('displayConditionals')?.value;
+    settings.loops = this.form.get('displayLoops')?.value;
+    settings.sensors = this.form.get('displaySensors')?.value;
+    settings.variables = this.form.get('displayVariables')?.value;
+    settings.customBlockSet = this.form.get('customBlockSet')?.value;
+    return settings;
   }
 }

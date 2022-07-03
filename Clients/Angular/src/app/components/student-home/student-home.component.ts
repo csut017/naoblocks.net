@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, map, shareReplay } from 'rxjs';
 import { ConfirmSettings } from 'src/app/data/confirm-settings';
@@ -13,6 +13,7 @@ import { ChangeViewService } from 'src/app/services/change-view.service';
 import { ConfirmService } from 'src/app/services/confirm.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { SettingsService } from 'src/app/services/settings.service';
+import { BlocklyEditorComponent } from 'src/app/components/blockly-editor/blockly-editor.component';
 
 @Component({
   selector: 'app-student-home',
@@ -75,8 +76,14 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
     this.changeView('debug-settings', 'Debug Settings', false);
   }
 
-  onClosed(saved: boolean) {
+  onClosed(saved: boolean, reloadEditor: boolean) {
     this.changeView('editor', this.editors[this.editorView].title, true);
+    if (saved && reloadEditor) {
+      this.settingsService.get()
+        .subscribe(s => {
+          this.editorSettings = s.output || new EditorSettings();
+        });
+    }
   }
 
   onSettingsClosed(settings?: RunSettings) {
