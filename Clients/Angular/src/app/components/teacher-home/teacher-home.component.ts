@@ -15,6 +15,7 @@ import { ViewFormatterService } from 'src/app/services/view-formatter.service';
 })
 export class TeacherHomeComponent extends HomeBase implements OnInit {
 
+  currentItem: string ='';
   currentView: string = 'Dashboard';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
@@ -44,6 +45,10 @@ export class TeacherHomeComponent extends HomeBase implements OnInit {
     this.currentView = view;
     const viewUrl = this.viewFormatter.toUrl(view);
     this.router.navigate(['teacher', viewUrl], {});
+    this.currentItem = '';
   }
 
+  onItemChanged(itemName: string): void {
+    this.currentItem = itemName;
+  }
 }

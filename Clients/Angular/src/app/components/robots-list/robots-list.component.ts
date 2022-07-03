@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
@@ -25,6 +25,8 @@ export class RobotsListComponent implements OnInit {
   isNew: boolean = true;
   selection = new SelectionModel<Robot>(true, []);
   view: string = 'list';
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor(private robotService: RobotService,
     private authenticationService: AuthenticationService,
@@ -63,6 +65,7 @@ export class RobotsListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = true;
     this.currentItem = new Robot(true);
+    this.currentItemChanged.emit('<new>');
   }
 
   delete(): void {
@@ -100,6 +103,7 @@ export class RobotsListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = false;
     this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(this.currentItem.machineName);
   }
 
   import(): void {
@@ -117,6 +121,7 @@ export class RobotsListComponent implements OnInit {
       }
       this.currentItem!.id = this.currentItem!.machineName;
     }
+    this.currentItemChanged.emit('');
   }
 
   private loadList(): void {

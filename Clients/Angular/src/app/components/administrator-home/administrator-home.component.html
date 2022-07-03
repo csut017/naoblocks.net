@@ -40,7 +40,13 @@
                 *ngIf="isHandset$ | async">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
             </button>
-            <span>Administrator: {{currentView}}</span>
+            <span>
+                Administrator
+                <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentView}}
+                <span *ngIf="currentItem">
+                    <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentItem}}
+                </span>
+            </span>
             <span class="example-spacer"></span>
             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
                 <mat-icon>more_vert</mat-icon>
@@ -73,10 +79,10 @@
 
         <div *ngIf="hasAccess" [ngSwitch]="currentView">
             <app-system-dashboard *ngSwitchCase="'Dashboard'"></app-system-dashboard>
-            <app-robots-list *ngSwitchCase="'Robots'"></app-robots-list>
+            <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
             <app-students-list *ngSwitchCase="'Students'"></app-students-list>
             <app-logs-list *ngSwitchCase="'Logs'"></app-logs-list>
-            <app-robot-types-list *ngSwitchCase="'Robot Types'"></app-robot-types-list>
+            <app-robot-types-list *ngSwitchCase="'Robot Types'" (currentItemChanged)="onItemChanged($event)"></app-robot-types-list>
             <app-users-list *ngSwitchCase="'Users'"></app-users-list>
             <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
             <app-user-interface-configuration *ngSwitchCase="'User Interfaces'"></app-user-interface-configuration>

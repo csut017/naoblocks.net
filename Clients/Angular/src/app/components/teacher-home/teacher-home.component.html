@@ -28,7 +28,13 @@
                 *ngIf="isHandset$ | async">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
             </button>
-            <span>Teacher: {{currentView}}</span>
+            <span>
+                Teacher
+                <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentView}}
+                <span *ngIf="currentItem">
+                    <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentItem}}
+                </span>
+            </span>
             <span class="example-spacer"></span>
             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
                 <mat-icon>more_vert</mat-icon>
@@ -61,7 +67,7 @@
 
         <div *ngIf="hasAccess" [ngSwitch]="currentView">
             <app-system-dashboard *ngSwitchCase="'Dashboard'"></app-system-dashboard>
-            <app-robots-list *ngSwitchCase="'Robots'"></app-robots-list>
+            <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
             <app-students-list *ngSwitchCase="'Students'"></app-students-list>
             <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
             <div *ngSwitchDefault class="unknown-view">

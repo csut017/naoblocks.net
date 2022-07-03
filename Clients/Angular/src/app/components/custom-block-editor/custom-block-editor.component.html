@@ -1,0 +1,16 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            TODO
+        </mat-card-content>
+    </mat-card>
+</form>

@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RobotType } from 'src/app/data/robot-type';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -29,6 +29,8 @@ export class RobotTypesListComponent implements OnInit {
   isNew: boolean = true;
   selection = new SelectionModel<RobotType>(true, []);
   view: string = 'list';
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor(private robotTypeService: RobotTypeService,
     private authenticationService: AuthenticationService,
@@ -68,6 +70,7 @@ export class RobotTypesListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = true;
     this.currentItem = new RobotType(true);
+    this.currentItemChanged.emit('<new>');
   }
 
   delete(): void {
@@ -108,6 +111,13 @@ export class RobotTypesListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = false;
     this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(this.currentItem.name);
+  }
+
+  editBlocksSets(): void {
+    this.view = 'blocksets';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(this.currentItem.name);
   }
 
   importToolbox(): void {
@@ -233,6 +243,7 @@ export class RobotTypesListComponent implements OnInit {
 
   onClosed(saved: boolean) {
     this.view = 'list';
+    this.currentItemChanged.emit('');
     if (saved) {
       if (this.isNew) {
         this.dataSource.data = [...this.dataSource.data, this.currentItem!];
