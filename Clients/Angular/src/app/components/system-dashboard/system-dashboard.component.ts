@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-system-dashboard',
@@ -6,6 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./system-dashboard.component.scss']
 })
 export class SystemDashboardComponent implements OnInit {
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor() { }
 

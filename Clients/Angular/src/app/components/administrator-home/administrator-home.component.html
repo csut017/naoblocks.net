@@ -78,14 +78,14 @@
         </mat-toolbar>
 
         <div *ngIf="hasAccess" [ngSwitch]="currentView">
-            <app-system-dashboard *ngSwitchCase="'Dashboard'"></app-system-dashboard>
+            <app-system-dashboard *ngSwitchCase="'Dashboard'" (currentItemChanged)="onItemChanged($event)"></app-system-dashboard>
             <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
-            <app-students-list *ngSwitchCase="'Students'"></app-students-list>
-            <app-logs-list *ngSwitchCase="'Logs'"></app-logs-list>
+            <app-students-list *ngSwitchCase="'Students'" (currentItemChanged)="onItemChanged($event)"></app-students-list>
+            <app-logs-list *ngSwitchCase="'Logs'" (currentItemChanged)="onItemChanged($event)"></app-logs-list>
             <app-robot-types-list *ngSwitchCase="'Robot Types'" (currentItemChanged)="onItemChanged($event)"></app-robot-types-list>
-            <app-users-list *ngSwitchCase="'Users'"></app-users-list>
-            <app-system-configuration *ngSwitchCase="'Configuration'"></app-system-configuration>
-            <app-user-interface-configuration *ngSwitchCase="'User Interfaces'"></app-user-interface-configuration>
+            <app-users-list *ngSwitchCase="'Users'" (currentItemChanged)="onItemChanged($event)"></app-users-list>
+            <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)"></app-system-configuration>
+            <app-user-interface-configuration *ngSwitchCase="'User Interfaces'" (currentItemChanged)="onItemChanged($event)"></app-user-interface-configuration>
             <div *ngSwitchDefault class="unknown-view">
                 <mat-card>
                     <mat-card-title>

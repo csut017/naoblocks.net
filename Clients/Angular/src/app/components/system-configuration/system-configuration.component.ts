@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-system-configuration',
@@ -6,6 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./system-configuration.component.scss']
 })
 export class SystemConfigurationComponent implements OnInit {
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor() { }
 

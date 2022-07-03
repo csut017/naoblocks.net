@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { DefaultFlexOrderDirective } from '@angular/flex-layout';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
@@ -26,6 +26,8 @@ export class StudentsListComponent implements OnInit {
   selection = new SelectionModel<Student>(true, []);
   view: string = 'list';
 
+  @Output() currentItemChanged = new EventEmitter<string>();
+
   constructor(private studentService: StudentService,
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
@@ -40,6 +42,7 @@ export class StudentsListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = true;
     this.currentItem = new Student(true);
+    this.currentItemChanged.emit('<new>');
   }
 
   delete(): void {
@@ -95,6 +98,7 @@ export class StudentsListComponent implements OnInit {
     this.view = 'editor';
     this.isNew = false;
     this.currentItem = item;
+    this.currentItemChanged.emit(item.name);
   }
 
   isAllSelected() {
@@ -121,6 +125,7 @@ export class StudentsListComponent implements OnInit {
 
   onClosed(saved: boolean) {
     this.view = 'list';
+    this.currentItemChanged.emit('');
     if (saved) {
       if (this.isNew) {
         this.dataSource.data = [...this.dataSource.data, this.currentItem!];

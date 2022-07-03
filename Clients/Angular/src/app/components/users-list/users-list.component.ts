@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/data/user';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
@@ -16,6 +16,8 @@ export class UsersListComponent implements OnInit {
   dataSource: MatTableDataSource<User> = new MatTableDataSource();
   isLoading: boolean = true;
   selection = new SelectionModel<User>(true, []);
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor(private userService: UserService,
     private downloaderService: FileDownloaderService) { }

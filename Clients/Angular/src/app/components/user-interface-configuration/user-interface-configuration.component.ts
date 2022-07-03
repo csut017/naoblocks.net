@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { ExecutionResult } from 'src/app/data/execution-result';
@@ -22,6 +22,8 @@ export class UserInterfaceConfigurationComponent implements OnInit {
   isLoading: boolean = true;
   selection = new SelectionModel<UIDefinition>(true, []);
   view: string = 'list';
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor(private uiService: UiService,
     private importService: ImportService,

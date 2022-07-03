@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-logs-list',
@@ -6,6 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./logs-list.component.scss']
 })
 export class LogsListComponent implements OnInit {
+
+  @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor() { }
 
