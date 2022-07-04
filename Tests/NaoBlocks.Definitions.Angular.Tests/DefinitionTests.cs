@@ -11,30 +11,167 @@ namespace NaoBlocks.Definitions.Angular.Tests
     public class DefinitionTests
     {
         [Fact]
-        public async Task ValidateAsyncChecksForNames()
+        public async Task GenerateAsyncFailsWithUnknown()
         {
             // Arrange
-            var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Definition = "{}",
-                Generator = "gen"
-            });
+
+            // Act
+            var error = await Assert.ThrowsAsync<ApplicationException>(async () => await definition.GenerateAsync("rubbish"));
+
+            // Assert
+            Assert.Equal("Unknown content type 'rubbish'", error.Message);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesAstConversions()
+        {
+            // Arrange
+            var definition = new Definition();
             definition.Nodes.Add(new AstNode
             {
-                Name = "node",
-                Converter = "con"
+                Name = "wait",
+                Converter = "new BlockDefinition('robot_wait', new ValueDefinition('TIME'))"
             });
 
             // Act
-            var ouput = await definition.ValidateAsync(engine.Object);
+            var ouput = await definition.GenerateAsync("conversions");
 
             // Assert
-            Assert.Equal(new[]
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_conversions.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesBlockDefinitionsForMultipleBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
             {
-                "Block #1 does not have a name (name)"
-            }, ouput.Select(e => e.Error).ToArray());
+                Name = "robot_wait",
+                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_rest",
+                Definition = "{\"type\": \"robot_rest\",\"message0\": \"Rest\",\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("block_definitions");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_multiple_block_definition.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesBlockDefinitionsForSingleBlock()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_wait",
+                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("block_definitions");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "wait"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "control_if",
+                Category = "System"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "wait",
+                Text = "Do nothing"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "control_if",
+                Category = "System",
+                Text = "If"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("blocks");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_blocks.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncGeneratesLanguage()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_wait",
+                Generator = "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("language");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_language.txt");
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
+        public async Task GenerateAsyncIgnoresSystemBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_wait",
+                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+            });
+            definition.Blocks.Add(new Block
+            {
+                Name = "robot_rest",
+                Definition = "SYSTEM"
+            });
+
+            // Act
+            var ouput = await definition.GenerateAsync("block_definitions");
+
+            // Assert
+            using var reader = new StreamReader(ouput);
+            var body = await reader.ReadToEndAsync();
+            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
+            Assert.Equal(expected, body);
         }
 
         [Fact]
@@ -62,84 +199,6 @@ namespace NaoBlocks.Definitions.Angular.Tests
                 "Block 'test_block' (#1) does not have a block definition (definition)",
                 "Block 'test_block' (#1) does not have a language generator (generator)",
             }, ouput.Select(e => e.Error).ToArray());
-        }
-
-        [Fact]
-        public async Task ValidateAsyncHandlesAllFieldsMissing()
-        {
-            // Arrange
-            var engine = new Mock<IExecutionEngine>();
-            var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-            });
-            definition.Nodes.Add(new AstNode
-            {
-                Name = "node",
-                Converter = "con"
-            });
-
-            // Act
-            var ouput = await definition.ValidateAsync(engine.Object);
-
-            // Assert
-            Assert.Equal(new[]
-            {
-                "Block #1 does not have a name (name)",
-                "Block #1 does not have a block definition (definition)",
-                "Block #1 does not have a language generator (generator)",
-            }, ouput.Select(e => e.Error).ToArray());
-        }
-
-        [Fact]
-        public async Task ValidateAsyncPassesWhenAllFieldsAreSet()
-        {
-            // Arrange
-            var engine = new Mock<IExecutionEngine>();
-            var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Name = "test_block",
-                Definition = "{}",
-                Generator = "gen"
-            });
-            definition.Nodes.Add(new AstNode
-            {
-                Name = "node",
-                Converter = "con"
-            });
-
-            // Act
-            var ouput = await definition.ValidateAsync(engine.Object);
-
-            // Assert
-            Assert.Empty(ouput);
-        }
-
-        [Fact]
-        public async Task ValidateAsyncFillsInDefinitionTypes()
-        {
-            // Arrange
-            var engine = new Mock<IExecutionEngine>();
-            var definition = new Definition();
-            var block = new Block
-            {
-                Name = "test_block",
-                Definition = "{}",
-                Generator = "gen"
-            };
-            definition.Blocks.Add(block);
-            definition.Nodes.Add(new AstNode
-            {
-                Name = "node",
-                Converter = "con"
-            });
-
-            // Act
-            await definition.ValidateAsync(engine.Object);
-
-            // Assert
-            Assert.Equal("{\"type\":\"test_block\"}", block.Definition);
         }
 
         [Fact]
@@ -183,23 +242,11 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task ValidateAsyncChecksGeneratorIsValidJavascript()
+        public async Task ValidateAsyncChecksForBlocks()
         {
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Name = "block_one",
-                Definition = "SYSTEM",
-                Generator = "=123"
-            });
-            definition.Blocks.Add(new Block
-            {
-                Name = "block_two",
-                Definition = "SYSTEM",
-                Generator = "console.log('hello')"
-            });
             definition.Nodes.Add(new AstNode
             {
                 Name = "node",
@@ -212,7 +259,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "Block 'block_one' (#1) has an invalid language generator (generator): must be valid JavaScript",
+                "Definition does not contain any blocks"
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -284,11 +331,16 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task ValidateAsyncChecksForBlocks()
+        public async Task ValidateAsyncChecksForNames()
         {
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Definition = "{}",
+                Generator = "gen"
+            });
             definition.Nodes.Add(new AstNode
             {
                 Name = "node",
@@ -301,7 +353,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "Definition does not contain any blocks"
+                "Block #1 does not have a name (name)"
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -329,18 +381,28 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task ValidateAsyncChecksNodeNames()
+        public async Task ValidateAsyncChecksGeneratorIsValidJavascript()
         {
             // Arrange
             var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
             definition.Blocks.Add(new Block
             {
-                Name = "test_block",
-                Definition = "{}",
-                Generator = "gen"
+                Name = "block_one",
+                Definition = "SYSTEM",
+                Generator = "=123"
             });
-            definition.Nodes.Add(new AstNode());
+            definition.Blocks.Add(new Block
+            {
+                Name = "block_two",
+                Definition = "SYSTEM",
+                Generator = "console.log('hello')"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
+            });
 
             // Act
             var ouput = await definition.ValidateAsync(engine.Object);
@@ -348,8 +410,7 @@ namespace NaoBlocks.Definitions.Angular.Tests
             // Assert
             Assert.Equal(new[]
             {
-                "Node #1 does not have a name (name)",
-                "Node #1 does not have a converter (converter)",
+                "Block 'block_one' (#1) has an invalid language generator (generator): must be valid JavaScript",
             }, ouput.Select(e => e.Error).ToArray());
         }
 
@@ -414,131 +475,106 @@ namespace NaoBlocks.Definitions.Angular.Tests
         }
 
         [Fact]
-        public async Task GenerateAsyncGeneratesAstConversions()
+        public async Task ValidateAsyncChecksNodeNames()
         {
             // Arrange
+            var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
+            definition.Blocks.Add(new Block
+            {
+                Name = "test_block",
+                Definition = "{}",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode());
+
+            // Act
+            var ouput = await definition.ValidateAsync(engine.Object);
+
+            // Assert
+            Assert.Equal(new[]
+            {
+                "Node #1 does not have a name (name)",
+                "Node #1 does not have a converter (converter)",
+            }, ouput.Select(e => e.Error).ToArray());
+        }
+
+        [Fact]
+        public async Task ValidateAsyncFillsInDefinitionTypes()
+        {
+            // Arrange
+            var engine = new Mock<IExecutionEngine>();
+            var definition = new Definition();
+            var block = new Block
+            {
+                Name = "test_block",
+                Definition = "{}",
+                Generator = "gen"
+            };
+            definition.Blocks.Add(block);
             definition.Nodes.Add(new AstNode
             {
-                Name = "wait",
-                Converter = "new BlockDefinition('robot_wait', new ValueDefinition('TIME'))"
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
-            var ouput = await definition.GenerateAsync("conversions");
+            await definition.ValidateAsync(engine.Object);
 
             // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_conversions.txt");
-            Assert.Equal(expected, body);
+            Assert.Equal("{\"type\":\"test_block\"}", block.Definition);
         }
 
         [Fact]
-        public async Task GenerateAsyncGeneratesLanguage()
+        public async Task ValidateAsyncHandlesAllFieldsMissing()
         {
             // Arrange
+            var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
             definition.Blocks.Add(new Block
             {
-                Name = "robot_wait",
-                Generator = "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
-            var ouput = await definition.GenerateAsync("language");
+            var ouput = await definition.ValidateAsync(engine.Object);
 
             // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_language.txt");
-            Assert.Equal(expected, body);
+            Assert.Equal(new[]
+            {
+                "Block #1 does not have a name (name)",
+                "Block #1 does not have a block definition (definition)",
+                "Block #1 does not have a language generator (generator)",
+            }, ouput.Select(e => e.Error).ToArray());
         }
 
         [Fact]
-        public async Task GenerateAsyncGeneratesBlockDefinitionsForSingleBlock()
+        public async Task ValidateAsyncPassesWhenAllFieldsAreSet()
         {
             // Arrange
+            var engine = new Mock<IExecutionEngine>();
             var definition = new Definition();
             definition.Blocks.Add(new Block
             {
-                Name = "robot_wait",
-                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
+                Name = "test_block",
+                Definition = "{}",
+                Generator = "gen"
+            });
+            definition.Nodes.Add(new AstNode
+            {
+                Name = "node",
+                Converter = "con"
             });
 
             // Act
-            var ouput = await definition.GenerateAsync("block_definitions");
+            var ouput = await definition.ValidateAsync(engine.Object);
 
             // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
-            Assert.Equal(expected, body);
-        }
-
-        [Fact]
-        public async Task GenerateAsyncGeneratesBlockDefinitionsForMultipleBlocks()
-        {
-            // Arrange
-            var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Name = "robot_wait",
-                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
-            });
-            definition.Blocks.Add(new Block
-            {
-                Name = "robot_rest",
-                Definition = "{\"type\": \"robot_rest\",\"message0\": \"Rest\",\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
-            });
-
-            // Act
-            var ouput = await definition.GenerateAsync("block_definitions");
-
-            // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_multiple_block_definition.txt");
-            Assert.Equal(expected, body);
-        }
-
-        [Fact]
-        public async Task GenerateAsyncIgnoresSystemBlocks()
-        {
-            // Arrange
-            var definition = new Definition();
-            definition.Blocks.Add(new Block
-            {
-                Name = "robot_wait",
-                Definition = "{\"type\": \"robot_wait\",\"message0\": \"Wait for %1s\",\"args0\": [{\"type\": \"input_value\",\"check\": \"Number\",\"name\": \"TIME\"}],\"nextStatement\": null,\"previousStatement\": null,\"colour\": 65,\"tooltip\": \"Puts the robot in a safe resting position.\"}"
-            });
-            definition.Blocks.Add(new Block
-            {
-                Name = "robot_rest",
-                Definition = "SYSTEM"
-            });
-
-            // Act
-            var ouput = await definition.GenerateAsync("block_definitions");
-
-            // Assert
-            using var reader = new StreamReader(ouput);
-            var body = await reader.ReadToEndAsync();
-            var expected = TemplateGenerator.ReadEmbededResource<DefinitionTests>("expected_single_block_definition.txt");
-            Assert.Equal(expected, body);
-        }
-
-        [Fact]
-        public async Task GenerateAsyncFailsWithUnknown()
-        {
-            // Arrange
-            var definition = new Definition();
-
-            // Act
-            var error = await Assert.ThrowsAsync<ApplicationException>(async () => await definition.GenerateAsync("rubbish"));
-
-            // Assert
-            Assert.Equal("Unknown content type 'rubbish'", error.Message);
+            Assert.Empty(ouput);
         }
     }
 }

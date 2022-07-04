@@ -255,8 +255,48 @@ namespace NaoBlocks.Web.Tests.Controllers
                 new[] { "tahi=rua" },
                 response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
             Assert.Equal(
-                new[] { "toru=wha=290" },
-                response.Value?.Blocks?.Select(b => $"{b.Name}={b.Category}={b.Colour}").ToArray());
+                new[] { "toru=wha" },
+                response.Value?.Blocks?.Select(b => $"{b.Name}={string.Join(",", b.Categories)}").ToArray());
+        }
+
+        [Fact]
+        public async Task ListBlockSetsIncludesBlocksInMultipleCategories()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            var robotType = new Data.RobotType { Name = "karetao" };
+            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
+            var category1 = new Data.ToolboxCategory
+            {
+                Name = "wha",
+                Colour = "290"
+            };
+            category1.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
+            robotType.Toolbox.Add(category1);
+            var category2 = new Data.ToolboxCategory
+            {
+                Name = "rima",
+                Colour = "290"
+            };
+            category2.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
+            robotType.Toolbox.Add(category2);
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)robotType));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.ListBlockSets("karetao", "blocks");
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.Equal(
+                new[] { "tahi=rua" },
+                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
+            Assert.Equal(
+                new[] { "toru=wha,rima" },
+                response.Value?.Blocks?.Select(b => $"{b.Name}={string.Join(",", b.Categories)}").ToArray());
         }
 
         [Fact]

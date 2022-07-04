@@ -213,11 +213,26 @@ namespace NaoBlocks.Web.Controllers
             // Include the blocks if requested
             if (include.Any(p => p.Equals("blocks", StringComparison.InvariantCultureIgnoreCase)))
             {
-                var blocks = robotType
-                    .Toolbox
-                    .SelectMany(cat => cat.Blocks.Select(b => GenerateBlockDefinition(cat, b)))
+                var blocks = new Dictionary<string, Transfer.BlockDefinition>();
+                foreach (var category in robotType.Toolbox)
+                {
+                    foreach (var block in category.Blocks)
+                    {
+                        if (!blocks.TryGetValue(block.Name, out var blockDefinition))
+                        {
+                            blockDefinition = new Transfer.BlockDefinition
+                            {
+                                Name = block.Name
+                            };
+                            blocks.Add(block.Name, blockDefinition);
+                        }
+                        blockDefinition.AddCategory(category.Name);
+                    }
+                }
+
+                response.Blocks = blocks.Values
+                    .OrderBy(b => b.Name)
                     .ToArray();
-                response.Blocks = blocks;
             }
 
             return response;
@@ -299,23 +314,6 @@ namespace NaoBlocks.Web.Controllers
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
                 command,
                 t => Transfer.RobotType.FromModel(t!));
-        }
-
-        /// <summary>
-        /// Generates the definition of an individual block.
-        /// </summary>
-        /// <param name="category">The category the block belongs to.</param>
-        /// <param name="block">The block definition.</param>
-        /// <returns>A <see cref="Data.NamedValue"/> containing the block and its definition.</returns>
-        private static Transfer.BlockDefinition GenerateBlockDefinition(Data.ToolboxCategory category, Data.ToolboxBlock block)
-        {
-            var def = new Transfer.BlockDefinition
-            {
-                Name = block.Name,
-                Category = category.Name,
-                Colour = category.Colour,
-            };
-            return def;
         }
 
         /*

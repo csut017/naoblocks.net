@@ -1,40 +1,27 @@
-.blocks-container {
-    width: 400px;
-    max-width: 100%;
-    margin: 0 25px 25px 0;
-    display: inline-block;
-    vertical-align: top;
+#blockly {
+    width: calc(100vw - 235px);
+    height: calc(100vh - 290px);
+    margin-top: 1rem;
 }
 
-.blocks-list {
-    border: solid 1px #ccc;
-    min-height: 60px;
-    background: white;
-    border-radius: 4px;
-    overflow: hidden;
-    display: block;
-    overflow-y: auto;
-    height: calc(100vh - 380px);
-}
+.status-bar {
+    width: calc(100vw - 235px);
+    height: 28px;
+    margin: 0;
+    padding: 4px;
+    vertical-align: middle;
 
-.blocks-box {
-    padding: 20px 10px;
-    border-bottom: solid 1px #ccc;
-    color: rgba(0, 0, 0, 0.87);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    box-sizing: border-box;
-    cursor: move;
-    background: white;
-    font-size: 14px;
-}
+    .message {
+        margin-left: 0.25rem;
+        display: inline-block;
+        vertical-align: super;
+    }
 
-.blocks-box:last-child {
-    border: none;
-}
+    .valid {
+        color: #008000;
+    }
 
-.cdk-drag-placeholder {
-    opacity: 0;
+    .invalid {
+        color: #800000;
+    }
 }

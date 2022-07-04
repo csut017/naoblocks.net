@@ -39,6 +39,7 @@ namespace NaoBlocks.Definitions.Angular
                 "block_definitions" => ConvertToStreamAsync(this.GenerateBlockDefinitions()),
                 "conversions" => ConvertToStreamAsync(this.GenerateConversions()),
                 "language" => ConvertToStreamAsync(this.GenerateLanguage()),
+                "blocks" => ConvertToStreamAsync(this.GenerateBlocks()),
                 _ => throw new ApplicationException($"Unknown content type '{component}'"),
             };
         }
@@ -111,6 +112,18 @@ namespace NaoBlocks.Definitions.Angular
                 }}
             };
             var output = TemplateGenerator.BuildFromTemplate<Definition>("block_definitions", generators);
+            return output;
+        }
+
+        private string GenerateBlocks()
+        {
+            var blocks = this.Blocks.Select(b => new
+            {
+                name = string.IsNullOrEmpty(b.Text) ? b.Name : b.Text,
+                category = b.Category ?? string.Empty,
+                type = b.Name,
+            }).ToArray();
+            var output = JsonConvert.SerializeObject(blocks, Formatting.None);
             return output;
         }
 

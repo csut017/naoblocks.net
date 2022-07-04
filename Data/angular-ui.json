@@ -3,32 +3,44 @@
         {
             "name": "colour_picker",
             "definition": "SYSTEM",
-            "generator": "var code = block.getFieldValue('COLOUR');if (code[0] != '#') code = '#' + code;return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = block.getFieldValue('COLOUR');if (code[0] != '#') code = '#' + code;return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Colour Picker",
+            "category": "System"
         },
         {
             "name": "colour_random",
             "definition": "SYSTEM",
-            "generator": "var code = 'randomColour()';return [code, Blockly.NaoLang.ORDER_FUNCTION_CALL];"
+            "generator": "var code = 'randomColour()';return [code, Blockly.NaoLang.ORDER_FUNCTION_CALL];",
+            "text": "Random Colour",
+            "category": "System"
         },
         {
             "name": "controls_if",
             "definition": "SYSTEM",
-            "generator": "var n = 0,code = '';do {Blockly.NaoLang.prefixLevel++;var conditionCode = Blockly.NaoLang.valueToCode(block, 'IF' + n, Blockly.NaoLang.ORDER_NONE) || 'FALSE',branchCode = Blockly.NaoLang.statementToCode(block, 'DO' + n) || '';Blockly.NaoLang.prefixLevel--;code += (n == 0 ? 'if' : 'elseif') + '(' + conditionCode + '){\\n' + branchCode + Blockly.NaoLang.generatePrefix() + '}\\n';++n;} while (block.getInput('IF' + n));if (block.getInput('ELSE')) {Blockly.NaoLang.prefixLevel++;var branchCode = Blockly.NaoLang.statementToCode(block, 'ELSE') || '';Blockly.NaoLang.prefixLevel--;code += 'else{\\n' + branchCode + Blockly.NaoLang.generatePrefix() + '}\\n';}return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var n = 0,code = '';do {Blockly.NaoLang.prefixLevel++;var conditionCode = Blockly.NaoLang.valueToCode(block, 'IF' + n, Blockly.NaoLang.ORDER_NONE) || 'FALSE',branchCode = Blockly.NaoLang.statementToCode(block, 'DO' + n) || '';Blockly.NaoLang.prefixLevel--;code += (n == 0 ? 'if' : 'elseif') + '(' + conditionCode + '){\\n' + branchCode + Blockly.NaoLang.generatePrefix() + '}\\n';++n;} while (block.getInput('IF' + n));if (block.getInput('ELSE')) {Blockly.NaoLang.prefixLevel++;var branchCode = Blockly.NaoLang.statementToCode(block, 'ELSE') || '';Blockly.NaoLang.prefixLevel--;code += 'else{\\n' + branchCode + Blockly.NaoLang.generatePrefix() + '}\\n';}return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "If",
+            "category": "System"
         },
         {
             "name": "controls_repeat_ext",
             "definition": "SYSTEM",
-            "generator": "if (block.getField('TIMES')) {var repeats = String(parseInt(block.getFieldValue('TIMES'), 10));} else {var repeats = Blockly.NaoLang.valueToCode(block, 'TIMES', Blockly.NaoLang.ORDER_NONE) || '0';}Blockly.NaoLang.prefixLevel++;var branch = Blockly.NaoLang.statementToCode(block, 'DO'),code = 'loop(' + repeats + '){\\n' + branch;Blockly.NaoLang.prefixLevel--;return Blockly.NaoLang.generatePrefix() + code +Blockly.NaoLang.generatePrefix() + '}\\n';"
+            "generator": "if (block.getField('TIMES')) {var repeats = String(parseInt(block.getFieldValue('TIMES'), 10));} else {var repeats = Blockly.NaoLang.valueToCode(block, 'TIMES', Blockly.NaoLang.ORDER_NONE) || '0';}Blockly.NaoLang.prefixLevel++;var branch = Blockly.NaoLang.statementToCode(block, 'DO'),code = 'loop(' + repeats + '){\\n' + branch;Blockly.NaoLang.prefixLevel--;return Blockly.NaoLang.generatePrefix() + code +Blockly.NaoLang.generatePrefix() + '}\\n';",
+            "text": "Repeat",
+            "category": "System"
         },
         {
             "name": "controls_whileUntil",
             "definition": "SYSTEM",
-            "generator": "Blockly.NaoLang.prefixLevel++;var until = block.getFieldValue('MODE') == 'UNTIL',argument0 = Blockly.NaoLang.valueToCode(block, 'BOOL', until ? Blockly.NaoLang.ORDER_LOGICAL_NOT : Blockly.NaoLang.ORDER_NONE) || 'FALSE',branch = Blockly.NaoLang.statementToCode(block, 'DO');Blockly.NaoLang.prefixLevel--;if (until) {argument0 = 'not(' + argument0 + ')';}return Blockly.NaoLang.generatePrefix() + 'while(' + argument0 + '){\\n' + branch +Blockly.NaoLang.generatePrefix() + '}\\n';"
+            "generator": "Blockly.NaoLang.prefixLevel++;var until = block.getFieldValue('MODE') == 'UNTIL',argument0 = Blockly.NaoLang.valueToCode(block, 'BOOL', until ? Blockly.NaoLang.ORDER_LOGICAL_NOT : Blockly.NaoLang.ORDER_NONE) || 'FALSE',branch = Blockly.NaoLang.statementToCode(block, 'DO');Blockly.NaoLang.prefixLevel--;if (until) {argument0 = 'not(' + argument0 + ')';}return Blockly.NaoLang.generatePrefix() + 'while(' + argument0 + '){\\n' + branch +Blockly.NaoLang.generatePrefix() + '}\\n';",
+            "text": "Do Until",
+            "category": "System"
         },
         {
             "name": "drone_flip",
             "definition": "{\"type\":\"drone_flip\",\"message0\":\"Flip %1\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIRECTION\",\"options\":[[\"Forward\",\"FORWARD\"],[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"],[\"Backward\",\"BACKWARD\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Tells the drone to flip in a direction.\"}",
-            "generator": "var dir = block.getFieldValue('DIRECTION');return Blockly.NaoLang.generatePrefix() + 'flip(' + dir + ')\\n';"
+            "generator": "var dir = block.getFieldValue('DIRECTION');return Blockly.NaoLang.generatePrefix() + 'flip(' + dir + ')\\n';",
+            "text": "Flip",
+            "category": "Drone"
         },
         {
             "name": "drone_fly",

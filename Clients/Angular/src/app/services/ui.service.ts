@@ -42,6 +42,12 @@ export class UiService extends ClientService {
       );
   }
 
+  getComponent(definition: string, component: string): Observable<any> {
+    this.log(`Retrieving component '${component}' from UI '${definition}'`);
+    let url = `${environment.apiURL}v1/ui/${definition}/${component}`;
+    return this.http.get<ExecutionResult<any>>(url);
+  }
+
   import(definition: UIDefinition, toolbox: string, replace: boolean): Observable<ExecutionResult<any>> {
     let url = `${environment.apiURL}v1/ui/${definition.key}`;
     if (replace) {

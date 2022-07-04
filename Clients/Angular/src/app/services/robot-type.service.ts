@@ -147,6 +147,23 @@ export class RobotTypeService extends ClientService {
       );
   }
 
+  uploadBlockSet(robotType: RobotType, name: string, definition: string): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/blocksets`;
+    this.log(`Adding blockset for robot type ${robotType.id}`);
+    const fileData = {
+      name: name,
+      value: definition
+    };
+    return this.http.post<ExecutionResult<any>>(url, fileData)
+      .pipe(
+        tap(result => {
+          this.log('Uploaded blockset');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('uploadBlockSet', msg => new ExecutionResult<RobotType>(undefined, msg)))
+      );
+  }
+
   listBlockSets(robotTypeId: string, includeBlocks: boolean = false): Observable<RobotTypeBlockDefinitions> {
     if (!robotTypeId) {
       return new Observable(subscriber => {
