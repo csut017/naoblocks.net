@@ -135,49 +135,6 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetBlockSetsHandlesMissing()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)null));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.GetBlockSets("karetao");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task GetBlockSetsRetrievesViaQuery()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            var robotType = new Data.RobotType { Name = "karetao" };
-            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)robotType));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.GetBlockSets("karetao");
-
-            // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal(0, response.Value?.Page);
-            Assert.Equal(1, response.Value?.Count);
-            Assert.Equal(
-                new[] { "tahi=rua" },
-                response.Value?.Items?.Select(s => $"{s.Name}={s.Value}").ToArray());
-        }
-
-        [Fact]
         public async Task GetHandlesMissing()
         {
             // Arrange
@@ -249,6 +206,81 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ListBlockSetsHandlesMissing()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.ListBlockSets("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ListBlockSetsIncludesBlocks()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            var robotType = new Data.RobotType { Name = "karetao" };
+            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
+            var category = new Data.ToolboxCategory
+            {
+                Name = "wha",
+                Colour = "290"
+            };
+            category.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
+            robotType.Toolbox.Add(category);
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)robotType));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.ListBlockSets("karetao", "blocks");
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.Equal(
+                new[] { "tahi=rua" },
+                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
+            Assert.Equal(
+                new[] { "toru=wha=290" },
+                response.Value?.Blocks?.Select(b => $"{b.Name}={b.Category}={b.Colour}").ToArray());
+        }
+
+        [Fact]
+        public async Task ListBlockSetsRetrievesViaQuery()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            var robotType = new Data.RobotType { Name = "karetao" };
+            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)robotType));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.ListBlockSets("karetao");
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.Equal(
+                new[] { "tahi=rua" },
+                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
+            Assert.Null(response.Value?.Blocks);
         }
 
         [Fact]
@@ -351,6 +383,19 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task PutValidatesIncomingData()
+        {
+            // Arrange
+            var controller = InitialiseController();
+
+            // Act
+            var response = await controller.Put("karetao", null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
         public async Task SetAsDefaultCallsCommand()
         {
             // Arrange
@@ -369,19 +414,6 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             var command = Assert.IsType<SetDefaultRobotType>(engine.LastCommand);
             Assert.Equal("karetao", command.Name);
-        }
-
-        [Fact]
-        public async Task PutValidatesIncomingData()
-        {
-            // Arrange
-            var controller = InitialiseController();
-
-            // Act
-            var response = await controller.Put("karetao", null);
-
-            // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
 
         private static RobotTypesController InitialiseController(

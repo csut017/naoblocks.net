@@ -5,7 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-
+using Newtonsoft.Json;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -21,8 +21,8 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class RobotTypesController : ControllerBase
     {
-        private readonly ILogger<RobotTypesController> logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<RobotTypesController> logger;
         private readonly string rootFolder;
 
         /// <summary>
@@ -122,31 +122,6 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Retrieves a page of blocksets for a robot type.
-        /// </summary>
-        /// <param name="id">The name of the robot type.</param>
-        /// <returns>A <see cref="ListResult{TData}"/> containing the blocksets.</returns>
-        [HttpGet("{id}/blocksets")]
-        public async Task<ActionResult<ListResult<Data.NamedValue>>> GetBlockSets(string id)
-        {
-            this.logger.LogDebug($"Retrieving blocksets for {id}");
-            var robotType = await this.executionEngine
-                .Query<RobotTypeData>()
-                .RetrieveByNameAsync(id)
-                .ConfigureAwait(false);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            var sets = robotType.BlockSets
-                .Select(bs => new Data.NamedValue { Name = bs.Name, Value = bs.BlockCategories })
-                .AsEnumerable();
-            return ListResult.New(sets);
-        }
-
-        /// <summary>
         /// Imports a toolbox for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
@@ -205,6 +180,47 @@ namespace NaoBlocks.Web.Controllers
                 Items = robotTypes.Items?.Select(r => Transfer.RobotType.FromModel(r))
             };
             return result;
+        }
+
+        /// <summary>
+        /// Retrieves a page of blocksets for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="include">The extra details to include. Options are ["blocks"].</param>
+        /// <returns>A <see cref="ListResult{TData}"/> containing the blocksets.</returns>
+        [HttpGet("{id}/blocksets")]
+        public async Task<ActionResult<Transfer.RobotBlockDefinitions>> ListBlockSets(string id, [FromQuery] params string[] include)
+        {
+            this.logger.LogDebug($"Retrieving blocksets for {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                return NotFound();
+            }
+
+            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            var sets = robotType.BlockSets
+                .Select(bs => new Data.NamedValue { Name = bs.Name, Value = bs.BlockCategories })
+                .AsEnumerable();
+            var response = new Transfer.RobotBlockDefinitions
+            {
+                BlockSets = sets
+            };
+
+            // Include the blocks if requested
+            if (include.Any(p => p.Equals("blocks", StringComparison.InvariantCultureIgnoreCase)))
+            {
+                var blocks = robotType
+                    .Toolbox
+                    .SelectMany(cat => cat.Blocks.Select(b => GenerateBlockDefinition(cat, b)))
+                    .ToArray();
+                response.Blocks = blocks;
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -283,6 +299,23 @@ namespace NaoBlocks.Web.Controllers
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
                 command,
                 t => Transfer.RobotType.FromModel(t!));
+        }
+
+        /// <summary>
+        /// Generates the definition of an individual block.
+        /// </summary>
+        /// <param name="category">The category the block belongs to.</param>
+        /// <param name="block">The block definition.</param>
+        /// <returns>A <see cref="Data.NamedValue"/> containing the block and its definition.</returns>
+        private static Transfer.BlockDefinition GenerateBlockDefinition(Data.ToolboxCategory category, Data.ToolboxBlock block)
+        {
+            var def = new Transfer.BlockDefinition
+            {
+                Name = block.Name,
+                Category = category.Name,
+                Colour = category.Colour,
+            };
+            return def;
         }
 
         /*

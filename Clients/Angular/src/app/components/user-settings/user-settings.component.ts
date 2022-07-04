@@ -92,7 +92,7 @@ export class UserSettingsComponent implements OnInit {
           })
         this.robotTypeService.listBlockSets(this.lastRobotType)
           .subscribe(r => {
-            this.blockSets = r.items;
+            this.blockSets = r.blockSets || [];
           });
       }
     }

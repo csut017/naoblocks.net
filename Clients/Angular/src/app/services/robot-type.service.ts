@@ -10,6 +10,7 @@ import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
 import { BlockSet } from '../data/block-set';
+import { RobotTypeBlockDefinitions } from '../data/robot-type-block-definitions';
 
 @Injectable({
   providedIn: 'root'
@@ -93,7 +94,7 @@ export class RobotTypeService extends ClientService {
 
   storeToolbox(robotType: RobotType, toolbox: string): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox`;
-    this.log(`Storing toolbox for robot type  ${robotType.id}`);
+    this.log(`Storing toolbox for robot type ${robotType.id}`);
     return this.http.post<ExecutionResult<any>>(url, toolbox)
       .pipe(
         tap(result => {
@@ -106,11 +107,11 @@ export class RobotTypeService extends ClientService {
 
   listPackageFiles(robotType: RobotType): Observable<ResultSet<PackageFile>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package`;
-    this.log(`Retrieving package list for robot type  ${robotType.id}`);
+    this.log(`Retrieving package list for robot type ${robotType.id}`);
     return this.http.get<ResultSet<PackageFile>>(url)
       .pipe(
         tap(_ => {
-          this.log(`Fetched package list for robot type  ${robotType.id}`);
+          this.log(`Fetched package list for robot type ${robotType.id}`);
         }),
         catchError(this.handleError('listPackageFiles', msg => new ResultSet<PackageFile>(msg)))
       );
@@ -118,11 +119,11 @@ export class RobotTypeService extends ClientService {
 
   generatePackageList(robotType: RobotType): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package`;
-    this.log(`Generating package list for robot type  ${robotType.id}`);
+    this.log(`Generating package list for robot type ${robotType.id}`);
     return this.http.post<ExecutionResult<any>>(url, {})
       .pipe(
         tap(result => {
-          this.log(`Generated package list for robot type  ${robotType.id}`);
+          this.log(`Generated package list for robot type ${robotType.id}`);
           result.output = robotType;
         }),
         catchError(this.handleError('generatePackageList', msg => new ExecutionResult<RobotType>(undefined, msg)))
@@ -131,7 +132,7 @@ export class RobotTypeService extends ClientService {
 
   uploadPackageFile(robotType: RobotType, filename: string, data: string): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package/files`;
-    this.log(`Uploading package file for robot type  ${robotType.id}`);
+    this.log(`Uploading package file for robot type ${robotType.id}`);
     const fileData = {
       name: filename,
       value: data
@@ -146,20 +147,21 @@ export class RobotTypeService extends ClientService {
       );
   }
 
-  listBlockSets(robotTypeId: string): Observable<ResultSet<BlockSet>> {
+  listBlockSets(robotTypeId: string, includeBlocks: boolean = false): Observable<RobotTypeBlockDefinitions> {
     if (!robotTypeId) {
       return new Observable(subscriber => {
         subscriber.next(new ResultSet<BlockSet>('Robot type not set'));
       });
     }
-    const url = `${environment.apiURL}v1/robots/types/${robotTypeId}/blocksets`;
-    this.log(`Retrieving block sets for robot type  ${robotTypeId}`);
-    return this.http.get<ResultSet<BlockSet>>(url)
+    let url = `${environment.apiURL}v1/robots/types/${robotTypeId}/blocksets`;
+    if (includeBlocks) url += '?include=blocks';
+    this.log(`Retrieving block sets for robot type ${robotTypeId}`);
+    return this.http.get<RobotTypeBlockDefinitions>(url)
       .pipe(
         tap(_ => {
-          this.log(`Fetched block sets for robot type  ${robotTypeId}`);
+          this.log(`Fetched block sets for robot type ${robotTypeId}`);
         }),
-        catchError(this.handleError('listBlockSets', msg => new ResultSet<BlockSet>(msg)))
+        catchError(this.handleError('listBlockSets', msg => new RobotTypeBlockDefinitions(msg)))
       );
   }
 }

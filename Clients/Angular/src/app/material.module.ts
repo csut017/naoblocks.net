@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
 import { MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -23,6 +25,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 
 @NgModule({
   exports: [
+    DragDropModule,
     MatBottomSheetModule,
     MatButtonModule,
     MatCardModule,

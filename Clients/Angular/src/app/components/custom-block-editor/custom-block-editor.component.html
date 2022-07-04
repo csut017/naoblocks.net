@@ -10,7 +10,38 @@
     </div>
     <mat-card>
         <mat-card-content>
-            TODO
+            <mat-form-field appearance="fill">
+                <mat-label>Blockset</mat-label>
+                <mat-select placeholder="Blockset" formControlName="setName">
+                    <mat-option [value]="'<new>'">&lt;new&gt;</mat-option>
+                    <mat-option *ngFor="let blockSet of blockSets" [value]="blockSet.name">
+                        {{blockSet.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="fill" style="margin-left: 1rem;">
+                <mat-label>Name:</mat-label>
+                <input matInput placeholder="Name" formControlName="name">
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+    <mat-card style="margin-top: 1rem;">
+        <mat-card-content>
+            <div class="blocks-container">
+                <h2>Available Blocks</h2>
+                <div cdkDropList #availableList="cdkDropList" [cdkDropListData]="availableBlocks" [cdkDropListConnectedTo]="[usedList]"
+                    class="blocks-list" (cdkDropListDropped)="drop($event)">
+                    <div class="blocks-box" *ngFor="let item of availableBlocks" cdkDrag>{{item.name}}</div>
+                </div>
+            </div>
+
+            <div class="blocks-container">
+                <h2>Used Blocks</h2>
+                <div cdkDropList #usedList="cdkDropList" [cdkDropListData]="usedBlocks" [cdkDropListConnectedTo]="[availableList]"
+                    class="blocks-list" (cdkDropListDropped)="drop($event)">
+                    <div class="blocks-box" *ngFor="let item of usedBlocks" cdkDrag>{{item.name}}</div>
+                </div>
+            </div>
         </mat-card-content>
     </mat-card>
 </form>
