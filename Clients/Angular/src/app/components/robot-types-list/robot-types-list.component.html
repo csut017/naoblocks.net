@@ -32,14 +32,7 @@
                 </div>
                 <div>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
-                        [matMenuTriggerFor]="exportMenu">
-                        Edit
-                        <mat-icon>arrow_drop_down</mat-icon>
-                    </button>
-                    <mat-menu #exportMenu="matMenu">
-                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="edit()">Robot Type</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="editBlocksSets()">Blocksets</button>
-                    </mat-menu>
+                        (click)="edit()">Edit</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
                         (click)="delete()">Delete</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"

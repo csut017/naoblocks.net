@@ -22,6 +22,7 @@ export class CustomBlockEditorComponent implements OnInit {
   definitions: any[] = [];
   error: string = '';
   form: FormGroup;
+  generatorInitialised: boolean = false;
   invalidBlocks: any[] = [];
   isValid: boolean = true;
   workspace: any;
@@ -43,11 +44,44 @@ export class CustomBlockEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.initialiseWorkspace();
+    this.initialiseGenerator();
+  }
+
+  private initialiseGenerator(): void {
+    if (this.generatorInitialised) return;
+    Blockly.ToolboxBuilder = new Blockly.Generator('ToolboxBuilder');
+    this.generatorInitialised = true;
+
+    Blockly.ToolboxBuilder.finish = function (code: string): string {
+      return '<toolbox>' + code + '</toolbox>';
+    };
+
+    Blockly.ToolboxBuilder.scrub_ = function (block: any, code: string) {
+      let nextBlock = block.nextConnection && block.nextConnection.targetBlock(),
+        nextCode = Blockly.ToolboxBuilder.blockToCode(nextBlock);
+      return code + nextCode;
+    };
+
+    Blockly.ToolboxBuilder.category = function (block: any): string {
+      let name = block.getFieldValue('NAME'),
+        optional = block.getFieldValue('OPTIONAL'),
+        colour = block.getFieldValue('COLOUR'),
+        blocks = Blockly.ToolboxBuilder.statementToCode(block, 'BLOCKS'),
+        code = `<category name="${name}" colour="${colour}" optional="${optional}">${blocks}</category>`;
+      return code;
+    }
   }
 
   doSave() {
-    const definition = Blockly.Xml.workspaceToDom(this.workspace);
     if (!this.item || !this.form.valid) return;
+    console.groupCollapsed('Generating toolbox');
+    try {
+      const definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
+      console.log(definition);
+      console.log((new DOMParser()).parseFromString(definition, "application/xml"));
+    } finally {
+      console.groupEnd();
+    }
   }
 
   doClose() {
@@ -55,6 +89,7 @@ export class CustomBlockEditorComponent implements OnInit {
   }
 
   private initialiseLocalBlocks(): void {
+    this.initialiseGenerator();
     let blocks: any[] = [
       {
         "type": "category",
@@ -71,8 +106,23 @@ export class CustomBlockEditorComponent implements OnInit {
             "checked": false
           }
         ],
-        "message1": "%1",
+        "message1": "Colour %1",
         "args1": [
+          {
+            "type": "field_dropdown",
+            "name": "COLOUR",
+            "options": [
+              ["Red", "330"],
+              ["Blue", "210"],
+              ["Green", "120"],
+              ["Purple", "260"],
+              ["Yellow", "65"],
+              ["Orange", "20"],
+            ]
+          }
+        ],
+        "message2": "Blocks %1",
+        "args2": [
           {
             "type": "input_statement",
             "name": "BLOCKS"
@@ -94,15 +144,16 @@ export class CustomBlockEditorComponent implements OnInit {
         "colour": 120,
         "tooltip": `The ${def.type} block`
       });
+      Blockly.ToolboxBuilder[def.type] = this.returnCode(def.toolbox);
     });
 
     console.groupCollapsed('Initialising block editor blocks');
     try {
       blocks.forEach(function (block) {
-        console.log('[NaoLang] Defining ' + block.type);
+        console.log('[ToolboxBuilder] Defining ' + block.type);
         Blockly.Blocks[block.type] = {
           init: function () {
-            console.log('[NaoLang] Initialising ' + block.type);
+            console.log('[ToolboxBuilder] Initialising ' + block.type);
             this.jsonInit(block);
             this.setTooltip(function () {
               return block.tooltip;
@@ -112,6 +163,12 @@ export class CustomBlockEditorComponent implements OnInit {
       });
     } finally {
       console.groupEnd();
+    }
+  }
+
+  private returnCode(code: string): any {
+    return function (block: any): string {
+      return code;
     }
   }
 
@@ -169,7 +226,7 @@ export class CustomBlockEditorComponent implements OnInit {
   }
 
   private initialiseWorkspace(): void {
-    console.log(`[BlocklyEditor] Initialising workspace`);
+    console.log(`[ToolboxBuilder] Initialising workspace`);
     const categories = [...new Set(this.definitions.map(b => b.category))];
     let toolbox = '<xml><category name="Toolbox" colour="290"><block type="category"></block></category>'
       + categories.map(c => {

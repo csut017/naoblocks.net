@@ -33,11 +33,11 @@ namespace NaoBlocks.Web.Tests.Dtos
                 IsDefault = true,
                 WhenAdded = now
             };
-            entity.Toolbox.Add(new Data.ToolboxCategory { Name = "blocks" });
+            entity.Toolboxes.Add(new Data.Toolbox { Name = "blocks" });
             var dto = Transfer.RobotType.FromModel(entity, true);
             Assert.Equal(
                 new[] { "blocks" },
-                dto.Toolbox?.Select(c => c.Name).ToArray());
+                dto.Toolboxes?.ToArray());
         }
     }
 }

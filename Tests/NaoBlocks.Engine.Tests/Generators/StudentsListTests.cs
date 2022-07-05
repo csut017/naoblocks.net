@@ -20,8 +20,7 @@ namespace NaoBlocks.Engine.Tests.Generators
                 WhenAdded = new DateTime(2021, 5, 6),
                 Settings = new UserSettings
                 {
-                    RobotType = "Karetao",
-                    Conditionals = true
+                    RobotType = "Karetao"
                 },
                 StudentDetails = new StudentDetails
                 {
@@ -37,9 +36,7 @@ namespace NaoBlocks.Engine.Tests.Generators
                 Settings = new UserSettings
                 {
                     RobotType = "Karetao",
-                    Dances = true,
-                    Loops = true,
-                    Simple = true
+                    Toolbox = "Test"
                 }
             };
             using var store = InitialiseDatabase(
@@ -60,10 +57,10 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Equal(
                     @"Students
 ========
-Name,Robot,When Added,Mode,Dances,Conditionals,Loops,Sensors,Variables,Age,Gender
-Ari,Karetao,2021-07-08,Simple,Yes,No,Yes,No,No,,
-Mia,,2021-03-04,,,,,,,,
-Moana,Karetao,2021-05-06,Default,No,Yes,No,No,No,10,Female
+Name,Robot,When Added,Toolbox,Age,Gender
+Ari,Karetao,2021-07-08,Test,,
+Mia,,2021-03-04,,,
+Moana,Karetao,2021-05-06,,10,Female
 ",
                 text);
         }

@@ -21,18 +21,13 @@
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets the toolboxes for this robot type.
+        /// </summary>
+        public IList<Toolbox> Toolboxes { get; private set; } = new List<Toolbox>();
+
+        /// <summary>
         /// Gets or sets when the robot type was added.
         /// </summary>
         public DateTime WhenAdded { get; set; }
-
-        /// <summary>
-        /// Gets the toolbox categories for this robot type.
-        /// </summary>
-        public IList<ToolboxCategory> Toolbox { get; private set; } = new List<ToolboxCategory>();
-
-        /// <summary>
-        /// Gets the blocksets for this robot type.
-        /// </summary>
-        public IList<BlockSet> BlockSets { get; private set; } = new List<BlockSet>();
     }
 }

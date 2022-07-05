@@ -112,9 +112,10 @@ namespace NaoBlocks.Definitions.Angular.Tests
             });
             definition.Blocks.Add(new Block
             {
-                Name = "control_if",
-                Category = "System",
-                Text = "If"
+                Name = "robot_say",
+                Category = "Robot Actions",
+                Text = "Say",
+                Toolbox = "<block type=\"robot_say\"><value name=\"TEXT\"><shadow type=\"text\"><field name=\"TEXT\">abc</field></shadow></value></block>"
             });
 
             // Act

@@ -35,5 +35,10 @@
         /// Gets or sets the text title of the block.
         /// </summary>
         public string? Text { get; set; }
+
+        /// <summary>
+        /// Gets or sets the toolbox definition for the block.
+        /// </summary>
+        public string? Toolbox { get; set; }
     }
 }

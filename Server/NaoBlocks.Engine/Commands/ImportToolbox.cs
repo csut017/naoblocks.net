@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
+using Raven.Client.Documents;
 using System.Xml.Linq;
 
 namespace NaoBlocks.Engine.Commands
@@ -25,9 +26,19 @@ namespace NaoBlocks.Engine.Commands
         public bool IgnoreMissingRobotType { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this is the default toolbox.
+        /// </summary>
+        public bool IsDefault { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the robot type the toolbox is for.
         /// </summary>
-        public string? Name { get; set; }
+        public string? RobotTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the toolbox.
+        /// </summary>
+        public string? ToolboxName { get; set; }
 
         /// <summary>
         /// Attempts to restore the command from the database.
@@ -39,7 +50,7 @@ namespace NaoBlocks.Engine.Commands
             var errors = new List<CommandError>();
             if (!this.IgnoreMissingRobotType)
             {
-                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.RobotTypeName, errors).ConfigureAwait(false);
             }
 
             this.document = XDocument.Parse(this.Definition!);
@@ -57,7 +68,12 @@ namespace NaoBlocks.Engine.Commands
             var errors = new List<CommandError>();
             if (!this.IgnoreMissingRobotType)
             {
-                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.RobotTypeName, errors).ConfigureAwait(false);
+            }
+
+            if (string.IsNullOrEmpty(this.ToolboxName))
+            {
+                errors.Add(this.GenerateError("Toolbox name is required"));
             }
 
             if (string.IsNullOrWhiteSpace(this.Definition))
@@ -91,8 +107,8 @@ namespace NaoBlocks.Engine.Commands
         {
             if (this.IgnoreMissingRobotType)
             {
-                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, new List<CommandError>()).ConfigureAwait(false);
-                if (this.robotType == null) this.robotType = session.GetFromCache<RobotType>(this.Name ?? String.Empty);
+                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.RobotTypeName, new List<CommandError>()).ConfigureAwait(false);
+                if (this.robotType == null) this.robotType = session.GetFromCache<RobotType>(this.RobotTypeName ?? String.Empty);
             }
 
             ValidateExecutionState(this.robotType);
@@ -101,13 +117,45 @@ namespace NaoBlocks.Engine.Commands
                 .Root!
                 .Descendants("category")
                 .Select(ParseCategory);
-            this.robotType!.Toolbox.Clear();
-            foreach (var category in categories)
+            var defaultToobox = this.robotType!
+                .Toolboxes
+                .FirstOrDefault(t => t.IsDefault);
+            var toolbox = this.robotType
+                .Toolboxes
+                .FirstOrDefault(t => t.Name == this.ToolboxName);
+            var setAsDefault = this.IsDefault;
+            if (defaultToobox != null)
             {
-                this.robotType.Toolbox.Add(category);
+                if (defaultToobox.Name != this.ToolboxName)
+                {
+                    defaultToobox.IsDefault = false;
+                }
+            }
+            else
+            {
+                setAsDefault = true;
             }
 
-            return CommandResult.New(this.Number, this.robotType);
+            if (toolbox == null)
+            {
+                toolbox = new Toolbox
+                {
+                    Name = this.ToolboxName!,
+                    IsDefault = setAsDefault,
+                };
+                this.robotType.Toolboxes.Add(toolbox);
+            }
+            else
+            {
+                toolbox.Categories.Clear();
+            }
+
+            foreach (var category in categories)
+            {
+                toolbox.Categories.Add(category);
+            }
+
+            return CommandResult.New(this.Number, this.robotType!);
         }
 
         private ToolboxBlock ParseBlock(XElement blockEl, int elOrder)
@@ -132,25 +180,17 @@ namespace NaoBlocks.Engine.Commands
         {
             var name = categoryEl.Attribute("name")?.Value ?? "Unknown";
             var colour = categoryEl.Attribute("colour")?.Value ?? "0";
-            var tags = categoryEl.Attribute("tags")?.Value ?? "";
-            var orderText = categoryEl.Attribute("order")?.Value ?? "-1";
-            if (!int.TryParse(orderText, out int order) || (order < 0))
-            {
-                order = (elOrder + 10) * 10;
-            }
+            var optional = categoryEl.Attribute("optional")?.Value ?? "-1";
+            var isOptional = string.Equals(optional, "yes", StringComparison.InvariantCultureIgnoreCase);
             var custom = categoryEl.Attribute("custom")?.Value;
 
             var category = new ToolboxCategory
             {
                 Name = name,
                 Colour = colour,
-                Order = order,
+                IsOptional = isOptional,
                 Custom = custom
             };
-            foreach (var tag in tags.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                category.Tags.Add(tag);
-            }
 
             foreach (var block in categoryEl.Descendants("block").Select(ParseBlock))
             {

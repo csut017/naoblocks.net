@@ -6,9 +6,9 @@
     public class ToolboxCategory
     {
         /// <summary>
-        /// Gets or sets the name of the category.
+        /// Gets the blocks in the category.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public IList<ToolboxBlock> Blocks { get; private set; } = new List<ToolboxBlock>();
 
         /// <summary>
         /// Gets or sets the colour of the category.
@@ -21,18 +21,13 @@
         public string? Custom { get; set; }
 
         /// <summary>
-        /// Gets or sets the order of the category.
+        /// Gets or sets whether this category is optional or not.
         /// </summary>
-        public int Order { get; set; }
+        public bool IsOptional { get; set; }
 
         /// <summary>
-        /// Gets the tags of the category.
+        /// Gets or sets the name of the category.
         /// </summary>
-        public IList<string> Tags { get; private set; } = new List<string>();
-
-        /// <summary>
-        /// Gets the blocks in the category.
-        /// </summary>
-        public IList<ToolboxBlock> Blocks { get; private set; } = new List<ToolboxBlock>();
+        public string Name { get; set; } = string.Empty;
     }
 }

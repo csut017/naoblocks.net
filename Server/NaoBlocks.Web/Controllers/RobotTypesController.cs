@@ -39,34 +39,6 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Adds a blockset to a robot type.
-        /// </summary>
-        /// <param name="id">The id of the robot type.</param>
-        /// <param name="value">The details of the blockset.</param>
-        /// <returns>The result of execution.</returns>
-        [HttpPost("{id}/blocksets")]
-        [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<ExecutionResult>> AddBlockSet(string id, Data.NamedValue? value)
-        {
-            if (value == null)
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing blockset details"
-                });
-            }
-
-            this.logger.LogInformation($"Adding new blockset for '{id}'");
-            var command = new AddBlockSet
-            {
-                Name = value.Name,
-                RobotType = id,
-                Categories = value.Value
-            };
-            return await this.executionEngine.ExecuteForHttp(command);
-        }
-
-        /// <summary>
         /// Deletes a robot type.
         /// </summary>
         /// <param name="id">The id of the robot type.</param>
@@ -147,7 +119,7 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogInformation($"Updating robot type '{id}'");
             var command = new ImportToolbox
             {
-                Name = id,
+                RobotTypeName = id,
                 Definition = xml
             };
             return await this.executionEngine
@@ -180,62 +152,6 @@ namespace NaoBlocks.Web.Controllers
                 Items = robotTypes.Items?.Select(r => Transfer.RobotType.FromModel(r))
             };
             return result;
-        }
-
-        /// <summary>
-        /// Retrieves a page of blocksets for a robot type.
-        /// </summary>
-        /// <param name="id">The name of the robot type.</param>
-        /// <param name="include">The extra details to include. Options are ["blocks"].</param>
-        /// <returns>A <see cref="ListResult{TData}"/> containing the blocksets.</returns>
-        [HttpGet("{id}/blocksets")]
-        public async Task<ActionResult<Transfer.RobotBlockDefinitions>> ListBlockSets(string id, [FromQuery] params string[] include)
-        {
-            this.logger.LogDebug($"Retrieving blocksets for {id}");
-            var robotType = await this.executionEngine
-                .Query<RobotTypeData>()
-                .RetrieveByNameAsync(id)
-                .ConfigureAwait(false);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            var sets = robotType.BlockSets
-                .Select(bs => new Data.NamedValue { Name = bs.Name, Value = bs.BlockCategories })
-                .AsEnumerable();
-            var response = new Transfer.RobotBlockDefinitions
-            {
-                BlockSets = sets
-            };
-
-            // Include the blocks if requested
-            if (include.Any(p => p.Equals("blocks", StringComparison.InvariantCultureIgnoreCase)))
-            {
-                var blocks = new Dictionary<string, Transfer.BlockDefinition>();
-                foreach (var category in robotType.Toolbox)
-                {
-                    foreach (var block in category.Blocks)
-                    {
-                        if (!blocks.TryGetValue(block.Name, out var blockDefinition))
-                        {
-                            blockDefinition = new Transfer.BlockDefinition
-                            {
-                                Name = block.Name
-                            };
-                            blocks.Add(block.Name, blockDefinition);
-                        }
-                        blockDefinition.AddCategory(category.Name);
-                    }
-                }
-
-                response.Blocks = blocks.Values
-                    .OrderBy(b => b.Name)
-                    .ToArray();
-            }
-
-            return response;
         }
 
         /// <summary>

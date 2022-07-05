@@ -23,9 +23,9 @@ namespace NaoBlocks.Web.Dtos
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets the categories in the toolbox.
+        /// Gets the toolboxes.
         /// </summary>
-        public IList<Data.ToolboxCategory>? Toolbox { get; private set; }
+        public IList<string>? Toolboxes { get; private set; }
 
         /// <summary>
         /// Converts a database entity to a Data Transfer Object.
@@ -39,12 +39,12 @@ namespace NaoBlocks.Web.Dtos
             {
                 Name = value.Name,
                 IsDefault = value.IsDefault,
-                HasToolbox = value.Toolbox.Any()
+                HasToolbox = value.Toolboxes.Any()
             };
 
             if (includeDetails)
             {
-                output.Toolbox = value.Toolbox;
+                output.Toolboxes = value.Toolboxes.Select(t => t.Name).ToList();
             }
 
             return output;

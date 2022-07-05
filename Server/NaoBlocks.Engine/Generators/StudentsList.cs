@@ -23,12 +23,7 @@ namespace NaoBlocks.Engine.Generators
                 "Name",
                 "Robot",
                 "When Added",
-                "Mode",
-                "Dances",
-                "Conditionals",
-                "Loops",
-                "Sensors",
-                "Variables",
+                "Toolbox",
                 "Age",
                 "Gender");
 
@@ -50,12 +45,7 @@ namespace NaoBlocks.Engine.Generators
                         student.Name,
                         student.Settings.RobotType,
                         student.WhenAdded,
-                        student.Settings.Simple ? "Simple" : (student.Settings.Events ? "Events" : "Default"),
-                        student.Settings.Dances,
-                        student.Settings.Conditionals,
-                        student.Settings.Loops,
-                        student.Settings.Sensors,
-                        student.Settings.Variables,
+                        student.Settings.Toolbox ?? string.Empty,
                         student.StudentDetails?.Age,
                         student.StudentDetails?.Gender);
                 }

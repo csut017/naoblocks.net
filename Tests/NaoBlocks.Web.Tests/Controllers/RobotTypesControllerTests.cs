@@ -22,43 +22,6 @@ namespace NaoBlocks.Web.Tests.Controllers
         private const string ToolBoxXml = "<toolbox/>";
 
         [Fact]
-        public async Task AddBlockSetCallsCommand()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            engine.ExpectCommand<AddBlockSet>(
-                CommandResult.New(1, new Data.RobotType()));
-            var controller = InitialiseController(engine);
-
-            // Act
-            var set = new Data.NamedValue { Name = "tahi", Value = "rua" };
-            var response = await controller.AddBlockSet("karetao", set);
-
-            // Assert
-            var result = Assert.IsType<ExecutionResult>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
-
-            var command = Assert.IsType<AddBlockSet>(engine.LastCommand);
-            Assert.Equal("karetao", command.RobotType);
-            Assert.Equal("tahi", command.Name);
-            Assert.Equal("rua", command.Categories);
-        }
-
-        [Fact]
-        public async Task AddBlockSetValidatesIncomingData()
-        {
-            // Arrange
-            var controller = InitialiseController();
-
-            // Act
-            var response = await controller.AddBlockSet("karetao", null);
-
-            // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
-        }
-
-        [Fact]
         public async Task DeleteCallsDelete()
         {
             // Arrange
@@ -190,7 +153,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.Verify();
 
             var command = Assert.IsType<ImportToolbox>(engine.LastCommand);
-            Assert.Equal("karetao", command.Name);
+            Assert.Equal("karetao", command.RobotTypeName);
             Assert.Equal(ToolBoxXml, command.Definition);
         }
 
@@ -206,121 +169,6 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListBlockSetsHandlesMissing()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)null));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.ListBlockSets("karetao");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListBlockSetsIncludesBlocks()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            var robotType = new Data.RobotType { Name = "karetao" };
-            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
-            var category = new Data.ToolboxCategory
-            {
-                Name = "wha",
-                Colour = "290"
-            };
-            category.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
-            robotType.Toolbox.Add(category);
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)robotType));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.ListBlockSets("karetao", "blocks");
-
-            // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal(
-                new[] { "tahi=rua" },
-                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
-            Assert.Equal(
-                new[] { "toru=wha" },
-                response.Value?.Blocks?.Select(b => $"{b.Name}={string.Join(",", b.Categories)}").ToArray());
-        }
-
-        [Fact]
-        public async Task ListBlockSetsIncludesBlocksInMultipleCategories()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            var robotType = new Data.RobotType { Name = "karetao" };
-            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
-            var category1 = new Data.ToolboxCategory
-            {
-                Name = "wha",
-                Colour = "290"
-            };
-            category1.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
-            robotType.Toolbox.Add(category1);
-            var category2 = new Data.ToolboxCategory
-            {
-                Name = "rima",
-                Colour = "290"
-            };
-            category2.Blocks.Add(new Data.ToolboxBlock { Name = "toru" });
-            robotType.Toolbox.Add(category2);
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)robotType));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.ListBlockSets("karetao", "blocks");
-
-            // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal(
-                new[] { "tahi=rua" },
-                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
-            Assert.Equal(
-                new[] { "toru=wha,rima" },
-                response.Value?.Blocks?.Select(b => $"{b.Name}={string.Join(",", b.Categories)}").ToArray());
-        }
-
-        [Fact]
-        public async Task ListBlockSetsRetrievesViaQuery()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            var robotType = new Data.RobotType { Name = "karetao" };
-            robotType.BlockSets.Add(new Data.BlockSet { Name = "tahi", BlockCategories = "rua" });
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)robotType));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.ListBlockSets("karetao");
-
-            // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal(
-                new[] { "tahi=rua" },
-                response.Value?.BlockSets?.Select(s => $"{s.Name}={s.Value}").ToArray());
-            Assert.Null(response.Value?.Blocks);
         }
 
         [Fact]

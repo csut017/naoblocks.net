@@ -15,29 +15,9 @@
         public int AllocationMode { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the user can use conditional blocks.
+        /// Gets or sets the allocated robot.
         /// </summary>
-        public bool Conditionals { get; set; }
-
-        /// <summary>
-        /// Gets or sets the custom blockset the user should use (if any.)
-        /// </summary>
-        public string? CustomBlockSet { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the user can use dance blocks.
-        /// </summary>
-        public bool Dances { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the user can use event blocks.
-        /// </summary>
-        public bool Events { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the user can use loop blocks.
-        /// </summary>
-        public bool Loops { get; set; }
+        public string? RobotId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the assigned robot type.
@@ -50,23 +30,13 @@
         public string? RobotTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the allocated robot.
+        /// Gets or sets the toolbox the user should use (if any.)
         /// </summary>
-        public string? RobotId { get; set; }
+        public string? Toolbox { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the user can use sensor blocks.
+        /// Gets the optional toolbox categories to include.
         /// </summary>
-        public bool Sensors { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the user is in simple mode or not.
-        /// </summary>
-        public bool Simple { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the user can use variable blocks.
-        /// </summary>
-        public bool Variables { get; set; }
+        public IList<string> ToolboxCategories { get; private set; } = new List<string>();
     }
 }

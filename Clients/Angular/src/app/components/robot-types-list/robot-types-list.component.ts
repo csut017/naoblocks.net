@@ -114,12 +114,6 @@ export class RobotTypesListComponent implements OnInit {
     this.currentItemChanged.emit(this.currentItem.name);
   }
 
-  editBlocksSets(): void {
-    this.view = 'blocksets';
-    this.currentItem = this.selection.selected[0];
-    this.currentItemChanged.emit(this.currentItem.name);
-  }
-
   importToolbox(): void {
     let settings = new ImportSettings(this.selection.selected, this.doSendToolbox, this);
     settings.prompt = 'Select the toolbox to import:';

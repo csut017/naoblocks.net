@@ -122,6 +122,7 @@ namespace NaoBlocks.Definitions.Angular
                 name = string.IsNullOrEmpty(b.Text) ? b.Name : b.Text,
                 category = b.Category ?? string.Empty,
                 type = b.Name,
+                toolbox = string.IsNullOrEmpty(b.Toolbox) ? $"<block type=\"{b.Name}\"></block>" : b.Toolbox,
             }).ToArray();
             var output = JsonConvert.SerializeObject(blocks, Formatting.None);
             return output;

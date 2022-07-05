@@ -128,68 +128,6 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Prepares the settings for a user.
-        /// </summary>
-        /// <param name="user">The user to retrieve the settings for.</param>
-        /// <param name="settings">The current settings.</param>
-        /// <returns>The <see cref="Transfer.EditorSettings"/> instance.</returns>
-        private async Task<Transfer.EditorSettings> PrepareSettings(
-            Data.User user,
-            Data.UserSettings? settings = null)
-        {
-            var robotType = await this.RetrieveRobotTypeForUser(user);
-            if (robotType != null)
-            {
-                var toolbox = await this.executionEngine
-                    .Generator<Generators.UserToolbox>()
-                    .GenerateAsync(ReportFormat.Text, user, robotType)
-                    .ConfigureAwait(false);
-                using var reader = new StreamReader(toolbox.Item1);
-                return new Transfer.EditorSettings
-                {
-                    CanConfigure = string.IsNullOrEmpty((settings ?? user.Settings).CustomBlockSet),
-                    IsSystemInitialised = true,
-                    User = settings ?? user.Settings,
-                    Toolbox = await reader.ReadToEndAsync()
-                };
-            }
-
-            return new Transfer.EditorSettings
-            {
-                IsSystemInitialised = false,
-                User = settings ?? user.Settings
-            };
-        }
-
-        /// <summary>
-        /// Attempt to retrieve the robot type for a user.
-        /// </summary>
-        /// <param name="user">The user to retrieve the robot type for.</param>
-        /// <returns>The <see cref="Data.RobotType"/> if found, null otherwise.</returns>
-        private async Task<Data.RobotType?> RetrieveRobotTypeForUser(
-            Data.User? user)
-        {
-            Data.RobotType? robotType = null;
-            if (!string.IsNullOrEmpty(user?.Settings.RobotTypeId))
-            {
-                robotType = await this.executionEngine
-                    .Query<RobotTypeData>()
-                    .RetrieveByIdAsync(user.Settings.RobotTypeId)
-                    .ConfigureAwait(false);
-            }
-
-            if (robotType == null)
-            {
-                robotType = await this.executionEngine
-                    .Query<RobotTypeData>()
-                    .RetrieveDefaultAsync()
-                    .ConfigureAwait(false);
-            }
-
-            return robotType;
-        }
-
-        /// <summary>
         /// Starts a new user session.
         /// </summary>
         /// <param name="user">The details of the user.</param>
@@ -354,6 +292,68 @@ namespace NaoBlocks.Web.Controllers
                 TimeRemaining = Convert.ToInt32(remaining.TotalMinutes),
                 Role = role.ToString()
             });
+        }
+
+        /// <summary>
+        /// Prepares the settings for a user.
+        /// </summary>
+        /// <param name="user">The user to retrieve the settings for.</param>
+        /// <param name="settings">The current settings.</param>
+        /// <returns>The <see cref="Transfer.EditorSettings"/> instance.</returns>
+        private async Task<Transfer.EditorSettings> PrepareSettings(
+            Data.User user,
+            Data.UserSettings? settings = null)
+        {
+            var robotType = await this.RetrieveRobotTypeForUser(user);
+            if (robotType != null)
+            {
+                var toolbox = await this.executionEngine
+                    .Generator<Generators.UserToolbox>()
+                    .GenerateAsync(ReportFormat.Text, user, robotType)
+                    .ConfigureAwait(false);
+                using var reader = new StreamReader(toolbox.Item1);
+                return new Transfer.EditorSettings
+                {
+                    CanConfigure = true,
+                    IsSystemInitialised = true,
+                    User = settings ?? user.Settings,
+                    Toolbox = await reader.ReadToEndAsync()
+                };
+            }
+
+            return new Transfer.EditorSettings
+            {
+                IsSystemInitialised = false,
+                User = settings ?? user.Settings
+            };
+        }
+
+        /// <summary>
+        /// Attempt to retrieve the robot type for a user.
+        /// </summary>
+        /// <param name="user">The user to retrieve the robot type for.</param>
+        /// <returns>The <see cref="Data.RobotType"/> if found, null otherwise.</returns>
+        private async Task<Data.RobotType?> RetrieveRobotTypeForUser(
+            Data.User? user)
+        {
+            Data.RobotType? robotType = null;
+            if (!string.IsNullOrEmpty(user?.Settings.RobotTypeId))
+            {
+                robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveByIdAsync(user.Settings.RobotTypeId)
+                    .ConfigureAwait(false);
+            }
+
+            if (robotType == null)
+            {
+                robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveDefaultAsync()
+                    .ConfigureAwait(false);
+            }
+
+            return robotType;
         }
     }
 }

@@ -37,31 +37,29 @@ namespace NaoBlocks.Engine.Generators
                 robotType = userRobotType;
             }
 
-            // Generate the list of options
+            // Retrieve the toolbox to use
             var options = new List<string>();
-            if (string.IsNullOrEmpty(user.Settings.CustomBlockSet))
+            Toolbox? toolbox = null;
+            if (user.Settings.Toolbox != null)
             {
-                if (user.Settings.Conditionals) options.Add("conditionals");
-                if (user.Settings.Dances) options.Add("dances");
-                if (user.Settings.Events) options.Add("events");
-                if (user.Settings.Loops) options.Add("loops");
-                if (user.Settings.Sensors) options.Add("sensors");
-                if (user.Settings.Variables) options.Add("variables");
-                if (user.Settings.Simple) options.Add("simple");
-                if (!user.Settings.Simple) options.Add("default");
+                toolbox = robotType.Toolboxes
+                    .FirstOrDefault(t => t.Name == user.Settings.Toolbox);
             }
-            else
+
+            if (toolbox == null)
             {
-                options.AddRange(user.Settings.CustomBlockSet.Split(',').Select(tag => tag.Trim()).Where(tag => !string.IsNullOrEmpty(tag)));
+                toolbox = robotType.Toolboxes
+                    .FirstOrDefault(t => t.IsDefault);
             }
+
+            var toolboxCategories = toolbox?.Categories ?? new List<ToolboxCategory>();
 
             // Determine the categories to include
             var categories = new Dictionary<string, ToolboxCategory>();
-            foreach (var category in robotType.Toolbox)
+            foreach (var category in toolboxCategories)
             {
-                var hasCategory = category
-                    .Tags
-                    .Any(tag => options.Contains(tag));
+                var hasCategory = !category.IsOptional
+                    || user.Settings.ToolboxCategories.Contains(category.Name);
                 if (!hasCategory) continue;
 
                 if (!categories.TryGetValue(category.Name, out ToolboxCategory? group))
@@ -71,7 +69,6 @@ namespace NaoBlocks.Engine.Generators
                         Name = category.Name,
                         Colour = category.Colour,
                         Custom = category.Custom,
-                        Order = category.Order
                     };
                     categories.Add(category.Name, group);
                 }
@@ -84,7 +81,7 @@ namespace NaoBlocks.Engine.Generators
 
             // Generate the actual toolbox
             var rootEl = new XElement("xml");
-            foreach (var category in categories.Values.OrderBy(c => c.Order).ThenBy(c => c.Name))
+            foreach (var category in categories.Values)
             {
                 // Generate the category node
                 var el = new XElement("category",
