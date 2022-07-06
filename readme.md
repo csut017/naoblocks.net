@@ -6,6 +6,7 @@ I'd like to tell you about how wonderful the project is, but it is a research pr
 
 Some initial documentation:
 * [Running NaoBlocks.Net](Documentation/Running.md)
+* [Robot Configuration](Documentation/Robots.md)
 * [Project Layout](Documentation/ProjectLayout.md)
 * [Available Robot Commands](Documentation/Commands.md)
 * [Research Publications](Documentation/Publications.md)
