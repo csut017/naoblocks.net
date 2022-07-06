@@ -10,21 +10,10 @@ namespace NaoBlocks.Engine
     /// </remarks>
     public abstract class ReportGenerator
     {
+        private Dictionary<string, string> arguments = new();
+        private RobotType? robotType;
         private IDatabaseSession? session;
         private User? user;
-        private RobotType? robotType;
-
-        /// <summary>
-        /// Gets the session to use.
-        /// </summary>
-        public IDatabaseSession Session
-        {
-            get
-            {
-                if (session == null) throw new InvalidOperationException("Session has not been initialised");
-                return session;
-            }
-        }
 
         /// <summary>
         /// Gets the initialised robot type.
@@ -39,6 +28,18 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Gets the session to use.
+        /// </summary>
+        public IDatabaseSession Session
+        {
+            get
+            {
+                if (session == null) throw new InvalidOperationException("Session has not been initialised");
+                return session;
+            }
+        }
+
+        /// <summary>
         /// Gets the initialised user.
         /// </summary>
         public User User
@@ -48,15 +49,6 @@ namespace NaoBlocks.Engine
                 if (this.user == null) throw new InvalidOperationException("User has not been initialised");
                 return this.user;
             }
-        }
-
-        /// <summary>
-        /// Initialises the database session for this query.
-        /// </summary>
-        /// <param name="session">The session to use.</param>
-        public void InitialiseSession(IDatabaseSession session)
-        {
-            this.session = session;
         }
 
         /// <summary>
@@ -105,10 +97,47 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Initialises the database session for this query.
+        /// </summary>
+        /// <param name="session">The session to use.</param>
+        public void InitialiseSession(IDatabaseSession session)
+        {
+            this.session = session;
+        }
+
+        /// <summary>
         /// Checks if the report format is available.
         /// </summary>
         /// <param name="format">The format.</param>
         /// <returns>True if the format is available, false otherwise.</returns>
         public abstract bool IsFormatAvailable(ReportFormat format);
+
+        /// <summary>
+        /// Adds arguments to the generator.
+        /// </summary>
+        /// <param name="args">The arguments to add.</param>
+        public void UseArguments(Dictionary<string, string> args)
+        {
+            foreach (var pair in args)
+            {
+                this.arguments[pair.Key] = pair.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets an argument value or the default value.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="defaultValue">The default value to use.</param>
+        /// <returns>The argument or default value.</returns>
+        protected string? GetArgumentOrDefault(string name, string? defaultValue = null)
+        {
+            if (this.arguments.TryGetValue(name, out var value))
+            {
+                return value;
+            }
+
+            return defaultValue;
+        }
     }
 }

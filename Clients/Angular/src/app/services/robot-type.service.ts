@@ -9,8 +9,6 @@ import { environment } from 'src/environments/environment';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
-import { BlockSet } from '../data/block-set';
-import { RobotTypeBlockDefinitions } from '../data/robot-type-block-definitions';
 import { Toolbox } from '../data/toolbox';
 
 @Injectable({
@@ -190,24 +188,6 @@ export class RobotTypeService extends ClientService {
           result.output = robotType;
         }),
         catchError(this.handleError('uploadBlockSet', msg => new ExecutionResult<RobotType>(undefined, msg)))
-      );
-  }
-
-  listBlockSets(robotTypeId: string, includeBlocks: boolean = false): Observable<RobotTypeBlockDefinitions> {
-    if (!robotTypeId) {
-      return new Observable(subscriber => {
-        subscriber.next(new ResultSet<BlockSet>('Robot type not set'));
-      });
-    }
-    let url = `${environment.apiURL}v1/robots/types/${robotTypeId}/blocksets`;
-    if (includeBlocks) url += '?include=blocks';
-    this.log(`Retrieving block sets for robot type ${robotTypeId}`);
-    return this.http.get<RobotTypeBlockDefinitions>(url)
-      .pipe(
-        tap(_ => {
-          this.log(`Fetched block sets for robot type ${robotTypeId}`);
-        }),
-        catchError(this.handleError('listBlockSets', msg => new RobotTypeBlockDefinitions(msg)))
       );
   }
 }

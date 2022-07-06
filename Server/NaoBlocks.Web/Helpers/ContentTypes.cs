@@ -28,6 +28,11 @@ namespace NaoBlocks.Web.Helpers
         public const string Xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
         /// <summary>
+        /// The file type for an XML file.
+        /// </summary>
+        public const string Xml = "application/xml";
+
+        /// <summary>
         /// The file type for a Zip file.
         /// </summary>
         public const string Zip = "application/zip";
@@ -43,6 +48,7 @@ namespace NaoBlocks.Web.Helpers
             {
                 ReportFormat.Excel => Xlsx,
                 ReportFormat.Pdf => Pdf,
+                ReportFormat.Xml => Xml,
                 ReportFormat.Zip => Zip,
                 _ => throw new ApplicationException($"Unknown report format {format}"),
             };

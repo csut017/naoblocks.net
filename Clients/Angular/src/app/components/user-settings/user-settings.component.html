@@ -1,101 +1,60 @@
 <form [formGroup]="form" class="editor lower-3">
-    <div fxLayout="row wrap">
-        <mat-card fxFlex="50%" fxFlex.sm="100%">
-            <mat-card-title>Robot</mat-card-title>
-            <mat-card-content>
+    <mat-card>
+        <mat-card-title>Robot</mat-card-title>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <mat-select appearance="fill" formControlName="type" required (selectionChange)="onRobotTypeChange()">
+                    <mat-option></mat-option>
+                    <mat-option *ngFor="let type of types" [value]="type.name">{{type.name}}</mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a robot type
+                </mat-error>
+                <mat-hint>The type of robot to program</mat-hint>
+            </mat-form-field>
+
+            <div *ngIf="showAllocation">
                 <mat-form-field class="fill-width">
+                    <mat-label>Allocation Mode</mat-label>
+                    <mat-select formControlName="allocationMode" required (selectionChange)="onAllocationModeChange()">
+                        <mat-option [value]="0">Any robot</mat-option>
+                        <mat-option [value]="1" *ngIf="!!robots.length">Require robot</mat-option>
+                        <mat-option [value]="2" *ngIf="!!robots.length">Prefer robot</mat-option>
+                    </mat-select>
+                    <mat-error>
+                        Please select an allocation mode
+                    </mat-error>
+                    <mat-hint>Which robot will the student use</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field class="fill-width" *ngIf="allocationMode">
                     <mat-label>Type</mat-label>
-                    <mat-select appearance="fill" formControlName="type" required (selectionChange)="onRobotTypeChange()">
+                    <mat-select formControlName="robotId" required>
                         <mat-option></mat-option>
-                        <mat-option *ngFor="let type of types" [value]="type.name">{{type.name}}</mat-option>
+                        <mat-option [value]="robot.machineName" *ngFor="let robot of robots">
+                            {{robot.friendlyName}}
+                            [{{robot.machineName}}]</mat-option>
                     </mat-select>
                     <mat-error>
                         Please select a robot type
                     </mat-error>
-                    <mat-hint>The type of robot to program</mat-hint>
+                    <mat-hint>The assigned robot</mat-hint>
                 </mat-form-field>
+            </div>
 
-                <div *ngIf="showAllocation">
-                    <mat-form-field class="fill-width">
-                        <mat-label>Allocation Mode</mat-label>
-                        <mat-select formControlName="allocationMode" required (selectionChange)="onAllocationModeChange()">
-                            <mat-option [value]="0">Any robot</mat-option>
-                            <mat-option [value]="1" *ngIf="!!robots.length">Require robot</mat-option>
-                            <mat-option [value]="2" *ngIf="!!robots.length">Prefer robot</mat-option>
-                        </mat-select>
-                        <mat-error>
-                            Please select an allocation mode
-                        </mat-error>
-                        <mat-hint>Which robot will the student use</mat-hint>
-                    </mat-form-field>
-
-                    <mat-form-field class="fill-width" *ngIf="allocationMode">
-                        <mat-label>Type</mat-label>
-                        <mat-select formControlName="robotId" required>
-                            <mat-option></mat-option>
-                            <mat-option [value]="robot.machineName" *ngFor="let robot of robots">
-                                {{robot.friendlyName}}
-                                [{{robot.machineName}}]</mat-option>
-                        </mat-select>
-                        <mat-error>
-                            Please select a robot type
-                        </mat-error>
-                        <mat-hint>The assigned robot</mat-hint>
-                    </mat-form-field>
-                </div>
-
-            </mat-card-content>
-        </mat-card>
-
-        <mat-card fxFlex="50%" fxFlex.sm="100%">
-            <mat-card-title>Functionality</mat-card-title>
-            <mat-card-content>
-                <mat-form-field class="fill-width" *ngIf="showConfiguration">
-                    <mat-label>Configuration Mode</mat-label>
-                    <mat-select formControlName="configMode" required (selectionChange)="onConfigurationModeChange()">
-                        <mat-option [value]="1">Standard</mat-option>
-                        <mat-option [value]="2" *ngIf="!!this.blockSets.length">Custom</mat-option>
-                    </mat-select>
-                    <mat-error>
-                        Please select a configuration mode
-                    </mat-error>
-                    <mat-hint>How are the blocks configured</mat-hint>
-                </mat-form-field>
-
-                <div *ngIf="configurationMode == 2">
-                    <mat-form-field class="fill-width">
-                        <mat-label>Custom Set</mat-label>
-                        <mat-select formControlName="customBlockSet" required>
-                            <mat-option [value]="set.value" *ngFor="let set of blockSets">{{set.name}}</mat-option>
-                        </mat-select>
-                        <mat-hint>The custom set of blocks to use</mat-hint>
-                    </mat-form-field>
-                </div>
-
-                <div *ngIf="configurationMode == 1">
-                    <mat-form-field class="fill-width">
-                        <mat-label>Interface Style</mat-label>
-                        <mat-select formControlName="interfaceStyle" required (selectionChange)="onInterfaceStyleChange()">
-                            <mat-option [value]="1">Default Blocks</mat-option>
-                            <mat-option [value]="2">Simple Blocks</mat-option>
-                            <mat-option [value]="3">Event Blocks</mat-option>
-                        </mat-select>
-                        <mat-error>
-                            Please select a configuration mode
-                        </mat-error>
-                        <mat-hint>What type of interface should be displayed</mat-hint>
-                    </mat-form-field>
-
-                    <div class="categories" *ngIf="interfaceStyle != 2">
-                        <label>Categories</label>
-                        <mat-slide-toggle formControlName="displayDances">Dances</mat-slide-toggle>
-                        <mat-slide-toggle formControlName="displayConditionals">Conditionals</mat-slide-toggle>
-                        <mat-slide-toggle formControlName="displayLoops">Loops</mat-slide-toggle>
-                        <mat-slide-toggle formControlName="displaySensors">Sensors</mat-slide-toggle>
-                        <mat-slide-toggle formControlName="displayVariables">Variables</mat-slide-toggle>
-                    </div>
-                </div>
-            </mat-card-content>
-        </mat-card>
-    </div>
+            <mat-form-field class="fill-width" *ngIf="showConfiguration && hasRobot">
+                <mat-label>Toolbox</mat-label>
+                <mat-select formControlName="toolbox" required (selectionChange)="onToolboxChanged()">
+                    <mat-option [value]="toolbox.name" *ngFor="let toolbox of toolboxes">
+                        {{toolbox.name}}
+                    </mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a toolbox
+                </mat-error>
+                <mat-hint>Which toolbox should be used</mat-hint>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
 </form>

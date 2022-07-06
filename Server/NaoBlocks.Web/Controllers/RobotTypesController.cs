@@ -65,10 +65,29 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportPackage(string id, string? format)
         {
-            return await this.GenerateReport<Generators.RobotTypePackage>(
+            return await this.GenerateRobotTypeReport<Generators.RobotTypePackage>(
                 this.executionEngine,
                 format,
+                id,
                 defaultFormat: ReportFormat.Zip);
+        }
+
+        /// <summary>
+        /// Exports a toolbox for a robot type by its name.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="name">The name of the toolbox.</param>
+        /// <param name="format">An optional parameter specifying the output format of the definition.</param>
+        /// <returns>Either a 404 (not found) or the toolbox details.</returns>
+        [HttpGet("{id}/toolbox/{name}/export")]
+        public async Task<ActionResult<Transfer.Toolbox>> ExportToolbox(string id, string name, [FromQuery] string? format = null)
+        {
+            return await this.GenerateRobotTypeReport<Generators.RobotTypeToolbox>(
+                this.executionEngine,
+                format,
+                id,
+                defaultFormat: ReportFormat.Xml,
+                args: this.MakeArgs($"toolbox={name}"));
         }
 
         /// <summary>

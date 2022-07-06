@@ -21,6 +21,15 @@
                     </div>
                 </div>
             </div>
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" (click)="importToolbox()">Import</button>
+                    </div>
+                </div>
+            </div>
             <div class="list-commands-selection">
                 <div class="list-commands-header">
                     Selection
@@ -37,7 +46,7 @@
                     </button>
                     <mat-menu #exportMenu="matMenu">
                         <button mat-menu-item>List</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1">Details</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportToolbox()">Toolbox</button>
                     </mat-menu>
                 </div>
             </div>

@@ -8,6 +8,7 @@ import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
+import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 
@@ -34,6 +35,7 @@ export class ToolboxListComponent implements OnInit, OnChanges {
     private authenticationService: AuthenticationService,
     private deleteConfirm: DeletionConfirmationService,
     private snackBar: MatSnackBar,
+    private downloaderService: FileDownloaderService,
     private multilineMessage: MultilineMessageService) {}
 
   ngOnInit(): void {
@@ -43,11 +45,6 @@ export class ToolboxListComponent implements OnInit, OnChanges {
     if (!this.item) return;
 
     this.isLoading = true;
-    this.robotTypeService.get(this.item.id!)
-    .subscribe(resp => {
-
-    });
-
     this.robotTypeService.get(this.item.id!)
       .subscribe(data => {
         if (!this.authenticationService.checkHttpResponse(data)) return;
@@ -143,6 +140,17 @@ export class ToolboxListComponent implements OnInit, OnChanges {
   
   updateDefaultRobotMessage() {
     this.hasDefault = !!this.dataSource.data.find(rt => rt.isDefault);
+  }
+
+  importToolbox() {
+
+  }
+
+  exportToolbox() {
+    this.selection.selected.forEach(t => {
+      const url = `v1/robots/types/${this.item?.id}/toolbox/${t.name}/export`
+      this.downloaderService.download(url, `${t.name}-toolbox.xml`);
+    });
   }
 
   private generateCountText(count: number): string {

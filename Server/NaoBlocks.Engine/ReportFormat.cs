@@ -33,6 +33,11 @@
         /// <summary>
         /// Generate a plain-text report.
         /// </summary>
-        Text
+        Text,
+
+        /// <summary>
+        /// Generate an XML report.
+        /// </summary>
+        Xml,
     }
 }
