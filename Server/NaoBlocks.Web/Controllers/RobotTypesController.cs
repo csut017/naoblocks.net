@@ -90,17 +90,19 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            return Transfer.RobotType.FromModel(robotType);
+            return Transfer.RobotType.FromModel(robotType, true);
         }
 
         /// <summary>
         /// Imports a toolbox for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
+        /// <param name="name">The name of the toolbox.</param>
+        /// <param name="isDefault">Whether this is the default toolbox or not.</param>
         /// <returns>The result of execution.</returns>
-        [HttpPost("{id}/toolbox")]
+        [HttpPost("{id}/toolbox/{name}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id)
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id, string name, [FromQuery(Name = "default")] string? isDefault)
         {
             var xml = string.Empty;
             using (var reader = new StreamReader(this.Request.Body))
@@ -116,11 +118,14 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation($"Importing toolbox to robot type '{id}'");
             var command = new ImportToolbox
             {
                 RobotTypeName = id,
-                Definition = xml
+                ToolboxName = name,
+                Definition = xml,
+                IsDefault = "yes".Equals(isDefault, StringComparison.InvariantCultureIgnoreCase)
+                        || "true".Equals(isDefault, StringComparison.InvariantCultureIgnoreCase)
             };
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>

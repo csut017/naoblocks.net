@@ -90,7 +90,7 @@ namespace NaoBlocks.Engine.Generators
                 if (!string.IsNullOrEmpty(category.Custom)) el.Add(new XAttribute("custom", category.Custom));
 
                 // Generate the blocks
-                foreach (var block in category.Blocks.OrderBy(b => b.Order).ThenBy(b => b.Name))
+                foreach (var block in category.Blocks)
                 {
                     var blockEl = XElement.Parse(block.Definition);
                     el.Add(blockEl);

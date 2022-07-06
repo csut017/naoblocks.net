@@ -44,7 +44,8 @@ import { SystemInitialisationComponent } from './components/system-initialisatio
 import { ImportDialogComponent } from './components/import-dialog/import-dialog.component';
 import { UserInterfaceConfigurationComponent } from './components/user-interface-configuration/user-interface-configuration.component';
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
-import { CustomBlockEditorComponent } from './components/custom-block-editor/custom-block-editor.component';
+import { ToolboxEditorComponent } from './components/toolbox-editor/toolbox-editor.component';
+import { ToolboxListComponent } from './components/toolbox-list/toolbox-list.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +84,8 @@ import { CustomBlockEditorComponent } from './components/custom-block-editor/cus
     ImportDialogComponent,
     UserInterfaceConfigurationComponent,
     UserSettingsComponent,
-    CustomBlockEditorComponent
+    ToolboxEditorComponent,
+    ToolboxListComponent
   ],
   imports: [
     BrowserModule,

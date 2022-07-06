@@ -11,6 +11,7 @@ import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
 import { BlockSet } from '../data/block-set';
 import { RobotTypeBlockDefinitions } from '../data/robot-type-block-definitions';
+import { Toolbox } from '../data/toolbox';
 
 @Injectable({
   providedIn: 'root'
@@ -88,20 +89,34 @@ export class RobotTypeService extends ClientService {
           this.log('Deleted robot type');
           result.output = robotType;
         }),
-        catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('delete', msg => new ExecutionResult<RobotType>(undefined, msg)))
       );
   }
 
-  storeToolbox(robotType: RobotType, toolbox: string): Observable<ExecutionResult<any>> {
-    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox`;
-    this.log(`Storing toolbox for robot type ${robotType.id}`);
-    return this.http.post<ExecutionResult<any>>(url, toolbox)
+  deleteToolbox(robotType: RobotType, toolbox: string): Observable<ExecutionResult<Toolbox>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${toolbox}`;
+    this.log(`Deleting toolbox ${toolbox} from ${robotType.name}`);
+    return this.http.delete<ExecutionResult<Toolbox>>(url)
+      .pipe(
+        tap(result => {
+          this.log('Deleted toolbox');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('deleteToolbox', msg => new ExecutionResult<Toolbox>(undefined, msg)))
+      );
+  }
+
+  importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean): Observable<ExecutionResult<Toolbox>> {
+    const defaultOption = isDefault ? 'yes' : 'no';
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${name}?default=${defaultOption}`;
+    this.log(`Importing toolbox ${name} to ${robotType.name}`);
+    return this.http.post<ExecutionResult<Toolbox>>(url, definition)
       .pipe(
         tap(result => {
           this.log('Stored toolbox');
-          result.output = robotType;
+          result.output = robotType.toolboxes?.find(t => t.name == name);
         }),
-        catchError(this.handleError('storeToolbox', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('storeToolbox', msg => new ExecutionResult<Toolbox>(undefined, msg)))
       );
   }
 

@@ -10,13 +10,20 @@
     </div>
     <mat-card>
         <mat-card-content>
-            <mat-form-field class="fill-width">
-                <mat-label>Blockset Name</mat-label>
-                <input matInput placeholder="Blockset Name" formControlName="name" required>
-                <mat-error>
-                    Please provide a name for the blockset
-                </mat-error>
-            </mat-form-field>
+            <mat-grid-list cols="3" rowHeight="30px">
+                <mat-grid-tile [rowspan]="2">
+                    <mat-form-field class="fill-width">
+                        <mat-label>Toolbox Name</mat-label>
+                        <input matInput placeholder="Blockset Name" formControlName="name" required>
+                        <mat-error>
+                            Please provide a name for the toolbox
+                        </mat-error>
+                    </mat-form-field>
+                </mat-grid-tile>
+                <mat-grid-tile>
+                    <mat-slide-toggle formControlName="isDefault">Default Toobox</mat-slide-toggle>
+                </mat-grid-tile>
+            </mat-grid-list>
         </mat-card-content>
     </mat-card>
     <div id="blockly"></div>

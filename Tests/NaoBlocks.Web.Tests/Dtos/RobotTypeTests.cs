@@ -24,7 +24,7 @@ namespace NaoBlocks.Web.Tests.Dtos
         }
 
         [Fact]
-        public void FromModelConvertsEntityAndToolbox()
+        public void FromModelConvertsEntityAndToolboxes()
         {
             var now = DateTime.Now;
             var entity = new Data.RobotType
@@ -37,7 +37,7 @@ namespace NaoBlocks.Web.Tests.Dtos
             var dto = Transfer.RobotType.FromModel(entity, true);
             Assert.Equal(
                 new[] { "blocks" },
-                dto.Toolboxes?.ToArray());
+                dto.Toolboxes?.Select(t => t.Name).ToArray());
         }
     }
 }

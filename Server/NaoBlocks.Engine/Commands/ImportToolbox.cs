@@ -161,16 +161,10 @@ namespace NaoBlocks.Engine.Commands
         private ToolboxBlock ParseBlock(XElement blockEl, int elOrder)
         {
             var name = blockEl.Attribute("type")?.Value ?? "Unknown";
-            var orderText = blockEl.Attribute("order")?.Value ?? "-1";
-            if (!int.TryParse(orderText, out int order) || (order < 0))
-            {
-                order = (elOrder + 10) * 10;
-            }
 
             var block = new ToolboxBlock
             {
                 Name = name,
-                Order = order,
                 Definition = blockEl.ToString()
             };
             return block;
@@ -180,7 +174,7 @@ namespace NaoBlocks.Engine.Commands
         {
             var name = categoryEl.Attribute("name")?.Value ?? "Unknown";
             var colour = categoryEl.Attribute("colour")?.Value ?? "0";
-            var optional = categoryEl.Attribute("optional")?.Value ?? "-1";
+            var optional = categoryEl.Attribute("optional")?.Value ?? "no";
             var isOptional = string.Equals(optional, "yes", StringComparison.InvariantCultureIgnoreCase);
             var custom = categoryEl.Attribute("custom")?.Value;
 

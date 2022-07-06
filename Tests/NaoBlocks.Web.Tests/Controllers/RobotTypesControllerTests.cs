@@ -145,7 +145,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             controller.SetRequestBody(ToolBoxXml);
 
             // Act
-            var response = await controller.ImportToolbox("karetao");
+            var response = await controller.ImportToolbox("karetao", "testing", null);
 
             // Assert
             var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
@@ -154,7 +154,40 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             var command = Assert.IsType<ImportToolbox>(engine.LastCommand);
             Assert.Equal("karetao", command.RobotTypeName);
+            Assert.Equal("testing", command.ToolboxName);
             Assert.Equal(ToolBoxXml, command.Definition);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("no", false)]
+        [InlineData("NO", false)]
+        [InlineData("unknown", false)]
+        [InlineData("yes", true)]
+        [InlineData("Yes", true)]
+        [InlineData("YES", true)]
+        [InlineData("false", false)]
+        [InlineData("True", true)]
+        public async Task ImportToolboxSetDefaultFlagCorrectly(string? flag, bool expected)
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ImportToolbox>(
+                CommandResult.New(1, new Data.RobotType()));
+            var controller = InitialiseController(engine);
+            controller.SetRequestBody(ToolBoxXml);
+
+            // Act
+            var response = await controller.ImportToolbox("karetao", "testing", flag);
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<ImportToolbox>(engine.LastCommand);
+            Assert.Equal(expected, command.IsDefault);
         }
 
         [Fact]
@@ -165,7 +198,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             controller.SetRequestBody(null);
 
             // Act
-            var response = await controller.ImportToolbox("karetao");
+            var response = await controller.ImportToolbox("karetao", "testing", null);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);

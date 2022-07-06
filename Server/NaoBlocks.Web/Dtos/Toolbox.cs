@@ -3,17 +3,17 @@
 namespace NaoBlocks.Web.Dtos
 {
     /// <summary>
-    /// A Data Transfer Object for a robot type.
+    /// A Data Transfer Object for a toolbox.
     /// </summary>
-    public class RobotType
+    public class Toolbox
     {
         /// <summary>
-        /// Gets or sets whether this type has a toolbox.
+        /// Gets or sets the toolbox definition.
         /// </summary>
-        public bool? HasToolbox { get; set; }
+        public string? Definition { get; set; }
 
         /// <summary>
-        /// Gets or sets whether this type is the default robot type.
+        /// Gets or sets whether this is the default toolbox for the robot type.
         /// </summary>
         public bool? IsDefault { get; set; }
 
@@ -23,28 +23,22 @@ namespace NaoBlocks.Web.Dtos
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets the toolboxes.
-        /// </summary>
-        public IList<Toolbox>? Toolboxes { get; private set; }
-
-        /// <summary>
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
         /// <param name="includeDetails">Whether to include the details or not.</param>
-        /// <returns>A new <see cref="RobotType"/> instance containing the required properties.</returns>
-        public static RobotType FromModel(Data.RobotType value, bool includeDetails = false)
+        /// <returns>A new <see cref="Toolbox"/> instance containing the required properties.</returns>
+        public static Toolbox FromModel(Data.Toolbox value, bool includeDetails = false)
         {
-            var output = new RobotType
+            var output = new Toolbox
             {
                 Name = value.Name,
-                IsDefault = value.IsDefault,
-                HasToolbox = value.Toolboxes.Any()
+                IsDefault = value.IsDefault
             };
 
             if (includeDetails)
             {
-                output.Toolboxes = value.Toolboxes.Select(t => Toolbox.FromModel(t)).ToList();
+                output.Definition = value.ExportToXml();
             }
 
             return output;

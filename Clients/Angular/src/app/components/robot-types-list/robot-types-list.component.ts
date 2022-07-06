@@ -103,6 +103,7 @@ export class RobotTypesListComponent implements OnInit {
         this.updateDefaultRobotMessage();
       });
   }
+
   updateDefaultRobotMessage() {
     this.hasSystemDefault = !!this.dataSource.data.find(rt => rt.isDefault);
   }
@@ -112,56 +113,6 @@ export class RobotTypesListComponent implements OnInit {
     this.isNew = false;
     this.currentItem = this.selection.selected[0];
     this.currentItemChanged.emit(this.currentItem.name);
-  }
-
-  importToolbox(): void {
-    let settings = new ImportSettings(this.selection.selected, this.doSendToolbox, this);
-    settings.prompt = 'Select the toolbox to import:';
-    settings.title = 'Import Toolbox';
-    this.importService.start(settings)
-      .subscribe(result => {
-
-      });
-  }
-
-  doSendToolbox(status: ImportStatus, settings: ImportSettings<RobotType>): void {
-    const multipler = 100 / status.files.length;
-    let emitter = new EventEmitter<number>();
-    emitter.subscribe((pos: number) => {
-      status.uploadProgress = pos * multipler;
-      if (status.isUploadCancelling) {
-        status.uploadStatus = `Cancelled toolbox upload`;
-        status.uploadState = 2;
-        status.isUploading = false;
-        status.isUploadCompleted = true;
-        status.uploadProgress = 100;
-      }
-
-      if (pos < status.files.length) {
-        const file = status.files[pos];
-        status.uploadStatus = `Uploading ${file.name}...`;
-
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          console.log('[RobotTypesList] Read toolbox file');
-          const data = e.target.result;
-          forkJoin(settings.items.map(rt => settings.owner.robotTypeService.storeToolbox(rt, data)))
-            .subscribe(results => {
-              emitter.emit(pos + 1);
-            });
-
-        };
-        console.log('[RobotTypesList] Reading toolbox file');
-        reader.readAsText(file);
-      } else {
-        status.uploadStatus = `Imported robot type toolbox`;
-        status.uploadState = 2;
-        status.isUploading = false;
-        status.isUploadCompleted = true;
-        status.uploadProgress = 100;
-      }
-    });
-    emitter.emit(0);
   }
 
   importPackage(): void {
@@ -248,6 +199,12 @@ export class RobotTypesListComponent implements OnInit {
       this.currentItem!.id = this.currentItem!.name;
       this.updateDefaultRobotMessage();
     }
+  }
+
+  viewToolboxes(): void {
+    this.view = 'toolboxes';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(`${this.currentItem.name} [Toolboxes]`);
   }
 
   private loadList(): void {

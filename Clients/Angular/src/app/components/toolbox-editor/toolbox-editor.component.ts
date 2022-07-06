@@ -1,22 +1,21 @@
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { BlockDefinition } from 'src/app/data/block-definition';
-import { BlockSet } from 'src/app/data/block-set';
 import { RobotType } from 'src/app/data/robot-type';
+import { Toolbox } from 'src/app/data/toolbox';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 import { UiService } from 'src/app/services/ui.service';
 
 declare var Blockly: any;
 
 @Component({
-  selector: 'app-custom-block-editor',
-  templateUrl: './custom-block-editor.component.html',
-  styleUrls: ['./custom-block-editor.component.scss']
+  selector: 'app-toolbox-editor',
+  templateUrl: './toolbox-editor.component.html',
+  styleUrls: ['./toolbox-editor.component.scss']
 })
-export class CustomBlockEditorComponent implements OnInit {
+export class ToolboxEditorComponent implements OnInit {
 
-  @Input() item?: RobotType;
+  @Input() item?: Toolbox;
+  @Input() robotType?: RobotType;
   @Output() closed = new EventEmitter<boolean>();
 
   definitions: any[] = [];
@@ -27,9 +26,11 @@ export class CustomBlockEditorComponent implements OnInit {
   isValid: boolean = true;
   workspace: any;
 
-  constructor(private uiService: UiService) {
+  constructor(private robotTypeService: RobotTypeService,
+    private uiService: UiService) {
     this.form = new FormGroup({
       name: new FormControl('', [Validators.required]),
+      isDefault: new FormControl(false, [])
     });
     this.uiService.getComponent('angular', 'blocks')
       .subscribe(resp => {
@@ -40,6 +41,10 @@ export class CustomBlockEditorComponent implements OnInit {
   }
 
   ngOnChanges(_: SimpleChanges): void {
+    this.form.setValue({
+      name: this.item?.name || '',
+      isDefault: this.item?.isDefault || false,
+    })
   }
 
   ngOnInit(): void {
@@ -73,15 +78,27 @@ export class CustomBlockEditorComponent implements OnInit {
   }
 
   doSave() {
-    if (!this.item || !this.form.valid) return;
+    if (!this.item || !this.robotType || !this.form.valid) return;
+
     console.groupCollapsed('Generating toolbox');
+    let definition = '';
     try {
-      const definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
+      definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
       console.log(definition);
       console.log((new DOMParser()).parseFromString(definition, "application/xml"));
     } finally {
       console.groupEnd();
     }
+    let name = this.form.get('name')?.value || '';
+    let isDefault = this.form.get('isDefault')?.value || false;
+    this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
+      .subscribe(result => {
+        if (result.successful) {
+          this.closed.emit(true);
+        } else {
+          this.error = result.allErrors().join(':');
+        }
+      });
   }
 
   doClose() {
