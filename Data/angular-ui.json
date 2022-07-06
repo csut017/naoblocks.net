@@ -45,302 +45,422 @@
         {
             "name": "drone_fly",
             "definition": "{\"type\":\"drone_fly\",\"message0\":\"Fly %1 %2 cm\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIRECTION\",\"options\":[[\"Forward\",\"FORWARD\"],[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"],[\"Backward\",\"BACKWARD\"],[\"Up\",\"UP\"],[\"Down\",\"DOWN\"]]},{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"DISTANCE\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Tells the drone to fly in a direction for a certain distance.\"}",
-            "generator": "var dist = Blockly.NaoLang.valueToCode(block, 'DISTANCE', Blockly.NaoLang.ORDER_ATOMIC),dir = block.getFieldValue('DIRECTION');return Blockly.NaoLang.generatePrefix() + 'fly(' + dir + ', ' + dist + ')\\n';"
+            "generator": "var dist = Blockly.NaoLang.valueToCode(block, 'DISTANCE', Blockly.NaoLang.ORDER_ATOMIC),dir = block.getFieldValue('DIRECTION');return Blockly.NaoLang.generatePrefix() + 'fly(' + dir + ', ' + dist + ')\\n';",
+            "text": "Fly",
+            "category": "Drone"
         },
         {
             "name": "drone_land",
             "definition": "{\"type\":\"drone_land\",\"message0\":\"Land\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Tells the drone to land.\"}",
-            "generator": "return Blockly.NaoLang.generatePrefix() + 'land()\\n';"
+            "generator": "return Blockly.NaoLang.generatePrefix() + 'land()\\n';",
+            "text": "Land",
+            "category": "Drone"
         },
         {
             "name": "drone_stop",
             "definition": "{\"type\":\"drone_stop\",\"message0\":\"Stop\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Tells the drone to stop in position and hover.\"}",
-            "generator": "return Blockly.NaoLang.generatePrefix() + 'stop()\\n';"
+            "generator": "return Blockly.NaoLang.generatePrefix() + 'stop()\\n';",
+            "text": "Stop",
+            "category": "Drone"
         },
         {
             "name": "drone_takeoff",
             "definition": "{\"type\":\"drone_takeoff\",\"message0\":\"Takeoff\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Tells the drone to take off.\"}",
-            "generator": "return Blockly.NaoLang.generatePrefix() + 'takeoff()\\n';"
+            "generator": "return Blockly.NaoLang.generatePrefix() + 'takeoff()\\n';",
+            "text": "Takeoff",
+            "category": "Drone"
         },
         {
             "name": "logic_boolean",
             "definition": "SYSTEM",
-            "generator": "var code = (block.getFieldValue('BOOL') == 'TRUE') ? 'TRUE' : 'FALSE';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = (block.getFieldValue('BOOL') == 'TRUE') ? 'TRUE' : 'FALSE';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Boolean",
+            "category": "Logic"
         },
         {
             "name": "logic_compare",
             "definition": "SYSTEM",
-            "generator": "var OPERATORS = {'EQ': 'equal','NEQ': 'notEqual','LT': 'lessThan','LTE': 'lessThanEqual','GT': 'greaterThan','GTE': 'greaterThanEqual'};var operator = OPERATORS[block.getFieldValue('OP')];var order = Blockly.NaoLang.ORDER_RELATIONAL;var argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || '0';var argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || '0';var code = operator + '(' + argument0 + ', ' + argument1 + ')';return [code, order];"
+            "generator": "var OPERATORS = {'EQ': 'equal','NEQ': 'notEqual','LT': 'lessThan','LTE': 'lessThanEqual','GT': 'greaterThan','GTE': 'greaterThanEqual'};var operator = OPERATORS[block.getFieldValue('OP')];var order = Blockly.NaoLang.ORDER_RELATIONAL;var argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || '0';var argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || '0';var code = operator + '(' + argument0 + ', ' + argument1 + ')';return [code, order];",
+            "text": "Compare",
+            "category": "Logic"
         },
         {
             "name": "logic_negate",
             "definition": "SYSTEM",
-            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'BOOL', Blockly.NaoLang.ORDER_LOGICAL_NOT) || 'TRUE',code = 'not(' + argument0 + ')';return [code, Blockly.NaoLang.ORDER_LOGICAL_NOT];"
+            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'BOOL', Blockly.NaoLang.ORDER_LOGICAL_NOT) || 'TRUE',code = 'not(' + argument0 + ')';return [code, Blockly.NaoLang.ORDER_LOGICAL_NOT];",
+            "text": "Negate",
+            "category": "Logic"
         },
         {
             "name": "logic_operation",
             "definition": "SYSTEM",
-            "generator": "var OPERATORS = {'AND': 'and','OR': 'or'};var operator = OPERATORS[block.getFieldValue('OP')],order = Blockly.NaoLang.ORDER_RELATIONAL,argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || 'FALSE',argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || 'FALSE',code = operator + '(' + argument0 + ', ' + argument1 + ')';return [code, order];"
+            "generator": "var OPERATORS = {'AND': 'and','OR': 'or'};var operator = OPERATORS[block.getFieldValue('OP')],order = Blockly.NaoLang.ORDER_RELATIONAL,argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || 'FALSE',argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || 'FALSE',code = operator + '(' + argument0 + ', ' + argument1 + ')';return [code, order];",
+            "text": "Operation",
+            "category": "Logic"
         },
         {
             "name": "math_arithmetic",
             "definition": "SYSTEM",
-            "generator": "var OPERATORS = {'ADD': [' + ', Blockly.NaoLang.ORDER_ADDITIVE],'MINUS': [' - ', Blockly.NaoLang.ORDER_ADDITIVE],'MULTIPLY': [' * ', Blockly.NaoLang.ORDER_MULTIPLICATIVE],'DIVIDE': [' / ', Blockly.NaoLang.ORDER_MULTIPLICATIVE],'POWER': [' ** ', Blockly.NaoLang.ORDER_EXPONENTIATION]};var tuple = OPERATORS[block.getFieldValue('OP')],operator = tuple[0],order = tuple[1],argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || '0',argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || '0',code = argument0 + operator + argument1;return [code, order];"
+            "generator": "var OPERATORS = {'ADD': [' + ', Blockly.NaoLang.ORDER_ADDITIVE],'MINUS': [' - ', Blockly.NaoLang.ORDER_ADDITIVE],'MULTIPLY': [' * ', Blockly.NaoLang.ORDER_MULTIPLICATIVE],'DIVIDE': [' / ', Blockly.NaoLang.ORDER_MULTIPLICATIVE],'POWER': [' ** ', Blockly.NaoLang.ORDER_EXPONENTIATION]};var tuple = OPERATORS[block.getFieldValue('OP')],operator = tuple[0],order = tuple[1],argument0 = Blockly.NaoLang.valueToCode(block, 'A', order) || '0',argument1 = Blockly.NaoLang.valueToCode(block, 'B', order) || '0',code = argument0 + operator + argument1;return [code, order];",
+            "text": "Arithmetic operation",
+            "category": "Math"
         },
         {
             "name": "math_change",
             "definition": "SYSTEM",
-            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'DELTA', Blockly.NaoLang.ORDER_ADDITIVE) || '0',varName = Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return 'addTo(@' + varName + ', ' + argument0 + ')\\n';"
+            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'DELTA', Blockly.NaoLang.ORDER_ADDITIVE) || '0',varName = Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return 'addTo(@' + varName + ', ' + argument0 + ')\\n';",
+            "text": "Change",
+            "category": "Math"
         },
         {
             "name": "math_number",
             "definition": "SYSTEM",
-            "generator": "var code = parseFloat(block.getFieldValue('NUM')),order = Blockly.NaoLang.ORDER_ATOMIC;return [code, order];"
+            "generator": "var code = parseFloat(block.getFieldValue('NUM')),order = Blockly.NaoLang.ORDER_ATOMIC;return [code, order];",
+            "text": "Number",
+            "category": "Math"            
         },
         {
             "name": "math_number_property",
             "definition": "SYSTEM",
-            "generator": "var number_to_check = Blockly.NaoLang.valueToCode(block, 'NUMBER_TO_CHECK', Blockly.NaoLang.ORDER_MULTIPLICATIVE) || '0',dropdown_property = block.getFieldValue('PROPERTY'),code;switch (dropdown_property) {case 'PRIME':code = 'isPrime(' + number_to_check + ')';break;case 'EVEN':code = 'isEven(' + number_to_check + ')';break;case 'ODD':code = 'isOdd(' + number_to_check + ')';break;case 'WHOLE':code = 'isWhole(' + number_to_check + ')'; number_to_check + ' % 1 == 0';break;case 'POSITIVE':code = 'isPostive(' + number_to_check + ')';break;case 'NEGATIVE':code = 'isNegative(' + number_to_check + ')';break;case 'DIVISIBLE_BY':var divisor = Blockly.NaoLang.valueToCode(block, 'DIVISOR', Blockly.NaoLang.ORDER_MULTIPLICATIVE);code = 'isPrime(' + number_to_check + ',' + divisor + ')';;break;}return [code, Blockly.NaoLang.ORDER_RELATIONAL];"
+            "generator": "var number_to_check = Blockly.NaoLang.valueToCode(block, 'NUMBER_TO_CHECK', Blockly.NaoLang.ORDER_MULTIPLICATIVE) || '0',dropdown_property = block.getFieldValue('PROPERTY'),code;switch (dropdown_property) {case 'PRIME':code = 'isPrime(' + number_to_check + ')';break;case 'EVEN':code = 'isEven(' + number_to_check + ')';break;case 'ODD':code = 'isOdd(' + number_to_check + ')';break;case 'WHOLE':code = 'isWhole(' + number_to_check + ')'; number_to_check + ' % 1 == 0';break;case 'POSITIVE':code = 'isPostive(' + number_to_check + ')';break;case 'NEGATIVE':code = 'isNegative(' + number_to_check + ')';break;case 'DIVISIBLE_BY':var divisor = Blockly.NaoLang.valueToCode(block, 'DIVISOR', Blockly.NaoLang.ORDER_MULTIPLICATIVE);code = 'isPrime(' + number_to_check + ',' + divisor + ')';;break;}return [code, Blockly.NaoLang.ORDER_RELATIONAL];",
+            "text": "Number Property",
+            "category": "Math"
         },
         {
             "name": "math_random_int",
             "definition": "SYSTEM",
-            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'FROM', Blockly.NaoLang.ORDER_NONE) || '0';var argument1 = Blockly.NaoLang.valueToCode(block, 'TO', Blockly.NaoLang.ORDER_NONE) || '0';var code = 'randomInt(' + argument0 + ', ' + argument1 + ')';return [code, Blockly.NaoLang.ORDER_FUNCTION_CALL];"
+            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'FROM', Blockly.NaoLang.ORDER_NONE) || '0';var argument1 = Blockly.NaoLang.valueToCode(block, 'TO', Blockly.NaoLang.ORDER_NONE) || '0';var code = 'randomInt(' + argument0 + ', ' + argument1 + ')';return [code, Blockly.NaoLang.ORDER_FUNCTION_CALL];",
+            "text": "Random Integer",
+            "category": "Math"
         },
         {
             "name": "math_round",
             "definition": "SYSTEM",
-            "generator": "var operator = block.getFieldValue('OP'),code,arg = Blockly.NaoLang.valueToCode(block, 'NUM', Blockly.NaoLang.ORDER_NONE) || '0';switch (operator) {case 'ROUND':code = 'round(' + arg + ')';break;case 'ROUNDUP':code = 'roundup(' + arg + ')';break;case 'ROUNDDOWN':code = 'rounddown(' + arg + ')';break;}return [code, Blockly.NaoLang.ORDER_MULTIPLICATIVE];"
+            "generator": "var operator = block.getFieldValue('OP'),code,arg = Blockly.NaoLang.valueToCode(block, 'NUM', Blockly.NaoLang.ORDER_NONE) || '0';switch (operator) {case 'ROUND':code = 'round(' + arg + ')';break;case 'ROUNDUP':code = 'roundup(' + arg + ')';break;case 'ROUNDDOWN':code = 'rounddown(' + arg + ')';break;}return [code, Blockly.NaoLang.ORDER_MULTIPLICATIVE];",
+            "text": "Round",
+            "category": "Math"
         },
         {
             "name": "robot_action",
             "definition": "{\"type\":\"robot_action\",\"message0\":\"Do %1\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"ACTION\",\"options\":[[\"Wave\",\"wave\"],[\"Wipe Forehead\",\"wipe_forehead\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs an action and returns to the previous position.\"}",
-            "generator": "var code = block.getFieldValue('ACTION');return Blockly.NaoLang.generatePrefix() + code + '()\\n';"
+            "generator": "var code = block.getFieldValue('ACTION');return Blockly.NaoLang.generatePrefix() + code + '()\\n';",
+            "text": "Selectable Action",
+            "category": "Robot"
         },
         {
             "name": "robot_action_and_say",
             "definition": "{\"type\":\"robot_action_and_say\",\"message0\":\"Do %1 and say %2\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"ACTION\",\"options\":[[\"Wave\",\"wave\"],[\"Wipe Forehead\",\"wipe_forehead\"]]},{\"type\":\"input_value\",\"name\":\"TEXT\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs an action and returns to the previous position.\"}",
-            "generator": "var textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC),code = block.getFieldValue('ACTION');return Blockly.NaoLang.generatePrefix() + code + '(' + textToSpeak + ')\\n';"
+            "generator": "var textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC),code = block.getFieldValue('ACTION');return Blockly.NaoLang.generatePrefix() + code + '(' + textToSpeak + ')\\n';",
+            "text": "Selectable Action with Speech",
+            "category": "Robot"
         },
         {
             "name": "robot_action_wave",
             "definition": "{\"type\":\"robot_action_wave\",\"message0\":\"Wave\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs a wave action\"}",
-            "generator": "return 'wave()\\n';"
+            "generator": "return 'wave()\\n';",
+            "text": "Wave",
+            "category": "Robot"
         },
         {
             "name": "robot_action_wipe_forehead",
             "definition": "{\"type\":\"robot_action_wipe_forehead\",\"message0\":\"Wipe Forehead\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs a Wipe Forehead action\"}",
-            "generator": "return 'wipe_forehead()\\n';"
+            "generator": "return 'wipe_forehead()\\n';",
+            "text": "Wipe Forehead",
+            "category": "Robot"
         },
         {
             "name": "robot_change_chest",
             "definition": "{\"type\":\"robot_change_chest\",\"message0\":\"Change chest to %1\",\"args0\":[{\"type\":\"input_value\",\"name\":\"COLOUR\"}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Changes the colour of the robot's chest.\"}",
-            "generator": "var value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC);return Blockly.NaoLang.generatePrefix() + 'changeLEDColour(CHEST, ' + value_colour + ')\\n';"
+            "generator": "var value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC);return Blockly.NaoLang.generatePrefix() + 'changeLEDColour(CHEST, ' + value_colour + ')\\n';",
+            "text": "Change Chest LED Colour",
+            "category": "Robot"
         },
         {
             "name": "robot_change_eye",
             "definition": "{\"type\":\"robot_change_eye\",\"message0\":\"Change %1 eye(s) to %2\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"EYE\",\"options\":[[\"Both\",\"BOTH_EYES\"],[\"Left\",\"LEFT_EYE\"],[\"Right\",\"RIGHT_EYE\"]]},{\"type\":\"input_value\",\"name\":\"COLOUR\"}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Changes the colour of the robot's eyes.\"}",
-            "generator": "var value_eye = block.getFieldValue('EYE'),value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC),code = 'changeLEDColour(' + value_eye + ', ' + value_colour + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var value_eye = block.getFieldValue('EYE'),value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC),code = 'changeLEDColour(' + value_eye + ', ' + value_colour + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Change Eye LED Colour",
+            "category": "Robot"
         },
         {
             "name": "robot_change_led",
             "definition": "{\"type\":\"robot_change_led\",\"message0\":\"Change %1 LED to %2\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"LED\",\"options\":[[\"Both\",\"BOTH\"],[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"]]},{\"type\":\"input_value\",\"name\":\"COLOUR\"}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Changes the colour of the robot's LEDs.\"}",
-            "generator": "var value_led = block.getFieldValue('LED'),value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC),code = 'changeLEDColour(' + value_led + ', ' + value_colour + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var value_led = block.getFieldValue('LED'),value_colour = Blockly.NaoLang.valueToCode(block, 'COLOUR', Blockly.NaoLang.ORDER_ATOMIC),code = 'changeLEDColour(' + value_led + ', ' + value_colour + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Change LED Colour",
+            "category": "Robot"
         },
         {
             "name": "robot_dance",
             "definition": "{\"type\":\"robot_dance\",\"message0\":\"Dance\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs the gangnam dance.\"}",
-            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Dance",
+            "category": "Robot"
         },
         {
             "name": "robot_gangnam",
             "definition": "{\"type\":\"robot_gangnam\",\"message0\":\"Gangnam (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs the gangnam dance.\"}",
-            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'gangnam\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'gangnam\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Gangnum Dance",
+            "category": "Robot"
         },
         {
             "name": "robot_hand",
             "definition": "{\"type\":\"robot_hand\",\"message0\":\"%1 %2 hand(s)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"ACTION\",\"options\":[[\"Open\",\"open\"],[\"Close\",\"close\"]]},{\"type\":\"field_dropdown\",\"name\":\"HAND\",\"options\":[[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"],[\"Both\",\"BOTH\"]]}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Changes the colour of the robot's eyes.\"}",
-            "generator": "var value_action = block.getFieldValue('ACTION'),value_hand = block.getFieldValue('HAND'),code = 'changeHand(\\'' + value_action.toLowerCase() + '\\',\\'' + value_hand.toLowerCase() + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var value_action = block.getFieldValue('ACTION'),value_hand = block.getFieldValue('HAND'),code = 'changeHand(\\'' + value_action.toLowerCase() + '\\',\\'' + value_hand.toLowerCase() + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Open or Close Hand",
+            "category": "Robot"
         },
         {
             "name": "robot_kia_ora",
             "definition": "{\"type\":\"robot_kia_ora\",\"message0\":\"Say 'Kia ora'\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Say kia ora.\"}",
-            "generator": "var code = 'say(\\'key or a\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'say(\\'key or a\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Say Kia Ora",
+            "category": "Robot"
         },
         {
             "name": "robot_look",
             "definition": "{\"type\":\"robot_look\",\"message0\":\"Look %1\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIR\",\"options\":[[\"left\",\"LEFT\"],[\"ahead\",\"AHEAD\"],[\"right\",\"RIGHT\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves the robot's head to look in the direction.\"}",
-            "generator": "var dir = block.getFieldValue('DIR').toLowerCase(),code = 'look(\\'' + dir + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var dir = block.getFieldValue('DIR').toLowerCase(),code = 'look(\\'' + dir + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Look in Direction",
+            "category": "Robot"
         },
         {
             "name": "robot_macaranna",
             "definition": "{\"type\":\"robot_macaranna\",\"message0\":\"Macaranna (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs the macaranna dance.\"}",
-            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'macaranna\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'macaranna\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Macaranna Dance",
+            "category": "Robot"
         },
         {
             "name": "robot_move",
             "definition": "{\"type\":\"robot_move\",\"message0\":\"Move forward %1s seconds\",\"args0\":[{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"SECONDS\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves forward for the duration.\"}",
-            "generator": "var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'moveForward(' + seconds + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'moveForward(' + seconds + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Move Forwards",
+            "category": "Robot"
         },
         {
             "name": "robot_move_direction",
             "definition": "{\"type\":\"robot_move_direction\",\"message0\":\"Move %1 for %2 seconds\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIR\",\"options\":[[\"Forward\",\"FORWARD\"],[\"Backwards\",\"BACK\"]]},{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"SECONDS\"}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Moves the robot in a direction for a specified time\"}",
-            "generator": "var value_dir = block.getFieldValue('DIR'),value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'moveDirection(' + value_dir + ',' + value_time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var value_dir = block.getFieldValue('DIR'),value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'moveDirection(' + value_dir + ',' + value_time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Move in Direction",
+            "category": "Robot"
         },
         {
             "name": "robot_on_button",
             "definition": "{\"type\":\"robot_on_button\",\"message0\":\"When %1 pressed\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"BUTTON\",\"options\":[[\"Front Head\",\"front\"],[\"Middle Head\",\"middle\"],[\"Read Head\",\"rear\"],[\"Chest\",\"chest\"]]}],\"message1\":\"Do %1\",\"args1\":[{\"type\":\"input_statement\",\"name\":\"ACTION\"}],\"inputsInline\":true,\"colour\":290,\"tooltip\":\"Starts the block when a button is touched.\"}",
-            "generator": "var button = block.getFieldValue('BUTTON'),innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = button + 'Button{\\n' +innerCode +'}\\n';return code;"
+            "generator": "var button = block.getFieldValue('BUTTON'),innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = button + 'Button{\\n' +innerCode +'}\\n';return code;",
+            "text": "On Button Pushed",
+            "category": "Robot Events"
         },
         {
             "name": "robot_on_start",
             "definition": "{\"type\":\"robot_on_start\",\"message0\":\"On start\",\"message1\":\"do %1\",\"args1\":[{\"type\":\"input_statement\",\"name\":\"ACTION\"}],\"colour\":290,\"tooltip\":\"Starts the block when the script is downloaded.\",\"helpUrl\":\"\"}",
-            "generator": "var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = 'start{\\n' +innerCode +'}\\n';return code;"
+            "generator": "var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = 'start{\\n' +innerCode +'}\\n';return code;",
+            "text": "On Start",
+            "category": "Robot Events"
         },
         {
             "name": "robot_play_audio",
             "definition": "{\"type\":\"robot_play_audio\",\"message0\":\"Play audio %1\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"AUDIO\",\"options\":[[\"Last Recorded\",\"record\"]]}],\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Puts the robot in a safe resting position.\"}",
-            "generator": "var audio = block.getFieldValue('AUDIO'),code = 'audio(\\'' + audio + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var audio = block.getFieldValue('AUDIO'),code = 'audio(\\'' + audio + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Play Audio",
+            "category": "Robot"
         },
         {
             "name": "robot_point",
             "definition": "{\"type\":\"robot_point\",\"message0\":\"Point %1 arm %2\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"ARM\",\"options\":[[\"left\",\"LEFT\"],[\"right\",\"RIGHT\"]]},{\"type\":\"field_dropdown\",\"name\":\"DIR\",\"options\":[[\"out\",\"OUT\"],[\"ahead\",\"AHEAD\"],[\"down\",\"DOWN\"],[\"up\",\"UP\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves one of the robot's arms to point in the direction.\"}",
-            "generator": "var dir = block.getFieldValue('DIR').toLowerCase(),arm = block.getFieldValue('ARM').toLowerCase(),code = 'point(\\'' + arm + '\\',\\'' + dir + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var dir = block.getFieldValue('DIR').toLowerCase(),arm = block.getFieldValue('ARM').toLowerCase(),code = 'point(\\'' + arm + '\\',\\'' + dir + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Point in Direction",
+            "category": "Robot"
         },
         {
             "name": "robot_point_left",
             "definition": "{\"type\":\"robot_point_left\",\"message0\":\"Point left\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Points the robot's left arm.\"}",
-            "generator": "var code = 'point(\\'left\\',\\'out\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'point(\\'left\\',\\'out\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Point Left",
+            "category": "Robot"
         },
         {
             "name": "robot_point_right",
             "definition": "{\"type\":\"robot_point_right\",\"message0\":\"Point right\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Points the robot's right arm.\"}",
-            "generator": "var code = 'point(\\'right\\',\\'out\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'point(\\'right\\',\\'out\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Point Right",
+            "category": "Robot"
         },
         {
             "name": "robot_posture",
             "definition": "{\"type\":\"robot_posture\",\"message0\":\"Move to %1\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"POSTURE\",\"options\":[[\"Stand\",\"Stand\"],[\"Sit Forward\",\"Sit\"],[\"Sit Back\",\"SitRelax\"],[\"Crouch\",\"Crouch\"],[\"Lie on Front\",\"LyingBelly\"],[\"Lie on Back\",\"LyingBack\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the specified position.\"}",
-            "generator": "var posture = block.getFieldValue('POSTURE'),code = 'position(\\'' + posture + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var posture = block.getFieldValue('POSTURE'),code = 'position(\\'' + posture + '\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Move to Posture",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_and_say",
             "definition": "{\"type\":\"robot_posture_and_say\",\"message0\":\"Move to %1 and say %2\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"POSTURE\",\"options\":[[\"Stand\",\"Stand\"],[\"Sit Forward\",\"Sit\"],[\"Sit Back\",\"SitRelax\"],[\"Crouch\",\"Crouch\"],[\"Lie on Front\",\"LyingBelly\"],[\"Lie on Back\",\"LyingBack\"]]},{\"type\":\"input_value\",\"name\":\"TEXT\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the specified position.\"}",
-            "generator": "var posture = block.getFieldValue('POSTURE'),textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC),code = 'position(\\'' + posture + '\\', ' + textToSpeak + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var posture = block.getFieldValue('POSTURE'),textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC),code = 'position(\\'' + posture + '\\', ' + textToSpeak + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Move to Posture with Speech",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_Crouch",
             "definition": "{\"type\":\"robot_posture_Crouch\",\"message0\":\"Crouch\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Crouch position.\"}",
-            "generator": "var code = 'position(\\'Crouch\\')\\n';return code;"
+            "generator": "var code = 'position(\\'Crouch\\')\\n';return code;",
+            "text": "Crouch",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_LyingBack",
             "definition": "{\"type\":\"robot_posture_LyingBack\",\"message0\":\"Lie on Back\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Lie on Back position.\"}",
-            "generator": "var code = 'position(\\'LyingBack\\')\\n';return code;"
+            "generator": "var code = 'position(\\'LyingBack\\')\\n';return code;",
+            "text": "Lie on Back",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_LyingBelly",
             "definition": "{\"type\":\"robot_posture_LyingBelly\",\"message0\":\"Lie on Front\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Lie on Front position.\"}",
-            "generator": "var code = 'position(\\'LyingBelly\\')\\n';return code;"
+            "generator": "var code = 'position(\\'LyingBelly\\')\\n';return code;",
+            "text": "Lie on Front",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_Sit",
             "definition": "{\"type\":\"robot_posture_Sit\",\"message0\":\"Sit Forward\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Sit Forward position.\"}",
-            "generator": "var code = 'position(\\'Sit\\')\\n';return code;"
+            "generator": "var code = 'position(\\'Sit\\')\\n';return code;",
+            "text": "Sit",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_SitRelax",
             "definition": "{\"type\":\"robot_posture_SitRelax\",\"message0\":\"Sit Back\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Sit Back position.\"}",
-            "generator": "var code = 'position(\\'SitRelax\\')\\n';return code;"
+            "generator": "var code = 'position(\\'SitRelax\\')\\n';return code;",
+            "text": "Sit in Relax Posture",
+            "category": "Robot"
         },
         {
             "name": "robot_posture_Stand",
             "definition": "{\"type\":\"robot_posture_Stand\",\"message0\":\"Stand\",\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Moves to the Stand position.\"}",
-            "generator": "var code = 'position(\\'Stand\\')\\n';return code;"
+            "generator": "var code = 'position(\\'Stand\\')\\n';return code;",
+            "text": "Stand",
+            "category": "Robot"
         },
         {
             "name": "robot_record_audio",
             "definition": "{\"type\":\"robot_record_audio\",\"message0\":\"Record audio for %1s\",\"args0\":[{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"TIME\"}],\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Records some audio.\"}",
-            "generator": "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'record(\\'record\\'' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'record(\\'record\\'' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Record Audio",
+            "category": "Robot"
         },
         {
             "name": "robot_rest",
             "definition": "{\"type\":\"robot_rest\",\"message0\":\"Rest\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Puts the robot in a safe resting position.\"}",
-            "generator": "var code = 'rest()\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'rest()\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Rest",
+            "category": "Robot"
         },
         {
             "name": "robot_say",
             "definition": "{\"type\":\"robot_say\",\"message0\":\"Say %1\",\"args0\":[{\"type\":\"input_value\",\"name\":\"TEXT\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Speak the specified text.\"}",
-            "generator": "var textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC);var code = 'say(' + textToSpeak + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var textToSpeak = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_ATOMIC);var code = 'say(' + textToSpeak + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Speak",
+            "category": "Robot"
         },
         {
             "name": "robot_sensor_battery",
             "definition": "{\"type\":\"robot_sensor_battery\",\"message0\":\"Battery charge\",\"output\":null,\"colour\":85,\"tooltip\":\"Retrieves the current charge level of the battery\"}",
-            "generator": "var code = 'readSensor(BATTERY)';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = 'readSensor(BATTERY)';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Battery Level",
+            "category": "Robot Sensors"
         },
         {
             "name": "robot_sensor_gyroscope",
             "definition": "{\"type\":\"robot_sensor_gyroscope\",\"message0\":\"%1 gyroscope\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"SENSOR\",\"options\":[[\"x\",\"X\"],[\"y\",\"Y\"],[\"z\",\"Z\"]]}],\"output\":null,\"colour\":85,\"tooltip\":\"Retrieves the value of the gyroscope in an axis\"}",
-            "generator": "var code = 'readSensor(GYROSCOPE_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = 'readSensor(GYROSCOPE_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Gyroscope",
+            "category": "Robot Sensors"
         },
         {
             "name": "robot_sensor_head",
             "definition": "{\"type\":\"robot_sensor_head\",\"message0\":\"%1 head touched\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"SENSOR\",\"options\":[[\"Front\",\"FRONT\"],[\"Middle\",\"MIDDLE\"],[\"Rear\",\"REAR\"]]}],\"output\":null,\"colour\":85,\"tooltip\":\"Retrieves whether a head sensor is touched\"}",
-            "generator": "var code = 'readSensor(HEAD_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = 'readSensor(HEAD_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Head Button",
+            "category": "Robot Sensors"
         },
         {
             "name": "robot_sensor_sonar",
             "definition": "{\"type\":\"robot_sensor_sonar\",\"message0\":\"Distance to %1 front\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"SENSOR\",\"options\":[[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"]]}],\"output\":null,\"colour\":85,\"tooltip\":\"Retrieves the distance to the front of the root on a side\"}",
-            "generator": "var code = 'readSensor(SONAR_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = 'readSensor(SONAR_' + Blockly.NaoLang.variableDB_.getName(block.getFieldValue('SENSOR'), Blockly.Variables.NAME_TYPE) + ')';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Sonar",
+            "category": "Robot Sensors"
         },
         {
             "name": "robot_taichi",
             "definition": "{\"type\":\"robot_taichi\",\"message0\":\"Tai chi (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Performs a tai chi dance.\"}",
-            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'taichi\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'taichi\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Perform Tai Chi",
+            "category": "Robot"
         },
         {
             "name": "robot_turn",
             "definition": "{\"type\":\"robot_turn\",\"message0\":\"Turn %1 for %2 seconds\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIR\",\"options\":[[\"left\",\"LEFT\"],[\"right\",\"RIGHT\"]]},{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"SECONDS\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Turns for the duration.\"}",
-            "generator": "var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),value_dir = block.getFieldValue('DIR'),code = 'turn(' + value_dir + ',' + seconds + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var seconds = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),value_dir = block.getFieldValue('DIR'),code = 'turn(' + value_dir + ',' + seconds + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Turn in Direction",
+            "category": "Robot"
         },
         {
             "name": "robot_turn_direction",
             "definition": "{\"type\":\"robot_turn_direction\",\"message0\":\"Turn %1 for %2 seconds\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"DIR\",\"options\":[[\"Left\",\"LEFT\"],[\"Right\",\"RIGHT\"]]},{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"SECONDS\"}],\"inputsInline\":true,\"previousStatement\":null,\"nextStatement\":null,\"colour\":65,\"tooltip\":\"Turns the robot in a direction for a specified time\"}",
-            "generator": "var value_dir = block.getFieldValue('DIR'),value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'turnDirection(' + value_dir + ',' + value_time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var value_dir = block.getFieldValue('DIR'),value_time = Blockly.NaoLang.valueToCode(block, 'SECONDS', Blockly.NaoLang.ORDER_ATOMIC),code = 'turnDirection(' + value_dir + ',' + value_time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Turn in Direction",
+            "category": "Robot"
         },
         {
             "name": "robot_wait",
             "definition": "{\"type\":\"robot_wait\",\"message0\":\"Wait for %1s\",\"args0\":[{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"TIME\"}],\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Puts the robot in a safe resting position.\"}",
-            "generator": "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Wait",
+            "category": "System"
         },
         {
             "name": "robot_walk",
             "definition": "{\"type\":\"robot_walk\",\"message0\":\"Walk forward %1s, sideways %2s\",\"args0\":[{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"X\"},{\"type\":\"input_value\",\"check\":\"Number\",\"name\":\"Y\"}],\"inputsInline\":true,\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Walks for the duration.\"}",
-            "generator": "var xPos = Blockly.NaoLang.valueToCode(block, 'X', Blockly.NaoLang.ORDER_ATOMIC),yPos = Blockly.NaoLang.valueToCode(block, 'Y', Blockly.NaoLang.ORDER_ATOMIC);var code = 'walk(' + xPos + ',' + yPos + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            "generator": "var xPos = Blockly.NaoLang.valueToCode(block, 'X', Blockly.NaoLang.ORDER_ATOMIC),yPos = Blockly.NaoLang.valueToCode(block, 'Y', Blockly.NaoLang.ORDER_ATOMIC);var code = 'walk(' + xPos + ',' + yPos + ')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "text": "Walk in Direction",
+            "category": "Robot"
         },
         {
             "name": "text",
             "definition": "SYSTEM",
-            "generator": "var code = '\\'' + block.getFieldValue('TEXT').replace(/'/g, '\\\\\\'') + '\\'';return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = '\\'' + block.getFieldValue('TEXT').replace(/'/g, '\\\\\\'') + '\\'';return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Text",
+            "category": "Text"
         },
         {
             "name": "text_concat",
             "definition": "{\"type\":\"text_concat\",\"message0\":\"Append %1 to %2\",\"args0\":[{\"type\":\"input_value\",\"name\":\"TEXT\"},{\"type\":\"input_value\",\"name\":\"VAR\"}],\"inputsInline\":true,\"colour\":165,\"output\":null,\"tooltip\":\"Append text to a variable.\"}",
-            "generator": "var varName = Blockly.NaoLang.valueToCode(block, 'VAR', Blockly.NaoLang.ORDER_NONE) || '\\'\\'',value = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_NONE) || '\\'\\'',order = Blockly.NaoLang.ORDER_RELATIONAL;return ['append(' + varName + ',' + value + ')', order];"
+            "generator": "var varName = Blockly.NaoLang.valueToCode(block, 'VAR', Blockly.NaoLang.ORDER_NONE) || '\\'\\'',value = Blockly.NaoLang.valueToCode(block, 'TEXT', Blockly.NaoLang.ORDER_NONE) || '\\'\\'',order = Blockly.NaoLang.ORDER_RELATIONAL;return ['append(' + varName + ',' + value + ')', order];",
+            "text": "Concatenate",
+            "category": "Text"
         },
         {
             "name": "text_length",
             "definition": "SYSTEM",
-            "generator": "var text = Blockly.NaoLang.valueToCode(block, 'VALUE', Blockly.NaoLang.ORDER_NONE) || '\\'\\'';return ['len(' + text + ')', Blockly.NaoLang.ORDER_FUNCTION_CALL];"
+            "generator": "var text = Blockly.NaoLang.valueToCode(block, 'VALUE', Blockly.NaoLang.ORDER_NONE) || '\\'\\'';return ['len(' + text + ')', Blockly.NaoLang.ORDER_FUNCTION_CALL];",
+            "text": "Length",
+            "category": "Text"
         },
         {
             "name": "variables_get",
             "definition": "SYSTEM",
-            "generator": "var code = '@' + Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return [code, Blockly.NaoLang.ORDER_ATOMIC];"
+            "generator": "var code = '@' + Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return [code, Blockly.NaoLang.ORDER_ATOMIC];",
+            "text": "Get",
+            "category": "Variables"
         },
         {
             "name": "variables_set",
             "definition": "SYSTEM",
-            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'VALUE', Blockly.NaoLang.ORDER_NONE) || '0',varName = Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return Blockly.NaoLang.generatePrefix() + 'variable(@' + varName + ', ' + argument0 + ')\\n';"
+            "generator": "var argument0 = Blockly.NaoLang.valueToCode(block, 'VALUE', Blockly.NaoLang.ORDER_NONE) || '0',varName = Blockly.NaoLang.nameDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);return Blockly.NaoLang.generatePrefix() + 'variable(@' + varName + ', ' + argument0 + ')\\n';",
+            "text": "Set",
+            "category": "Variables"
         }
     ],
     "nodes": [

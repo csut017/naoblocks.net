@@ -150,7 +150,14 @@ namespace NaoBlocks.Web.Controllers
             {
                 commands.Add(new AddRobotType { Name = "Nao" });
                 commands.Add(new SetDefaultRobotType { Name = "Nao", IgnoreMissingRobotType = true });
-                commands.Add(new ImportToolbox { RobotTypeName = "Nao", Definition = Resources.Manager.NaoToolbox, IgnoreMissingRobotType = true });
+                commands.Add(new ImportToolbox
+                {
+                    RobotTypeName = "Nao",
+                    Definition = Resources.Manager.NaoToolbox,
+                    ToolboxName = "Default",
+                    IsDefault = true,
+                    IgnoreMissingRobotType = true
+                });
                 useBatch = true;
             }
 

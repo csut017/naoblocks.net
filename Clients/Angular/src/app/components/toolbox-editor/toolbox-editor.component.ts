@@ -79,26 +79,28 @@ export class ToolboxEditorComponent implements OnInit {
 
   doSave() {
     if (!this.item || !this.robotType || !this.form.valid) return;
+    let xml = Blockly.Xml.workspaceToDom(this.workspace);
+    console.log(Blockly.Xml.domToPrettyText(xml));
 
-    console.groupCollapsed('Generating toolbox');
-    let definition = '';
-    try {
-      definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
-      console.log(definition);
-      console.log((new DOMParser()).parseFromString(definition, "application/xml"));
-    } finally {
-      console.groupEnd();
-    }
-    let name = this.form.get('name')?.value || '';
-    let isDefault = this.form.get('isDefault')?.value || false;
-    this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
-      .subscribe(result => {
-        if (result.successful) {
-          this.closed.emit(true);
-        } else {
-          this.error = result.allErrors().join(':');
-        }
-      });
+    // console.groupCollapsed('Generating toolbox');
+    // let definition = '';
+    // try {
+    //   definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
+    //   console.log(definition);
+    //   console.log((new DOMParser()).parseFromString(definition, "application/xml"));
+    // } finally {
+    //   console.groupEnd();
+    // }
+    // let name = this.form.get('name')?.value || '';
+    // let isDefault = this.form.get('isDefault')?.value || false;
+    // this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
+    //   .subscribe(result => {
+    //     if (result.successful) {
+    //       this.closed.emit(true);
+    //     } else {
+    //       this.error = result.allErrors().join(':');
+    //     }
+    //   });
   }
 
   doClose() {
@@ -242,14 +244,28 @@ export class ToolboxEditorComponent implements OnInit {
     }
   }
 
+  private generateBlockList(blocks: any[], position: number): string {
+    const block = blocks[position];
+    let inner = (position + 1) < blocks.length ? `<next>${this.generateBlockList(blocks, position + 1)}</next>` : '';
+    let code = `<block type="${block.type}">${inner}</block>`;
+    return code;
+  }
+
   private initialiseWorkspace(): void {
     console.log(`[ToolboxBuilder] Initialising workspace`);
     const categories = [...new Set(this.definitions.map(b => b.category))];
+    let position = 0;
+    let colours = [ '330', '210', '120', '260', '65', '20'];
     let toolbox = '<xml><category name="Toolbox" colour="290"><block type="category"></block></category>'
       + categories.map(c => {
         const name = `${c} Blocks`.trim();
+        const colour = colours[position++];
+        if (position >= colours.length) position = 0;
+        const allBlocks = this.definitions.filter(b => b.category == c);
+        const blockList = this.generateBlockList(allBlocks, 0);
         return `<category name="${name}" colour="120">`
-          + this.definitions.filter(b => b.category == c).map(b => `<block type="${b.type}"></block>`).join('')
+          + `<block type="category"><field name="NAME">${name}</field><field name="COLOUR">${colour}</field><statement name="BLOCKS">${blockList}</statement></block>`
+          + allBlocks.map(b => `<block type="${b.type}"></block>`).join('')
           + '</category>';
       }).join('')
       + '</xml>';
