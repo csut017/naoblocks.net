@@ -126,7 +126,7 @@ namespace NaoBlocks.Engine.Commands
             var setAsDefault = this.IsDefault;
             if (defaultToobox != null)
             {
-                if (defaultToobox.Name != this.ToolboxName)
+                if (this.IsDefault && (defaultToobox.Name != this.ToolboxName))
                 {
                     defaultToobox.IsDefault = false;
                 }

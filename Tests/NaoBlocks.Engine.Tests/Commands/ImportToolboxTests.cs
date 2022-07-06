@@ -53,12 +53,13 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ExecuteReplacesExistingToolbox()
+        public async Task ExecuteLeavesDefaultToolbox()
         {
             var command = new ImportToolbox
             {
                 RobotTypeName = "Bobbot",
                 ToolboxName = "Testing",
+                IsDefault = false,
                 Definition = "<toolbox>" +
                         "<category name=\"one\" order=\"2\" colour=\"1\">" +
                             "<block type=\"two\">three</block>" +
@@ -68,7 +69,8 @@ namespace NaoBlocks.Engine.Tests.Commands
             var initialRobotType = new RobotType { Name = "Bobbot" };
             var initialToolbox = new Toolbox
             {
-                Name = "Testing"
+                Name = "Default",
+                IsDefault = true,
             };
             initialToolbox.Categories.Add(new ToolboxCategory
             {
@@ -89,13 +91,13 @@ namespace NaoBlocks.Engine.Tests.Commands
             using var verifySession = store.OpenSession();
             var robotType = verifySession.Query<RobotType>().First();
             var toolboxCount = robotType.Toolboxes.Count;
-            Assert.Equal(1, toolboxCount);
-            Assert.Equal("one",
-                robotType.Toolboxes.First().Categories.First().Name);
+            Assert.Equal(2, toolboxCount);
+            Assert.Equal("Default",
+                robotType.Toolboxes.SingleOrDefault(t => t.IsDefault)?.Name);
         }
 
         [Fact]
-        public async Task ExecuteReplacesUpdatesDefaultToolbox()
+        public async Task ExecuteReplacesDefaultToolbox()
         {
             var command = new ImportToolbox
             {
@@ -136,6 +138,48 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Equal(2, toolboxCount);
             Assert.Equal("Testing",
                 robotType.Toolboxes.SingleOrDefault(t => t.IsDefault)?.Name);
+        }
+
+        [Fact]
+        public async Task ExecuteReplacesExistingToolbox()
+        {
+            var command = new ImportToolbox
+            {
+                RobotTypeName = "Bobbot",
+                ToolboxName = "Testing",
+                Definition = "<toolbox>" +
+                        "<category name=\"one\" order=\"2\" colour=\"1\">" +
+                            "<block type=\"two\">three</block>" +
+                        "</category>" +
+                    "</toolbox>"
+            };
+            var initialRobotType = new RobotType { Name = "Bobbot" };
+            var initialToolbox = new Toolbox
+            {
+                Name = "Testing"
+            };
+            initialToolbox.Categories.Add(new ToolboxCategory
+            {
+                Name = "existing"
+            });
+            initialRobotType.Toolboxes.Add(initialToolbox);
+            using var store = InitialiseDatabase(initialRobotType);
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful);
+                await engine.CommitAsync();
+            }
+
+            using var verifySession = store.OpenSession();
+            var robotType = verifySession.Query<RobotType>().First();
+            var toolboxCount = robotType.Toolboxes.Count;
+            Assert.Equal(1, toolboxCount);
+            Assert.Equal("one",
+                robotType.Toolboxes.First().Categories.First().Name);
         }
 
         [Fact]
