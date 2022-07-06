@@ -60,9 +60,35 @@ Installing on a robot is more complicated due to the closed nature of the Nao op
     ```
 1. Copy all the .py files to a new folder on the robot
 
+## Automatically starting on the Nao robot
 _**TODO**: add information about the autoload.ini_
 
-_**TODO**: add information about connect.txt_
+## Connect.txt
+
+connect.txt contains a list of potential NaoBlocks servers. The file uses the following format:
+
+```
+server,password,secure
+```
+
+Where
+* *server* is the name and port of the server to connect to (the port is only needed if connecting to non-standard ports for http and https.)
+* *password* is the password to use for authenticating the client (this must match the password for the robot on the server.)
+* *secure* is **yes** to use https or **no** for http.
+
+The following is an example connect.txt for connecting to a NaoBlocks server running using the standard Visual Studio settings:
+
+```
+localhost:5001,one,no
+```
+
+When the client loads, it will perform the following steps to determine which server to connect to:
+1. Is there a server in the command-line arguments:
+    * Attempt to connect using the server in the command-line
+1. Is there a connect.txt
+    * Check each server in connect.txt
+    * Start with the first line and check each in order
+    * Stop at the first successful connection *(**Note:** the connection may still fail if the password is invalid.)*
 
 ## Dependencies
 
