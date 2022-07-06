@@ -50,6 +50,20 @@ export class RobotTypeService extends ClientService {
       );
   }
 
+  getToolbox(id: string, name: string, format: string = 'toolbox'): Observable<ExecutionResult<Toolbox>> {
+    const url = `${environment.apiURL}v1/robots/types/${id}/toolbox/${name}?format=${format}`;
+    this.log(`Retrieving toolbox ${name} for robot type ${id}`);
+    return this.http.get<Toolbox>(url)
+      .pipe(
+        tap(data => {
+          data.id = data.name;
+          this.log(`Retrieved toolbox ${name} for robot type ${id}`)
+        }),
+        map(data => new ExecutionResult<Toolbox>(data)),
+        catchError(this.handleError('list', msg => new ExecutionResult<Toolbox>(undefined, msg)))
+      );
+  }
+
   save(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
     if (robotType.isNew) {
       const url = `${environment.apiURL}v1/robots/types`;

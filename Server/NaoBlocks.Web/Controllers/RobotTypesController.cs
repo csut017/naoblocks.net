@@ -86,11 +86,45 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             if (robotType == null)
             {
+                this.logger.LogDebug($"Unknown robot type ${name}");
                 return NotFound();
             }
 
             this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             return Transfer.RobotType.FromModel(robotType, true);
+        }
+
+        /// <summary>
+        /// Retrieves a toolbox for a robot type by its name.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="name">The name of the toolbox.</param>
+        /// <param name="format">An optional parameter specifying the output format of the definition.</param>
+        /// <returns>Either a 404 (not found) or the toolbox details.</returns>
+        [HttpGet("{id}/toolbox/{name}")]
+        public async Task<ActionResult<Transfer.Toolbox>> GetToolbox(string id, string name, [FromQuery] string? format = null)
+        {
+            this.logger.LogDebug($"Retrieving robot type: {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                this.logger.LogDebug($"Unknown robot type ${id}");
+                return NotFound();
+            }
+
+            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            var toolbox = robotType.Toolboxes.FirstOrDefault(t => t.Name == name);
+            if (toolbox == null)
+            {
+                this.logger.LogDebug($"Unknown toolbox ${name}");
+                return NotFound();
+            }
+
+            this.logger.LogDebug($"Found toolbox ${toolbox.Name}");
+            return Transfer.Toolbox.FromModel(toolbox, true, format);
         }
 
         /// <summary>

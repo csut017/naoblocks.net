@@ -135,6 +135,66 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetToolboxHandlesMissingRobotType()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GetToolbox("karetao", "unknown");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetToolboxHandlesMissingToolbox()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GetToolbox("karetao", "unknown");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetToolboxRetrievesViaQuery()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            var robotType = new Data.RobotType { Name = "karetao" };
+            robotType.Toolboxes.Add(new Data.Toolbox { Name = "toolbox" });
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)robotType));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GetToolbox("karetao", "toolbox");
+
+            // Assert
+            Assert.NotNull(response.Value);
+            Assert.Equal("toolbox", response.Value?.Name);
+            Assert.Equal(
+                "<toolbox />",
+                response.Value?.Definition);
+        }
+
+        [Fact]
         public async Task ImportToolboxCallsCommand()
         {
             // Arrange

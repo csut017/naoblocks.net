@@ -35,5 +35,21 @@ namespace NaoBlocks.Web.Tests.Dtos
                 "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
                 dto.Definition);
         }
+
+        [Fact]
+        public void FromModelConvertsEntityAndXmlUsingFormat()
+        {
+            var entity = new Data.Toolbox
+            {
+                Name = "karetao",
+                IsDefault = true
+            };
+            entity.Categories.Add(
+                new Data.ToolboxCategory { Name = "testing" });
+            var dto = Transfer.Toolbox.FromModel(entity, true, "toolbox");
+            Assert.Equal(
+                "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                dto.Definition);
+        }
     }
 }

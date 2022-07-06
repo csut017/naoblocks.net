@@ -41,10 +41,25 @@ export class ToolboxEditorComponent implements OnInit {
   }
 
   ngOnChanges(_: SimpleChanges): void {
+    if (!this.item || !this.robotType) return;
     this.form.setValue({
       name: this.item?.name || '',
       isDefault: this.item?.isDefault || false,
     })
+    if (!this.item.name) return;
+    
+    this.robotTypeService.getToolbox(this.robotType.id!, this.item.name!, 'blockly')
+      .subscribe(resp => {
+        let dom = Blockly.Xml.textToDom(resp.output?.definition);
+        console.log(dom);
+        Blockly.Xml.domToWorkspace(dom, this.workspace);
+
+        var topBlocks = this.workspace.getTopBlocks();
+        if (topBlocks) {
+          var centreBlock = topBlocks[0];
+          this.workspace.centerOnBlock(centreBlock.id);
+        }
+      });
   }
 
   ngOnInit(): void {
@@ -79,28 +94,27 @@ export class ToolboxEditorComponent implements OnInit {
 
   doSave() {
     if (!this.item || !this.robotType || !this.form.valid) return;
-    let xml = Blockly.Xml.workspaceToDom(this.workspace);
-    console.log(Blockly.Xml.domToPrettyText(xml));
-
-    // console.groupCollapsed('Generating toolbox');
-    // let definition = '';
-    // try {
-    //   definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
-    //   console.log(definition);
-    //   console.log((new DOMParser()).parseFromString(definition, "application/xml"));
-    // } finally {
-    //   console.groupEnd();
-    // }
-    // let name = this.form.get('name')?.value || '';
-    // let isDefault = this.form.get('isDefault')?.value || false;
-    // this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
-    //   .subscribe(result => {
-    //     if (result.successful) {
-    //       this.closed.emit(true);
-    //     } else {
-    //       this.error = result.allErrors().join(':');
-    //     }
-    //   });
+    console.groupCollapsed('Generating toolbox');
+    let definition = '';
+    try {
+      let xml = Blockly.Xml.workspaceToDom(this.workspace);
+      console.log(xml);
+      definition = Blockly.ToolboxBuilder.workspaceToCode(this.workspace);
+      console.log(definition);
+      console.log((new DOMParser()).parseFromString(definition, "application/xml"));
+    } finally {
+      console.groupEnd();
+    }
+    let name = this.form.get('name')?.value || '';
+    let isDefault = this.form.get('isDefault')?.value || false;
+    this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
+      .subscribe(result => {
+        if (result.successful) {
+          this.closed.emit(true);
+        } else {
+          this.error = result.allErrors().join(':');
+        }
+      });
   }
 
   doClose() {
@@ -255,7 +269,7 @@ export class ToolboxEditorComponent implements OnInit {
     console.log(`[ToolboxBuilder] Initialising workspace`);
     const categories = [...new Set(this.definitions.map(b => b.category))];
     let position = 0;
-    let colours = [ '330', '210', '120', '260', '65', '20'];
+    let colours = ['330', '210', '120', '260', '65', '20'];
     let toolbox = '<xml><category name="Toolbox" colour="290"><block type="category"></block></category>'
       + categories.map(c => {
         const name = `${c} Blocks`.trim();

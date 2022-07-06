@@ -27,8 +27,12 @@ namespace NaoBlocks.Web.Dtos
         /// </summary>
         /// <param name="value">The database entity.</param>
         /// <param name="includeDetails">Whether to include the details or not.</param>
+        /// <param name="format">
+        /// The format to use for the definition. Options are "toolbox" for the toolbox format or "blockly" for use in a blockly editor.
+        /// The default format is "toolbox".
+        /// </param>
         /// <returns>A new <see cref="Toolbox"/> instance containing the required properties.</returns>
-        public static Toolbox FromModel(Data.Toolbox value, bool includeDetails = false)
+        public static Toolbox FromModel(Data.Toolbox value, bool includeDetails = false, string? format = null)
         {
             var output = new Toolbox
             {
@@ -38,7 +42,12 @@ namespace NaoBlocks.Web.Dtos
 
             if (includeDetails)
             {
-                output.Definition = value.ExportToXml();
+                if (!Enum.TryParse<Data.Toolbox.Format>(format, true, out var formatType))
+                {
+                    formatType = Data.Toolbox.Format.Toolbox;
+                }
+
+                output.Definition = value.ExportToXml(formatType);
             }
 
             return output;
