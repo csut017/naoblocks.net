@@ -35,6 +35,7 @@ namespace NaoBlocks.Web.IntegrationTests
                 "/api/v1/Clients/6/logs",
                 "/api/v1/Code/mia/1",
                 "/api/v1/Students/mia",
+                "/api/v1/robots/types/export/package/1",
                 "/api/v1/robots/types/karetao/blocksets",
                 "/api/v1/users/mia/Programs/3",
                 "/api/v1/robots/types/karetao",
@@ -57,7 +58,6 @@ namespace NaoBlocks.Web.IntegrationTests
             AddUrlsToCheck(
                 UserRole.Administrator,
                 HttpStatusCode.InternalServerError,
-                "/api/v1/robots/types/export/package/1",
                 "/api/v1/Students/mia/export");
         }
     }

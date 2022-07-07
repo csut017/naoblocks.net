@@ -88,12 +88,7 @@ Date/Time,Source,State,tahi,toru
         }
 
         [Theory]
-        [InlineData(ReportFormat.Unknown, false)]
-        [InlineData(ReportFormat.Zip, false)]
-        [InlineData(ReportFormat.Pdf, true)]
-        [InlineData(ReportFormat.Text, true)]
-        [InlineData(ReportFormat.Excel, true)]
-        [InlineData(ReportFormat.Csv, true)]
+        [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text, ReportFormat.Csv)]
         public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
         {
             var generator = new SnapshotsList();

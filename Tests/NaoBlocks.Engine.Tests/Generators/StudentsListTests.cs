@@ -85,12 +85,7 @@ Moana,Karetao,2021-05-06,,10,Female
         }
 
         [Theory]
-        [InlineData(ReportFormat.Unknown, false)]
-        [InlineData(ReportFormat.Zip, false)]
-        [InlineData(ReportFormat.Pdf, true)]
-        [InlineData(ReportFormat.Excel, true)]
-        [InlineData(ReportFormat.Text, true)]
-        [InlineData(ReportFormat.Csv, true)]
+        [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text, ReportFormat.Csv)]
         public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
         {
             var generator = new StudentsList();

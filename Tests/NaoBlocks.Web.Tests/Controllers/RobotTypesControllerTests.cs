@@ -36,6 +36,26 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<ExecutionResult>(response.Value);
             Assert.True(result.Successful, "Expected result to be successful");
             engine.Verify();
+            Assert.Equal("karetao", ((DeleteRobotType)engine.LastCommand!).Name);
+        }
+
+        [Fact]
+        public async Task DeleteToolboxCallsDelete()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<DeleteToolbox>();
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.DeleteToolbox("karetao", "testing");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            Assert.Equal("karetao", ((DeleteToolbox)engine.LastCommand!).RobotTypeName);
+            Assert.Equal("testing", ((DeleteToolbox)engine.LastCommand!).ToolboxName);
         }
 
         [Theory]
@@ -56,6 +76,10 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(true)
                 .Verifiable();
             engine.RegisterGenerator(generator.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
             var controller = InitialiseController(engine);
 
             // Act
@@ -72,7 +96,12 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task ExportPackageHandlesInvalidInput()
         {
             // Arrange
-            var controller = InitialiseController();
+            var engine = new FakeEngine();
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            var controller = InitialiseController(engine);
 
             // Act
             var response = await controller.ExportPackage("karetao", "garbage");
@@ -88,6 +117,10 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var generator = new Mock<Generators.RobotTypePackage>();
             engine.RegisterGenerator(generator.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
             var controller = InitialiseController(engine);
 
             // Act
@@ -95,6 +128,80 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Theory]
+        [InlineData(null, ReportFormat.Xml, "application/xml", "Testing-toolbox.xml")]
+        [InlineData("xml", ReportFormat.Xml, "application/xml", "Testing-toolbox.xml")]
+        [InlineData("Xml", ReportFormat.Xml, "application/xml", "Testing-toolbox.xml")]
+        [InlineData("XML", ReportFormat.Xml, "application/xml", "Testing-toolbox.xml")]
+        public async Task ExportToolboxGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.RobotTypeToolbox>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.ExportToolbox("karetao", "Testing", format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response.Result);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportToolboxHandlesInvalidInput()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.RobotTypeToolbox>();
+            engine.RegisterGenerator(generator.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.ExportToolbox("karetao", "garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ExportToolboxHandlesUnknownFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var generator = new Mock<Generators.RobotTypeToolbox>();
+            engine.RegisterGenerator(generator.Object);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.ExportToolbox("karetao", "unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
 
         [Fact]

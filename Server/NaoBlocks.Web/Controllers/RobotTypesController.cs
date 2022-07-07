@@ -56,6 +56,26 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Deletes a toolbox from a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="name">The name of the toolbox.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpDelete("{id}/toolbox/{name}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult>> DeleteToolbox(string? id, string name)
+        {
+            this.logger.LogInformation($"Deleting toolbox '{name}' from robot type '{id}'");
+            var command = new DeleteToolbox
+            {
+                RobotTypeName = id,
+                ToolboxName = name,
+            };
+
+            return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
         /// Generates an export package for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
@@ -80,6 +100,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="format">An optional parameter specifying the output format of the definition.</param>
         /// <returns>Either a 404 (not found) or the toolbox details.</returns>
         [HttpGet("{id}/toolbox/{name}/export")]
+        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<Transfer.Toolbox>> ExportToolbox(string id, string name, [FromQuery] string? format = null)
         {
             return await this.GenerateRobotTypeReport<Generators.RobotTypeToolbox>(

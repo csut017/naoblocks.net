@@ -4,11 +4,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
+import { ExecutionResult } from 'src/app/data/execution-result';
+import { ImportSettings } from 'src/app/data/import-settings';
+import { ImportStatus } from 'src/app/data/import-status';
 import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
+import { ImportService } from 'src/app/services/import.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 
@@ -22,7 +26,7 @@ export class ToolboxListComponent implements OnInit, OnChanges {
   @Input() item?: RobotType;
   @Output() closed = new EventEmitter<boolean>();
 
-  columns: string[] = ['select', 'name', 'isDefault' ];
+  columns: string[] = ['select', 'name', 'isDefault'];
   currentItem?: Toolbox;
   dataSource: MatTableDataSource<Toolbox> = new MatTableDataSource();
   hasDefault: boolean = false;
@@ -34,20 +38,25 @@ export class ToolboxListComponent implements OnInit, OnChanges {
   constructor(private robotTypeService: RobotTypeService,
     private authenticationService: AuthenticationService,
     private deleteConfirm: DeletionConfirmationService,
+    private importService: ImportService,
     private snackBar: MatSnackBar,
     private downloaderService: FileDownloaderService,
-    private multilineMessage: MultilineMessageService) {}
+    private multilineMessage: MultilineMessageService) { }
 
   ngOnInit(): void {
   }
 
   ngOnChanges(_: SimpleChanges): void {
-    if (!this.item) return;
+    this.loadTemplateList();
+  }
 
+  private loadTemplateList(): void {
+    if (!this.item) return;
     this.isLoading = true;
     this.robotTypeService.get(this.item.id!)
       .subscribe(data => {
-        if (!this.authenticationService.checkHttpResponse(data)) return;
+        if (!this.authenticationService.checkHttpResponse(data))
+          return;
         let toolboxes = data.output?.toolboxes || [];
         this.dataSource = new MatTableDataSource(toolboxes);
         this.isLoading = false;
@@ -77,7 +86,7 @@ export class ToolboxListComponent implements OnInit, OnChanges {
   }
 
   doDelete(): void {
-    forkJoin(this.selection.selected.map(s => this.robotTypeService.deleteToolbox(this.item!, s.id!)))
+    forkJoin(this.selection.selected.map(s => this.robotTypeService.deleteToolbox(this.item!, s.name!)))
       .subscribe(results => {
         let successful = results.filter(r => r.successful).map(r => r.output);
         let failed = results.filter(r => !r.successful);
@@ -137,13 +146,76 @@ export class ToolboxListComponent implements OnInit, OnChanges {
       this.updateDefaultRobotMessage();
     }
   }
-  
+
   updateDefaultRobotMessage() {
     this.hasDefault = !!this.dataSource.data.find(rt => rt.isDefault);
   }
 
   importToolbox() {
+    let settings = new ImportSettings<RobotType>([this.item!], this.doImportToolbox, this);
+    settings.prompt = `Select the toolboxes to import for ${this.item?.name}:`;
+    settings.allowMultiple = true;
+    settings.title = 'Import Robot Type Toolbox';
+    this.importService.start(settings);
+  }
 
+  doImportToolbox(status: ImportStatus, settings: ImportSettings<RobotType>): void {
+    const multipler = 100 / status.files.length;
+    let emitter = new EventEmitter<number>();
+    emitter.subscribe((pos: number) => {
+      status.uploadProgress = pos * multipler;
+      if (status.isUploadCancelling) {
+        status.uploadStatus = `Cancelled upload`;
+        status.uploadState = 2;
+        status.isUploading = false;
+        status.isUploadCompleted = true;
+        status.uploadProgress = 100;
+      }
+
+      if (pos < status.files.length) {
+        const file = status.files[pos];
+        status.uploadStatus = `Uploading ${file.name}...`;
+
+        const reader = new FileReader();
+        let toolboxName = file.name;
+        if (toolboxName.substring(toolboxName.length - 4).toLowerCase() == '.xml') toolboxName = toolboxName.substring(0, toolboxName.length - 4);
+        if (toolboxName.substring(toolboxName.length - 8).toLowerCase() == '-toolbox') toolboxName = toolboxName.substring(0, toolboxName.length - 8);
+        reader.onload = (e: any) => {
+          console.log('[ToolboxListComponent] Read definition file');
+          const data = e.target.result;
+          const definition = settings.items[0]; // There should be only one definition
+          const service: RobotTypeService = settings.owner.robotTypeService;
+          service.importToolbox(
+            settings.owner.item,
+            toolboxName,
+            data,
+            false)
+            .subscribe((results: ExecutionResult<Toolbox>) => {
+              if (!results.successful) {
+                results.allErrors().forEach((err: string) => status.addError(0, err));
+              }
+
+              emitter.emit(pos + 1);
+            });
+        };
+        console.log(`[ToolboxListComponent] Reading toolbox file ${file.name}`);
+        reader.readAsText(file);
+      } else {
+        if (status.errors.length == 0) {
+          status.uploadStatus = `Imported toolboxes`;
+          status.uploadState = 2;
+        } else {
+          status.uploadStatus = `Toolbox import failed: ` + status.errors.map(err => err.message).join(',');
+          status.uploadState = 3;
+          settings.allowReImport = true;
+        }
+        status.isUploading = false;
+        status.isUploadCompleted = true;
+        status.uploadProgress = 100;
+        this.loadTemplateList();
+      }
+    });
+    emitter.emit(0);
   }
 
   exportToolbox() {
