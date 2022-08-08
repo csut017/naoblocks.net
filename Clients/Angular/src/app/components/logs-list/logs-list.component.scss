@@ -1,0 +1,38 @@
+.mat-progress-spinner {
+    display: inline-block;
+}
+
+.message {
+    display: inline-block;
+}
+
+.logs-main {
+    display: flex;
+    flex-wrap: column;
+    height: calc(100vh - 100px);
+}
+
+.logs-col {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.mat-icon {
+    font-size: 16px;
+}
+
+.log-main-entry {
+    cursor: pointer;
+}
+
+.log-lines {
+    margin-left: 4rem;
+}
+
+.right {
+    text-align: right;
+}
+
+.left {
+    text-align: left;
+}

@@ -1,6 +1,9 @@
-﻿using NaoBlocks.Engine.Data;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Indices;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Linq;
+using Raven.Client.Documents.Session;
 
 namespace NaoBlocks.Engine.Queries
 {
@@ -37,6 +40,31 @@ namespace NaoBlocks.Engine.Queries
                 .OfType<RobotLog>()
                 .FirstOrDefaultAsync();
             return result;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the logs for a robot.
+        /// </summary>
+        /// <param name="machineName">The machine name of the robot.</param>
+        /// <param name="pageNum">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of logs in the page.</param>
+        /// <returns>The <see cref="RobotLog"/> instances.</returns>
+        public virtual async Task<ListResult<RobotLog>> RetrieveRobotLogsPageAsync(string machineName, int pageNum, int pageSize)
+        {
+            if (this.Session.Query<RobotLogByMachineName.Result, RobotLogByMachineName>() is not IRavenQueryable<RobotLogByMachineName.Result> query)
+            {
+                return new ListResult<RobotLog>();
+            }
+
+            var logs = await query
+                .Statistics(out QueryStatistics stats)
+                .Where(rl => rl.MachineName == machineName)
+                .OfType<RobotLog>()
+                .OrderByDescending(rl => rl.WhenAdded)
+                .Skip(pageNum * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return ListResult.New(logs, stats.TotalResults, pageNum);
         }
     }
 }

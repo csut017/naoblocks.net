@@ -1,1 +1,65 @@
-<p>logs-list works!</p>
+<div class="logs-main">
+    <div class="logs-col">
+        <div *ngIf="isLoading">
+            <mat-spinner [diameter]="24"></mat-spinner>
+            <div class="message">
+                Loading, please wait...
+            </div>
+        </div>
+        <mat-card *ngIf="!isLoading">
+            <mat-card-content>
+                <div *ngFor="let robot of robots">
+                    <div (click)="toggleRobot(robot)" class="log-main-entry">
+                        <mat-icon class="item-icon">{{robot.isExpanded ? 'chevron_right' : 'expand_more'}}</mat-icon>
+                        <mat-icon class="item-icon">lan</mat-icon>
+                        {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
+                    </div>
+                    <div *ngIf="robot.isExpanded" class="log-lines">
+                        <div *ngIf="!robot.isLoaded">
+                            <mat-spinner [diameter]="12"></mat-spinner>
+                            <div class="message">
+                                Loading, please wait...
+                            </div>
+                        </div>
+                        <div *ngIf="robot.isLoaded">
+                            <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)">
+                                {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+    <div class="logs-col" *ngIf="isLogSelected">
+        <div *ngIf="isLogLoading">
+            <mat-spinner [diameter]="24"></mat-spinner>
+            <div class="message">
+                Loading, please wait...
+            </div>
+        </div>
+        <mat-card *ngIf="!isLogLoading">
+            <mat-card-content>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="right">Time</th>
+                            <th class="left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let line of selectedLog.lines || []">
+                            <td class="right">
+                                {{line.whenAdded | date:'h:mm:ss a'}}
+                            </td>
+                            <td class="left">
+                                <mat-icon>{{line.icon}}</mat-icon>
+                                {{line.description}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

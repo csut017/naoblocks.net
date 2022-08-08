@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Helpers;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -15,8 +17,8 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class LogsController : ControllerBase
     {
-        private readonly ILogger<LogsController> logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<LogsController> logger;
 
         /// <summary>
         /// Initialises a new <see cref="LogsController"/> instance.
@@ -59,38 +61,43 @@ namespace NaoBlocks.Web.Controllers
             return Dtos.RobotLog.FromModel(log, true);
         }
 
-        /*
         /// <summary>
         /// Retrieves the logs for a robot.
         /// </summary>
         /// <param name="robotId">The identifier of the robot.</param>
-        /// <returns>Either a 404 (not found) or the log details.</returns>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>Either a 404 (not found) or the page of logs for the robot.</returns>
         [HttpGet]
-        public async Task<ListResult<Dtos.RobotLog>> GetLogs(string robotId, int? page, int? size)
+        public async Task<ActionResult<ListResult<Dtos.RobotLog>>> GetLogs(string robotId, int? page, int? size)
         {
-            var pageSize = size ?? 25;
-            var pageNum = page ?? 0;
-            if (pageSize > 100) pageSize = 100;
+            this.logger.LogDebug($"Retrieving robot: id {robotId}");
+            var robot = await this.executionEngine
+                .Query<RobotData>()
+                .RetrieveByNameAsync(robotId, true)
+                .ConfigureAwait(false);
+            if (robot == null)
+            {
+                return NotFound();
+            }
 
-            this.logger.LogDebug($"Retrieving logs for {robotId}: page {pageNum} with size {pageSize}");
-            var logs = await this.session.Query<RobotLogByMachineName.Result, RobotLogByMachineName>()
-                                             .Statistics(out QueryStatistics stats)
-                                             .Where(rl => rl.MachineName == robotId)
-                                             .OfType<RobotLog>()
-                                             .OrderByDescending(rl => rl.WhenAdded)
-                                             .Skip(pageNum * pageSize)
-                                             .Take(pageSize)
-                                             .ToListAsync();
-            var count = logs.Count;
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
+            this.logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
+
+            var logs = await this.executionEngine
+                .Query<ConversationData>()
+                .RetrieveRobotLogsPageAsync(robotId, pageNum, pageSize)
+                .ConfigureAwait(false);
+            var count = logs.Items?.Count();
             this.logger.LogDebug($"Retrieved {count} logs");
+
             var result = new ListResult<Dtos.RobotLog>
             {
-                Count = stats.TotalResults,
+                Count = logs.Count,
                 Page = pageNum,
-                Items = logs.Select(rl => Dtos.RobotLog.FromModel(rl, false, null))
+                Items = logs.Items?.Select(r => Dtos.RobotLog.FromModel(r, false))
             };
             return result;
         }
-        */
     }
 }
