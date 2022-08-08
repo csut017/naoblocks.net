@@ -7,14 +7,12 @@ using NaoBlocks.Web.Helpers;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
-
 using Angular = NaoBlocks.Definitions.Angular;
 using Configuration = NaoBlocks.Web.Configuration;
-using Tangibles = NaoBlocks.Definitions.Tangibles;
 using ResourceManager = NaoBlocks.Web.Resources.Manager;
+using Tangibles = NaoBlocks.Definitions.Tangibles;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddCors();
 builder.Services.AddHealthChecks();
 
@@ -23,6 +21,11 @@ builder.Services.Configure<RavenDbConfiguration>(
     builder.Configuration.GetSection("Database"));
 builder.Services.Configure<Configuration.Security>(
     builder.Configuration.GetSection("Security"));
+builder.Services.Configure<Configuration.Addresses>(
+    builder.Configuration.GetSection("Addresses"));
+
+// Configure the addresses
+builder.UseLocalAddresses();
 
 // Add the controllers and documentation
 builder.Services.AddControllers();
@@ -81,7 +84,6 @@ builder.Services.AddTransient<IPrincipal>(s =>
 // Add the application services
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddSingleton<IHub, LocalHub>();
-ClientAddressList.Initialise();
 var uiManager = new UiManager();
 uiManager.Register<Angular.Definition>("angular", () => ResourceManager.AngularUITemplate);
 uiManager.Register<Tangibles.Definition>("tangibles", () => ResourceManager.TangiblesUITemplate);
@@ -96,7 +98,6 @@ if (builder.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
-    ClientAddressList.Add("http://localhost:5000", "https://localhost:5001");
 }
 else
 {

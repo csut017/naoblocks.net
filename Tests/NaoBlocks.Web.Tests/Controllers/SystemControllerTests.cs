@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
@@ -33,10 +34,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
-            ClientAddressList.Clear();
-            ClientAddressList.Add("http://test");
-            ClientAddressList.Add("https://test");
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.ClientAddressesFile();
@@ -62,9 +61,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
-            ClientAddressList.Clear();
-            ClientAddressList.Add("Test Address");
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.ClientAddresses();
@@ -90,7 +88,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.GetSiteConfiguration();
@@ -116,7 +115,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.Initialise(new InitialisationSettings());
@@ -147,7 +147,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager);
+                manager,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.Initialise(new InitialisationSettings
@@ -181,7 +182,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.Initialise(new InitialisationSettings());
@@ -206,7 +208,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.SetDefaultAddress(
@@ -231,7 +234,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.SetDefaultAddress(null);
@@ -257,7 +261,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 logger,
                 engine,
                 hub.Object,
-                manager.Object);
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.Version();
@@ -276,7 +281,12 @@ namespace NaoBlocks.Web.Tests.Controllers
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
             var manager = new Mock<UiManager>();
-            var controller = new SystemController(loggerMock, engine, hub.Object, manager.Object);
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
 
             // Act
             var response = await controller.WhoAmI();
@@ -294,7 +304,12 @@ namespace NaoBlocks.Web.Tests.Controllers
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
             var manager = new Mock<UiManager>();
-            var controller = new SystemController(loggerMock, engine, hub.Object, manager.Object);
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
             engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
 
             // Act
