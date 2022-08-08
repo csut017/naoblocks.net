@@ -1,1 +1,49 @@
-<p>system-dashboard works!</p>
+<div class="dashboard-main">
+    <div class="dashboard-col">
+        <div *ngIf="!processor.robots.length">
+            <mat-icon class="dashboard-error">error_outline</mat-icon>
+            There are no robots connected
+        </div>
+        <mat-card *ngFor="let robot of processor.robots" class="item-card">
+            <mat-card-title>
+                <mat-icon class="item-icon">lan</mat-icon>
+                {{robot.name}}
+            </mat-card-title>
+            <mat-card-subtitle class="inner-item">
+                {{robot.subType}}
+            </mat-card-subtitle>
+            <mat-card-content class="inner-item">
+                <b>Status:</b>
+                {{robot.status || 'Unknown'}}
+            </mat-card-content>
+            <mat-card-actions align="end">
+                <button mat-button (click)="displayMessages(robot)">View Log</button>
+                <button mat-button (click)="displayAlerts(robot)" *ngIf="robot.hasNotifications">View Alerts</button>
+                <button mat-button (click)="displayProgram(robot)" *ngIf="robot.user && robot.programId">View
+                    Program</button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
+    <div class="dashboard-col">
+        <div *ngIf="!processor.users.length">
+            <mat-icon class="dashboard-error">error_outline</mat-icon>
+            There are no users connected
+        </div>
+        <mat-card *ngFor="let user of processor.users" class="item-card">
+            <mat-card-title>
+                <mat-icon class="item-icon">{{user.student ? 'person' : 'supervisor_account'}}</mat-icon>
+                {{user.name}}
+            </mat-card-title>
+            <mat-card-subtitle class="inner-item">
+                {{user.subType}}
+            </mat-card-subtitle>
+            <mat-card-content *ngIf="user.student" class="inner-item">
+                <b>Robot:</b>
+                {{(user.robot ? user.robot.name : null) || 'None'}}
+            </mat-card-content>
+            <mat-card-actions *ngIf="user.robot" align="end">
+                <button mat-button (click)="displayMessages(user.robot)">View Log</button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
+</div>

@@ -2,11 +2,14 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+// This will need to change to match the server host
+let hostName = '192.168.0.10:5000';
+
 export const environment = {
   production: false,
-  baseURL: 'http://localhost:5000/',
-  apiURL: 'http://localhost:5000/api/',
-  wsURL: 'ws://localhost:5000/api/',
+  baseURL: `http://${hostName}/`,
+  apiURL: `http://${hostName}/api/`,
+  wsURL: `ws://${hostName}/api/`,
   blocklyMedia: 'assets/'
 };
 

@@ -1,0 +1,26 @@
+.dashboard-error {
+    color: darkred;
+}
+
+.dashboard-main {
+    display: flex;
+    flex-wrap: column;
+    height: calc(100vh - 100px);
+}
+
+.dashboard-col {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.inner-item {
+    padding-left: 32px;
+}
+
+.item-icon {
+    color: #3f51b5;
+}
+
+.item-card {
+    margin-bottom: 1rem;
+}
