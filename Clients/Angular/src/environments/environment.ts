@@ -6,7 +6,8 @@ export const environment = {
   production: false,
   baseURL: 'http://localhost:5000/',
   apiURL: 'http://localhost:5000/api/',
-  wsURL: 'ws://localhost:5000/api/'
+  wsURL: 'ws://localhost:5000/api/',
+  blocklyMedia: 'assets/'
 };
 
 /*

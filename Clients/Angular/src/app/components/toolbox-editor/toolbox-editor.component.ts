@@ -4,6 +4,7 @@ import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 import { UiService } from 'src/app/services/ui.service';
+import { environment } from 'src/environments/environment';
 
 declare var Blockly: any;
 
@@ -301,6 +302,7 @@ export class ToolboxEditorComponent implements OnInit {
         controls: true,
         wheel: true
       },
+      media: environment.blocklyMedia
     });
 
     this.workspace.addChangeListener((evt: any) => this.validateWorkspace(evt));

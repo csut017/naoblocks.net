@@ -251,6 +251,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
         controls: true,
         wheel: true
       },
+      media: environment.blocklyMedia
     });
 
     this.configureEditor();

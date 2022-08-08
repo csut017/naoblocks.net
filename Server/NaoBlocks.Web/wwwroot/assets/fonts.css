@@ -1,0 +1,191 @@
+/* cyrillic-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fCRc4EsA.woff2) format("woff2");
+}
+/* cyrillic */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fABc4EsA.woff2) format("woff2");
+}
+/* greek-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fCBc4EsA.woff2) format("woff2");
+}
+/* greek */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fBxc4EsA.woff2) format("woff2");
+}
+/* vietnamese */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fCxc4EsA.woff2) format("woff2");
+}
+/* latin-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fChc4EsA.woff2) format("woff2");
+}
+/* latin */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmSU5fBBc4.woff2) format("woff2");
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu72xKOzY.woff2) format("woff2");
+}
+/* cyrillic */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu5mxKOzY.woff2) format("woff2");
+}
+/* greek-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu7mxKOzY.woff2) format("woff2");
+}
+/* greek */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu4WxKOzY.woff2) format("woff2");
+}
+/* vietnamese */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu7WxKOzY.woff2) format("woff2");
+}
+/* latin-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu7GxKOzY.woff2) format("woff2");
+}
+/* latin */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/KFOmCnqEu92Fr1Mu4mxK.woff2) format("woff2");
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fCRc4EsA.woff2) format("woff2");
+}
+/* cyrillic */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fABc4EsA.woff2) format("woff2");
+}
+/* greek-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fCBc4EsA.woff2) format("woff2");
+}
+/* greek */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fBxc4EsA.woff2) format("woff2");
+}
+/* vietnamese */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fCxc4EsA.woff2) format("woff2");
+}
+/* latin-ext */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fChc4EsA.woff2) format("woff2");
+}
+/* latin */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(fonts/KFOlCnqEu92Fr1MmEU9fBBc4.woff2) format("woff2");
+}
+/* fallback */
+@font-face {
+    font-family: "Material Icons";
+    font-style: normal;
+    font-weight: 400;
+    src: url(fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format("woff2");
+}
+
+.material-icons {
+    font-family: "Material Icons";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+}
