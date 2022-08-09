@@ -7,9 +7,9 @@ let hostName = '192.168.0.10:5000';
 
 export const environment = {
   production: false,
-  baseURL: `http://${hostName}/`,
-  apiURL: `http://${hostName}/api/`,
-  wsURL: `ws://${hostName}/api/`,
+  baseURL: `${location.protocol}//${hostName}/`,
+  apiURL: `${location.protocol}//${hostName}/api/`,
+  wsURL: (location.protocol === 'https:' ? 'wss' : 'ws') + `//${hostName}/api/`,
   blocklyMedia: 'assets/'
 };
 

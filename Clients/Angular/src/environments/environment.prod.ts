@@ -4,6 +4,6 @@ export const environment = {
   production: true,
   baseURL: '/',
   apiURL: '/api/',
-  wsURL: `ws://${hostName}/api/`,
+  wsURL: (location.protocol === 'https:' ? 'wss' : 'ws') + `://${hostName}/api/`,
   blocklyMedia: 'assets/'
 };

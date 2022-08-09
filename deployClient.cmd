@@ -1,7 +1,7 @@
 @echo off
 echo Building Client
 cd Clients\Angular
-call ng build
+call ng build --source-map
 cd ..
 cd ..
 
