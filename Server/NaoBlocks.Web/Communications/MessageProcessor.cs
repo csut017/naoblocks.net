@@ -13,10 +13,10 @@ namespace NaoBlocks.Web.Communications
     /// </summary>
     public class MessageProcessor : IMessageProcessor
     {
+        private readonly IDictionary<ClientMessageType, TypeProcessor> _processors;
+        private readonly IEngineFactory engineFactory;
         private readonly IHub hub;
         private readonly ILogger<MessageProcessor> logger;
-        private readonly IEngineFactory engineFactory;
-        private readonly IDictionary<ClientMessageType, TypeProcessor> _processors;
 
         /// <summary>
         /// Initialise a new <see cref="MessageProcessor"/> instance.
@@ -50,6 +50,15 @@ namespace NaoBlocks.Web.Communications
             this.logger = logger;
             this.engineFactory = engineFactory;
         }
+
+        /// <summary>
+        /// The definition of a message processor (for a specific a message type.)
+        /// </summary>
+        /// <param name="engine">The engine to use when processing a message.</param>
+        /// <param name="client">The source client.</param>
+        /// <param name="message">The incoming message.</param>
+        /// <returns></returns>
+        private delegate Task TypeProcessor(IExecutionEngine engine, IClientConnection client, ClientMessage message);
 
         /// <summary>
         /// Gets the logger.
@@ -93,180 +102,183 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Initialises a message broadcast processor.
+        /// Generates an error message in response to an incoming message.
         /// </summary>
-        /// <param name="messageType">The type of message to broadcast.</param>
-        /// <param name="logDescription">The description of the message.</param>
-        /// <param name="includeValues">Whether to include the values from the source or not.</param>
-        /// <returns>The <see cref="TypeProcessor"/> for sending the message.</returns>
-        private TypeProcessor BroadcastMessage(ClientMessageType messageType, string logDescription, bool includeValues = false)
+        /// <param name="request">The incoming message.</param>
+        /// <param name="message">The error message.</param>
+        /// <returns>A new <see cref="ClientMessage"/> containing the error response.</returns>
+        private static ClientMessage GenerateErrorResponse(ClientMessage request, string message)
         {
-            return async (IExecutionEngine engine, IClientConnection client, ClientMessage message) =>
+            var response = new ClientMessage
             {
-                var valuesToCopy = includeValues ? message.Values : null;
-                await this.DoBroadcastMessage(engine, client, message, messageType, logDescription, valuesToCopy);
+                Type = ClientMessageType.Error,
+                ConversationId = request.ConversationId
             };
+            response.Values["error"] = message;
+            return response;
         }
 
         /// <summary>
-        /// Performs the actual broadcast of the message.
+        /// Generates an empty response message.
         /// </summary>
-        private async Task DoBroadcastMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, IDictionary<string, string>? valuesToCopy)
+        /// <param name="request">The request message.</param>
+        /// <param name="type">The type of response.</param>
+        /// <returns>A <see cref="ClientMessage"/> containing the response.</returns>
+        private static ClientMessage GenerateResponse(ClientMessage request, ClientMessageType type)
         {
-            var msg = GenerateResponse(message, messageType);
-            if (valuesToCopy != null)
+            var response = new ClientMessage
             {
-                foreach (var (key, value) in valuesToCopy)
+                Type = type,
+                ConversationId = request.ConversationId
+            };
+            return response;
+        }
+
+        /// <summary>
+        /// Populates values in the <see cref="ClientMessage"/> based on the client.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> to retrieve the values from.</param>
+        /// <param name="msg">The <see cref="ClientMessage"/> to populate.</param>
+        private static void PopulateSourceValues(IClientConnection client, ClientMessage msg)
+        {
+            msg.Values["SourceClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
+            switch (client.Type)
+            {
+                case ClientConnectionType.Robot:
+                    msg.Values["SourceType"] = "Robot";
+                    if (client.Robot != null)
+                    {
+                        msg.Values["SourceName"] = client.Robot.MachineName;
+                    }
+                    break;
+
+                case ClientConnectionType.User:
+                    msg.Values["SourceType"] = "User";
+                    if (client.User != null)
+                    {
+                        msg.Values["SourceName"] = client.User.Name;
+                    }
+                    break;
+
+                default:
+                    msg.Values["SourceType"] = "Unknown";
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Validates and executes a command.
+        /// </summary>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="errors">The errors from the process.</param>
+        /// <param name="command">The command to execute.</param>
+        private static async Task<CommandResult> ValidateAndExecuteCommand(IExecutionEngine engine, List<CommandError> errors, CommandBase command)
+        {
+            errors.AddRange(await engine.ValidateAsync(command));
+            if (!errors.Any())
+            {
+                var result = await engine.ExecuteAsync(command);
+                if (!result.WasSuccessful)
                 {
-                    msg.Values[key] = value;
+                    errors.AddRange(result.ToErrors());
+                }
+                return result;
+            }
+
+            return new CommandResult(command.Number, "Validation failed");
+        }
+
+        /// <summary>
+        /// Validates the incoming request.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> instance the request is coming in on.</param>
+        /// <param name="message">The message to validate.</param>
+        /// <param name="requiredRole">The required role, if any.</param>
+        /// <returns>True if the request is valid, false otherwise.</returns>
+        private static bool ValidateRequest(IClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
+        {
+            if ((client.User == null) && (client.Robot == null))
+            {
+                client.SendMessage(GenerateResponse(message, ClientMessageType.NotAuthenticated));
+                return false;
+            }
+
+            if (requiredRole.HasValue)
+            {
+                switch (requiredRole.Value)
+                {
+                    case ClientConnectionType.Robot:
+                        if (client.Robot == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
+
+                    case ClientConnectionType.User:
+                        if (client.User == null)
+                        {
+                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
+                            return false;
+                        }
+
+                        break;
                 }
             }
 
-            client.NotifyListeners(msg);
-            client.LogMessage(msg);
-            PopulateSourceValues(client, msg);
-            this.hub.SendToMonitors(msg);
-            if (client.Robot != null)
-            {
-                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, logDescription);
-            }
+            return true;
         }
 
         /// <summary>
-        /// Handles a program downloaded message.
+        /// Generates a logline for a robot and adds it to a robot's log.
         /// </summary>
-        private async Task ProgramDownloaded(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="machineName">The identifier of the robot to add the line to.</param>
+        /// <param name="message">The message that the line is being generated as a result of.</param>
+        /// <param name="description">The description of the line.</param>
+        /// <param name="skipValues">Whether to include the values or not.</param>
+        /// <param name="conversation">An optional conversation to associate.</param>
+        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false, Conversation? conversation = null)
         {
-            var valuesToCopy = new Dictionary<string, string>
+            var errors = new List<CommandError>();
+            if (message.ConversationId == null)
             {
-                { "ProgramId", client.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture) ?? "0" }
-            };
-            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.ProgramTransferred, "Program has been transferred", valuesToCopy);
-        }
-
-        /// <summary>
-        /// Sends a stop message to the robot.
-        /// </summary>
-        private async Task StopProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient))
-            {
-                // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
-                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
-                return;
+                errors.Add(new CommandError(-1, "Adding to a robot log requires a conversation"));
             }
 
-            logger.LogInformation($"Stopping program on {robotClient?.Robot?.MachineName}");
-            var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
-            robotClient!.SendMessage(clientMessage);
-            if (robotClient.Robot != null)
+            if (!errors.Any())
             {
-                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program stopping");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
-        /// <summary>
-        /// Triggers the transfer of a program on the robot.
-        /// </summary>
-        private async Task TransferProgramToRobot(IExecutionEngine engine, IClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
-
-            if (!message.Values.TryGetValue("program", out string? programId))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
-                return;
-            }
-
-            if (!int.TryParse(programId, out int programIdValue))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
-                return;
-            }
-
-            robotClient!.RobotDetails = new RobotStatus
-            {
-                LastProgramId = programIdValue
-            };
-            var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
-            clientMessage.Values.Add("program", programId);
-            clientMessage.Values.Add("user", client.User!.Name);
-            robotClient.SendMessage(clientMessage);
-            if (robotClient.Robot != null)
-            {
-                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program transferring");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
-        /// <summary>
-        /// Starts program execution on a robot.
-        /// </summary>
-        private async Task StartProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
-            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
-
-            if (!message.Values.TryGetValue("program", out string? programId))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
-                return;
-            }
-
-            if (!int.TryParse(programId, out int programIdValue))
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
-                return;
-            }
-
-            if (!message.Values.TryGetValue("opts", out string? opts))
-            {
-                opts = "{}";
-            }
-
-            logger.LogInformation($"Starting program on {robotClient?.Robot?.MachineName}");
-            var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
-            clientMessage.Values.Add("program", programId);
-            clientMessage.Values.Add("opts", opts);
-            this.logger.LogInformation($"Starting program {programId} with {opts}");
-            robotClient!.SendMessage(clientMessage);
-            if (robotClient.Robot != null)
-            {
-                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program starting");
-            }
-            else
-            {
-                this.logger.LogWarning("Unable to add to log: robot is missing");
-            }
-        }
-
-        /// <summary>
-        /// Broadcasts a debug message.
-        /// </summary>
-        private async Task RobotDebugMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message)
-        {
-            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", message.Values);
-            if (client.RobotDetails != null)
-            {
-                if (message.Values.TryGetValue("sourceID", out string? sourceId) && !string.IsNullOrWhiteSpace(sourceId))
+                var command = new AddToRobotLog
                 {
-                    client.RobotDetails.SourceIds.Add(sourceId);
+                    ConversationId = message.ConversationId!.Value,
+                    MachineName = machineName,
+                    Description = description,
+                    SourceMessageType = message.Type,
+                    Conversation = conversation
+                };
+
+                if (!skipValues)
+                {
+                    foreach (var (key, value) in message.Values)
+                    {
+                        command.Values.Add(new NamedValue
+                        {
+                            Name = key,
+                            Value = value
+                        });
+                    }
                 }
+
+                await ValidateAndExecuteCommand(engine, errors, command);
             }
 
-            if (client.RobotDetails != null)
+            foreach (var error in errors)
             {
-                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
+                this.Logger.LogWarning($"Broadcast error: {error.Error}");
             }
+
+            return errors;
         }
 
         /// <summary>
@@ -387,7 +399,8 @@ namespace NaoBlocks.Web.Communications
                 this.logger.LogInformation($"Authenticated robot {client.Robot.MachineName}");
                 var conversation = await this.StartConversation(message, client, engine, new StartRobotConversation
                 {
-                    Name = client.Robot.MachineName
+                    Name = client.Robot.MachineName,
+                    Type = ConversationType.Initialisation
                 });
                 if (conversation == null)
                 {
@@ -413,7 +426,8 @@ namespace NaoBlocks.Web.Communications
                 this.logger.LogInformation($"Authenticated user {client.User.Name}");
                 var conversation = await this.StartConversation(message, client, engine, new StartUserConversation
                 {
-                    Name = client.User.Name
+                    Name = client.User.Name,
+                    Type = ConversationType.Program
                 });
                 if (conversation == null)
                 {
@@ -432,65 +446,42 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Attempts to start a conversation for the message stream.
+        /// Initialises a message broadcast processor.
         /// </summary>
-        /// <returns>True if successful, false otherwise.</returns>
-        private async Task<Conversation?> StartConversation(ClientMessage message, IClientConnection client, IExecutionEngine engine, CommandBase command)
+        /// <param name="messageType">The type of message to broadcast.</param>
+        /// <param name="logDescription">The description of the message.</param>
+        /// <param name="includeValues">Whether to include the values from the source or not.</param>
+        /// <returns>The <see cref="TypeProcessor"/> for sending the message.</returns>
+        private TypeProcessor BroadcastMessage(ClientMessageType messageType, string logDescription, bool includeValues = false)
         {
-            var errors = new List<CommandError>();
-            var result = await ValidateAndExecuteCommand(engine, errors, command);
-            if (errors.Any())
+            return async (IExecutionEngine engine, IClientConnection client, ClientMessage message) =>
             {
-                foreach (var error in errors)
-                {
-                    this.Logger.LogWarning($"Authenticate error: {error.Error}");
-                }
-
-                client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
-                return null;
-            }
-
-            var conversation = result.As<Conversation>().Output!;
-            message.ConversationId = conversation.ConversationId;
-            return conversation;
+                var valuesToCopy = includeValues ? message.Values : null;
+                await this.DoBroadcastMessage(engine, client, message, messageType, logDescription, valuesToCopy);
+            };
         }
 
         /// <summary>
-        /// Updates the robot state.
+        /// Performs the actual broadcast of the message.
         /// </summary>
-        private async Task UpdateRobotState(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        private async Task DoBroadcastMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message, ClientMessageType messageType, string logDescription, IDictionary<string, string>? valuesToCopy)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
-
-            if (message.Values.TryGetValue("state", out string? state))
+            var msg = GenerateResponse(message, messageType);
+            if (valuesToCopy != null)
             {
-                client.Status.IsAvailable = state == "Waiting";
-                client.Status.Message = string.IsNullOrWhiteSpace(state) ? "Unknown" : state;
-                logger.LogInformation($"Updating state for {client.Robot?.MachineName} to {client.Status.Message}");
-            }
-            else
-            {
-                client.Status.Message = "Unknown";
+                foreach (var (key, value) in valuesToCopy)
+                {
+                    msg.Values[key] = value;
+                }
             }
 
-            var msg = GenerateResponse(message, ClientMessageType.RobotStateUpdate);
-            foreach (var (key, value) in message.Values)
-            {
-                msg.Values[key] = value;
-            }
             client.NotifyListeners(msg);
             client.LogMessage(msg);
             PopulateSourceValues(client, msg);
             this.hub.SendToMonitors(msg);
-
             if (client.Robot != null)
             {
-                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, $"State updated to {client.Status.Message}");
-            }
-
-            if (client.RobotDetails != null)
-            {
-                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, logDescription);
             }
         }
 
@@ -546,175 +537,15 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Starts monitoring all clients.
+        /// Handles a program downloaded message.
         /// </summary>
-        private Task StartMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
+        private async Task ProgramDownloaded(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-
-            if (client.Hub == null)
+            var valuesToCopy = new Dictionary<string, string>
             {
-                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
-                return Task.CompletedTask;
-            }
-
-            client.Hub.AddMonitor(client);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Stop monitoring all clients.
-        /// </summary>
-        private Task StopMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
-        {
-            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
-
-            if (client.Hub == null)
-            {
-                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
-                return Task.CompletedTask;
-            }
-
-            client.Hub.RemoveClient(client);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Generates an empty response message.
-        /// </summary>
-        /// <param name="request">The request message.</param>
-        /// <param name="type">The type of response.</param>
-        /// <returns>A <see cref="ClientMessage"/> containing the response.</returns>
-        private static ClientMessage GenerateResponse(ClientMessage request, ClientMessageType type)
-        {
-            var response = new ClientMessage
-            {
-                Type = type,
-                ConversationId = request.ConversationId
+                { "ProgramId", client.RobotDetails?.LastProgramId?.ToString(CultureInfo.InvariantCulture) ?? "0" }
             };
-            return response;
-        }
-
-        /// <summary>
-        /// Generates an error message in response to an incoming message.
-        /// </summary>
-        /// <param name="request">The incoming message.</param>
-        /// <param name="message">The error message.</param>
-        /// <returns>A new <see cref="ClientMessage"/> containing the error response.</returns>
-        private static ClientMessage GenerateErrorResponse(ClientMessage request, string message)
-        {
-            var response = new ClientMessage
-            {
-                Type = ClientMessageType.Error,
-                ConversationId = request.ConversationId
-            };
-            response.Values["error"] = message;
-            return response;
-        }
-
-        /// <summary>
-        /// Populates values in the <see cref="ClientMessage"/> based on the client.
-        /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to retrieve the values from.</param>
-        /// <param name="msg">The <see cref="ClientMessage"/> to populate.</param>
-        private static void PopulateSourceValues(IClientConnection client, ClientMessage msg)
-        {
-            msg.Values["SourceClientId"] = client.Id.ToString(CultureInfo.InvariantCulture);
-            switch (client.Type)
-            {
-                case ClientConnectionType.Robot:
-                    msg.Values["SourceType"] = "Robot";
-                    if (client.Robot != null)
-                    {
-                        msg.Values["SourceName"] = client.Robot.MachineName;
-                    }
-                    break;
-
-                case ClientConnectionType.User:
-                    msg.Values["SourceType"] = "User";
-                    if (client.User != null)
-                    {
-                        msg.Values["SourceName"] = client.User.Name;
-                    }
-                    break;
-
-                default:
-                    msg.Values["SourceType"] = "Unknown";
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Generates a logline for a robot and adds it to a robot's log.
-        /// </summary>
-        /// <param name="engine">The engine to use.</param>
-        /// <param name="machineName">The identifier of the robot to add the line to.</param>
-        /// <param name="message">The message that the line is being generated as a result of.</param>
-        /// <param name="description">The description of the line.</param>
-        /// <param name="skipValues">Whether to include the values or not.</param>
-        /// <param name="conversation">An optional conversation to associate.</param>
-        private async Task<IEnumerable<CommandError>> AddToRobotLogAsync(IExecutionEngine engine, string machineName, ClientMessage message, string description, bool skipValues = false, Conversation? conversation = null)
-        {
-            var errors = new List<CommandError>();
-            if (message.ConversationId == null)
-            {
-                errors.Add(new CommandError(-1, "Adding to a robot log requires a conversation"));
-            }
-
-            if (!errors.Any())
-            {
-                var command = new AddToRobotLog
-                {
-                    ConversationId = message.ConversationId!.Value,
-                    MachineName = machineName,
-                    Description = description,
-                    SourceMessageType = message.Type,
-                    Conversation = conversation
-                };
-
-                if (!skipValues)
-                {
-                    foreach (var (key, value) in message.Values)
-                    {
-                        command.Values.Add(new NamedValue
-                        {
-                            Name = key,
-                            Value = value
-                        });
-                    }
-                }
-
-                await ValidateAndExecuteCommand(engine, errors, command);
-            }
-
-            foreach (var error in errors)
-            {
-                this.Logger.LogWarning($"Broadcast error: {error.Error}");
-            }
-
-            return errors;
-        }
-
-        /// <summary>
-        /// Validates and executes a command.
-        /// </summary>
-        /// <param name="engine">The engine to use.</param>
-        /// <param name="errors">The errors from the process.</param>
-        /// <param name="command">The command to execute.</param>
-        private static async Task<CommandResult> ValidateAndExecuteCommand(IExecutionEngine engine, List<CommandError> errors, CommandBase command)
-        {
-            errors.AddRange(await engine.ValidateAsync(command));
-            if (!errors.Any())
-            {
-                var result = await engine.ExecuteAsync(command);
-                if (!result.WasSuccessful)
-                {
-                    errors.AddRange(result.ToErrors());
-                }
-                return result;
-            }
-
-            return new CommandResult(command.Number, "Validation failed");
+            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.ProgramTransferred, "Program has been transferred", valuesToCopy);
         }
 
         /// <summary>
@@ -750,54 +581,225 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Validates the incoming request.
+        /// Broadcasts a debug message.
         /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> instance the request is coming in on.</param>
-        /// <param name="message">The message to validate.</param>
-        /// <param name="requiredRole">The required role, if any.</param>
-        /// <returns>True if the request is valid, false otherwise.</returns>
-        private static bool ValidateRequest(IClientConnection client, ClientMessage message, ClientConnectionType? requiredRole = null)
+        private async Task RobotDebugMessage(IExecutionEngine engine, IClientConnection client, ClientMessage message)
         {
-            if ((client.User == null) && (client.Robot == null))
+            await this.DoBroadcastMessage(engine, client, message, ClientMessageType.RobotDebugMessage, "Debug information received", message.Values);
+            if (client.RobotDetails != null)
             {
-                client.SendMessage(GenerateResponse(message, ClientMessageType.NotAuthenticated));
-                return false;
-            }
-
-            if (requiredRole.HasValue)
-            {
-                switch (requiredRole.Value)
+                if (message.Values.TryGetValue("sourceID", out string? sourceId) && !string.IsNullOrWhiteSpace(sourceId))
                 {
-                    case ClientConnectionType.Robot:
-                        if (client.Robot == null)
-                        {
-                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
-                            return false;
-                        }
-
-                        break;
-
-                    case ClientConnectionType.User:
-                        if (client.User == null)
-                        {
-                            client.SendMessage(GenerateResponse(message, ClientMessageType.Forbidden));
-                            return false;
-                        }
-
-                        break;
+                    client.RobotDetails.SourceIds.Add(sourceId);
                 }
             }
 
-            return true;
+            if (client.RobotDetails != null)
+            {
+                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
+            }
         }
 
         /// <summary>
-        /// The definition of a message processor (for a specific a message type.)
+        /// Attempts to start a conversation for the message stream.
         /// </summary>
-        /// <param name="engine">The engine to use when processing a message.</param>
-        /// <param name="client">The source client.</param>
-        /// <param name="message">The incoming message.</param>
-        /// <returns></returns>
-        private delegate Task TypeProcessor(IExecutionEngine engine, IClientConnection client, ClientMessage message);
+        /// <returns>True if successful, false otherwise.</returns>
+        private async Task<Conversation?> StartConversation(ClientMessage message, IClientConnection client, IExecutionEngine engine, CommandBase command)
+        {
+            var errors = new List<CommandError>();
+            var result = await ValidateAndExecuteCommand(engine, errors, command);
+            if (errors.Any())
+            {
+                foreach (var error in errors)
+                {
+                    this.Logger.LogWarning($"Authenticate error: {error.Error}");
+                }
+
+                client.SendMessage(GenerateErrorResponse(message, "Session is invalid: cannot start conversation"));
+                return null;
+            }
+
+            var conversation = result.As<Conversation>().Output!;
+            message.ConversationId = conversation.ConversationId;
+            return conversation;
+        }
+
+        /// <summary>
+        /// Starts monitoring all clients.
+        /// </summary>
+        private Task StartMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.AddMonitor(client);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Starts program execution on a robot.
+        /// </summary>
+        private async Task StartProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
+
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
+                return;
+            }
+
+            if (!int.TryParse(programId, out int programIdValue))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
+                return;
+            }
+
+            if (!message.Values.TryGetValue("opts", out string? opts))
+            {
+                opts = "{}";
+            }
+
+            logger.LogInformation($"Starting program on {robotClient?.Robot?.MachineName}");
+            var clientMessage = GenerateResponse(message, ClientMessageType.StartProgram);
+            clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("opts", opts);
+            this.logger.LogInformation($"Starting program {programId} with {opts}");
+            robotClient!.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
+            {
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program starting");
+            }
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /// <summary>
+        /// Stop monitoring all clients.
+        /// </summary>
+        private Task StopMonitoringAllClients(IExecutionEngine _, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return Task.CompletedTask;
+
+            if (client.Hub == null)
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Client not connected to Hub"));
+                return Task.CompletedTask;
+            }
+
+            client.Hub.RemoveClient(client);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sends a stop message to the robot.
+        /// </summary>
+        private async Task StopProgram(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient))
+            {
+                // Cannot retrieve the robot for some reason, tell the client the program has stopped so it can clean up the UI
+                client.SendMessage(GenerateResponse(message, ClientMessageType.ProgramStopped));
+                return;
+            }
+
+            logger.LogInformation($"Stopping program on {robotClient?.Robot?.MachineName}");
+            var clientMessage = GenerateResponse(message, ClientMessageType.StopProgram);
+            robotClient!.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
+            {
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program stopping");
+            }
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /// <summary>
+        /// Triggers the transfer of a program on the robot.
+        /// </summary>
+        private async Task TransferProgramToRobot(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.User)) return;
+            if (!this.RetrieveRobot(client, message, out IClientConnection? robotClient)) return;
+
+            if (!message.Values.TryGetValue("program", out string? programId))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is missing"));
+                return;
+            }
+
+            if (!int.TryParse(programId, out int programIdValue))
+            {
+                client.SendMessage(GenerateErrorResponse(message, "Program ID is invalid"));
+                return;
+            }
+
+            robotClient!.RobotDetails = new RobotStatus
+            {
+                LastProgramId = programIdValue
+            };
+            var clientMessage = GenerateResponse(message, ClientMessageType.DownloadProgram);
+            clientMessage.Values.Add("program", programId);
+            clientMessage.Values.Add("user", client.User!.Name);
+            robotClient.SendMessage(clientMessage);
+            if (robotClient.Robot != null)
+            {
+                await AddToRobotLogAsync(engine, robotClient.Robot.MachineName, message, "Program transferring");
+            }
+            else
+            {
+                this.logger.LogWarning("Unable to add to log: robot is missing");
+            }
+        }
+
+        /// <summary>
+        /// Updates the robot state.
+        /// </summary>
+        private async Task UpdateRobotState(IExecutionEngine engine, IClientConnection client, ClientMessage message)
+        {
+            if (!ValidateRequest(client, message, ClientConnectionType.Robot)) return;
+
+            if (message.Values.TryGetValue("state", out string? state))
+            {
+                client.Status.IsAvailable = state == "Waiting";
+                client.Status.Message = string.IsNullOrWhiteSpace(state) ? "Unknown" : state;
+                logger.LogInformation($"Updating state for {client.Robot?.MachineName} to {client.Status.Message}");
+            }
+            else
+            {
+                client.Status.Message = "Unknown";
+            }
+
+            var msg = GenerateResponse(message, ClientMessageType.RobotStateUpdate);
+            foreach (var (key, value) in message.Values)
+            {
+                msg.Values[key] = value;
+            }
+            client.NotifyListeners(msg);
+            client.LogMessage(msg);
+            PopulateSourceValues(client, msg);
+            this.hub.SendToMonitors(msg);
+
+            if (client.Robot != null)
+            {
+                await AddToRobotLogAsync(engine, client.Robot.MachineName, message, $"State updated to {client.Status.Message}");
+            }
+
+            if (client.RobotDetails != null)
+            {
+                client.RobotDetails.LastUpdateTime = DateTime.UtcNow;
+            }
+        }
     }
 }

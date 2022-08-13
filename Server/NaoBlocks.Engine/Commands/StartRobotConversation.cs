@@ -18,12 +18,29 @@ namespace NaoBlocks.Engine.Commands
         public string? Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of conversation.
+        /// </summary>
+        public ConversationType Type { get; set; } = ConversationType.Unknown;
+
+        /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors).ConfigureAwait(false);
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Validates the robot via their machine name.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
 
@@ -48,7 +65,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         /// <param name="engine"></param>
-        protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
+        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.robot);
 
@@ -62,6 +79,7 @@ namespace NaoBlocks.Engine.Commands
             var conversation = new Conversation
             {
                 ConversationId = conversationId,
+                ConversationType = this.Type,
                 SourceId = this.robot!.Id,
                 SourceName = this.robot.MachineName,
                 SourceType = "Robot"
@@ -69,18 +87,6 @@ namespace NaoBlocks.Engine.Commands
             await session.StoreAsync(conversation);
 
             return CommandResult.New(this.Number, conversation);
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.robot = await this.ValidateAndRetrieveRobot(session, this.Name, errors).ConfigureAwait(false);
-            return errors.AsEnumerable();
         }
     }
 }

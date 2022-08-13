@@ -6,4 +6,6 @@ export class RobotLog {
     whenAdded?: Date;
     whenLastUpdated?: Date;
     selected: boolean = false;
+    type: number = 0;
+    typeIcon: string = 'device_unknown';
 }

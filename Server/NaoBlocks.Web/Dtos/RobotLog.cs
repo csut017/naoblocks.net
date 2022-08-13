@@ -13,14 +13,19 @@ namespace NaoBlocks.Web.Dtos
         public long ConversationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the user name.
-        /// </summary>
-        public string? UserName { get; set; }
-
-        /// <summary>
         /// Gets the lines for the log.
         /// </summary>
         public IList<RobotLogLine>? Lines { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the type of conversation.
+        /// </summary>
+        public Data.ConversationType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user name.
+        /// </summary>
+        public string? UserName { get; set; }
 
         /// <summary>
         /// Gets or sets when the log was added.
@@ -44,6 +49,7 @@ namespace NaoBlocks.Web.Dtos
             var robotLog = new RobotLog
             {
                 ConversationId = value.Conversation.ConversationId,
+                Type = value.Conversation.ConversationType,
                 UserName = value.Conversation.SourceName,
                 WhenAdded = value.WhenAdded,
                 WhenLastUpdated = value.WhenLastUpdated

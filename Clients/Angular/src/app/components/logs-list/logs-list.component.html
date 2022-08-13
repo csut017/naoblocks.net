@@ -15,16 +15,18 @@
                         {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
                     </div>
                     <div *ngIf="robot.isExpanded" class="log-lines">
-                        <div *ngIf="!robot.isLoaded">
+                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)">
+                            <mat-icon>{{log.typeIcon}}</mat-icon>
+                            {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
+                        </div>
+                        <div *ngIf="robot.isLoading">
                             <mat-spinner [diameter]="12"></mat-spinner>
                             <div class="message">
                                 Loading, please wait...
                             </div>
                         </div>
-                        <div *ngIf="robot.isLoaded">
-                            <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)">
-                                {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
-                            </div>
+                        <div *ngIf="robot.hasMore">
+                            <button mat-stroked-button (click)="loadNextLogsPage(robot)">Load more</button>
                         </div>
                     </div>
                 </div>
@@ -40,6 +42,7 @@
         </div>
         <mat-card *ngIf="!isLogLoading">
             <mat-card-content>
+                <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()">Show debug messages</mat-checkbox>
                 <table>
                     <thead>
                         <tr>
