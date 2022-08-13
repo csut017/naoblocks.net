@@ -26,6 +26,7 @@ export class LogsListComponent implements OnInit {
   @Output() currentItemChanged = new EventEmitter<string>();
 
   includeDebug: boolean = false;
+  includeState: boolean = false
   isLoading: boolean = true;
   isLogLoading: boolean = false;
   isLogSelected: boolean = false;
@@ -87,10 +88,14 @@ export class LogsListComponent implements OnInit {
     this.logService.get(this.selectedRobot?.machineName || '', this.selectedLog?.conversationId || 0)
       .subscribe(data => {
         this.selectedLog.lines = data.output?.lines || [];
+        let timings: { [id: string]: Date } = {};
         this.selectedLog.lines = this.selectedLog.lines
-          .map(line => this.initialiseLine(line));
+          .map(line => this.initialiseLine(line, timings));
         if (!this.includeDebug) {
-          this.selectedLog.lines = this.selectedLog.lines.filter(line => !line.isDebug);
+          this.selectedLog.lines = this.selectedLog.lines.filter(line => line.sourceMessageType != 502);
+        }
+        if (!this.includeState) {
+          this.selectedLog.lines = this.selectedLog.lines.filter(line => line.sourceMessageType != 501);
         }
         this.isLogLoading = false;
       });
@@ -128,21 +133,39 @@ export class LogsListComponent implements OnInit {
     '103': 'check',
     '201': 'stop',
     '202': 'stop',
-    '501': 'live_ehlp',
-    '502': 'fast_forward',
+    '501': 'published_with_changes',
+    '502': 'chevron_right',
     '503': 'error',
     '1000': 'error',
     '1001': 'lock',
     '1002': 'lock',
   };
 
-  private initialiseLine(line: RobotLogLine): RobotLogLine {
+  private initialiseLine(line: RobotLogLine, timings: { [id: string]: Date }): RobotLogLine {
     if (!line) return line;
     line.icon = this.iconMappings[line.sourceMessageType!.toString()] || 'unknown-status';
-    line.isDebug = line.sourceMessageType == 502;
-    if (line.isDebug && !!line.values) {
-      let funcName = line.values['function'];
-      if (funcName) line.description = `Block '${funcName}' [${line.values['status']}]`;
+    if ((line.sourceMessageType == 502) && !!line.values) {
+      let funcName = line.values['function'],
+        status = line.values['status'],
+        sourceId = line.values['sourceID'] || funcName,
+        duration = '';
+      if (!sourceId) sourceId = funcName;
+      if (status == 'end') {
+        line.icon = 'last_page';
+        if (line.whenAdded) {
+          let startTime = timings[sourceId];
+          if (startTime) {
+            let endTime = new Date(line.whenAdded),
+                elapsed = endTime.getTime() - startTime.getTime();
+            duration = ` [${elapsed}ms]`;
+          }
+        }
+      }
+      if (status == 'start' && line.whenAdded) {
+        let date = new Date(line.whenAdded);
+        timings[sourceId] = date;
+      }
+      if (funcName) line.description = `Block '${funcName}'${duration}`;
     }
     return line;
   }

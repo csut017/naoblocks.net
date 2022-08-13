@@ -15,7 +15,8 @@
                         {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
                     </div>
                     <div *ngIf="robot.isExpanded" class="log-lines">
-                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)">
+                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)"
+                            [ngClass]="{'log-selected':log.selected}">
                             <mat-icon>{{log.typeIcon}}</mat-icon>
                             {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
                         </div>
@@ -42,7 +43,8 @@
         </div>
         <mat-card *ngIf="!isLogLoading">
             <mat-card-content>
-                <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()">Show debug messages</mat-checkbox>
+                <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()" class="space-right">Show debug messages</mat-checkbox>
+                <mat-checkbox [(ngModel)]="includeState" (change)="refreshLogs()" class="space-right">Show state messages</mat-checkbox>
                 <table>
                     <thead>
                         <tr>

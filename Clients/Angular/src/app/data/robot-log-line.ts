@@ -4,5 +4,4 @@ export class RobotLogLine {
     whenAdded?: Date;
     icon?: string;
     values: { [id: string]: string } = {};
-    isDebug: boolean = false;
 }
