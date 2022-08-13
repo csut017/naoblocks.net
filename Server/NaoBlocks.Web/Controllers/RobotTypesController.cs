@@ -5,7 +5,6 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using Newtonsoft.Json;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -173,10 +172,11 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="id">The name of the robot type.</param>
         /// <param name="name">The name of the toolbox.</param>
         /// <param name="isDefault">Whether this is the default toolbox or not.</param>
+        /// <param name="useEvents">Whether this toolbox uses events or not.</param>
         /// <returns>The result of execution.</returns>
         [HttpPost("{id}/toolbox/{name}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id, string name, [FromQuery(Name = "default")] string? isDefault)
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportToolbox(string? id, string name, [FromQuery(Name = "default")] string? isDefault, [FromQuery(Name = "events")] string? useEvents)
         {
             var xml = string.Empty;
             using (var reader = new StreamReader(this.Request.Body))
@@ -199,7 +199,9 @@ namespace NaoBlocks.Web.Controllers
                 ToolboxName = name,
                 Definition = xml,
                 IsDefault = "yes".Equals(isDefault, StringComparison.InvariantCultureIgnoreCase)
-                        || "true".Equals(isDefault, StringComparison.InvariantCultureIgnoreCase)
+                        || "true".Equals(isDefault, StringComparison.InvariantCultureIgnoreCase),
+                UseEvents = "yes".Equals(useEvents, StringComparison.InvariantCultureIgnoreCase)
+                        || "true".Equals(useEvents, StringComparison.InvariantCultureIgnoreCase)
             };
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>

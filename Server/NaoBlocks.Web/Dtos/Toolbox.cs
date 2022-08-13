@@ -23,6 +23,11 @@ namespace NaoBlocks.Web.Dtos
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets whether this toolbox uses events.
+        /// </summary>
+        public bool UseEvents { get; set; }
+
+        /// <summary>
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
@@ -37,7 +42,8 @@ namespace NaoBlocks.Web.Dtos
             var output = new Toolbox
             {
                 Name = value.Name,
-                IsDefault = value.IsDefault
+                IsDefault = value.IsDefault,
+                UseEvents = value.UseEvents
             };
 
             if (includeDetails)

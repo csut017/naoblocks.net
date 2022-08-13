@@ -3,4 +3,5 @@ export class Toolbox {
     name?: string;
     definition?: string;
     isDefault: boolean = false;
+    useEvents: boolean = false;
 }

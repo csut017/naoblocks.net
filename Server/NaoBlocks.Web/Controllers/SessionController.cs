@@ -307,16 +307,30 @@ namespace NaoBlocks.Web.Controllers
             var robotType = await this.RetrieveRobotTypeForUser(user);
             if (robotType != null)
             {
-                var toolbox = await this.executionEngine
+                var toolboxDefinition = await this.executionEngine
                     .Generator<Generators.UserToolbox>()
                     .GenerateAsync(ReportFormat.Text, user, robotType)
                     .ConfigureAwait(false);
-                using var reader = new StreamReader(toolbox.Item1);
+                Data.Toolbox? toolbox = null;
+                if (user.Settings.Toolbox != null)
+                {
+                    toolbox = robotType.Toolboxes
+                        .FirstOrDefault(t => t.Name == user.Settings.Toolbox);
+                }
+
+                if (toolbox == null)
+                {
+                    toolbox = robotType.Toolboxes
+                        .FirstOrDefault(t => t.IsDefault);
+                }
+
+                using var reader = new StreamReader(toolboxDefinition.Item1);
                 return new Transfer.EditorSettings
                 {
                     CanConfigure = true,
                     IsSystemInitialised = true,
                     User = settings ?? user.Settings,
+                    UseEvents = toolbox?.UseEvents ?? false,
                     Toolbox = await reader.ReadToEndAsync()
                 };
             }

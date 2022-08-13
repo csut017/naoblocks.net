@@ -1,6 +1,5 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
 using System.Xml.Linq;
 
 namespace NaoBlocks.Engine.Commands
@@ -39,6 +38,11 @@ namespace NaoBlocks.Engine.Commands
         /// Gets or sets the name of the toolbox.
         /// </summary>
         public string? ToolboxName { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this toolbox uses events.
+        /// </summary>
+        public bool UseEvents { get; set; }
 
         /// <summary>
         /// Attempts to restore the command from the database.
@@ -150,6 +154,7 @@ namespace NaoBlocks.Engine.Commands
                 toolbox.Categories.Clear();
             }
 
+            toolbox.UseEvents = this.UseEvents;
             foreach (var category in categories)
             {
                 toolbox.Categories.Add(category);

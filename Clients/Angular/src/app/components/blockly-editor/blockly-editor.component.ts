@@ -219,7 +219,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
 
   private buildToolbox(): string {
     let xml = this.editorSettings.toolbox || '<xml><category name="..."></category></xml>';
-    this.requireEvents = this.editorSettings.user.events || false;
+    this.requireEvents = this.editorSettings.useEvents || false;
     return xml;
   }
 

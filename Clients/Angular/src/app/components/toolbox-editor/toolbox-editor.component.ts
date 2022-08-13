@@ -31,7 +31,8 @@ export class ToolboxEditorComponent implements OnInit {
     private uiService: UiService) {
     this.form = new FormGroup({
       name: new FormControl('', [Validators.required]),
-      isDefault: new FormControl(false, [])
+      isDefault: new FormControl(false, []),
+      useEvents: new FormControl(false, []),
     });
     this.uiService.getComponent('angular', 'blocks')
       .subscribe(resp => {
@@ -46,6 +47,7 @@ export class ToolboxEditorComponent implements OnInit {
     this.form.setValue({
       name: this.item?.name || '',
       isDefault: this.item?.isDefault || false,
+      useEvents: this.item?.useEvents || false,
     })
     if (!this.item.name) return;
     
@@ -107,8 +109,9 @@ export class ToolboxEditorComponent implements OnInit {
       console.groupEnd();
     }
     let name = this.form.get('name')?.value || '';
-    let isDefault = this.form.get('isDefault')?.value || false;
-    this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault)
+    let isDefault = this.form.get('isDefault')?.value || false,
+        useEvents = this.form.get('useEvents')?.value || false;
+    this.robotTypeService.importToolbox(this.robotType!, name, definition, isDefault, useEvents)
       .subscribe(result => {
         if (result.successful) {
           this.closed.emit(true);

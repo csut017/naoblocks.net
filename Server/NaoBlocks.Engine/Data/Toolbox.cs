@@ -44,6 +44,11 @@ namespace NaoBlocks.Engine.Data
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets whether this toolbox uses events.
+        /// </summary>
+        public bool UseEvents { get; set; }
+
+        /// <summary>
         /// Exports the definition as an XML string.
         /// </summary>
         /// <param name="format">The format to use for the definition.</param>

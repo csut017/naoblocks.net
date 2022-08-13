@@ -23,6 +23,11 @@ namespace NaoBlocks.Web.Dtos
         public string? Toolbox { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the toolbox uses events.
+        /// </summary>
+        public bool UseEvents { get; set; }
+
+        /// <summary>
         /// Gets or sets the user settings.
         /// </summary>
         public Data.UserSettings? User { get; set; }

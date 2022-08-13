@@ -112,15 +112,16 @@ export class RobotTypeService extends ClientService {
       .pipe(
         tap(result => {
           this.log('Deleted toolbox');
-          result.output = robotType;
+          result.output = result.output;
         }),
         catchError(this.handleError('deleteToolbox', msg => new ExecutionResult<Toolbox>(undefined, msg)))
       );
   }
 
-  importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean): Observable<ExecutionResult<Toolbox>> {
-    const defaultOption = isDefault ? 'yes' : 'no';
-    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${name}?default=${defaultOption}`;
+  importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean, useEvents: boolean): Observable<ExecutionResult<Toolbox>> {
+    const defaultOption = isDefault ? 'yes' : 'no',
+          eventsOption = useEvents ? 'yes' : 'no';
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${name}?default=${defaultOption}&events=${eventsOption}`;
     this.log(`Importing toolbox ${name} to ${robotType.name}`);
     return this.http.post<ExecutionResult<Toolbox>>(url, definition)
       .pipe(

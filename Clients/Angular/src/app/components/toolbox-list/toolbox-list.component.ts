@@ -70,7 +70,7 @@ export class ToolboxListComponent implements OnInit, OnChanges {
     this.currentItem = new Toolbox();
   }
 
-  checkboxLabel(row?: RobotType): string {
+  checkboxLabel(row?: Toolbox): string {
     if (!row) {
       return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
     }
@@ -189,6 +189,7 @@ export class ToolboxListComponent implements OnInit, OnChanges {
             settings.owner.item,
             toolboxName,
             data,
+            false,
             false)
             .subscribe((results: ExecutionResult<Toolbox>) => {
               if (!results.successful) {
