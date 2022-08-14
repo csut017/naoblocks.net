@@ -37,7 +37,7 @@ A more complete example that uses method arguments:
 
 #### Registering a Function
 
-Functions are registered as part of the `_reset()` function. This method defines a dictionary with all the functions and their associated names.
+Functions are registered as part of the [`_reset()`](../Robots/nao/engine.py#L221) function. This method defines a dictionary with all the functions and their associated names.
 
 To add a new function, add a new entry to the dictionary. For example, to add the above two functions:
 
