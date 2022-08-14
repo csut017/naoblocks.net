@@ -6,7 +6,7 @@ import time
 import pdb
 
 import sensors
-from movements import ArmMovement, BodyMovement, Dances, HeadMovement
+from movements import ArmMovement, BodyMovement, Dances, HeadMovement, Movements
 from noRobot import RobotMock
 import logger
 
@@ -271,6 +271,9 @@ class Engine(object):
             'lessThanEqual': EngineFunction(self._check_less_than_equal),
             'greaterThanEqual': EngineFunction(self._check_greater_than_equal),
             'round': EngineFunction(self._round),
+
+            # Behaviour functions
+            'clap': EngineFunction(self._generate_behaviour('Clap', Movements.CLAP)),
         }
 
     def _generate_register_block(self, block_name):
@@ -280,6 +283,15 @@ class Engine(object):
             logger.log('[Engine] Registering ' + block_name + ' block')
             self._blocks[block_name] = state.ast
         return _register_block
+
+    def _generate_behaviour(self, behaviour_name, behaviour_id):
+        ''' Generates a closure for behaviour only functions. '''
+        def _execute_behaviour(state):
+            ''' Executes a behaviour and waits for it to complete. '''
+            logger.log('[Engine] Performing behaviour "' + behaviour_name + '"')
+            self._robot.startBehaviour(behaviour_id)
+            self._robot.wait()
+        return _execute_behaviour
 
     def _generate_execute_block(self, block_name):
         ''' Generates a closure to execute the specified block. '''

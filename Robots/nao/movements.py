@@ -333,4 +333,7 @@ class Dances(object):
     GANGNAM = 'gangnam-fb8eb6/gangnam'
     MACARENA = 'macarena-d73ebc/Macarena'
     TAICHI = 'taichi-7eb148/taichi'
+
+class Movements(object):
+    CLAP = 'clap-f1a45d/clap'
     
