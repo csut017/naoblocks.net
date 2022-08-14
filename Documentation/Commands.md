@@ -2,6 +2,8 @@
 
 This page lists all the blocks that are available and their current stage of testing.
 
+This page lists the existing commands. It is also possible to [add new commands](NewCommands.md).
+
 **Note:** this list is out-of-date. We just copied it from the old version of NaoBlocks.Net and have not updated it yet.
 
 ## Robot Actions Blocks

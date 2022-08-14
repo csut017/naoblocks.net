@@ -55,10 +55,24 @@ One common design approach is to build a behaviour in Choregraphe and download i
 
 There is a helper method that allows calling the behaviour directly, rather than writing a command function for every behaviour. This helper will register the behaviour as a function directly.
 
-To call it, add a function registration the `_reset()` function:
+To call it, add a function registration the [`_reset()`](../Robots/nao/engine.py#L221) function:
 ``` python
         # Behaviour functions
         'doSomething': EngineFunction(self._generate_behaviour('behaviour-name', 'behaviour-id')),
 ```
 
 Where behaviour-id is the identifier of the behaviour (from Choregraphe) and behaviour-name is a human-readble name (it is only used in the logs.)
+
+#### Deploying the Changes
+
+You will need to deploy the changes once you have modified [engine.py](../Robots/nao/engine.py).
+
+1. Stop the client code on the robot (if running)
+1. Copy the code to the robot
+1. Start the code
+
+**Don't forget to test your code! Assume it does NOT work until tested.**
+
+## Server
+
+TODO: add the documentation for how to add a new command via the server. This will require some screenshots.
