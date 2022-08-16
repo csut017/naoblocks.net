@@ -10,14 +10,14 @@
             <mat-card-content>
                 <div *ngFor="let robot of robots">
                     <div (click)="toggleRobot(robot)" class="log-main-entry">
-                        <mat-icon class="item-icon">{{robot.isExpanded ? 'chevron_right' : 'expand_more'}}</mat-icon>
+                        <mat-icon class="item-icon">{{robot.isExpanded ? 'expand_less' : 'expand_more'}}</mat-icon>
                         <mat-icon class="item-icon">lan</mat-icon>
                         {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
                     </div>
                     <div *ngIf="robot.isExpanded" class="log-lines">
                         <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)"
                             [ngClass]="{'log-selected':log.selected}">
-                            <mat-icon>{{log.typeIcon}}</mat-icon>
+                            <mat-icon class="item-icon">{{log.typeIcon}}</mat-icon>
                             {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
                         </div>
                         <div *ngIf="robot.isLoading">
@@ -43,23 +43,36 @@
         </div>
         <mat-card *ngIf="!isLogLoading">
             <mat-card-content>
-                <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()" class="space-right">Show debug messages</mat-checkbox>
-                <mat-checkbox [(ngModel)]="includeState" (change)="refreshLogs()" class="space-right">Show state messages</mat-checkbox>
+                <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()" class="space-right">Show debug
+                    messages</mat-checkbox>
+                <mat-checkbox [(ngModel)]="includeState" (change)="refreshLogs()" class="space-right">Show state
+                    messages</mat-checkbox>
                 <table>
                     <thead>
                         <tr>
                             <th class="right">Time</th>
+                            <th></th>
                             <th class="left">Description</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let line of selectedLog.lines || []">
+                        <tr *ngFor="let line of selectedLog.lines || []" class="top-align">
                             <td class="right">
                                 {{line.whenAdded | date:'h:mm:ss a'}}
                             </td>
                             <td class="left">
-                                <mat-icon>{{line.icon}}</mat-icon>
-                                {{line.description}}
+                                <mat-icon class="item-icon" [ngClass]="line.iconClass || ''">{{line.icon}}</mat-icon>
+                            </td>
+                            <td class="left">
+                                <div (click)="line.isOpen = !line.isOpen">
+                                    <mat-icon class="item-icon" *ngIf="line.hasValues">{{line.isOpen ? 'expand_less' : 'expand_more'}}</mat-icon>
+                                    {{line.description}}                                    
+                                </div>
+                                <div *ngIf="line.hasValues && line.isOpen">
+                                    <div *ngFor="let value of line.values | keyvalue">
+                                        <b>{{value.key}}:</b> {{value.value}}
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>

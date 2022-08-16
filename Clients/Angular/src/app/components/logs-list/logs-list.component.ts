@@ -144,6 +144,7 @@ export class LogsListComponent implements OnInit {
   private initialiseLine(line: RobotLogLine, timings: { [id: string]: Date }): RobotLogLine {
     if (!line) return line;
     line.icon = this.iconMappings[line.sourceMessageType!.toString()] || 'unknown-status';
+    line.hasValues = line.values && !!Object.keys(line.values).length;
     if ((line.sourceMessageType == 502) && !!line.values) {
       let funcName = line.values['function'],
         status = line.values['status'],
@@ -166,6 +167,10 @@ export class LogsListComponent implements OnInit {
         timings[sourceId] = date;
       }
       if (funcName) line.description = `Block '${funcName}'${duration}`;
+      line.hasValues = false;
+    }
+    if (line.sourceMessageType == 503) {
+      line.iconClass = 'error-line';
     }
     return line;
   }

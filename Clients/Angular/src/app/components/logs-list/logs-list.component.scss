@@ -17,8 +17,10 @@
     padding: 1rem;
 }
 
-.mat-icon {
+.item-icon {
     font-size: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 .log-main-entry {
@@ -44,4 +46,12 @@
 
 .space-right {
     margin-right: 1rem;
+}
+
+.top-align {
+    vertical-align: top;
+}
+
+.error-line {
+    color: #f44336;
 }
