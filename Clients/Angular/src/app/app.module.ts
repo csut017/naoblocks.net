@@ -46,6 +46,7 @@ import { UserInterfaceConfigurationComponent } from './components/user-interface
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 import { ToolboxEditorComponent } from './components/toolbox-editor/toolbox-editor.component';
 import { ToolboxListComponent } from './components/toolbox-list/toolbox-list.component';
+import { UserInterfaceEditorComponent } from './components/user-interface-editor/user-interface-editor.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +86,8 @@ import { ToolboxListComponent } from './components/toolbox-list/toolbox-list.com
     UserInterfaceConfigurationComponent,
     UserSettingsComponent,
     ToolboxEditorComponent,
-    ToolboxListComponent
+    ToolboxListComponent,
+    UserInterfaceEditorComponent
   ],
   imports: [
     BrowserModule,

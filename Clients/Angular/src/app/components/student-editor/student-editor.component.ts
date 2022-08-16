@@ -30,6 +30,7 @@ export class StudentEditorComponent implements OnInit, OnChanges {
       password: this.passwordControl,
     });
   }
+  
   ngOnChanges(_: SimpleChanges): void {
     this.form.setValue({
       name: this.item?.name || '',

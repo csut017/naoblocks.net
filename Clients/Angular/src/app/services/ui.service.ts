@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { ExecutionResult } from '../data/execution-result';
 import { ResultSet } from '../data/result-set';
 import { UIDefinition } from '../data/ui-definition';
+import { UIDefinitionItem } from '../data/ui-definition-item';
 import { ClientService } from './client.service';
 import { ErrorHandlerService } from './error-handler.service';
 
@@ -29,6 +30,16 @@ export class UiService extends ClientService {
           result.output = definition;
         }),
         catchError(this.handleError('delete', msg => new ExecutionResult<UIDefinition>(undefined, msg)))
+      );
+  }
+
+  describe(id: string): Observable<ResultSet<UIDefinitionItem>> {
+    const url = `${environment.apiURL}v1/ui/${id}`;
+    this.log(`Retrieving description for ${id}`);
+    return this.http.get<ResultSet<UIDefinitionItem>>(url)
+      .pipe(
+        tap(_ => this.log('Fetched description')),
+        catchError(this.handleError('describe', msg => new ResultSet<UIDefinitionItem>(msg)))
       );
   }
 

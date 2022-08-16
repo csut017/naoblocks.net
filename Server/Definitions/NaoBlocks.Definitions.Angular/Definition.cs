@@ -1,6 +1,7 @@
 ﻿using Esprima;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
@@ -26,6 +27,23 @@ namespace NaoBlocks.Definitions.Angular
         /// Gets the AST nodes.
         /// </summary>
         public IList<AstNode> Nodes { get; } = new List<AstNode>();
+
+        /// <summary>
+        /// Generates a description of the definition.
+        /// </summary>
+        /// <returns>The description items.</returns>
+        public Task<IEnumerable<UIDefinitionItem>> DescribeAsync()
+        {
+            return Task.FromResult(new[]
+            {
+                UIDefinitionItem.New("Blocks",
+                    null,
+                    this.Blocks.Select(b => UIDefinitionItem.New($"{b.Name ?? "<unknown>"} [{b.Text}]"))),
+                UIDefinitionItem.New("Nodes",
+                    null,
+                    this.Nodes.Select(n => UIDefinitionItem.New(n.Name ?? "<unknown>"))),
+            }.AsEnumerable());
+        }
 
         /// <summary>
         /// Generates a component from the definition.

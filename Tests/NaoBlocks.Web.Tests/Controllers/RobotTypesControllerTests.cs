@@ -8,7 +8,6 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Data = NaoBlocks.Engine.Data;
@@ -312,7 +311,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             controller.SetRequestBody(ToolBoxXml);
 
             // Act
-            var response = await controller.ImportToolbox("karetao", "testing", null);
+            var response = await controller.ImportToolbox("karetao", "testing", null, "no");
 
             // Assert
             var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
@@ -346,7 +345,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             controller.SetRequestBody(ToolBoxXml);
 
             // Act
-            var response = await controller.ImportToolbox("karetao", "testing", flag);
+            var response = await controller.ImportToolbox("karetao", "testing", flag, "no");
 
             // Assert
             var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
@@ -365,7 +364,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             controller.SetRequestBody(null);
 
             // Act
-            var response = await controller.ImportToolbox("karetao", "testing", null);
+            var response = await controller.ImportToolbox("karetao", "testing", null, "no");
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);

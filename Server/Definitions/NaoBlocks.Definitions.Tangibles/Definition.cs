@@ -1,6 +1,7 @@
 ﻿using Esprima;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Data;
 using System.ComponentModel;
 using System.Text;
 
@@ -24,6 +25,23 @@ namespace NaoBlocks.Definitions.Tangibles
         /// Gets the images.
         /// </summary>
         public IList<ImageDefinition> Images { get; } = new List<ImageDefinition>();
+
+        /// <summary>
+        /// Generates a description of the definition.
+        /// </summary>
+        /// <returns>The description items.</returns>
+        public Task<IEnumerable<UIDefinitionItem>> DescribeAsync()
+        {
+            return Task.FromResult(new[]
+            {
+                UIDefinitionItem.New("Blocks",
+                    null,
+                    this.Blocks.Select(b => UIDefinitionItem.New(b.Name ?? "<unknown>"))),
+                UIDefinitionItem.New("Images",
+                    null,
+                    this.Images.Select(i => UIDefinitionItem.New(i.Name ?? "<unknown>"))),
+            }.AsEnumerable());
+        }
 
         /// <summary>
         /// Generates a component from the definition.

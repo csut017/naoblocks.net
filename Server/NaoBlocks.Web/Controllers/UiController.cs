@@ -5,6 +5,9 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -50,6 +53,33 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Exports a UI definition.
+        /// </summary>
+        /// <param name="name">The name of the UI to retrieve the description for.</param>
+        /// <returns>Either a 404 (not found) or the definition export.</returns>
+        [HttpGet("{name}/export")]
+        public async Task<ActionResult> Export(string name)
+        {
+            this.logger.LogDebug($"Exporting UI definition {name}");
+
+            var definition = await this.executionEngine
+                .Query<UIDefinitionData>()
+                .RetrieveByNameAsync(name)
+                .ConfigureAwait(false);
+            if (definition == null)
+            {
+                return NotFound();
+            }
+
+            JsonSerializerOptions options = new()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            return new JsonResult(definition.Definition, options);
+        }
+
+        /// <summary>
         /// Retrieves a component for a UI.
         /// </summary>
         /// <param name="name">The name of the UI to retrieve the component for.</param>
@@ -74,13 +104,44 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Describes a UI definition.
+        /// </summary>
+        /// <param name="name">The name of the UI to retrieve the description for.</param>
+        /// <returns>Either a 404 (not found) or the definition description.</returns>
+        [HttpGet("{name}")]
+        public async Task<ActionResult<ListResult<Data.UIDefinitionItem>>> GetDescription(string name)
+        {
+            this.logger.LogDebug($"Retrieving description for UI definition {name}");
+
+            var definition = await this.executionEngine
+                .Query<UIDefinitionData>()
+                .RetrieveByNameAsync(name)
+                .ConfigureAwait(false);
+            if (definition == null)
+            {
+                return NotFound();
+            }
+
+            if ((definition == null) || (definition.Definition == null))
+            {
+                return NotFound();
+            }
+
+            var items = await definition
+                .Definition
+                .DescribeAsync()
+                .ConfigureAwait(false);
+            return ListResult.New(items);
+        }
+
+        /// <summary>
         /// Retrieves a page of UI definitions.
         /// </summary>
         /// <param name="page">The page number.</param>
         /// <param name="size">The number of records.</param>
         /// <returns>A <see cref="ListResult{TData}"/> containing the UI definitions.</returns>
         [HttpGet]
-        public Task<ListResult<Dtos.UIDefinition>> List(int? page, int? size)
+        public async Task<ListResult<Dtos.UIDefinition>> List(int? page, int? size)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
             this.logger.LogDebug($"Retrieving UI definitions: page {pageNum} with size {pageSize}");
@@ -96,7 +157,21 @@ namespace NaoBlocks.Web.Controllers
                     .Skip(pageSize * pageNum)
                     .Take(pageSize)
             };
-            return Task.FromResult(result);
+
+            var loadedDefinitions = await this.executionEngine
+                .Query<UIDefinitionData>()
+                .RetrievePageAsync(0, int.MaxValue)
+                .ConfigureAwait(false);
+            if ((loadedDefinitions != null) && (loadedDefinitions.Items != null))
+            {
+                var definitionsMap = new HashSet<string>(loadedDefinitions.Items.Select(d => d.Name));
+                foreach (var definition in result.Items)
+                {
+                    definition.IsInitialised = definitionsMap.Contains(definition.Key);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

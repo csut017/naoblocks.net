@@ -7,6 +7,7 @@ import { ImportSettings } from 'src/app/data/import-settings';
 import { ImportStatus } from 'src/app/data/import-status';
 import { UIDefinition } from 'src/app/data/ui-definition';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { ImportService } from 'src/app/services/import.service';
 import { UiService } from 'src/app/services/ui.service';
 
@@ -18,6 +19,7 @@ import { UiService } from 'src/app/services/ui.service';
 export class UserInterfaceConfigurationComponent implements OnInit {
 
   columns: string[] = ['select', 'key', 'name', 'description', 'isInitialised'];
+  currentItem?: UIDefinition;
   dataSource: MatTableDataSource<UIDefinition> = new MatTableDataSource();
   isLoading: boolean = true;
   selection = new SelectionModel<UIDefinition>(true, []);
@@ -27,11 +29,17 @@ export class UserInterfaceConfigurationComponent implements OnInit {
 
   constructor(private uiService: UiService,
     private importService: ImportService,
-    private authenticationService: AuthenticationService
+    private authenticationService: AuthenticationService,
+    private downloaderService: FileDownloaderService
   ) { }
 
   ngOnInit(): void {
     this.loadList();
+  }
+
+  export(): void {
+    this.selection.selected.forEach(s =>
+      this.downloaderService.download(`v1/ui/${s.key}/export`, `ui-${s.key}.json`));
   }
 
   import(): void {
@@ -117,6 +125,13 @@ export class UserInterfaceConfigurationComponent implements OnInit {
 
   show(): void {
     this.view = 'item';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(this.currentItem.name);
+  }
+
+  onClosed(saved: boolean) {
+    this.view = 'list';
+    this.currentItemChanged.emit('');
   }
 
   private loadList(): void {

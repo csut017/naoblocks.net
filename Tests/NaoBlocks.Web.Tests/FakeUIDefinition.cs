@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,19 +13,18 @@ namespace NaoBlocks.Web.Tests
     public class FakeUIDefinition
         : IUIDefinition
     {
-        private readonly List<string> expectedComponents = new();
         private readonly List<string> calledComponents = new();
-
+        private readonly List<string> expectedComponents = new();
         public string Data { get; set; } = string.Empty;
+
+        public Task<IEnumerable<UIDefinitionItem>> DescribeAsync()
+        {
+            throw new NotImplementedException();
+        }
 
         public void ExpectGenerate(string component)
         {
             this.expectedComponents.Add(component);
-        }
-
-        public void Verify()
-        {
-            Assert.Equal(this.expectedComponents, this.calledComponents);
         }
 
         public Task<Stream> GenerateAsync(string component)
@@ -37,6 +37,11 @@ namespace NaoBlocks.Web.Tests
         public Task<IEnumerable<CommandError>> ValidateAsync(IExecutionEngine engine)
         {
             throw new NotImplementedException();
+        }
+
+        public void Verify()
+        {
+            Assert.Equal(this.expectedComponents, this.calledComponents);
         }
     }
 }

@@ -18,6 +18,8 @@
                         (click)="show()">View</button>
                         <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
                         (click)="import()">Import</button>
+                        <button mat-raised-button class="command-button" [disabled]="selection.selected.length < 1"
+                        (click)="export()">Export</button>
                 </div>
             </div>
         </div>
@@ -58,8 +60,7 @@
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         </table>
     </div>
-    <div *ngSwitchCase="'editor'">
-        TODO
-        <!-- <app-robot-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-editor> -->
+    <div *ngSwitchCase="'item'">
+        <app-user-interface-editor [item]="currentItem" (closed)="onClosed($event)"></app-user-interface-editor>
     </div>
 </div>
