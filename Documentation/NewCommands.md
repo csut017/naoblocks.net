@@ -69,6 +69,7 @@ You will need to deploy the changes once you have modified [engine.py](../Robots
 
 1. Stop the client code on the robot (if running)
 1. Copy the code to the robot
+  - You can use  `scp engine.py nao@ipaddress://home/nao/naoblocks/` to copy to the robot
 1. Start the code
 
 **Don't forget to test your code! Assume it does NOT work until tested.**

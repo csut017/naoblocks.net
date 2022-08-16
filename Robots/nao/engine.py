@@ -136,6 +136,7 @@ class Engine(object):
             func = self._functions[func_name]
         except KeyError:
             self._error('Unknown function: ' + func_name)
+            return last_result
 
         if func.top_level and not top_level:
             self._error('Function ' + func_name +
