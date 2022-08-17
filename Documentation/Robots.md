@@ -48,6 +48,10 @@ You can then use it to test that your system is correctly working (it will just 
 
 Installing on a robot is more complicated due to the closed nature of the Nao operating system.
 
+### Installing the dependencies on a Nao 5 robot
+
+On the Nao 5 we need to manually install the packages as pip is not available.
+
 1. On the PC, copy websocket.tar.gz to the robot (you can use scp to do this, or any FTP client)
 1. Connect to the robot and execute the following commands:
     ```
@@ -59,6 +63,34 @@ Installing on a robot is more complicated due to the closed nature of the Nao op
     cp -R -v /home/nao/install/websocket/usr/lib/python2.7/site-packages/websocket ./
     ```
 1. Copy all the .py files to a new folder on the robot
+
+### Installing the dependencies on a Nao 6 robot
+
+On a Nao 6 robot we can use pip to install the dependencies.
+
+If the robot is connected to the Internet, ssh to the robot and type in the following:
+
+```
+pip install websocket-client
+```
+
+If the robot is not connected, you will need to copy the dependencies to the robot first/
+
+On the robot:
+
+```
+mkdir dependencies
+```
+
+On a PC (assuming you are in the Robots/nao folder):
+```
+scp dependencies/*.whl nao@ip_address://home/nao/dependencies
+```
+
+And back on the robot:
+```
+pip install websocket-client --no-index --find-link dependencies --user
+```
 
 ## Automatically starting on the Nao robot
 _**TODO**: add information about the autoload.ini_

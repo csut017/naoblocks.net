@@ -361,15 +361,21 @@ class Engine(object):
     def _perform_movement(self, state, movement, name, speech=0):
         posture = self._robot.getPosture()
         if posture != 'Standing' and posture != 'Sitting':
-            self._robot.say('I cannot ' + name + ' in this posture')
+            logger.log('[Engine] Unable to ' + movement + ' in the current position')
+            self._robot.say('I cannot ' + name + ' in this position')
             return
 
         try:
             speech = self._evaluate(state.ast['arguments'][speech], state)
             self._robot.say(speech)
         except KeyError:
+            logger.log('[Engine] No text to speak, skipping')
             pass
         except IndexError:
+            logger.log('[Engine] No text to speak, skipping')
+            pass
+        except TypeError:
+            logger.log('[Engine] No text to speak, skipping')
             pass
 
         self._robot.performMovements(movement).wait()
