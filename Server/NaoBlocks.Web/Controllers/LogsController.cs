@@ -74,7 +74,7 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogDebug($"Retrieving robot: id {robotId}");
             var robot = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveByNameAsync(robotId, true)
+                .RetrieveByNameAsync(robotId, false)
                 .ConfigureAwait(false);
             if (robot == null)
             {
@@ -82,7 +82,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
-            this.logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug($"Retrieving logs for {robot.MachineName}: page {pageNum} with size {pageSize}");
 
             var logs = await this.executionEngine
                 .Query<ConversationData>()

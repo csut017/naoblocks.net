@@ -248,7 +248,16 @@ namespace NaoBlocks.Web.Controllers
 
         private ICollection<string> RetrieveServerAddresses()
         {
-            return server.Features.Get<IServerAddressesFeature>()?.Addresses ?? Array.Empty<string>();
+            var addresses = server.Features.Get<IServerAddressesFeature>()?.Addresses ?? Array.Empty<string>();
+            if (!addresses.Any())
+            {
+                return new[]
+                {
+                    "https://127.0.0.1"
+                };
+            }
+
+            return addresses;
         }
 
         //[HttpGet("system/status")]

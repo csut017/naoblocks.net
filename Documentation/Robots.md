@@ -71,7 +71,7 @@ On a Nao 6 robot we can use pip to install the dependencies.
 If the robot is connected to the Internet, ssh to the robot and type in the following:
 
 ```
-pip install websocket-client
+pip install websocket-client --user
 ```
 
 If the robot is not connected, you will need to copy the dependencies to the robot first/

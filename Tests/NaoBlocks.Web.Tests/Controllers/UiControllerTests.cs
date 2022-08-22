@@ -6,17 +6,12 @@ using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Helpers;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 using Angular = NaoBlocks.Definitions.Angular;
-
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Tests.Controllers
 {
@@ -94,6 +89,13 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<UiController>();
             var engine = new FakeEngine();
+            var query = new Mock<UIDefinitionData>();
+            query.Setup(q => q.RetrievePageAsync(0, It.IsAny<int>()))
+                .Returns(Task.FromResult(ListResult.New(new[]
+                {
+                    new UIDefinition { Name = "angular" }
+                })));
+            engine.RegisterQuery(query.Object);
             var manager = new UiManager();
             manager.Register<Angular.Definition>("angular", () => "default");
             var controller = new UiController(logger, engine, manager);

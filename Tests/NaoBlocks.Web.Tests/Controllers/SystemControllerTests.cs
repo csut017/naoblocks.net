@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NaoBlocks.Common;
@@ -22,20 +24,23 @@ namespace NaoBlocks.Web.Tests.Controllers
     [Collection("ClientAddressList tests")]
     public class SystemControllerTests
     {
-        [Fact]
-        public async Task ClientAddressesFileRetrievesTextFile()
+        [Theory]
+        [InlineData("https://127.0.0.1,,yes")]
+        [InlineData("http://test,,no\nhttps://test,,yes", "http://test", "https://test")]
+        public async Task ClientAddressesFileRetrievesTextFile(string expected, params string[] addressList)
         {
             // Arrange
             var logger = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
             var manager = new Mock<UiManager>();
+            var server = InitialiseServerWithAddresses(addressList);
             var controller = new SystemController(
                 logger,
                 engine,
                 hub.Object,
                 manager.Object,
-                new Mock<IServer>().Object);
+                server.Object);
 
             // Act
             var response = await controller.ClientAddressesFile();
@@ -45,32 +50,36 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Equal("connect.txt", result.FileDownloadName);
             Assert.Equal(ContentTypes.Txt, result.ContentType);
             Assert.Equal(
-                string.Join("\n", new[] { "http://test,,no", "https://test,,yes" }),
+                expected,
                 Encoding.UTF8.GetString(result.FileContents));
         }
 
-        [Fact]
-        public async Task ClientAddressesRetrievesAddresses()
+        [Theory]
+        [InlineData("https://127.0.0.1")]
+        [InlineData("http://test\nhttps://test", "http://test", "https://test")]
+        public async Task ClientAddressesRetrievesAddresses(string expected, params string[] addressList)
         {
             // Arrange
             var logger = new FakeLogger<SystemController>();
             var hub = new Mock<IHub>();
             var engine = new FakeEngine();
             var manager = new Mock<UiManager>();
+            var server = InitialiseServerWithAddresses(addressList);
             var controller = new SystemController(
                 logger,
                 engine,
                 hub.Object,
                 manager.Object,
-                new Mock<IServer>().Object);
+                server.Object);
 
             // Act
             var response = await controller.ClientAddresses();
 
             // Assert
             var result = Assert.IsType<ListResult<string>>(response.Value);
-            Assert.Equal(1, result.Count);
-            Assert.Equal(new[] { "Test Address" }, result.Items);
+            string[] expectedItems = expected.Split('\n');
+            Assert.Equal(expectedItems.Length, result.Count);
+            Assert.Equal(expectedItems, result.Items);
         }
 
         [Fact]
@@ -319,6 +328,20 @@ namespace NaoBlocks.Web.Tests.Controllers
             var actual = Assert.IsType<ActionResult<User>>(response);
             var user = Assert.IsType<User>(actual.Value);
             Assert.Equal("Mia", user.Name);
+        }
+
+        private static Mock<IServer> InitialiseServerWithAddresses(string[] addressList)
+        {
+            var server = new Mock<IServer>();
+            var features = new Mock<IFeatureCollection>();
+            var addresses = new Mock<IServerAddressesFeature>();
+            server.Setup(s => s.Features)
+                .Returns(features.Object);
+            features.Setup(f => f.Get<IServerAddressesFeature>())
+                .Returns(addresses.Object);
+            addresses.Setup(a => a.Addresses)
+                .Returns(addressList);
+            return server;
         }
     }
 }
