@@ -117,11 +117,6 @@ namespace NaoBlocks.Web.Controllers
                 .Query<UIDefinitionData>()
                 .RetrieveByNameAsync(name)
                 .ConfigureAwait(false);
-            if (definition == null)
-            {
-                return NotFound();
-            }
-
             if ((definition == null) || (definition.Definition == null))
             {
                 return NotFound();

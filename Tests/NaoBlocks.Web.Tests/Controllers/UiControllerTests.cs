@@ -37,6 +37,52 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task ExportHandlesMissingDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)null));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.Export("angular");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task ExportHandlesReturnsDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)new UIDefinition
+                {
+                    Name = "angular",
+                    Definition = new FakeUIDefinition { Data = "one" }
+                }));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.Export("angular");
+
+            // Assert
+            var json = Assert.IsType<JsonResult>(result);
+            var data = Assert.IsType<FakeUIDefinition>(json.Value);
+            Assert.Equal("one", data.Data);
+        }
+
+        [Fact]
         public async Task GetComponentHandlesMissingDefinition()
         {
             // Arrange
@@ -81,6 +127,74 @@ namespace NaoBlocks.Web.Tests.Controllers
             using var reader = new StreamReader(fileStreamResult.FileStream);
             var text = reader.ReadToEnd();
             Assert.Equal("output", text);
+        }
+
+        [Fact]
+        public async Task GetDescriptionHandlesDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)new UIDefinition
+                {
+                    Name = "angular",
+                    Definition = FakeUIDefinition.New(
+                        UIDefinitionItem.New("first"),
+                        UIDefinitionItem.New("second"))
+                }));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.GetDescription("angular");
+
+            // Assert
+            Assert.Equal(
+                new[] { "first", "second" },
+                result.Value?.Items?.Select(i => i.Name).ToArray());
+        }
+
+        [Fact]
+        public async Task GetDescriptionHandlesEmptyDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)new UIDefinition { Name = "angular" }));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.GetDescription("angular");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task GetDescriptionHandlesMissingDefinition()
+        {
+            // Arrange
+            var logger = new FakeLogger<UiController>();
+            var engine = new FakeEngine();
+            var manager = new UiManager();
+            var query = new Mock<UIDefinitionData>();
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("angular"))
+                .Returns(Task.FromResult((UIDefinition?)null));
+            var controller = new UiController(logger, engine, manager);
+
+            // Act
+            var result = await controller.GetDescription("angular");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result.Result);
         }
 
         [Fact]

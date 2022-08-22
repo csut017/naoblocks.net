@@ -15,11 +15,22 @@ namespace NaoBlocks.Web.Tests
     {
         private readonly List<string> calledComponents = new();
         private readonly List<string> expectedComponents = new();
+
         public string Data { get; set; } = string.Empty;
+
+        public IEnumerable<UIDefinitionItem> Description { get; set; } = Array.Empty<UIDefinitionItem>();
+
+        public static FakeUIDefinition New(params UIDefinitionItem[] description)
+        {
+            return new FakeUIDefinition
+            {
+                Description = description
+            };
+        }
 
         public Task<IEnumerable<UIDefinitionItem>> DescribeAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(this.Description);
         }
 
         public void ExpectGenerate(string component)

@@ -3,7 +3,7 @@
     /// <summary>
     /// Internal representation of a cell in a table.
     /// </summary>
-    internal class TableCell
+    public class TableCell
     {
         /// <summary>
         /// Initialise a new <see cref="TableCell"/> instance.
@@ -75,7 +75,6 @@
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            if (this.Value == null) return string.Empty;
             if (this.Format != null)
             {
                 if (this.Value is DateTime) return ((DateTime)this.Value).ToString(this.Format);
@@ -85,7 +84,7 @@
             }
 
             if (this.Value is bool) return true.Equals(this.Value) ? "Yes" : "No";
-            return this.Value.ToString() ?? string.Empty;
+            return this.Value?.ToString() ?? string.Empty;
         }
     }
 }

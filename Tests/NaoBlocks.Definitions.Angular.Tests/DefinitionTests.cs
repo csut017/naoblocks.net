@@ -11,6 +11,51 @@ namespace NaoBlocks.Definitions.Angular.Tests
     public class DefinitionTests
     {
         [Fact]
+        public async Task DescribeAsyncContainsBaseItems()
+        {
+            // Arrange
+            var definition = new Definition();
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            Assert.Equal(
+                new[] { "Blocks", "Nodes" },
+                description.Select(c => c.Name).ToArray());
+        }
+
+        [Fact]
+        public async Task DescribeAsyncContainsBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block());
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            var child = description.SingleOrDefault(c => c.Name == "Blocks");
+            Assert.NotEmpty(child?.Children);
+        }
+
+        [Fact]
+        public async Task DescribeAsyncContainsNodes()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Nodes.Add(new AstNode());
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            var child = description.SingleOrDefault(c => c.Name == "Nodes");
+            Assert.NotEmpty(child?.Children);
+        }
+
+        [Fact]
         public async Task GenerateAsyncFailsWithUnknown()
         {
             // Arrange

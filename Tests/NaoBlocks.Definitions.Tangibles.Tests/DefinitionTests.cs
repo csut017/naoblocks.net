@@ -13,6 +13,51 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         private const string imageRedDot = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
 
         [Fact]
+        public async Task DescribeAsyncContainsBaseItems()
+        {
+            // Arrange
+            var definition = new Definition();
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            Assert.Equal(
+                new[] { "Blocks", "Images" },
+                description.Select(c => c.Name).ToArray());
+        }
+
+        [Fact]
+        public async Task DescribeAsyncContainsBlocks()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Blocks.Add(new Block());
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            var child = description.SingleOrDefault(c => c.Name == "Blocks");
+            Assert.NotEmpty(child?.Children);
+        }
+
+        [Fact]
+        public async Task DescribeAsyncContainsNodes()
+        {
+            // Arrange
+            var definition = new Definition();
+            definition.Images.Add(new ImageDefinition());
+
+            // Act
+            var description = await definition.DescribeAsync();
+
+            // Assert
+            var child = description.SingleOrDefault(c => c.Name == "Images");
+            Assert.NotEmpty(child?.Children);
+        }
+
+        [Fact]
         public async Task GenerateAsyncFailsWithUnknown()
         {
             // Arrange

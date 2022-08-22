@@ -30,6 +30,8 @@ namespace NaoBlocks.Web.Helpers
                     yield return ip4Address;
                 }
             }
+
+            yield break;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Web.Helpers;
+using System.Linq;
 using Xunit;
 
 namespace NaoBlocks.Web.Tests.Helpers
@@ -9,7 +10,8 @@ namespace NaoBlocks.Web.Tests.Helpers
         [Fact]
         public void RetrieveAddressesWorks()
         {
-            Assert.NotEmpty(ClientAddressList.RetrieveAddresses());
+            var addresses = ClientAddressList.RetrieveAddresses().ToArray();
+            Assert.NotEmpty(addresses);
         }
     }
 }

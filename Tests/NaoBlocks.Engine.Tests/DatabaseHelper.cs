@@ -1,7 +1,9 @@
 ﻿using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using Raven.TestDriver;
 using System;
+using System.Threading.Tasks;
 
 namespace NaoBlocks.Engine.Tests
 {
@@ -32,9 +34,12 @@ namespace NaoBlocks.Engine.Tests
             return store;
         }
 
-        protected static IDatabaseSession WrapSession(IAsyncDocumentSession session)
+        protected static TGenerator InitialiseGenerator<TGenerator>(IAsyncDocumentSession session)
+            where TGenerator : ReportGenerator, new()
         {
-            return new MockingRavenDbWrapper(session);
+            var query = new TGenerator();
+            query.InitialiseSession(WrapSession(session));
+            return query;
         }
 
         protected static TQuery InitialiseQuery<TQuery>(IAsyncDocumentSession session)
@@ -45,12 +50,19 @@ namespace NaoBlocks.Engine.Tests
             return query;
         }
 
-        protected static TGenerator InitialiseGenerator<TGenerator>(IAsyncDocumentSession session)
-            where TGenerator : ReportGenerator, new()
+        protected static IDatabaseSession WrapSession(IAsyncDocumentSession session)
         {
-            var query = new TGenerator();
-            query.InitialiseSession(WrapSession(session));
-            return query;
+            return new MockingRavenDbWrapper(session);
+        }
+
+        protected async Task InitialiseIndicesAsync(IDocumentStore store, params IAbstractIndexCreationTask[] indices)
+        {
+            foreach (var index in indices)
+            {
+                await index.ExecuteAsync(store);
+            }
+
+            WaitForIndexing(store);
         }
     }
 }
