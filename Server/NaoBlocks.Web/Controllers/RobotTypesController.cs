@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Net;
 using System.Text;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
@@ -112,6 +113,31 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Generates the package file list.
+        /// </summary>
+        /// <param name="id">The identifier of the robot type.</param>
+        /// <returns></returns>
+        [HttpPost("{id}/package")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult> GeneratePackageFileList(string id)
+        {
+            this.logger.LogDebug($"Retrieving robot type: {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                this.logger.LogDebug($"Unknown robot type ${id}");
+                return NotFound();
+            }
+
+            this.logger.LogInformation($"Generating file list for robot type '{id}'");
+            var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
+            return File(fileList, ContentTypes.Txt, "filelist.txt");
+        }
+
+        /// <summary>
         /// Retrieves a robot type by its name.
         /// </summary>
         /// <param name="name">The name of the robot type.</param>
@@ -132,6 +158,86 @@ namespace NaoBlocks.Web.Controllers
 
             this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
             return Transfer.RobotType.FromModel(robotType, true);
+        }
+
+        /// <summary>
+        /// Retrieves a package file for a robot type.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="filename">The filename to retrieve.</param>
+        /// <returns>A stream containing the package file.</returns>
+        [HttpGet("{id}/package/{filename}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPackageFile(string id, string filename)
+        {
+            this.logger.LogDebug($"Retrieving robot type: {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                this.logger.LogDebug($"Unknown robot type ${id}");
+                return NotFound();
+            }
+
+            string etag = string.Empty;
+            if (Request.Headers.ContainsKey("ETag"))
+            {
+                etag = Request.Headers["ETag"].First();
+                if (etag.StartsWith("\"", StringComparison.Ordinal) && etag.EndsWith("\"", StringComparison.Ordinal))
+                {
+                    etag = etag[1..^1];
+                }
+            }
+
+            this.logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
+            var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
+            if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
+            return File(details.DataStream!, ContentTypes.Txt, filename);
+        }
+
+        /// <summary>
+        /// Retrieves a package list for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="format">The format for the file.</param>
+        /// <returns>Either a 404 (not found) or the robot type details.</returns>
+        [HttpGet("{id}/package{format}")]
+        [HttpGet("{id}/package")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPackageFileList(string id, string? format = ".json")
+        {
+            this.logger.LogDebug($"Retrieving robot type: {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null)
+            {
+                this.logger.LogDebug($"Unknown robot type ${id}");
+                return NotFound();
+            }
+
+            this.logger.LogInformation($"Retrieving file list for robot type '{id}'");
+            var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
+            if (format == ".txt")
+            {
+                return File(fileList, ContentTypes.Txt, "filelist.txt");
+            }
+
+            var data = Encoding.UTF8.GetString(fileList);
+            return new JsonResult(ListResult.New(
+                data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line =>
+                    {
+                        var values = line.Split(',');
+                        return new Transfer.PackageFile
+                        {
+                            Name = values[0],
+                            Hash = values[1]
+                        };
+                    })));
         }
 
         /// <summary>
@@ -295,50 +401,6 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Retrieves a package list for a robot type.
-        /// </summary>
-        /// <param name="id">The name of the robot type.</param>
-        /// <param name="format">The format for the file.</param>
-        /// <returns>Either a 404 (not found) or the robot type details.</returns>
-        [HttpGet("{id}/package{format}")]
-        [HttpGet("{id}/package")]
-        [AllowAnonymous]
-        public async Task<ActionResult> RetrievePackageFileList(string id, string? format = ".json")
-        {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
-            var robotType = await this.executionEngine
-                .Query<RobotTypeData>()
-                .RetrieveByNameAsync(id)
-                .ConfigureAwait(false);
-            if (robotType == null)
-            {
-                this.logger.LogDebug($"Unknown robot type ${id}");
-                return NotFound();
-            }
-
-            this.logger.LogInformation($"Retrieving file list for robot type '{id}'");
-            var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
-
-            if (format == ".txt")
-            {
-                return File(fileList, ContentTypes.Txt, "filelist.txt");
-            }
-
-            var data = Encoding.UTF8.GetString(fileList);
-            return new JsonResult(ListResult.New(
-                data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(line =>
-                    {
-                        var values = line.Split(',');
-                        return new Transfer.PackageFile
-                        {
-                            Name = values[0],
-                            Hash = values[1]
-                        };
-                    })));
-        }
-
-        /// <summary>
         /// Sets a robot type as the system default.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
@@ -358,72 +420,31 @@ namespace NaoBlocks.Web.Controllers
                 t => Transfer.RobotType.FromModel(t!));
         }
 
-        /*
-        [HttpPost("{id}/package")]
+        /// <summary>
+        /// Upkiads a package file.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="filename">The name of the file to upload.</param>
+        /// <returns>Confirmation of the upload.</returns>
+        [HttpPost("{id}/package/{filename}")]
         [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult> GeneratePackageFileList(string id)
+        public async Task<ActionResult<ExecutionResult>> UploadPackageFile(string id, string filename)
         {
             this.logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
             if (robotType == null)
             {
-                return NotFound();
-            }
-
-            this.logger.LogInformation($"Generating file list for robot type '{id}'");
-            var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
-
-            return File(fileList, ContentTypes.Txt, "filelist.txt");
-        }
-
-        [HttpPost("{id}/package/files")]
-        [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<ExecutionResult>> UploadPackageFile(string id, NamedValue file)
-        {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
-            if (robotType == null)
-            {
+                this.logger.LogDebug($"Unknown robot type ${id}");
                 return NotFound();
             }
 
             this.logger.LogInformation($"Uploading package file for robot type '{id}'");
-            var filename = Path.GetFileName(file.Name);
             this.logger.LogInformation($"Uploading '{filename}'");
-            await RobotTypeFilePackage.StorePackageFile(robotType, this.rootFolder, filename, file.Value);
-
+            await RobotTypeFilePackage.StorePackageFileAsync(robotType, this.rootFolder, filename, this.Request.Body);
             return new ExecutionResult();
         }
-
-        [HttpGet("{id}/package/{filename}")]
-        [AllowAnonymous]
-        public async Task<ActionResult> RetrievePackageFile(string id, string filename)
-        {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
-            if (robotType == null)
-            {
-                return NotFound();
-            }
-
-            string etag = string.Empty;
-            if (Request.Headers.ContainsKey("ETag"))
-            {
-                etag = Request.Headers["ETag"].First();
-                if (etag.StartsWith("\"", StringComparison.Ordinal) && etag.EndsWith("\"", StringComparison.Ordinal))
-                {
-                    etag = etag[1..^1];
-                }
-            }
-
-            this.logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
-            var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
-            if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
-            return File(details.DataStream, ContentTypes.Txt, filename);
-        }
-        */
     }
 }

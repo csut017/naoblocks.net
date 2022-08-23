@@ -7,9 +7,11 @@ using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Helpers;
+using NaoBlocks.Web.Tests.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -21,8 +23,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 {
     public class RobotTypesControllerTests
     {
-        private const string fileListContents = "fake.txt,ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=";
-        private const string ToolBoxXml = "<toolbox/>";
+        public const string ToolBoxXml = "<toolbox/>";
 
         [Fact]
         public async Task DeleteCallsDelete()
@@ -208,6 +209,56 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task GeneratePackageFileListHandlesTxtFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-6");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            try
+            {
+                var packagePath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(packagePath);
+                await File.WriteAllTextAsync(Path.Combine(packagePath, "fake.txt"),
+                    RobotTypeFilePackageTests.FakeFileContents);
+
+                // Act
+                var response = await controller.GeneratePackageFileList("karetao");
+
+                // Assert
+                var fileResult = Assert.IsType<FileContentResult>(response);
+                var data = Encoding.UTF8.GetString(fileResult.FileContents);
+                Assert.Equal(RobotTypeFilePackageTests.FileListContents, data.Trim());
+            }
+            finally
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task GeneratePackageFileListHandlesUnknownRobot()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GeneratePackageFileList("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Fact]
         public async Task GetHandlesMissing()
         {
             // Arrange
@@ -223,6 +274,189 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Theory]
+        [InlineData("123", HttpStatusCode.OK)]
+        [InlineData("ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=", HttpStatusCode.NotModified)]
+        [InlineData("\"ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=\"", HttpStatusCode.NotModified)]
+        public async Task GetPackageFileChecksETag(string etag, HttpStatusCode expected)
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), $"NaoBlocks-22-{expected}");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            controller.SetRequestHeader("ETag", etag);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+
+            try
+            {
+                var fullPath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(fullPath);
+                await File.WriteAllTextAsync(
+                    Path.Combine(fullPath, "missing.txt"),
+                    RobotTypeFilePackageTests.FakeFileContents);
+
+                // Act
+                var response = await controller.GetPackageFile("karetao", "missing.txt");
+
+                // Assert
+                if (expected == HttpStatusCode.OK)
+                {
+                    var result = Assert.IsType<FileStreamResult>(response);
+                    result.FileStream.Close();
+                }
+                else
+                {
+                    var result = Assert.IsType<StatusCodeResult>(response);
+                    Assert.Equal((int)expected, result.StatusCode);
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(basePath)) Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageFileHandlesUnknownRobot()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GetPackageFile("karetao", "missing.txt");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Fact]
+        public async Task GetPackageFileListHandlesJsonFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-5");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            try
+            {
+                var packagePath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(packagePath);
+                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
+                    RobotTypeFilePackageTests.FileListContents);
+
+                // Act
+                var response = await controller.GetPackageFileList("karetao", ".json");
+
+                // Assert
+                var jsonResult = Assert.IsType<JsonResult>(response);
+                var json = JsonConvert.SerializeObject(jsonResult.Value);
+                Assert.Equal(
+                    "{\"Count\":1,\"Items\":[{\"Hash\":\"ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=\",\"Name\":\"fake.txt\"}],\"Page\":0}",
+                    json);
+            }
+            finally
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageFileListHandlesTxtFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-4");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            try
+            {
+                var packagePath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(packagePath);
+                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
+                    RobotTypeFilePackageTests.FileListContents);
+
+                // Act
+                var response = await controller.GetPackageFileList("karetao", ".txt");
+
+                // Assert
+                var fileResult = Assert.IsType<FileContentResult>(response);
+                var data = Encoding.UTF8.GetString(fileResult.FileContents);
+                Assert.Equal(RobotTypeFilePackageTests.FileListContents, data);
+            }
+            finally
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageFileListHandlesUnknownRobot()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.GetPackageFileList("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Fact]
+        public async Task GetPackageFileRetrievesFile()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-21");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            controller.SetRequestHeader("missing", "not here");
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+
+            try
+            {
+                var fullPath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(fullPath);
+                await File.WriteAllTextAsync(
+                    Path.Combine(fullPath, "missing.txt"),
+                    RobotTypeFilePackageTests.FakeFileContents);
+
+                // Act
+                var response = await controller.GetPackageFile("karetao", "missing.txt");
+
+                // Assert
+                var result = Assert.IsType<FileStreamResult>(response);
+                using var reader = new StreamReader(result.FileStream);
+                var data = reader.ReadToEnd();
+                Assert.Equal(RobotTypeFilePackageTests.FakeFileContents, data);
+            }
+            finally
+            {
+                if (Directory.Exists(basePath)) Directory.Delete(basePath, true);
+            }
         }
 
         [Fact]
@@ -487,90 +721,6 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task RetrievePackageFileListHandlesJsonFormat()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-5");
-            var controller = InitialiseController(engine, rootPath: basePath);
-            var query = new Mock<RobotTypeData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
-            engine.RegisterQuery(query.Object);
-            try
-            {
-                var packagePath = Path.Combine(basePath, "packages", "karetao");
-                Directory.CreateDirectory(packagePath);
-                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
-                    fileListContents);
-
-                // Act
-                var response = await controller.RetrievePackageFileList("karetao", ".json");
-
-                // Assert
-                var jsonResult = Assert.IsType<JsonResult>(response);
-                var json = JsonConvert.SerializeObject(jsonResult.Value);
-                Assert.Equal(
-                    "{\"Count\":1,\"Items\":[{\"Hash\":\"ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=\",\"Name\":\"fake.txt\"}],\"Page\":0}",
-                    json);
-            }
-            finally
-            {
-                Directory.Delete(basePath, true);
-            }
-        }
-
-        [Fact]
-        public async Task RetrievePackageFileListHandlesTxtFormat()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-4");
-            var controller = InitialiseController(engine, rootPath: basePath);
-            var query = new Mock<RobotTypeData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
-            engine.RegisterQuery(query.Object);
-            try
-            {
-                var packagePath = Path.Combine(basePath, "packages", "karetao");
-                Directory.CreateDirectory(packagePath);
-                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
-                    fileListContents);
-
-                // Act
-                var response = await controller.RetrievePackageFileList("karetao", ".txt");
-
-                // Assert
-                var fileResult = Assert.IsType<FileContentResult>(response);
-                var data = Encoding.UTF8.GetString(fileResult.FileContents);
-                Assert.Equal(fileListContents, data);
-            }
-            finally
-            {
-                Directory.Delete(basePath, true);
-            }
-        }
-
-        [Fact]
-        public async Task RetrievePackageFileListHandlesUnknownRobot()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var controller = InitialiseController(engine);
-            var query = new Mock<RobotTypeData>();
-            query.Setup(q => q.RetrieveByNameAsync("karetao"))
-                .Returns(Task.FromResult((Data.RobotType?)null));
-            engine.RegisterQuery(query.Object);
-
-            // Act
-            var response = await controller.RetrievePackageFileList("karetao");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response);
-        }
-
-        [Fact]
         public async Task SetAsDefaultCallsCommand()
         {
             // Arrange
@@ -589,6 +739,52 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             var command = Assert.IsType<SetDefaultRobotType>(engine.LastCommand);
             Assert.Equal("karetao", command.Name);
+        }
+
+        [Fact]
+        public async Task UploadPackageFileHandlesUnknownRobot()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.UploadPackageFile("karetao", "missing.txt");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task UploadPackageFileSavesFile()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-20");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            controller.SetRequestBody(RobotTypeFilePackageTests.FakeFileContents);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+
+            try
+            {
+                // Act
+                var response = await controller.UploadPackageFile("karetao", "missing.txt");
+
+                // Assert
+                Assert.IsType<ExecutionResult>(response.Value);
+                Assert.True(File.Exists(Path.Combine(basePath, "packages", "karetao", "missing.txt")));
+            }
+            finally
+            {
+                if (Directory.Exists(basePath)) Directory.Delete(basePath, true);
+            }
         }
 
         private static RobotTypesController InitialiseController(

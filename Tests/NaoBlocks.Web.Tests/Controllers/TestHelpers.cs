@@ -27,5 +27,22 @@ namespace NaoBlocks.Web.Tests.Controllers
                 HttpContext = httpContext
             };
         }
+
+        internal static void SetRequestHeader(this ControllerBase controller, string key, string value)
+        {
+            if (controller.ControllerContext.HttpContext is not DefaultHttpContext context)
+            {
+                var httpContext = new DefaultHttpContext();
+                httpContext.Request.Headers.Add(key, value);
+                controller.ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                };
+            }
+            else
+            {
+                context.Request.Headers.Add(key, value);
+            }
+        }
     }
 }
