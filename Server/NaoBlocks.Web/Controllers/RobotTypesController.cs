@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Text;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -294,45 +295,28 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Sets a robot type as the system default.
-        /// </summary>
-        /// <param name="id">The name of the robot type.</param>
-        /// <returns>The result of execution.</returns>
-        [HttpPut("{id}/default")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> SetAsDefault(string? id)
-        {
-            this.logger.LogInformation($"Updating robot type '{id}'");
-            var command = new SetDefaultRobotType
-            {
-                Name = id
-            };
-            return await this.executionEngine
-                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
-                command,
-                t => Transfer.RobotType.FromModel(t!));
-        }
-
-        /*
-        /// <summary>
         /// Retrieves a package list for a robot type.
         /// </summary>
-        /// <param name="name">The name of the robot type.</param>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="format">The format for the file.</param>
         /// <returns>Either a 404 (not found) or the robot type details.</returns>
         [HttpGet("{id}/package{format}")]
         [HttpGet("{id}/package")]
         [AllowAnonymous]
         public async Task<ActionResult> RetrievePackageFileList(string id, string? format = ".json")
         {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
-            var queryable = this.session.Query<RobotType>();
-            var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
+            this.logger.LogDebug($"Retrieving robot type: {id}");
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
             if (robotType == null)
             {
+                this.logger.LogDebug($"Unknown robot type ${id}");
                 return NotFound();
             }
 
-            this._logger.LogInformation($"Retrieving file list for robot type '{id}'");
+            this.logger.LogInformation($"Retrieving file list for robot type '{id}'");
             var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
 
             if (format == ".txt")
@@ -354,11 +338,32 @@ namespace NaoBlocks.Web.Controllers
                     })));
         }
 
+        /// <summary>
+        /// Sets a robot type as the system default.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPut("{id}/default")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> SetAsDefault(string? id)
+        {
+            this.logger.LogInformation($"Updating robot type '{id}'");
+            var command = new SetDefaultRobotType
+            {
+                Name = id
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
+                command,
+                t => Transfer.RobotType.FromModel(t!));
+        }
+
+        /*
         [HttpPost("{id}/package")]
         [Authorize(Policy = "Administrator")]
         public async Task<ActionResult> GeneratePackageFileList(string id)
         {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
             var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
             if (robotType == null)
@@ -366,7 +371,7 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogInformation($"Generating file list for robot type '{id}'");
+            this.logger.LogInformation($"Generating file list for robot type '{id}'");
             var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
 
             return File(fileList, ContentTypes.Txt, "filelist.txt");
@@ -376,7 +381,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Administrator")]
         public async Task<ActionResult<ExecutionResult>> UploadPackageFile(string id, NamedValue file)
         {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
             var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
             if (robotType == null)
@@ -384,9 +389,9 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogInformation($"Uploading package file for robot type '{id}'");
+            this.logger.LogInformation($"Uploading package file for robot type '{id}'");
             var filename = Path.GetFileName(file.Name);
-            this._logger.LogInformation($"Uploading '{filename}'");
+            this.logger.LogInformation($"Uploading '{filename}'");
             await RobotTypeFilePackage.StorePackageFile(robotType, this.rootFolder, filename, file.Value);
 
             return new ExecutionResult();
@@ -396,7 +401,7 @@ namespace NaoBlocks.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> RetrievePackageFile(string id, string filename)
         {
-            this._logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug($"Retrieving robot type: {id}");
             var queryable = this.session.Query<RobotType>();
             var robotType = await queryable.FirstOrDefaultAsync(u => u.Name == id);
             if (robotType == null)
@@ -414,7 +419,7 @@ namespace NaoBlocks.Web.Controllers
                 }
             }
 
-            this._logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
+            this.logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
             var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
             if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
             return File(details.DataStream, ContentTypes.Txt, filename);

@@ -6,8 +6,11 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
+using NaoBlocks.Web.Helpers;
+using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Data = NaoBlocks.Engine.Data;
@@ -18,6 +21,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 {
     public class RobotTypesControllerTests
     {
+        private const string fileListContents = "fake.txt,ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=";
         private const string ToolBoxXml = "<toolbox/>";
 
         [Fact]
@@ -483,6 +487,90 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task RetrievePackageFileListHandlesJsonFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-5");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            try
+            {
+                var packagePath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(packagePath);
+                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
+                    fileListContents);
+
+                // Act
+                var response = await controller.RetrievePackageFileList("karetao", ".json");
+
+                // Assert
+                var jsonResult = Assert.IsType<JsonResult>(response);
+                var json = JsonConvert.SerializeObject(jsonResult.Value);
+                Assert.Equal(
+                    "{\"Count\":1,\"Items\":[{\"Hash\":\"ZwI4sdXTSrE1AVW7bVvWKn0IPX2CQuHWs1nqZINj03I=\",\"Name\":\"fake.txt\"}],\"Page\":0}",
+                    json);
+            }
+            finally
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task RetrievePackageFileListHandlesTxtFormat()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var basePath = Path.Combine(Path.GetTempPath(), "NaoBlocks-4");
+            var controller = InitialiseController(engine, rootPath: basePath);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao" }));
+            engine.RegisterQuery(query.Object);
+            try
+            {
+                var packagePath = Path.Combine(basePath, "packages", "karetao");
+                Directory.CreateDirectory(packagePath);
+                await File.WriteAllTextAsync(Path.Combine(packagePath, RobotTypeFilePackage.FileListName),
+                    fileListContents);
+
+                // Act
+                var response = await controller.RetrievePackageFileList("karetao", ".txt");
+
+                // Assert
+                var fileResult = Assert.IsType<FileContentResult>(response);
+                var data = Encoding.UTF8.GetString(fileResult.FileContents);
+                Assert.Equal(fileListContents, data);
+            }
+            finally
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+
+        [Fact]
+        public async Task RetrievePackageFileListHandlesUnknownRobot()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var controller = InitialiseController(engine);
+            var query = new Mock<RobotTypeData>();
+            query.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult((Data.RobotType?)null));
+            engine.RegisterQuery(query.Object);
+
+            // Act
+            var response = await controller.RetrievePackageFileList("karetao");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response);
+        }
+
+        [Fact]
         public async Task SetAsDefaultCallsCommand()
         {
             // Arrange
@@ -505,11 +593,12 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         private static RobotTypesController InitialiseController(
             FakeEngine? engine = null,
-            FakeLogger<RobotTypesController>? logger = null)
+            FakeLogger<RobotTypesController>? logger = null,
+            string? rootPath = null)
         {
             logger ??= new FakeLogger<RobotTypesController>();
             engine ??= new FakeEngine();
-            var env = InitialiseEnvironment();
+            var env = InitialiseEnvironment(rootPath);
             var controller = new RobotTypesController(
                 logger,
                 engine,
@@ -517,10 +606,11 @@ namespace NaoBlocks.Web.Tests.Controllers
             return controller;
         }
 
-        private static Mock<IWebHostEnvironment> InitialiseEnvironment(string value = "http://test")
+        private static Mock<IWebHostEnvironment> InitialiseEnvironment(string? value = null)
         {
+            var path = value ?? Path.GetTempPath();
             var env = new Mock<IWebHostEnvironment>();
-            env.Setup(e => e.WebRootPath).Returns(value);
+            env.Setup(e => e.WebRootPath).Returns(path);
             return env;
         }
     }
