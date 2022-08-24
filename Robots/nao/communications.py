@@ -2,7 +2,6 @@ import logging
 import json
 import socket
 from threading import Lock, Thread
-import threading
 import time
 import traceback
 

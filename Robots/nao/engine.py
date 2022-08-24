@@ -326,7 +326,7 @@ class Engine(object):
         ''' Make the robot wave. '''
         logger.log('[Engine] Waving')
         movement = BodyMovement().wave()
-        self._perform_movement(state, movement, 'wave')
+        self._perform_movement(state, movement, 'wave', require_standing = False)
 
     def _look(self, state):
         ''' Make the robot look in a direction. '''
@@ -339,7 +339,7 @@ class Engine(object):
             movement = movement.lookRight()
         elif direction == 'ahead':
             movement = movement.lookAhead()
-        self._perform_movement(state, movement, 'look', 1)
+        self._perform_movement(state, movement, 'look', 1, require_standing = False)
 
     def _point(self, state):
         ''' Make the robot point in a direction. '''
@@ -356,14 +356,15 @@ class Engine(object):
             movement = movement.pointUp()
         elif direction == 'ahead':
             movement = movement.pointAhead()
-        self._perform_movement(state, movement, 'look', 2)
+        self._perform_movement(state, movement, 'look', 2, require_standing = False)
 
-    def _perform_movement(self, state, movement, name, speech=0):
-        posture = self._robot.getPosture()
-        if posture != 'Standing' and posture != 'Sitting':
-            logger.log('[Engine] Unable to ' + movement + ' in the current position')
-            self._robot.say('I cannot ' + name + ' in this position')
-            return
+    def _perform_movement(self, state, movement, name, speech=0, require_standing=True):
+        if require_standing:
+            posture = self._robot.getPosture()
+            if posture != 'Standing' and posture != 'Sitting':
+                logger.log('[Engine] Unable to ' + name + ' in the current position')
+                self._robot.say('I cannot ' + name + ' in this position')
+                return
 
         try:
             speech = self._evaluate(state.ast['arguments'][speech], state)
@@ -531,7 +532,7 @@ class Engine(object):
         ''' Make the robot wipe forehead. '''
         logger.log('[Engine] Wiping forehead')
         movement = BodyMovement().wipeForehead()
-        self._perform_movement(state, movement, 'wipe forehead')
+        self._perform_movement(state, movement, 'wipe forehead', require_standing = False)
 
     def _say(self, state):
         ''' Make the robot speak. '''

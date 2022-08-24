@@ -20,7 +20,7 @@
                             Import <mat-icon>arrow_drop_down</mat-icon>
                         </button>
                         <mat-menu #importMenu="matMenu">
-                            <button mat-menu-item (click)="importPackage()">Package</button>
+                            <button mat-menu-item (click)="importPackage()" [disabled]="selection.selected.length != 1">Package Files</button>
                         </mat-menu>
                     </div>
                 </div>

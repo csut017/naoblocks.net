@@ -7,3 +7,4 @@ Tests/Coverage/*.*
 Utilities/paths.csv
 Utilities/swagger.json
 Robots/nao/**/*.pyc
+Server/NaoBlocks.Web/wwwroot/packages/**/*.*

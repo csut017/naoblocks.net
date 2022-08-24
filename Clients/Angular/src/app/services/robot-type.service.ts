@@ -159,13 +159,9 @@ export class RobotTypeService extends ClientService {
   }
 
   uploadPackageFile(robotType: RobotType, filename: string, data: string): Observable<ExecutionResult<any>> {
-    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package/files`;
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/package/${filename}`;
     this.log(`Uploading package file for robot type ${robotType.id}`);
-    const fileData = {
-      name: filename,
-      value: data
-    };
-    return this.http.post<ExecutionResult<any>>(url, fileData)
+    return this.http.post<ExecutionResult<any>>(url, data)
       .pipe(
         tap(result => {
           this.log('Uploaded package file');

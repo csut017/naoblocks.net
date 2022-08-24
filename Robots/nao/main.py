@@ -4,6 +4,8 @@
 
 This client runs directly on a Nao robot and handles program
 execution on the robot.
+
+Use auto.py to check for updated files.
 """
 
 import argparse
