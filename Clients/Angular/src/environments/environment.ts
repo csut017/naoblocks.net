@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 // This will need to change to match the server host
-let hostName = '192.168.0.10:5000';
+let hostName = '192.168.0.100:5000';
 
 export const environment = {
   production: false,
