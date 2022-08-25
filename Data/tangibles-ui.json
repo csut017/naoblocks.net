@@ -5,7 +5,7 @@
             "numbers": [
                 283
             ],
-            "image": "->question",
+            "image": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAByElEQVR4nO2XT46CMBSHy8TEYFi4tXsvQHTTxA2u3wHYeRW3sOAA3MJjNF7BhBWcwv5mIzrVUVDKdJr0S5rYljz69dk/BACYy3zZHsBQvIBtvIBtvIBtvIBtJu2PIAi0IxlA8PfDeR/nM+AFbDPpfuQz7tfUu8znc7bZbNhqtWJpmrLlcvn7mgTALldq/Cxt+6flPt6QMpvNUBQFzufzw7h6CyilkOc5iAhRFIFzDiJClmVQSj0GNijQlu12+/CuXgJN0yCO46eB4zhG0zQYW4AxhqIo3hNQSiFJks7ASZJoszP0LymlxG63QxiGWpwwDHE6ndBboCzL3rNTlqUxgbbUdY3pdKrF2u/313id2+jhcNDqQggmpWRVVTEhxMtnTbBYLII0TbW24/F4q3TNGOdca5dSXvuklFof59x4Brre48RBtl6vtTOgrutbpWvGiEhrF0JASomqqiCE0PqIaJQMvIr37xfxYAFb26gxAcDMQWZVoM1ElmUgInDOEUURiAh5nve6SowlEFw6jX+R/VU8J7bRVzz9Hhh6nx87XovzGfACtnm6",
             "text": "Lie down",
             "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
@@ -14,7 +14,7 @@
             "numbers": [
                 55
             ],
-            "image": "->question",
+            "image": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACGklEQVR4nO2Yu6riUBSG/8gINiKS9GKjBAQvaWwEC7G1FmxMkTewiTcs7SzF17ASLMVK8gYWooXgfgT1n+oIM+foGJPMVsgHq0iyd7K+ZK2EHYUkPpmI7AS8EgrIJhSQTSggm48X+OV2wmw2IwBUKhXouq48GiuE4H6/R7FYfDjOEyRdhaIoBMDpdMpH49rtNgEQAE3TfDjWS7iekE6nCYCdTuduUo7j3JL/CsdxApFw3QP5fB4AsNlsfKsCT7g1Ho1GBMBYLMbtdnv3rpqm+Z4ldDwemUgkCIDlcpnn8/lucqfTKbDSeVmAJCaTye3u1mo1Hg6HQJN8FArpfj1Ako1GA/P5HAAQjUbRbDZRrVaRy+UQidxvrVKpBEVR/Hutvmp+uVxo2za/XqvPRjwe53g89u2JeT7BarWiaZqMx+OuRIbDoS8SvtXi9XqlruuuJAaDgWcJXxvKMIx/Jp3JZJjNZm/b/X7fk8R/FzAMg0IIFgqF275er/eyhBQBkvBLQprATxLdbte1hFSBnyRs23YlIV3gb4lkMkkhxNMSb7EiU1VVWS6XqNfrWK/XUFX16S+16xVZUKiqqiwWC9fzAhHQNA2pVOqPfbvdDkII/y8WRA9YlvWthi3LutsDXuItesALoYBsQgHZhAKy+XgBX7/Etm1DCAFd178da7VaMAwDmqb5ecnXfqu8Ex9fQqGAbEIB2YQCsvl4gd+x7pdk+xZNzAAAAABJRU5ErkJggg==",
             "text": "Dance",
             "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
@@ -23,7 +23,7 @@
             "numbers": [
                 157
             ],
-            "image": "->question",
+            "image": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABA0lEQVR4nO2YzQ3DIAxGcdUlGMQMlaXMlMDt66lSW7WVSUhdhJ/kQyT+nlDsOAQgzMzF+gBHcQFrXMCaLoFaK3LOSCmBiIZGSgk5Z9Ra+9IiAFW01hBjRAjh1IgxorUG7bnUAiJy+uHvISLjBZj5ZwLMrBYgbSUmoqeBAEg1Ucne9dfKQv+IC1izjgAzPz2PrsTf9hoisG2betGjdO21zKcEgFBKgYjgjKrMzBARlFLUh++qxJ/oraCjK/o6WehfWUvgXUf2OqYn3z+O947MO7LBNcE7sllwAWuueye+y+kWTH8DLmDN7nfg7DqgZfobcAFrXMCaw38lrJn+BlzAGhew5gaf9m88HzsYCwAAAABJRU5ErkJggg==",
             "text": "Sit down",
             "generator": "var code = 'position(\\'Sit\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
@@ -32,7 +32,7 @@
             "numbers": [
                 31
             ],
-            "image": "->question",
+            "image": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA60lEQVR4nO2ZsQ3DIBBFIcoSDHIM5aWgYzQ2ALqfKkXiuLB9zjfSPekaKOD5+yyQPQA3Mw/2Bs5iAmwuEei9I+eMGCNijMg5o/d+TbMBUK0xBkIIcM59VAgBYwxor6eeQCnF1VpX47VWV0rRXk4/ARFZPf13icj9E/g36gLLshyaO8zsTawuAMC11pBSgohARJBSQmtNffMAnAfsLETluTXhvb9VNAD8r/HpEzABNmpfob09s/VO72X6BEyAjQmwMQE2JsDGBNiYAJvNG9lZvk+bV93wpk/ABNiYABsTYGMCbEyAjf0fYGMCbF4M80/FzrJVBwAAAABJRU5ErkJggg==",
             "text": "Stand up",
             "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
@@ -58,7 +58,7 @@
             "numbers": [
                 331
             ],
-            "image": "->question",
+            "image": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACgElEQVR4nO2YPc/xUBjHT73kZrGKtSERGyI2MwmTL8AmwWA0MUlYfQCDhYjF4jNImdhExGpCvDTx8r+H53Hnqeob7d160iu5hp5cp/3/Tv/puU4pAOSTw6K3gHfDBNA7TAC9wwTQOwwJ0O/3kUqlcLlcpDcpAIZJlmVRKBRACAEhBOVyGVJzdBd9z8VigXA4/COeEAKLxYLhcCgKYQgL9ft9hEIhMplMOONWq5Xsdjvxyb+xsslkUnAVi8UiZ9XvSdM0xuOxfhY6Ho+oVCpwOBz4s07P62q1Gk98Op3GZrORFK8ZwGAwAE3THFFCtdfrFfF4HIQQfH19odlsyhKuCcDdLs8sITZvvV4jFovJsowmAI92UQrwTmpiFzGA5XKpKozgirZaLUQiEUlhcvN+b7/fj/1+rxoEb4BlWXg8npeFut1utNttQQBCCDKZjHYArVbrJeE2mw2lUgnb7RZ3oUIAhBAwDKMKBG/gFdt4vV5Mp1OOICmARqOhCoDtcWdmGIZzDYB6rFEjRqPR03GKokQ70Ec9uvVCQgBKwxDN3DuhG0A0GlXlPjyASCTCuaYoClLp8/kwm80U/eITAgBAieWzCf/XZ/Q3NrJsNqvdRgZo20oEAgEcDgdtAZ4WCghS2sytVivVxKsCcH9jhm+n5Qgy9IFGiSAlR8rb7YZEIgFCND5SKrXE6XRCtVqF0+kUra/X67y3pcmh/lVPLxYLpFIpwfpcLvfUcjRNy9orNAeQk51OBy6Xiwdht9vR7XZFn2UIAABkPp8jGAxyniHn16KqIt5NlmWRz+d/AD7q5+6/2ev1kEwmcT6fJQGov/b42DAPNHqHCaB3mAB6x8cDfAPDvz5PETvmQQAAAABJRU5ErkJggg==",
             "text": "Say 'Kia ora'",
             "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
