@@ -213,7 +213,7 @@
         {
             "name": "robot_kia_ora",
             "definition": "{\"type\":\"robot_kia_ora\",\"message0\":\"Say 'Kia ora'\",\"nextStatement\":null,\"previousStatement\":null,\"colour\":65,\"tooltip\":\"Say kia ora.\"}",
-            "generator": "var code = 'say(\\'key or a\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
+            "generator": "var code = 'say(\\'kia ora\\')\\n';return Blockly.NaoLang.generatePrefix() + code;",
             "text": "Say Kia Ora",
             "category": "Robot"
         },
