@@ -32,14 +32,29 @@ namespace NaoBlocks.Definitions.Tangibles
         /// <returns>The description items.</returns>
         public Task<IEnumerable<UIDefinitionItem>> DescribeAsync()
         {
+            this.InitialiseImages();
+            Func<Block, string?> mapImage = (block) =>
+            {
+                if (!string.IsNullOrEmpty(block.Image) && block.Image.StartsWith("->"))
+                {
+                    return this.images[block.Image[2..]].Image;
+                }
+                return block.Image;
+            };
             return Task.FromResult(new[]
             {
                 UIDefinitionItem.New("Blocks",
                     null,
-                    this.Blocks.Select(b => UIDefinitionItem.New(b.Name ?? "<unknown>"))),
+                    this.Blocks.Select(b => new UIDefinitionItem{
+                        Name = b.Name ?? "<unknown>",
+                        Image = mapImage(b),
+                    })),
                 UIDefinitionItem.New("Images",
                     null,
-                    this.Images.Select(i => UIDefinitionItem.New(i.Name ?? "<unknown>"))),
+                    this.Images.Select(i => new UIDefinitionItem{
+                        Name = i.Name ?? "<unknown>",
+                        Image = i.Image,
+                    })),
             }.AsEnumerable());
         }
 
@@ -50,12 +65,7 @@ namespace NaoBlocks.Definitions.Tangibles
         /// <returns>A <see cref="Stream"/> containing the definition.</returns>
         public Task<Stream> GenerateAsync(string component)
         {
-            this.images.Clear();
-            foreach (var image in this.Images)
-            {
-                this.images[image.Name!] = image;
-            }
-
+            this.InitialiseImages();
             return component.ToLowerInvariant() switch
             {
                 "all" => ConvertToStreamAsync(this.GenerateAll()),
@@ -123,6 +133,15 @@ namespace NaoBlocks.Definitions.Tangibles
             builder.Append(image);
             builder.Append("\"}");
             return builder.ToString();
+        }
+
+        private void InitialiseImages()
+        {
+            this.images.Clear();
+            foreach (var image in this.Images)
+            {
+                this.images[image.Name!] = image;
+            }
         }
 
         /// <summary>

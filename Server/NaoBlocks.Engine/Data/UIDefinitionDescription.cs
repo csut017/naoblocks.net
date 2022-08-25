@@ -16,6 +16,11 @@
         public string? Description { get; set; }
 
         /// <summary>
+        /// Gets or sets any associated image data.
+        /// </summary>
+        public string? Image { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the item.
         /// </summary>
         public string Name { get; set; } = string.Empty;

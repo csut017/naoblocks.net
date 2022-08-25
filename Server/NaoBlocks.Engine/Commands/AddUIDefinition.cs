@@ -1,7 +1,7 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
 using Newtonsoft.Json;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Commands
 {
@@ -42,9 +42,11 @@ namespace NaoBlocks.Engine.Commands
                 errors.Add(GenerateError("Definition name is required"));
             }
 
+            var validateDefinition = true;
             if (this.Definition == null)
             {
                 errors.Add(GenerateError("Definition is required"));
+                validateDefinition = false;
             }
             else if (!this.IgnoreExisting)
             {
@@ -55,11 +57,12 @@ namespace NaoBlocks.Engine.Commands
                 {
                     errors.Add(GenerateError("Definition already exists"));
                 }
-                else
-                {
-                    errors.AddRange(
-                        await this.Definition.ValidateAsync(engine).ConfigureAwait(false));
-                }
+            }
+
+            if (validateDefinition)
+            {
+                errors.AddRange(
+                    await this.Definition!.ValidateAsync(engine).ConfigureAwait(false));
             }
 
             return errors.AsEnumerable();

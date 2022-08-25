@@ -32,6 +32,6 @@ export class Block {
     }
 
     imageData(): SafeResourceUrl {
-        return this.sanitizer.bypassSecurityTrustResourceUrl(`data:image/png;base64, ${this.image}`);
+        return this.sanitizer.bypassSecurityTrustResourceUrl(this.image);
     }
 }

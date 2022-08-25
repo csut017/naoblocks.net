@@ -55,6 +55,7 @@
                             </div>
                             <ul *ngIf="item.isOpen">
                                 <li *ngFor="let child of item.children">
+                                    <img *ngIf="child.image" src="{{child.image}}"/>
                                     {{child.name}}
                                 </li>
                             </ul>
