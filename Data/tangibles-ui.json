@@ -2,46 +2,361 @@
     "blocks": [
         {
             "name": "liedown",
-            "numbers": [283],
+            "numbers": [
+                283
+            ],
             "image": "->question",
             "text": "Lie down",
             "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "dance",
-            "numbers": [55],
+            "numbers": [
+                55
+            ],
             "image": "->question",
             "text": "Dance",
             "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "sit",
-            "numbers": [157],
+            "numbers": [
+                157
+            ],
             "image": "->question",
             "text": "Sit down",
             "generator": "var code = 'position(\\'Sit\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "stand",
-            "numbers": [31],
+            "numbers": [
+                31
+            ],
             "image": "->question",
             "text": "Stand up",
             "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
-            "name": "wave",
-            "numbers": [47],
+            "name": "LeftArmOut",
+            "numbers": [
+                47
+            ],
             "image": "->question",
-            "text": "Wave",
-            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wave()\\n';"
+            "text": "Left Arm Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'leftArmOut()\\n';"
+        },  {
+            "name": "RightrmOut",
+            "numbers": [
+                151
+            ],
+            "image": "->question",
+            "text": "Right Arm Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'rightArmOut()\\n';"
         },
         {
             "name": "kiaora",
-            "numbers": [331],
+            "numbers": [
+                331
+            ],
             "image": "->question",
             "text": "Say 'Kia ora'",
             "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "waitonesec",
+            "numbers": [
+                171
+            ],
+            "image": "->question",
+            "text": "Wait 1s",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wait(1)\\n';"
+        },
+        {
+            "name": "wipeforehead",
+            "numbers": [
+                59
+            ],
+            "image": "->question",
+            "text": "Wipe forehead",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wipe_forehead()\\n';"
+        },
+        {
+            "name": "for",
+            "numbers": [
+                61
+            ],
+            "image": "->question",
+            "text": "For",
+            "generator": "var code ='loop(' ;return Tangibles.NaoLang.generatePrefix() + code "
+        },
+        {
+            "name": "endfor",
+            "numbers": [
+                327
+            ],
+            "image": "->question",
+            "text": "End for",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '}\\n'"
+        },
+        {
+            "name": "look",
+            "numbers": [
+                87
+            ],
+            "image": "->question",
+            "text": "Look",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'look('"
+        },
+        {
+            "name": "left",
+            "numbers": [
+                91
+            ],
+            "image": "->question",
+            "text": "Left",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'left\\')\\n'"
+        },
+        {
+            "name": "right",
+            "numbers": [
+                93
+            ],
+            "image": "->question",
+            "text": "Right",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'right\\')\\n'"
+        },
+        {
+            "name": "ahead",
+            "numbers": [
+                103
+            ],
+            "image": "->question",
+            "text": "Ahead",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'ahead\\')\\n'"
+        }, {
+            "name": "rest",
+            "numbers": [
+                107
+            ],
+            "image": "->question",
+            "text": "Rest",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        }, {
+            "name": "Start",
+            "numbers": [
+                339
+            ],
+            "image": "->question",
+            "text": "Start",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        }, {
+            "name": "End",
+            "numbers": [
+                271
+            ],
+            "image": "->question",
+            "text": "End",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "two",
+            "numbers": [
+                179
+            ],
+            "image": "->question",
+            "text": "2",
+            "generator": "var code ='2){\\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "three",
+            "numbers": [
+                181
+            ],
+            "image": "->question",
+            "text": "3",
+            "generator": "var code ='3){\\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "point",
+            "numbers": [
+                109
+            ],
+            "image": "->question",
+            "text": "point",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'point('"
+        },
+        {
+            "name": "walk",
+            "numbers": [
+                115
+            ],
+            "image": "->question",
+            "text": "Walk",
+            "generator": "var code ='walk(1,0) \\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "pointleft",
+            "numbers": [
+                109
+            ],
+            "image": "->question",
+            "text": "Point Left and",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'point(\\'left\\','"
+        },
+        {
+            "name": "pointright",
+            "numbers": [
+                185
+            ],
+            "image": "->question",
+            "text": "Point Right and",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'point(\\'right\\','"
+        },
+        {
+            "name": "up",
+            "numbers": [
+                117
+            ],
+            "image": "->question",
+            "text": "Up",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'up\\')\\n'"
+        },
+        {
+            "name": "down",
+            "numbers": [
+                121
+            ],
+            "image": "->question",
+            "text": "Down",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'down\\')\\n'"
+        },
+        {
+            "name": "out",
+            "numbers": [
+                143
+            ],
+            "image": "->question",
+            "text": "Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'out\\')\\n'"
+        },
+        {
+            "name": "move",
+            "numbers": [
+                155
+            ],
+            "image": "->question",
+            "text": "Move",
+            "generator": ""
+        },
+        {
+            "name": "openhand",
+            "numbers": [
+                199
+            ],
+            "image": "->question",
+            "text": "Open hands",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'changeHand(\\'open\\',\\'both\\')\\n';"
+        },
+        {
+            "name": "closehand",
+            "numbers": [
+                173
+            ],
+            "image": "->question",
+            "text": "Close hands",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'changeHand(\\'close\\',\\'both\\')\\n';"
+        },
+        {
+            "name": "movedirection",
+            "numbers": [
+                169
+            ],
+            "image": "->question",
+            "text": "Move direction",
+            "generator": ""
+        },
+        {
+            "name": "arabasqueRight",
+            "numbers": [
+                279
+            ],
+            "image": "->question",
+            "text": "Arabasque Right",
+            "generator": "var code = 'arabasqueRight()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "plie",
+            "numbers": [
+                203
+            ],
+            "image": "->question",
+            "text": "plie",
+            "generator": "var code = 'plie()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "arabasque",
+            "numbers": [
+                205
+            ],
+            "image": "->question",
+            "text": "Arabasque",
+            "generator": "var code = 'arabasque()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "fly",
+            "numbers": [
+                211
+            ],
+            "image": "->question",
+            "text": "Fly",
+            "generator": "var code = 'fly()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "firstposition",
+            "numbers": [
+                213
+            ],
+            "image": "->question",
+            "text": "First Position",
+            "generator": "var code = 'ballet1()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "secondposition",
+            "numbers": [
+                217
+            ],
+            "image": "->question",
+            "text": "Second Position",
+            "generator": "var code = 'ballet2()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "thirdposition",
+            "numbers": [
+                295
+            ],
+            "image": "->question",
+            "text": "Third Position",
+            "generator": "var code = 'ballet3()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "enavont",
+            "numbers": [
+                285
+            ],
+            "image": "->question",
+            "text": "En_avont",
+            "generator": "var code = 'enavont()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "up",
+            "numbers": [
+                333
+            ],
+            "image": "->question",
+            "text": "Up",
+            "generator": "var code = 'up()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         }
+        
     ],
     "images": [
         {

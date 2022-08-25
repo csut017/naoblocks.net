@@ -274,7 +274,19 @@ class Engine(object):
             'round': EngineFunction(self._round),
 
             # Behaviour functions
-            'clap': EngineFunction(self._generate_behaviour('Clap', Movements.CLAP)),
+             'arabasque':EngineFunction(self._generate_behaviour('Arabasque', Movements.ARABESQUE)),
+            'plie': EngineFunction(self._generate_behaviour('Plie', Movements.PLIE)),
+            'single': EngineFunction(self._generate_behaviour('Single', Movements.SINGLE)),
+            'arabasqueRight': EngineFunction(self._generate_behaviour('ArabasqueRight', Movements.ARABESQUERIGHT)),
+            'fly': EngineFunction(self._generate_behaviour('Fly', Movements.FLY)),
+            'ballet3': EngineFunction(self._generate_behaviour('Ballet3', Movements.BALLET3)),
+            'ballet2': EngineFunction(self._generate_behaviour('Ballet2', Movements.BALLET2)),
+            'ballet1': EngineFunction(self._generate_behaviour('Ballet1', Movements.BALLET1)),
+            'enavont': EngineFunction(self._generate_behaviour('enavont', Movements.ENAVONT)),
+            'up': EngineFunction(self._generate_behaviour('up', Movements.UP)),
+            'rest': EngineFunction(self._generate_behaviour('rest', Movements.REST)),
+            'leftArmOut': EngineFunction(self._generate_behaviour('leftArmOut', Movements.LEFT_ARM_OUT)),
+            'rightArmOut': EngineFunction(self._generate_behaviour('rightArmOut', Movements.RIGHT_ARM_OUT)),
         }
 
     def _generate_register_block(self, block_name):

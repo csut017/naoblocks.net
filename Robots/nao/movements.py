@@ -336,4 +336,17 @@ class Dances(object):
 
 class Movements(object):
     CLAP = 'clap-f1a45d/clap'
+    ARABESQUE='arabesque-dd836e/arabesque'
+    PLIE='plie-4b7052/plie'
+    SINGLE="singleladies1-bf47a2/dance"
+    ARABESQUERIGHT='arabesque_right-6ddba7/arabesque_right'
+    FLY="fly-9b9837/fly"
+    BALLET3="ballet_2_3-a5fa3e/ballet3"
+    BALLET2="ballet_2_2-a4e154/ballet2"
+    BALLET1="ballet_2_1-1e2e67/ballet1"
+    ENAVONT="en_avont-0e0322/enavont"
+    UP="up-f66717/up"
+    REST="rest-d3384b/rest"
+    LEFT_ARM_OUT="left_arm_out-3230ca/arms_out"
+    RIGHT_ARM_OUT="right_arm_out-22de32/arms_out"
     
