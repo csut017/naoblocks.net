@@ -45,7 +45,7 @@
             "text": "Left Arm Out",
             "generator": "return Tangibles.NaoLang.generatePrefix() + 'leftArmOut()\\n';"
         },  {
-            "name": "RightrmOut",
+            "name": "RightArmOut",
             "numbers": [
                 151
             ],
@@ -210,7 +210,7 @@
             ],
             "image": "->question",
             "text": "Up",
-            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'up\\')\\n'"
+            "generator": "var code = 'up()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "down",
