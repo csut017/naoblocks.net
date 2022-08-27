@@ -1,6 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { DefaultFlexOrderDirective } from '@angular/flex-layout';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
