@@ -13,6 +13,9 @@ import { MultilineMessageService } from 'src/app/services/multiline-message.serv
 import { ImportService } from 'src/app/services/import.service';
 import { ImportSettings } from 'src/app/data/import-settings';
 import { ImportStatus } from 'src/app/data/import-status';
+import { ReportSettingsService } from 'src/app/services/report-settings.service';
+import { ReportSettings } from 'src/app/data/report-settings';
+import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -38,6 +41,7 @@ export class RobotTypesListComponent implements OnInit {
     private deleteConfirm: DeletionConfirmationService,
     private multilineMessage: MultilineMessageService,
     private importService: ImportService,
+    private exportSettings: ReportSettingsService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -205,6 +209,21 @@ export class RobotTypesListComponent implements OnInit {
     this.view = 'toolboxes';
     this.currentItem = this.selection.selected[0];
     this.currentItemChanged.emit(`${this.currentItem.name} [Toolboxes]`);
+  }
+
+  exportLogs(): void {
+    console.log('[RobotTypesList] Showing export settings for logs');
+    let settings = new ReportDialogSettings('Export Logs', true);
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotTypesList] Generating logs export');
+          console.log(result);
+          console.groupEnd();
+        } else {
+          console.log('[RobotTypesList] Export cancelled');
+        }
+      });
   }
 
   private loadList(): void {

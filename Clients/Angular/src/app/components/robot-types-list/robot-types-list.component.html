@@ -58,7 +58,7 @@
                     <mat-menu #exportMenu="matMenu">
                         <button mat-menu-item>List</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1">Details</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1">Logs</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportLogs()">Logs</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1">Snapshots</button>
                     </mat-menu>
                 </div>

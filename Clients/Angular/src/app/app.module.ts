@@ -47,6 +47,8 @@ import { UserSettingsComponent } from './components/user-settings/user-settings.
 import { ToolboxEditorComponent } from './components/toolbox-editor/toolbox-editor.component';
 import { ToolboxListComponent } from './components/toolbox-list/toolbox-list.component';
 import { UserInterfaceEditorComponent } from './components/user-interface-editor/user-interface-editor.component';
+import { ReportSettingsComponent } from './components/report-settings/report-settings.component';
+import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -87,13 +89,15 @@ import { UserInterfaceEditorComponent } from './components/user-interface-editor
     UserSettingsComponent,
     ToolboxEditorComponent,
     ToolboxListComponent,
-    UserInterfaceEditorComponent
+    UserInterfaceEditorComponent,
+    ReportSettingsComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
+    MatNativeDateModule,
     ReactiveFormsModule,
     HttpClientModule,
     MaterialModule,
@@ -104,6 +108,9 @@ import { UserInterfaceEditorComponent } from './components/user-interface-editor
     provide: HTTP_INTERCEPTORS,
     useClass: AuthenticationInterceptor,
     multi: true,
+  }, {
+    provide: MAT_DATE_LOCALE, 
+    useValue: 'en-GB',
   }],
   bootstrap: [AppComponent]
 })

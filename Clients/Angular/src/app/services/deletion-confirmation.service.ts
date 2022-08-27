@@ -15,7 +15,7 @@ export class DeletionConfirmationService {
     const dialogRef = this.dialog.open(DeletionConfirmationComponent, {
       data: settings
     });
-  return new Observable<boolean>(subscriber => {
+    return new Observable<boolean>(subscriber => {
       dialogRef.afterClosed()
         .subscribe(result => {
           subscriber.next(!!result);
