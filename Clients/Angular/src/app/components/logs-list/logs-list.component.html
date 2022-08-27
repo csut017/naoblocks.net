@@ -15,7 +15,7 @@
                         {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
                     </div>
                     <div *ngIf="robot.isExpanded" class="log-lines">
-                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(log)"
+                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(robot.robot, log)"
                             [ngClass]="{'log-selected':log.selected}">
                             <mat-icon class="item-icon">{{log.typeIcon}}</mat-icon>
                             {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}

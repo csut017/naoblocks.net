@@ -71,15 +71,14 @@ export class LogsListComponent implements OnInit {
       });
   }
 
-  viewLogs(log: RobotLog): void {
+  viewLogs(robot: Robot, log: RobotLog): void {
     this.selectedLog.selected = false;
     this.selectedLog = log;
     this.selectedLog.selected = true;
     this.isLogSelected = true;
     if (log.lines) return;
 
-    if (!this.selectedRobot) return;
-
+    this.selectedRobot = robot;
     this.refreshLogs();
   }
 
