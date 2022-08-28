@@ -74,7 +74,7 @@ If the robot is connected to the Internet, ssh to the robot and type in the foll
 pip install websocket-client --user
 ```
 
-If the robot is not connected, you will need to copy the dependencies to the robot first/
+If the robot is not connected, you will need to copy the dependencies to the robot first.
 
 On the robot:
 
@@ -92,7 +92,34 @@ And back on the robot:
 pip install websocket-client --no-index --find-link dependencies --user
 ```
 
-## Automatically starting on the Nao robot
+## Command-line Arguments
+The client has the following arguments:
+
+* `--server <hostname>` the hostname of the NaoBlocks.Net server. This can be an IP address (or IP address and port combination) or a name that is resolved via DNS. Do not include the transport scheme (e.g. http:// or https://). If the server is not set, the client will use connect.txt to try to find a server.
+* `--port <port>` a specific port to use when connecting to the server. Not really needed, but it does allow the seperation of hostname and port if desired.
+* `--name <name>` the name of the robot. If this argument is omitted, the client will use the default machine name.
+* `--password <password>` the password to use when connecting to the server.
+* `--pip <IP address>` the Nao robot's IP address. This needs to be set if the robot is being remote controlled from a PC. If running on the robot, it will default to the local loopback address (127.0.0.1).
+* `--pport <port>` the port to use for the Nao robot. Again, only needed if remote controlling a robot.
+* `--test` changes to test mode. This mode will bypass sending commands to the robot: instead it will log them in the console. Mainly used for testing the client code on a PC.
+* `--ignoreSSL` will cause the client to ignore any SSL errors. This mode is typically used when we don't have a valid, trusted SSL certificate. This mode is a **HUGE** security hole, so only use it you know what you are doing.
+* `--reconnect <number>` is the number of reconnect attempts to make if the connection to the server is lost. If the number of connection attempts exceeds this number, the client will give up and exit. The default is 25.
+
+## Automatically starting and updating the Nao client
+
+The Nao client contains an automatic uploader. Rather than using *main.py*, you can start the client using *auto.py*:
+
+```
+python auto.py
+```
+
+This command will start the Nao client, attempt to automatically download the application files, then start the client using connect.txt (see below).
+
+**Note:** The automatic download uses the same command-line arguments as *main.py*. If you know the server name and port, you can use the server and password parameters. It has the following extra arguments:
+* `--updateOnly` will only attempt to update the client code. When the code has been updated it will exit without running the client.
+
+To automatically start the client when the robot starts you need to update autoload.ini. 
+
 _**TODO**: add information about the autoload.ini_
 
 ## Connect.txt
