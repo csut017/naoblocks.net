@@ -59,6 +59,30 @@ namespace NaoBlocks.Engine.Tests
             return new MockingRavenDbWrapper(session);
         }
 
+        protected (RobotLog, int) GenerateLog(Conversation conversation, Robot robot, int timeOffset, DateTime logTime, params string[] messages)
+        {
+            var log = new RobotLog
+            {
+                Conversation = conversation,
+                RobotId = robot.Id,
+                WhenAdded = logTime.AddMinutes(-1),
+                WhenLastUpdated = logTime
+            };
+
+            var count = timeOffset;
+            foreach (var message in messages)
+            {
+                var line = new RobotLogLine
+                {
+                    Description = message,
+                    SourceMessageType = ClientMessageType.RobotDebugMessage,
+                    WhenAdded = logTime.AddMinutes(timeOffset),
+                };
+                log.Lines.Add(line);
+            }
+            return (log, timeOffset);
+        }
+
         protected (RobotLog, int) GenerateLog(Conversation conversation, Robot robot, int timeOffset, params string[] messages)
         {
             var log = new RobotLog

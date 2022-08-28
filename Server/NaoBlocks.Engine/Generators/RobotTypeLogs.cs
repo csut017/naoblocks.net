@@ -19,18 +19,6 @@ namespace NaoBlocks.Engine.Generators
         /// <returns>The output <see cref="Stream"/> containing the generated data.</returns>
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
-            var generator = new Generator();
-            var table = generator.AddTable("Logs");
-            var header = table.AddRow(
-                TableRowType.Header,
-                "Robot",
-                "Date",
-                "Conversation",
-                "Time",
-                "Type",
-                "Description");
-            var columns = new Dictionary<string, int>();
-
             var toDate = DateTime.Now;
             var fromDate = toDate.AddDays(-7);
             var fromDateText = this.GetArgumentOrDefault("from");
@@ -46,9 +34,21 @@ namespace NaoBlocks.Engine.Generators
             {
                 if (!DateTime.TryParseExact(toDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out toDate))
                 {
-                    throw new ApplicationException($"To date is invalid, it should be yyyy-MM-dd, found {fromDateText}");
+                    throw new ApplicationException($"To date is invalid, it should be yyyy-MM-dd, found {toDateText}");
                 }
             }
+
+            var generator = new Generator();
+            var table = generator.AddTable("Logs");
+            var header = table.AddRow(
+                TableRowType.Header,
+                "Robot",
+                "Date",
+                "Conversation",
+                "Time",
+                "Type",
+                "Description");
+            var columns = new Dictionary<string, int>();
 
             fromDate = fromDate.ToUniversalTime();
             toDate = toDate.ToUniversalTime();
