@@ -13,7 +13,7 @@ There are two arguments:
 * --output -- the output folder that will contain the base64 encoded PNGs
 
 For this utility to work, you will need to install svglib:
-py -3 -m pip install svglib
+* py -3 -m pip install svglib
 
 Example command line:
 py -3 image_convert.py --input ..\Data\svg --output ..\Data\png
@@ -22,7 +22,6 @@ py -3 image_convert.py --input ..\Data\svg --output ..\Data\png
 
 import argparse
 import base64
-from importlib.resources import path
 import os
 
 from PIL import Image

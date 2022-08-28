@@ -9,3 +9,4 @@ Utilities/swagger.json
 Robots/nao/**/*.pyc
 Server/NaoBlocks.Web/wwwroot/packages/**/*.*
 Data/png/*.*
+Data/From_Unified/*.json
