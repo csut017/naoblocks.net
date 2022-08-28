@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { EditorSettings } from 'src/app/data/editor-settings';
 import { SettingsService } from 'src/app/services/settings.service';
 import { UserSettingsComponent } from '../user-settings/user-settings.component';
@@ -15,15 +15,15 @@ export class SettingsStudentComponent implements OnInit {
   @Output() closed = new EventEmitter<boolean>();
 
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
 
   @ViewChild(UserSettingsComponent) private settingsComponent!: UserSettingsComponent;
 
   constructor(private settingsService: SettingsService) {
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      type: new FormControl('', []),
+    this.form = new UntypedFormGroup({
+      name: new UntypedFormControl('', [Validators.required]),
+      type: new UntypedFormControl('', []),
     });
   }
 

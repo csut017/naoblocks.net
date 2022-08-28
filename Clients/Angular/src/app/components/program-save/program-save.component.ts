@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-program-save',
@@ -11,13 +11,13 @@ export class ProgramSaveComponent implements OnInit {
   @Output() closed = new EventEmitter<boolean>();
 
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
 
   constructor() { 
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      type: new FormControl('', []),
+    this.form = new UntypedFormGroup({
+      name: new UntypedFormControl('', [Validators.required]),
+      type: new UntypedFormControl('', []),
     });
   }
 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SystemVersion } from 'src/app/data/system-version';
@@ -12,7 +12,7 @@ import { SystemService } from 'src/app/services/system.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  form: FormGroup;
+  form: UntypedFormGroup;
   loginInvalid = false;
   version?: SystemVersion;
   loggingIn: boolean = false;
@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit {
     private systemService: SystemService,
     private route: ActivatedRoute,
     private router: Router,
-    builder: FormBuilder) {
+    builder: UntypedFormBuilder) {
     this.form = builder.group({
       username: ['', Validators.required],
       password: ['', Validators.required]

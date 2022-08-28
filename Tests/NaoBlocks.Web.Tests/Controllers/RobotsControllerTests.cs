@@ -40,7 +40,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         [Theory]
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Robots-List.xlsx")]
-        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Robots-List.xlsx")]
+        [InlineData("xlsx", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Robots-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]
         [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]
         [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Robots-List.pdf")]

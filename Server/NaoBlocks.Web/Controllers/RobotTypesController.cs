@@ -77,14 +77,37 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Exports the logs for a robot type.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="format">The export format.</param>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
+        /// <returns>The logs for the robot type.</returns>
+        [HttpGet("{id}/export/logs")]
+        [HttpGet("{id}/export/logs{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportLogs(string id, string? format = ".xlsx", string? from = null, string? to = null)
+        {
+            var args = this.MakeArgs($"from={from}", $"to={to}");
+            return await this.GenerateRobotTypeReport<Generators.RobotTypeLogs>(
+                this.executionEngine,
+                format,
+                id,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
+        }
+
+        /// <summary>
         /// Generates an export package for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
         /// <param name="format">The export format.</param>
         /// <returns>The robot type export package.</returns>
-        [HttpGet("export/package/{id}")]
+        [HttpGet("{id}/export/package")]
+        [HttpGet("{id}/export/package{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportPackage(string id, string? format)
+        public async Task<ActionResult> ExportPackage(string id, string? format = ".zip")
         {
             return await this.GenerateRobotTypeReport<Generators.RobotTypePackage>(
                 this.executionEngine,
@@ -134,7 +157,7 @@ namespace NaoBlocks.Web.Controllers
 
             this.logger.LogInformation($"Generating file list for robot type '{id}'");
             var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
-            return File(fileList, ContentTypes.Txt, "filelist.txt");
+            return File(fileList, ContentTypes.FromReportFormat(ReportFormat.Text), "filelist.txt");
         }
 
         /// <summary>
@@ -194,7 +217,7 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
             var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
             if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
-            return File(details.DataStream!, ContentTypes.Txt, filename);
+            return File(details.DataStream!, ContentTypes.FromReportFormat(ReportFormat.Text), filename);
         }
 
         /// <summary>
@@ -223,7 +246,7 @@ namespace NaoBlocks.Web.Controllers
             var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
             if (format == ".txt")
             {
-                return File(fileList, ContentTypes.Txt, "filelist.txt");
+                return File(fileList, ContentTypes.FromReportFormat(ReportFormat.Text), "filelist.txt");
             }
 
             var data = Encoding.UTF8.GetString(fileList);

@@ -47,7 +47,9 @@ import { ToolboxEditorComponent } from './components/toolbox-editor/toolbox-edit
 import { ToolboxListComponent } from './components/toolbox-list/toolbox-list.component';
 import { UserInterfaceEditorComponent } from './components/user-interface-editor/user-interface-editor.component';
 import { ReportSettingsComponent } from './components/report-settings/report-settings.component';
-import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
+
 
 @NgModule({
   declarations: [
@@ -96,11 +98,11 @@ import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
-    MatNativeDateModule,
     ReactiveFormsModule,
     HttpClientModule,
     MaterialModule,
     LayoutModule,
+    MatLuxonDateModule,
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
@@ -108,7 +110,7 @@ import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
     multi: true,
   }, {
     provide: MAT_DATE_LOCALE, 
-    useValue: 'en-GB',
+    useValue: 'en-NZ',
   }],
   bootstrap: [AppComponent]
 })

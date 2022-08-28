@@ -126,7 +126,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         [Theory]
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
-        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("xlsx", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
@@ -251,7 +251,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         [Theory]
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
-        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("xlsx", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
@@ -321,7 +321,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         [Theory]
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
-        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("xlsx", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
@@ -446,7 +446,7 @@ namespace NaoBlocks.Web.Tests.Controllers
 
         [Theory]
         [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
-        [InlineData("Excel", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
+        [InlineData("xlsx", ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students-List.xlsx")]
         [InlineData("Pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("pdf", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]
         [InlineData("PDF", ReportFormat.Pdf, "application/pdf", "Students-List.pdf")]

@@ -48,7 +48,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
         {
             // Arrange
             var definition = new Definition();
-            definition.Images.Add(new ImageDefinition());
+            definition.Images.Add(new ImageDefinition { Name = "testing" });
 
             // Act
             var description = await definition.DescribeAsync();

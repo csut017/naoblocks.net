@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { RunSettings } from 'src/app/data/run-settings';
 
 @Component({
@@ -13,12 +13,12 @@ export class SettingsDebugComponent implements OnInit, OnChanges {
   @Input() settings: RunSettings = new RunSettings();
   
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
 
   constructor() { 
-    this.form = new FormGroup({
-      delayTime: new FormControl('0', [Validators.required]),
+    this.form = new UntypedFormGroup({
+      delayTime: new UntypedFormControl('0', [Validators.required]),
     });
   }
 

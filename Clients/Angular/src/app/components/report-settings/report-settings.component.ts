@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { ReportSettings } from 'src/app/data/report-settings';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-report-settings',
@@ -11,21 +12,21 @@ import { ReportSettings } from 'src/app/data/report-settings';
 })
 export class ReportSettingsComponent implements OnInit {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<ReportSettingsComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ReportDialogSettings) {
     let controls = {
-      format: new FormControl(data.allowedFormats[0].value, [Validators.required]),
+      format: new UntypedFormControl(data.allowedFormats[0].value, [Validators.required]),
     };
     if (data.showDateRange) {
-      const now = new Date(),
-            fromDate = now.setDate(now.getDate() - 7);
-      controls['dateFrom'] = new FormControl(fromDate, [Validators.required]);
-      controls['dateTo'] = new FormControl(now, [Validators.required]);
+      const now = DateTime.now(),
+        fromDate = now.minus({days: 7});
+      controls['dateFrom'] = new UntypedFormControl(fromDate, [Validators.required]);
+      controls['dateTo'] = new UntypedFormControl(now, [Validators.required]);
     }
-    this.form = new FormGroup(controls);
+    this.form = new UntypedFormGroup(controls);
   }
 
   ngOnInit(): void {
@@ -37,6 +38,11 @@ export class ReportSettingsComponent implements OnInit {
 
   doExport(): void {
     let settings = new ReportSettings();
+    settings.selectedFormat = this.form.get('format')?.value;
+    if (this.data.showDateRange) {
+      settings.dateFrom = this.form.get('dateFrom')?.value;
+      settings.dateTo = this.form.get('dateTo')?.value;
+    }
     this.dialogRef.close(settings);
   }
 

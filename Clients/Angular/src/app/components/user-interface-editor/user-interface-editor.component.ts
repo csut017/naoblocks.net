@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { UIDefinition } from 'src/app/data/ui-definition';
 import { UIDefinitionItem } from 'src/app/data/ui-definition-item';
 import { UserSettings } from 'src/app/data/user-settings';
@@ -17,14 +17,14 @@ export class UserInterfaceEditorComponent implements OnInit, OnChanges {
 
   description: UIDefinitionItem[] = [];
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
 
   constructor(private uiService: UiService) {
-    this.form = new FormGroup({
-      key: new FormControl('', [Validators.required]),
-      name: new FormControl('', [Validators.required]),
-      description: new FormControl('', []),
+    this.form = new UntypedFormGroup({
+      key: new UntypedFormControl('', [Validators.required]),
+      name: new UntypedFormControl('', [Validators.required]),
+      description: new UntypedFormControl('', []),
     });
    }
 

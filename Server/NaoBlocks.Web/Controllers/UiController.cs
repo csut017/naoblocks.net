@@ -100,7 +100,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             var stream = await definition.Definition!.GenerateAsync(component);
-            return File(stream, ContentTypes.Txt);
+            return File(stream, ContentTypes.FromReportFormat(ReportFormat.Text));
         }
 
         /// <summary>

@@ -57,6 +57,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="format">The format to use.</param>
         /// <returns>The generated robot list.</returns>
         [HttpGet("export/list")]
+        [HttpGet("export/list{format}")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format)
         {

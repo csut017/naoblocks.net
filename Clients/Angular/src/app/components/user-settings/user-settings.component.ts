@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Robot } from 'src/app/data/robot';
 import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
@@ -20,7 +20,7 @@ export class UserSettingsComponent implements OnInit {
   allocationMode: number = 0;
   toolboxes: Toolbox[] = [];
   configurationMode: number = 1;
-  form: FormGroup;
+  form: UntypedFormGroup;
   interfaceStyle: number = 0;
   hasRobot: boolean = false;
   robots: Robot[] = [];
@@ -31,11 +31,11 @@ export class UserSettingsComponent implements OnInit {
 
   constructor(private robotTypeService: RobotTypeService,
     private robotService: RobotService) {
-    this.form = new FormGroup({
-      type: new FormControl('', [Validators.required]),
-      allocationMode: new FormControl('', [Validators.required]),
-      robotId: new FormControl('', []),
-      toolbox: new FormControl('', [Validators.required]),
+    this.form = new UntypedFormGroup({
+      type: new UntypedFormControl('', [Validators.required]),
+      allocationMode: new UntypedFormControl('', [Validators.required]),
+      robotId: new UntypedFormControl('', []),
+      toolbox: new UntypedFormControl('', [Validators.required]),
     });
   }
 

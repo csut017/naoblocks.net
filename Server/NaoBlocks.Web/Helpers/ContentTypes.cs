@@ -8,50 +8,35 @@ namespace NaoBlocks.Web.Helpers
     public static class ContentTypes
     {
         /// <summary>
-        /// The file type for a PDF document.
-        /// </summary>
-        public const string Pdf = "application/pdf";
-
-        /// <summary>
         /// The file type for a png image.
         /// </summary>
         public const string Png = "image/png";
 
-        /// <summary>
-        /// The file type for a plain text file.
-        /// </summary>
-        public const string Txt = "text/plain";
-
-        /// <summary>
-        /// The file type for an Excel spreadsheet.
-        /// </summary>
-        public const string Xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-        /// <summary>
-        /// The file type for an XML file.
-        /// </summary>
-        public const string Xml = "application/xml";
-
-        /// <summary>
-        /// The file type for a Zip file.
-        /// </summary>
-        public const string Zip = "application/zip";
+        private static readonly Lazy<Dictionary<ReportFormat, string>> _contentTypes = new(() =>
+                {
+                    var contentTypes = new Dictionary<ReportFormat, string>();
+                    var fields = typeof(ReportFormat).GetFields();
+                    foreach (var field in fields)
+                    {
+                        if (field.GetCustomAttributes(typeof(ReportFormatAttribute), false).FirstOrDefault() is ReportFormatAttribute attrib)
+                        {
+                            var key = (ReportFormat)field.GetValue(null)!;
+                            contentTypes.Add(key, attrib.MimeType);
+                        }
+                    }
+                    return contentTypes;
+                });
 
         /// <summary>
         /// Converts a <see cref="ReportFormat"/> into a MIME type.
         /// </summary>
         /// <param name="format">The format to convert.</param>
         /// <returns>A string containing the MIME type.</returns>
-        public static string Convert(ReportFormat format)
+        public static string FromReportFormat(ReportFormat format)
         {
-            return format switch
-            {
-                ReportFormat.Excel => Xlsx,
-                ReportFormat.Pdf => Pdf,
-                ReportFormat.Xml => Xml,
-                ReportFormat.Zip => Zip,
-                _ => throw new ApplicationException($"Unknown report format {format}"),
-            };
+            return _contentTypes.Value.TryGetValue(format, out var mimeType)
+                ? mimeType
+                : throw new ApplicationException($"Unknown report format {format}");
         }
     }
 }

@@ -73,7 +73,7 @@ namespace NaoBlocks.Web.Controllers
             var data = string.Join(
                 '\n',
                 addresses.Select(a => a + ",," + (a.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? "yes" : "no")));
-            var file = new FileContentResult(Encoding.UTF8.GetBytes(data), ContentTypes.Txt)
+            var file = new FileContentResult(Encoding.UTF8.GetBytes(data), ContentTypes.FromReportFormat(ReportFormat.Text))
             {
                 FileDownloadName = "connect.txt"
             };

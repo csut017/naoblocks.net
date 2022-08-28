@@ -1,4 +1,5 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Settings } from 'luxon';
 import { environment } from 'src/environments/environment';
 import { ScriptLoaderService } from './services/script-loader.service';
 
@@ -16,5 +17,6 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/block_definitions`);
     this.scriptService.loadScript(this.renderer, `${environment.apiURL}v1/ui/angular/language`);
+    Settings.defaultLocale = 'en-NZ';
   }
 }

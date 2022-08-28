@@ -123,7 +123,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             definition.Verify();
             var fileStreamResult = Assert.IsType<FileStreamResult>(result);
-            Assert.Equal(ContentTypes.Txt, fileStreamResult.ContentType);
+            Assert.Equal("text/plain", fileStreamResult.ContentType);
             using var reader = new StreamReader(fileStreamResult.FileStream);
             var text = reader.ReadToEnd();
             Assert.Equal("output", text);

@@ -1,7 +1,8 @@
+import { DateTime } from "luxon";
 import { NamedValue } from "./named-value";
 
 export class ReportSettings {
-    dateFrom?: Date;
-    dateTo?: Date;
+    dateFrom?: DateTime;
+    dateTo?: DateTime;
     selectedFormat?: NamedValue;
 }

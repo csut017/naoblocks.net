@@ -8,18 +8,21 @@ namespace NaoBlocks.Web.Tests.Helpers
     public class ContentTypesTests
     {
         [Fact]
-        public void ConvertHandlesInValidFormats()
+        public void FromReportFormatHandlesInValidFormats()
         {
-            Assert.Throws<ApplicationException>(() => ContentTypes.Convert(ReportFormat.Unknown));
+            Assert.Throws<ApplicationException>(() => ContentTypes.FromReportFormat(ReportFormat.Unknown));
         }
 
         [Theory]
-        [InlineData(ReportFormat.Pdf, ContentTypes.Pdf)]
-        [InlineData(ReportFormat.Excel, ContentTypes.Xlsx)]
-        [InlineData(ReportFormat.Zip, ContentTypes.Zip)]
-        public void ConvertHandlesValidFormats(ReportFormat format, string expected)
+        [InlineData(ReportFormat.Pdf, "application/pdf")]
+        [InlineData(ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+        [InlineData(ReportFormat.Zip, "application/zip")]
+        [InlineData(ReportFormat.Text, "text/plain")]
+        [InlineData(ReportFormat.Csv, "text/csv")]
+        [InlineData(ReportFormat.Xml, "application/xml")]
+        public void FromReportFormatHandlesValidFormats(ReportFormat format, string expected)
         {
-            Assert.Equal(expected, ContentTypes.Convert(format));
+            Assert.Equal(expected, ContentTypes.FromReportFormat(format));
         }
     }
 }

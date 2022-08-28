@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { UntypedFormGroup, FormBuilder, Validators, UntypedFormControl } from '@angular/forms';
 import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
@@ -15,14 +15,14 @@ export class RobotTypeEditorComponent implements OnInit, OnChanges {
   @Output() closed = new EventEmitter<boolean>();
 
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
   toolboxes: Toolbox[] = [];
 
   constructor(private robotTypeService: RobotTypeService) {
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      type: new FormControl('', []),
+    this.form = new UntypedFormGroup({
+      name: new UntypedFormControl('', [Validators.required]),
+      type: new UntypedFormControl('', []),
     });
   }
   ngOnChanges(_: SimpleChanges): void {

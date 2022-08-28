@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { SystemVersion } from 'src/app/data/system-version';
@@ -13,14 +13,14 @@ import { SystemService } from 'src/app/services/system.service';
 })
 export class SystemInitialisationComponent implements OnInit {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   initialisationFailed = false;
   version?: SystemVersion;
   initialising: boolean = false;
 
   constructor(private systemService: SystemService,
     private router: Router,
-    builder: FormBuilder) {
+    builder: UntypedFormBuilder) {
     this.form = builder.group({
       password: ['', Validators.required],
       useDefaultUi: [true],

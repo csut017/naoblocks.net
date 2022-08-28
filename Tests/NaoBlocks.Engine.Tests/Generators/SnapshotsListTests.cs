@@ -1,6 +1,5 @@
 ﻿using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Generators;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -9,8 +8,6 @@ namespace NaoBlocks.Engine.Tests.Generators
 {
     public class SnapshotsListTests : DatabaseHelper
     {
-        private readonly DateTime now = new(2021, 3, 4, 5, 16, 27);
-
         [Fact]
         public async Task GenerateAsyncGeneratesReport()
         {

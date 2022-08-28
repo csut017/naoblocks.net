@@ -48,7 +48,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             var result = Assert.IsType<FileContentResult>(response);
             Assert.Equal("connect.txt", result.FileDownloadName);
-            Assert.Equal(ContentTypes.Txt, result.ContentType);
+            Assert.Equal("text/plain", result.ContentType);
             Assert.Equal(
                 expected,
                 Encoding.UTF8.GetString(result.FileContents));

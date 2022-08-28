@@ -10,7 +10,7 @@ namespace NaoBlocks.Web.IntegrationTests
         {
             // Allowed student requests
             AddUrlsToCheck(
-                UserRole.Student, 
+                UserRole.Student,
                 HttpStatusCode.OK,
                 "/api/v1/users/mia/Programs",
                 "/api/v1/Programs",
@@ -35,20 +35,23 @@ namespace NaoBlocks.Web.IntegrationTests
 
             // Add the non-JSON requests
             AddNonJsonUrlsToCheck(
-                UserRole.Student, 
-                HttpStatusCode.OK, 
+                UserRole.Student,
+                HttpStatusCode.OK,
                 "/api/v1/system/addresses/connect.txt");
 
             // Forbidden student requests
             AddUrlsToCheck(
-                UserRole.Student, 
-                HttpStatusCode.Forbidden, 
+                UserRole.Student,
+                HttpStatusCode.Forbidden,
                 "/api/v1/Clients/robot",
                 "/api/v1/Clients/6/logs",
                 "/api/v1/Code/mia/1",
                 "/api/v1/robots/karetao/Logs/1",
                 "/api/v1/Robots/export/list",
-                "/api/v1/robots/types/export/package/1",
+                "/api/v1/robots/types/1/export/logs",
+                "/api/v1/robots/types/1/export/logs.csv",
+                "/api/v1/robots/types/1/export/package",
+                "/api/v1/robots/types/1/export/package.zip",
                 "/api/v1/Students",
                 "/api/v1/Students/export",
                 "/api/v1/Students/mia",

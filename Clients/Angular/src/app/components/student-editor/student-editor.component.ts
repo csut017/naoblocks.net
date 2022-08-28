@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { Student } from 'src/app/data/student';
 import { UserSettings } from 'src/app/data/user-settings';
 import { StudentService } from 'src/app/services/student.service';
@@ -17,16 +17,16 @@ export class StudentEditorComponent implements OnInit, OnChanges {
   @ViewChild(UserSettingsComponent) userSettingsEditor!: UserSettingsComponent;
 
   errors: string[] = [];
-  form: FormGroup;
+  form: UntypedFormGroup;
   isSaving: boolean = false;
 
-  private readonly passwordControl = new FormControl('', []);
+  private readonly passwordControl = new UntypedFormControl('', []);
 
   constructor(private studentService: StudentService) {
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      age: new FormControl(0, []),
-      gender: new FormControl('', []),
+    this.form = new UntypedFormGroup({
+      name: new UntypedFormControl('', [Validators.required]),
+      age: new UntypedFormControl(0, []),
+      gender: new UntypedFormControl('', []),
       password: this.passwordControl,
     });
   }

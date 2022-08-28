@@ -214,12 +214,26 @@ export class RobotTypesListComponent implements OnInit {
   exportLogs(): void {
     console.log('[RobotTypesList] Showing export settings for logs');
     let settings = new ReportDialogSettings('Export Logs', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+      ReportDialogSettings.Xml,
+    ]
     this.exportSettings.show(settings)
       .subscribe(result => {
         if (!!result) {
           console.groupCollapsed('[RobotTypesList] Generating logs export');
           console.log(result);
           console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/robots/types/${t.name}/export/logs.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `${t.name}_${fromDate}_${toDate}-logs.${result.selectedFormat}`));
         } else {
           console.log('[RobotTypesList] Export cancelled');
         }

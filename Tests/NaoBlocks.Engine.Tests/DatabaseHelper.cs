@@ -1,4 +1,6 @@
-﻿using Raven.Client.Documents;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Engine.Data;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using Raven.TestDriver;
@@ -9,6 +11,8 @@ namespace NaoBlocks.Engine.Tests
 {
     public class DatabaseHelper : RavenTestDriver
     {
+        protected readonly DateTime now = new(2021, 3, 4, 5, 16, 27);
+
         public IDocumentStore InitialiseDatabase(Action<IDocumentSession>? initialiseData = null)
         {
             var store = GetDocumentStore();
@@ -53,6 +57,30 @@ namespace NaoBlocks.Engine.Tests
         protected static IDatabaseSession WrapSession(IAsyncDocumentSession session)
         {
             return new MockingRavenDbWrapper(session);
+        }
+
+        protected (RobotLog, int) GenerateLog(Conversation conversation, Robot robot, int timeOffset, params string[] messages)
+        {
+            var log = new RobotLog
+            {
+                Conversation = conversation,
+                RobotId = robot.Id,
+                WhenAdded = now.AddMinutes(-1),
+                WhenLastUpdated = now
+            };
+
+            var count = timeOffset;
+            foreach (var message in messages)
+            {
+                var line = new RobotLogLine
+                {
+                    Description = message,
+                    SourceMessageType = ClientMessageType.RobotDebugMessage,
+                    WhenAdded = now.AddMinutes(timeOffset),
+                };
+                log.Lines.Add(line);
+            }
+            return (log, timeOffset);
         }
 
         protected async Task InitialiseIndicesAsync(IDocumentStore store, params IAbstractIndexCreationTask[] indices)

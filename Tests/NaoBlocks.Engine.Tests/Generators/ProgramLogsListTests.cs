@@ -1,7 +1,5 @@
-﻿using NaoBlocks.Common;
-using NaoBlocks.Engine.Data;
+﻿using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Generators;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,8 +8,6 @@ namespace NaoBlocks.Engine.Tests.Generators
 {
     public class ProgramLogsListTests : DatabaseHelper
     {
-        private readonly DateTime now = new(2021, 3, 4, 5, 16, 27);
-
         [Fact]
         public async Task GenerateAsyncGeneratesReport()
         {
@@ -95,30 +91,6 @@ Number,When Added,Name,Program
         {
             var generator = new ProgramLogsList();
             Assert.Equal(allowed, generator.IsFormatAvailable(format));
-        }
-
-        private (RobotLog, int) GenerateLog(Conversation conversation, Robot robot, int timeOffset, params string[] messages)
-        {
-            var log = new RobotLog
-            {
-                Conversation = conversation,
-                RobotId = robot.Id,
-                WhenAdded = now.AddMinutes(-1),
-                WhenLastUpdated = now
-            };
-
-            var count = timeOffset;
-            foreach (var message in messages)
-            {
-                var line = new RobotLogLine
-                {
-                    Description = message,
-                    SourceMessageType = ClientMessageType.RobotDebugMessage,
-                    WhenAdded = now.AddMinutes(timeOffset),
-                };
-                log.Lines.Add(line);
-            }
-            return (log, timeOffset);
         }
     }
 }

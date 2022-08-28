@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { RobotType } from 'src/app/data/robot-type';
 import { Toolbox } from 'src/app/data/toolbox';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
@@ -21,7 +21,7 @@ export class ToolboxEditorComponent implements OnInit {
 
   definitions: any[] = [];
   error: string = '';
-  form: FormGroup;
+  form: UntypedFormGroup;
   generatorInitialised: boolean = false;
   invalidBlocks: any[] = [];
   isValid: boolean = true;
@@ -29,10 +29,10 @@ export class ToolboxEditorComponent implements OnInit {
 
   constructor(private robotTypeService: RobotTypeService,
     private uiService: UiService) {
-    this.form = new FormGroup({
-      name: new FormControl('', [Validators.required]),
-      isDefault: new FormControl(false, []),
-      useEvents: new FormControl(false, []),
+    this.form = new UntypedFormGroup({
+      name: new UntypedFormControl('', [Validators.required]),
+      isDefault: new UntypedFormControl(false, []),
+      useEvents: new UntypedFormControl(false, []),
     });
     this.uiService.getComponent('angular', 'blocks')
       .subscribe(resp => {

@@ -19,8 +19,8 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class StudentsController : ControllerBase
     {
-        private readonly ILogger<StudentsController> logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<StudentsController> logger;
 
         /// <summary>
         /// Initialises a new <see cref="UsersController"/> instance.
@@ -31,6 +31,56 @@ namespace NaoBlocks.Web.Controllers
         {
             this.logger = logger;
             this.executionEngine = engine;
+        }
+
+        /// <summary>
+        /// Deletes all the program logs for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpDelete("{name}/logs")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult>> ClearLogs(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student name"
+                });
+            }
+
+            this.logger.LogInformation($"Clearing logs for student '{name}'");
+            var command = new Commands.ClearProgramLogs
+            {
+                UserName = name
+            };
+            return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Deletes all the snapshots for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpDelete("{name}/snapshots")]
+        [Authorize(Policy = "Administrator")]
+        public async Task<ActionResult<ExecutionResult>> ClearSnapshots(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing student name"
+                });
+            }
+
+            this.logger.LogInformation($"Clearing snapshots for student '{name}'");
+            var command = new Commands.ClearSnapshots
+            {
+                UserName = name
+            };
+            return await this.executionEngine.ExecuteForHttp(command);
         }
 
         /// <summary>
@@ -48,6 +98,76 @@ namespace NaoBlocks.Web.Controllers
                 Role = Data.UserRole.Student
             };
             return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Exports the details on a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
+        /// <returns>The generated student details.</returns>
+        [HttpGet("{name}/export")]
+        [HttpGet("{name}/export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportDetails(string? name, string? format)
+        {
+            this.logger.LogInformation("Generating student details export");
+            return await this.GenerateUserReport<Generators.StudentExport>(
+                this.executionEngine,
+                format,
+                name);
+        }
+
+        /// <summary>
+        /// Generates the student list export.
+        /// </summary>
+        /// <param name="format">The format to use.</param>
+        /// <returns>The generated student list.</returns>
+        [HttpGet("export")]
+        [HttpGet("export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportList(string? format)
+        {
+            this.logger.LogInformation("Generating student list export");
+            return await this.GenerateReport<Generators.StudentsList>(
+                this.executionEngine,
+                format);
+        }
+
+        /// <summary>
+        /// Exports the logs for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
+        /// <returns>The generated student logs.</returns>
+        [HttpGet("{name}/logs/export")]
+        [HttpGet("{name}/logs/export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportLogs(string? name, string? format)
+        {
+            this.logger.LogInformation("Generating student log export");
+            return await this.GenerateUserReport<Generators.ProgramLogsList>(
+                this.executionEngine,
+                format,
+                name);
+        }
+
+        /// <summary>
+        /// Exports the snapshots for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <param name="format">The report format to generate.</param>
+        /// <returns>The generated snapshots list.</returns>
+        [HttpGet("{name}/snapshots/export")]
+        [HttpGet("{name}/snapshots/export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportSnapshots(string? name, string? format)
+        {
+            this.logger.LogInformation("Generating student snapshots export");
+            return await this.GenerateUserReport<Generators.SnapshotsList>(
+                this.executionEngine,
+                format,
+                name);
         }
 
         /// <summary>
@@ -161,72 +281,6 @@ namespace NaoBlocks.Web.Controllers
                 command, s => Dtos.Student.FromModel(s!, true));
         }
 
-        /// <summary>
-        /// Generates the student list export.
-        /// </summary>
-        /// <param name="format">The format to use.</param>
-        /// <returns>The generated student list.</returns>
-        [HttpGet("export")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportList(string? format)
-        {
-            this.logger.LogInformation("Generating student list export");
-            return await this.GenerateReport<Generators.StudentsList>(
-                this.executionEngine,
-                format);
-        }
-
-        /// <summary>
-        /// Exports the details on a student.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <param name="format">The report format to generate.</param>
-        /// <returns>The generated student details.</returns>
-        [HttpGet("{name}/export")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDetails(string? name, string? format)
-        {
-            this.logger.LogInformation("Generating student details export");
-            return await this.GenerateUserReport<Generators.StudentExport>(
-                this.executionEngine,
-                format,
-                name);
-        }
-
-        /// <summary>
-        /// Exports the logs for a student.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <param name="format">The report format to generate.</param>
-        /// <returns>The generated student logs.</returns>
-        [HttpGet("{name}/logs/export")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportLogs(string? name, string? format)
-        {
-            this.logger.LogInformation("Generating student log export");
-            return await this.GenerateUserReport<Generators.ProgramLogsList>(
-                this.executionEngine,
-                format,
-                name);
-        }
-
-        /// <summary>
-        /// Exports the snapshots for a student.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <param name="format">The report format to generate.</param>
-        /// <returns>The generated snapshots list.</returns>
-        [HttpGet("{name}/snapshots/export")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportSnapshots(string? name, string? format)
-        {
-            this.logger.LogInformation("Generating student snapshots export");
-            return await this.GenerateUserReport<Generators.SnapshotsList>(
-                this.executionEngine,
-                format,
-                name);
-        }
-
         /*
         /// <summary>
         /// Generates a student's QR code.
@@ -269,55 +323,5 @@ namespace NaoBlocks.Web.Controllers
             return File(stream.ToArray(), ContentTypes.Png);
         }
         */
-
-        /// <summary>
-        /// Deletes all the program logs for a student.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <returns>The result of execution.</returns>
-        [HttpDelete("{name}/logs")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult<ExecutionResult>> ClearLogs(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing student name"
-                });
-            }
-
-            this.logger.LogInformation($"Clearing logs for student '{name}'");
-            var command = new Commands.ClearProgramLogs
-            {
-                UserName = name
-            };
-            return await this.executionEngine.ExecuteForHttp(command);
-        }
-
-        /// <summary>
-        /// Deletes all the snapshots for a student.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <returns>The result of execution.</returns>
-        [HttpDelete("{name}/snapshots")]
-        [Authorize(Policy = "Administrator")]
-        public async Task<ActionResult<ExecutionResult>> ClearSnapshots(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return this.BadRequest(new
-                {
-                    Error = "Missing student name"
-                });
-            }
-
-            this.logger.LogInformation($"Clearing snapshots for student '{name}'");
-            var command = new Commands.ClearSnapshots
-            {
-                UserName = name
-            };
-            return await this.executionEngine.ExecuteForHttp(command);
-        }
     }
 }

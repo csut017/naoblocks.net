@@ -30,12 +30,20 @@ namespace NaoBlocks.Web.Helpers
             Dictionary<string, string>? args = null)
            where TGenerator : ReportGenerator, new()
         {
-            if (!controller.TryConvertFormat(format, out var reportFormat, defaultFormat))
+            var reportFormat = defaultFormat;
+            if (format != null)
             {
-                return controller.BadRequest(new
+                try
                 {
-                    Error = $"Unknown report format {format}"
-                });
+                    reportFormat = FileExtensions.ToReportFormat(format);
+                }
+                catch (ApplicationException)
+                {
+                    return controller.BadRequest(new
+                    {
+                        Error = $"Unknown report format {format}"
+                    });
+                }
             }
 
             var generator = engine.Generator<TGenerator>();
@@ -55,7 +63,7 @@ namespace NaoBlocks.Web.Helpers
             var data = generate == null
                 ? await generator.GenerateAsync(reportFormat)
                 : await generate(generator, reportFormat);
-            var contentType = ContentTypes.Convert(reportFormat);
+            var contentType = ContentTypes.FromReportFormat(reportFormat);
             return controller.File(data.Item1, contentType, data.Item2);
         }
 
