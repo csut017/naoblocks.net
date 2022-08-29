@@ -7,7 +7,7 @@
             ],
             "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAByElEQVR4nO2XT46CMBSHy8TEYFi4tXsvQHTTxA2u3wHYeRW3sOAA3MJjNF7BhBWcwv5mIzrVUVDKdJr0S5rYljz69dk/BACYy3zZHsBQvIBtvIBtvIBtvIBtJu2PIAi0IxlA8PfDeR/nM+AFbDPpfuQz7tfUu8znc7bZbNhqtWJpmrLlcvn7mgTALldq/Cxt+6flPt6QMpvNUBQFzufzw7h6CyilkOc5iAhRFIFzDiJClmVQSj0GNijQlu12+/CuXgJN0yCO46eB4zhG0zQYW4AxhqIo3hNQSiFJks7ASZJoszP0LymlxG63QxiGWpwwDHE6ndBboCzL3rNTlqUxgbbUdY3pdKrF2u/313id2+jhcNDqQggmpWRVVTEhxMtnTbBYLII0TbW24/F4q3TNGOdca5dSXvuklFof59x4Brre48RBtl6vtTOgrutbpWvGiEhrF0JASomqqiCE0PqIaJQMvIr37xfxYAFb26gxAcDMQWZVoM1ElmUgInDOEUURiAh5nve6SowlEFw6jX+R/VU8J7bRVzz9Hhh6nx87XovzGfACtnm6",
             "text": "Lie down",
-            "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'position(\\'LyingBack\\');\\n position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "dance",
