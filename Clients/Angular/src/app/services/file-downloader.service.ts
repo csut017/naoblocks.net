@@ -4,6 +4,8 @@ import { ErrorHandlerService } from './error-handler.service';
 import { ClientService } from './client.service';
 import { environment } from 'src/environments/environment';
 import { saveAs } from 'file-saver';
+import { catchError, of } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,8 @@ import { saveAs } from 'file-saver';
 export class FileDownloaderService extends ClientService {
 
   constructor(private http: HttpClient,
-    errorHandler: ErrorHandlerService) {
+    errorHandler: ErrorHandlerService,
+    private snackBar: MatSnackBar) {
     super(errorHandler);
     this.serviceName = 'fileDownloaderService';
   }
@@ -23,7 +26,18 @@ export class FileDownloaderService extends ClientService {
       responseType: 'blob' as 'json',
       observe: 'response'
     })
+      .pipe(
+        catchError(error => {
+          this.snackBar.open(`Unable to download ${filename}`, undefined, {
+            duration: 5000,
+            horizontalPosition: 'end',
+            verticalPosition: 'bottom'
+          });
+          return of(null);
+        })
+      )
       .subscribe((resp: any) => {
+        if (!resp) return;
         this.log(`Retrieved file ${filename} from ${path}`);
         saveAs(resp.body, filename);
       });

@@ -16,6 +16,22 @@ namespace NaoBlocks.Engine
         private User? user;
 
         /// <summary>
+        /// Gets whether a robot type has been set.
+        /// </summary>
+        public bool HasRobotType
+        {
+            get { return this.robotType != null; }
+        }
+
+        /// <summary>
+        /// Gets whether a user has been set.
+        /// </summary>
+        public bool HasUser
+        {
+            get { return this.user != null; }
+        }
+
+        /// <summary>
         /// Gets the initialised robot type.
         /// </summary>
         public RobotType RobotType

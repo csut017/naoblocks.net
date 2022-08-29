@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Text;
 
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -78,6 +79,46 @@ namespace NaoBlocks.Web.Controllers
                 FileDownloadName = "connect.txt"
             };
             return Task.FromResult((ActionResult)file);
+        }
+
+        /// <summary>
+        /// Exports all the code programs in the system.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
+        /// <returns>The robot logs.</returns>
+        [HttpGet("system/export/programs")]
+        [HttpGet("system/export/programs{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportCodePrograms(string? format = ".xlsx", string? from = null, string? to = null)
+        {
+            var args = this.MakeArgs($"from={from}", $"to={to}");
+            return await this.GenerateReport<Generators.CodePrograms>(
+                this.executionEngine,
+                format,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
+        }
+
+        /// <summary>
+        /// Exports all the robot logs in the system.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
+        /// <returns>The robot logs.</returns>
+        [HttpGet("system/export/logs")]
+        [HttpGet("system/export/logs{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportRobotLogs(string? format = ".xlsx", string? from = null, string? to = null)
+        {
+            var args = this.MakeArgs($"from={from}", $"to={to}");
+            return await this.GenerateReport<Generators.RobotLogs>(
+                this.executionEngine,
+                format,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
         }
 
         /// <summary>

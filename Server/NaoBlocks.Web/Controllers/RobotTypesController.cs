@@ -90,7 +90,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult> ExportLogs(string id, string? format = ".xlsx", string? from = null, string? to = null)
         {
             var args = this.MakeArgs($"from={from}", $"to={to}");
-            return await this.GenerateRobotTypeReport<Generators.RobotTypeLogs>(
+            return await this.GenerateRobotTypeReport<Generators.RobotLogs>(
                 this.executionEngine,
                 format,
                 id,

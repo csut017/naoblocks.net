@@ -17,9 +17,12 @@
                 <mat-icon aria-label="Students" class="menu-icon">people</mat-icon> Students
             </a>
             <mat-divider></mat-divider>
-            <a mat-list-item href="#" (click)="changeView($event, 'Configuration')">
-                <mat-icon aria-label="System configuration" class="menu-icon">construction</mat-icon> Configuration
+            <a mat-list-item href="#" (click)="changeView($event, 'Data')">
+                <mat-icon aria-label="System configuration" class="menu-icon">query_stats</mat-icon> Export Data
             </a>
+            <!-- <a mat-list-item href="#" (click)="changeView($event, 'Configuration')">
+                <mat-icon aria-label="System configuration" class="menu-icon">construction</mat-icon> Configuration
+            </a> -->
         </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -69,6 +72,7 @@
             <app-system-dashboard *ngSwitchCase="'Dashboard'" (currentItemChanged)="onItemChanged($event)"></app-system-dashboard>
             <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
             <app-students-list *ngSwitchCase="'Students'" (currentItemChanged)="onItemChanged($event)"></app-students-list>
+            <app-export-data *ngSwitchCase="'Data'"></app-export-data>
             <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)"></app-system-configuration>
             <div *ngSwitchDefault class="unknown-view">
                 <mat-card>

@@ -49,6 +49,7 @@ import { UserInterfaceEditorComponent } from './components/user-interface-editor
 import { ReportSettingsComponent } from './components/report-settings/report-settings.component';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
+import { ExportDataComponent } from './components/export-data/export-data.component';
 
 
 @NgModule({
@@ -91,7 +92,8 @@ import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
     ToolboxEditorComponent,
     ToolboxListComponent,
     UserInterfaceEditorComponent,
-    ReportSettingsComponent
+    ReportSettingsComponent,
+    ExportDataComponent
   ],
   imports: [
     BrowserModule,

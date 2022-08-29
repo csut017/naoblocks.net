@@ -71,7 +71,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         {
             // Arrange
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.RobotTypeLogs>();
+            var generator = new Mock<Generators.RobotLogs>();
             var result = Tuple.Create((Stream)new MemoryStream(), fileName);
             generator.Setup(g => g.GenerateAsync(expected))
                 .Returns(Task.FromResult(result))

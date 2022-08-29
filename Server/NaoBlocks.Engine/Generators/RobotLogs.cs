@@ -7,9 +7,9 @@ using System.Globalization;
 namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
-    /// Exports the logs for a robot type.
+    /// Exports the robot logs.
     /// </summary>
-    public class RobotTypeLogs
+    public class RobotLogs
         : ReportGenerator
     {
         /// <summary>
@@ -52,15 +52,32 @@ namespace NaoBlocks.Engine.Generators
 
             fromDate = fromDate.ToUniversalTime();
             toDate = toDate.ToUniversalTime();
-            var robotTypeId = this.RobotType.Id;
-            var logs = await this.Session
-                .Query<RobotLogByRobotTypeId.Result, RobotLogByRobotTypeId>()
-                .Where(rl => rl.RobotTypeId == robotTypeId)
-                .OfType<RobotLog>()
-                .Include(rl => rl.RobotId)
-                .Where(rl => (rl.WhenAdded >= fromDate) && (rl.WhenAdded <= toDate))
-                .OrderByDescending(rl => rl.WhenAdded)
-                .ToListAsync();
+            List<RobotLog> logs;
+            var reportName = "All";
+            if (this.HasRobotType)
+            {
+                var robotTypeId = this.RobotType.Id;
+                reportName = this.RobotType.Name;
+                logs = await this.Session
+                    .Query<RobotLogByRobotTypeId.Result, RobotLogByRobotTypeId>()
+                    .Where(rl => rl.RobotTypeId == robotTypeId)
+                    .OfType<RobotLog>()
+                    .Include(rl => rl.RobotId)
+                    .Where(rl => (rl.WhenAdded >= fromDate) && (rl.WhenAdded <= toDate))
+                    .OrderByDescending(rl => rl.WhenAdded)
+                    .ToListAsync();
+            }
+            else
+            {
+                logs = await this.Session
+                    .Query<RobotLogByRobotTypeId.Result, RobotLogByRobotTypeId>()
+                    .OfType<RobotLog>()
+                    .Include(rl => rl.RobotId)
+                    .Where(rl => (rl.WhenAdded >= fromDate) && (rl.WhenAdded <= toDate))
+                    .OrderByDescending(rl => rl.WhenAdded)
+                    .ToListAsync();
+            }
+
             foreach (var log in logs)
             {
                 var robot = await this.Session
@@ -70,9 +87,9 @@ namespace NaoBlocks.Engine.Generators
                 {
                     var row = table.AddRow(
                         robot?.FriendlyName,
-                        log!.WhenAdded,
+                        log!.WhenAdded.ToLocalTime(),
                         log.Conversation.ConversationId,
-                        new TableCell(line.WhenAdded, "HH:mm:ss"),
+                        new TableCell(line.WhenAdded.ToLocalTime(), "HH:mm:ss"),
                         line.SourceMessageType.ToString(),
                         line.Description);
                     foreach (var value in line.Values)
@@ -96,7 +113,7 @@ namespace NaoBlocks.Engine.Generators
             }
 
             table.EnsureAllRowsSameLength();
-            var (stream, name) = await generator.GenerateAsync(format, $"{this.RobotType.Name}-logs");
+            var (stream, name) = await generator.GenerateAsync(format, $"{reportName}-logs");
             return Tuple.Create(stream, name);
         }
 

@@ -11,12 +11,15 @@ using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
+using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 using Data = NaoBlocks.Engine.Data;
+using Generators = NaoBlocks.Engine.Generators;
 using ResourceManager = NaoBlocks.Web.Resources.Manager;
 
 namespace NaoBlocks.Web.Tests.Controllers
@@ -80,6 +83,172 @@ namespace NaoBlocks.Web.Tests.Controllers
             string[] expectedItems = expected.Split('\n');
             Assert.Equal(expectedItems.Length, result.Count);
             Assert.Equal(expectedItems, result.Items);
+        }
+
+        [Theory]
+        [InlineData(null, ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData("csv", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData("CSV", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData(".csv", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        public async Task ExportCodeProgramsGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            var generator = new Mock<Generators.CodePrograms>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+
+            // Act
+            var response = await controller.ExportCodePrograms(format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportCodeProgramsHandlesInvalidInput()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            // Act
+            var response = await controller.ExportCodePrograms("garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportCodeProgramsHandlesUnknownFormat()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            // Act
+            var response = await controller.ExportCodePrograms("unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Theory]
+        [InlineData(null, ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData("csv", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData("CSV", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        [InlineData(".csv", ReportFormat.Csv, "text/csv", "all-logs.csv")]
+        public async Task ExportRobotLogsGeneratesReport(string? format, ReportFormat expected, string contentType, string fileName)
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            var generator = new Mock<Generators.RobotLogs>();
+            var result = Tuple.Create((Stream)new MemoryStream(), fileName);
+            generator.Setup(g => g.GenerateAsync(expected))
+                .Returns(Task.FromResult(result))
+                .Verifiable();
+            generator.Setup(g => g.IsFormatAvailable(expected))
+                .Returns(true)
+                .Verifiable();
+            engine.RegisterGenerator(generator.Object);
+
+            // Act
+            var response = await controller.ExportRobotLogs(format);
+
+            // Assert
+            var streamResult = Assert.IsType<FileStreamResult>(response);
+            generator.Verify();
+            Assert.Equal(contentType, streamResult.ContentType);
+            Assert.Equal(fileName, streamResult.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task ExportRobotLogsHandlesInvalidInput()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            // Act
+            var response = await controller.ExportRobotLogs("garbage");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
+        }
+
+        [Fact]
+        public async Task ExportRobotLogsHandlesUnknownFormat()
+        {
+            // Arrange
+            var loggerMock = new FakeLogger<SystemController>();
+            var hub = new Mock<IHub>();
+            var engine = new FakeEngine();
+            var manager = new Mock<UiManager>();
+            var controller = new SystemController(
+                loggerMock,
+                engine,
+                hub.Object,
+                manager.Object,
+                new Mock<IServer>().Object);
+
+            // Act
+            var response = await controller.ExportRobotLogs("unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response);
         }
 
         [Fact]
