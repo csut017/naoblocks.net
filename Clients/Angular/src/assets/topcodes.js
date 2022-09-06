@@ -3372,7 +3372,7 @@ dc:function(a){return a.closePath()},
 dS:function(a,b,c){return a.moveTo(b,c)},
 a6:function(a,b,c,d,e,f,g){a.arc(b,c,d,e,f,!0)},
 ds:function(a,b,c,d){return a.drawImage(b,c,d)},
-dw:function(a,b){a.fill(b)},
+dw:function(a,b){},
 aa:function(a){return this.dw(a,"nonzero")},
 "%":"CanvasRenderingContext2D"},
 ij:{"^":"v;k:length=",$isd:1,"%":"CDATASection|CharacterData|Comment|ProcessingInstruction|Text"},
@@ -4274,10 +4274,13 @@ var TopCodes = {
     }
     var canvas = document.querySelector("#" + canvasId);
     var video = document.querySelector("#" + canvasId + "-video");
+
     if (canvas && video) {
       var vw = parseInt(canvas.getAttribute('width'));
       var vh = parseInt(canvas.getAttribute('height'));
       var vc = { audio: false, video: { mandatory : { minWidth: vw, maxWidth : vw, minHeight : vh, maxHeight : vh }}}; 
+      var ctx = canvas.getContext('2d');
+      ctx.setTransform(-1,0,0,1,vw,0);
       navigator.mediaDevices.getUserMedia(vc)
         .then(function(mediaStream) {
           video.srcObject = mediaStream;

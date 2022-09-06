@@ -271,7 +271,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     for (let loop = 0; loop < topcodes.length; loop++) {
       this.context.beginPath();
       this.context.arc(
-        topcodes[loop].x,
+        640 - topcodes[loop].x,
         topcodes[loop].y,
         topcodes[loop].radius,
         0,
