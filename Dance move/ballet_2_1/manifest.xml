@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="ballet_2_1-1e2e67">
+ <names>
+  <name lang="en_US">ballet_2_1</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="ballet1">
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>
