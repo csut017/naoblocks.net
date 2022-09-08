@@ -7,7 +7,7 @@
             ],
             "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAByElEQVR4nO2XT46CMBSHy8TEYFi4tXsvQHTTxA2u3wHYeRW3sOAA3MJjNF7BhBWcwv5mIzrVUVDKdJr0S5rYljz69dk/BACYy3zZHsBQvIBtvIBtvIBtvIBtJu2PIAi0IxlA8PfDeR/nM+AFbDPpfuQz7tfUu8znc7bZbNhqtWJpmrLlcvn7mgTALldq/Cxt+6flPt6QMpvNUBQFzufzw7h6CyilkOc5iAhRFIFzDiJClmVQSj0GNijQlu12+/CuXgJN0yCO46eB4zhG0zQYW4AxhqIo3hNQSiFJks7ASZJoszP0LymlxG63QxiGWpwwDHE6ndBboCzL3rNTlqUxgbbUdY3pdKrF2u/313id2+jhcNDqQggmpWRVVTEhxMtnTbBYLII0TbW24/F4q3TNGOdca5dSXvuklFof59x4Brre48RBtl6vtTOgrutbpWvGiEhrF0JASomqqiCE0PqIaJQMvIr37xfxYAFb26gxAcDMQWZVoM1ElmUgInDOEUURiAh5nve6SowlEFw6jX+R/VU8J7bRVzz9Hhh6nx87XovzGfACtnm6",
             "text": "Lie down",
-            "generator": "var code = 'position(\\'LyingBack\\');\\n position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+            "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         },
         {
             "name": "dance",
@@ -61,15 +61,6 @@
             "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACgElEQVR4nO2YPc/xUBjHT73kZrGKtSERGyI2MwmTL8AmwWA0MUlYfQCDhYjF4jNImdhExGpCvDTx8r+H53Hnqeob7d160iu5hp5cp/3/Tv/puU4pAOSTw6K3gHfDBNA7TAC9wwTQOwwJ0O/3kUqlcLlcpDcpAIZJlmVRKBRACAEhBOVyGVJzdBd9z8VigXA4/COeEAKLxYLhcCgKYQgL9ft9hEIhMplMOONWq5Xsdjvxyb+xsslkUnAVi8UiZ9XvSdM0xuOxfhY6Ho+oVCpwOBz4s07P62q1Gk98Op3GZrORFK8ZwGAwAE3THFFCtdfrFfF4HIQQfH19odlsyhKuCcDdLs8sITZvvV4jFovJsowmAI92UQrwTmpiFzGA5XKpKozgirZaLUQiEUlhcvN+b7/fj/1+rxoEb4BlWXg8npeFut1utNttQQBCCDKZjHYArVbrJeE2mw2lUgnb7RZ3oUIAhBAwDKMKBG/gFdt4vV5Mp1OOICmARqOhCoDtcWdmGIZzDYB6rFEjRqPR03GKokQ70Ec9uvVCQgBKwxDN3DuhG0A0GlXlPjyASCTCuaYoClLp8/kwm80U/eITAgBAieWzCf/XZ/Q3NrJsNqvdRgZo20oEAgEcDgdtAZ4WCghS2sytVivVxKsCcH9jhm+n5Qgy9IFGiSAlR8rb7YZEIgFCND5SKrXE6XRCtVqF0+kUra/X67y3pcmh/lVPLxYLpFIpwfpcLvfUcjRNy9orNAeQk51OBy6Xiwdht9vR7XZFn2UIAABkPp8jGAxyniHn16KqIt5NlmWRz+d/AD7q5+6/2ev1kEwmcT6fJQGov/b42DAPNHqHCaB3mAB6x8cDfAPDvz5PETvmQQAAAABJRU5ErkJggg==",
             "text": "Say 'Kia ora'",
             "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
-        },
-        {
-            "name": "waitonesec",
-            "numbers": [
-                171
-            ],
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAADqklEQVR4nO1ZPU/CXBi9xTcMTk420WpMygSJNaFxcPAHdKGDf8CZLjSOBprqamL8Jyij7VAdHED6FxwwsDdYrfG8A6nx9gP6xctr4pOckMLtec6hz+39YgCQ3xylVQvIG38GVh1/BlYd/xRJNplM0O/3yWAwIP4nIYSIokjq9fr3J8uyTBpeTdOgaVr0PQBywTAMyLIMjuNACEmEnZ0dyLIMwzCwiL/T6WAmM/r3zMIdx0Gz2QTDMImFB8EwDBRFgeM4kQJ98YUbsCwLPM9nFh5EpVLB4+MjJVLTNKpNIQam0ylarRZKpVKkEJZlIUkS2u02bm9vMRqNMBqN0O120W63IUkSNjc3I+9dW1vD2dkZ3t7eEBRfiAHXdVGr1SKTC4KA5+fnhfXsYzAYYH9/P5Jrb28v8vvcBlqtVoi0XC5D13V4npdYvA/P83BxcYFyuZyozHIZsCwrVDaCIMC27dTCg7BtGwcHB8sz4DhOqMNWq1W4rptbvI/z8/PlGWg2m6GyKeKf9xHVYQszYBhG6D2v63oi8UmSJxWf2UCj0aBIRFFM3GEXJU8jPrOB4PRgOBwmLp15ydOKz2RgPB5TBCzLpqr7uORZxGcy0Ov1KAJJkgoxUDRi1wP+VNgPURTjmq40Yg30+33q+v9qIPbRbG1tUSU0Go1+VwkVGbqu4+vrC0nbv76+gmGYb2xvb8feG2ugXq9T18E+kSY6nQ45PDwkT09PiUwEcwW1/IxYA8GaD/aJRXF3d0d4nqdEHR0dkdPTU0wmk7lGUvW/Zb1Ggdka4vLyEuvr6xTXxsYGrq+vY0d1SZKo9r1eL/04kHcg+4mXlxecnJyEBqfd3d1ITpZlqXbj8Ti9ASDfVCIK9/f3qFar33w3NzchPtu2qZwcx83NOTehLMuZJ3Nx+Pj4wNXVFY6Pj/H5+UlxeZ4HURSpnLIsZzdgmmbm6XQW6LpO5WIYBqZpZjcAgCiKQpEWvaDxMRwOQ+tjRVEW5llI7DgOKpUKRVz0ktJ1XapvEDLbK4rb8EplAFjuon44HEIQBIq7VCrh4eEhEXfiRMvYVtF1PXJbRVXVxHypHvN/sbFVq9Xw/v5evAFgtrWoqmqircVutxu5tRgcpH6WjaqqmE6nqZ5mprq1LCvUsfOA53lYlpW6DDMbAGZvJ0VRcm+vN5vNRG+bwg34ME0z9QEHx3FoNBqJDjgWgQFAioq4I6afx0uiKKY+YpoXhRpYRfz6U8o/A6uOPwOrjn8BdT+cbQV8hasAAAAASUVORK5CYII=",
-            "text": "Wait 1s",
-            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wait(1)\\n';"
         },
         {
             "name": "wipeforehead",
@@ -206,7 +197,7 @@
         {
             "name": "up",
             "numbers": [
-                117
+                333
             ],
             "image": "->question",
             "text": "Up",
