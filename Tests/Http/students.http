@@ -54,3 +54,19 @@ Authorization: Bearer {{authToken}}
 
 ###
 
+POST {{baseURL}}/students HTTP/1.1
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{authToken}}
+
+{
+  "settings":{
+    "robotType":"Nao",
+    "allocationMode":1,
+    "robotId":"nao",
+    "toolbox":"Simple"
+  },
+  "name":"Two",
+  "age":0,
+  "gender":"Unknown",
+  "password":"1234"
+  }
