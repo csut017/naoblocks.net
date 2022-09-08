@@ -17,7 +17,7 @@ import { StudentService } from 'src/app/services/student.service';
 })
 export class StudentsListComponent implements OnInit {
 
-  columns: string[] = ['select', 'name', 'whenAdded'];
+  columns: string[] = ['select', 'name', 'gender', 'age', 'whenAdded'];
   currentItem?: Student;
   dataSource: MatTableDataSource<Student> = new MatTableDataSource();
   isLoading: boolean = true;

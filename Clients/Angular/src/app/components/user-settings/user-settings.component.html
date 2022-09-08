@@ -29,7 +29,7 @@
                 </mat-form-field>
 
                 <mat-form-field class="fill-width" *ngIf="allocationMode">
-                    <mat-label>Type</mat-label>
+                    <mat-label>Robot</mat-label>
                     <mat-select formControlName="robotId" required>
                         <mat-option></mat-option>
                         <mat-option [value]="robot.machineName" *ngFor="let robot of robots">
@@ -37,7 +37,7 @@
                             [{{robot.machineName}}]</mat-option>
                     </mat-select>
                     <mat-error>
-                        Please select a robot type
+                        Please select a robot
                     </mat-error>
                     <mat-hint>The assigned robot</mat-hint>
                 </mat-form-field>

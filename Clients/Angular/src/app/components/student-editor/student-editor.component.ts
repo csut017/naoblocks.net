@@ -55,7 +55,7 @@ export class StudentEditorComponent implements OnInit, OnChanges {
     this.item.name = this.form.get('name')?.value;
     this.item.age = this.form.get('age')?.value;
     this.item.gender = this.form.get('gender')?.value || 'Unknown';
-    this.userSettingsEditor.save();
+    this.item.settings = this.userSettingsEditor.save();
     let password = this.form.get('password')?.value || '';
     if (password !== '') this.item.password = password;
     this.studentService.save(this.item)

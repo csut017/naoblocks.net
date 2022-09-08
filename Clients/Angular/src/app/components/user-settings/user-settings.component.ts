@@ -41,7 +41,10 @@ export class UserSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.robotTypeService.list()
-      .subscribe(data => this.types = data.items);
+      .subscribe(data => {
+        this.types = data.items;
+        this.updateSettings();
+      });
   }
 
   get settings(): UserSettings {
@@ -50,11 +53,18 @@ export class UserSettingsComponent implements OnInit {
 
   @Input() set settings(value: UserSettings) {
     this.internalSettings = value;
+    this.allocationMode = this.internalSettings.allocationMode || 0;
+    this.updateSettings();
+  }
+
+  private updateSettings(): void {
+    let defaultRobot = this.types.find(t => t.isDefault),
+      defaultRobotId = defaultRobot?.name || '';
     this.form.setValue({
-      type: this.settings.robotType,
+      type: this.internalSettings.robotType || defaultRobotId,
       allocationMode: this.allocationMode,
-      robotId: this.settings.robotId || '',
-      toolbox: this.settings.toolbox || '',
+      robotId: this.internalSettings.robotId || '',
+      toolbox: this.internalSettings.toolbox || '',
     });
     this.onRobotTypeChange();
   }
@@ -84,7 +94,7 @@ export class UserSettingsComponent implements OnInit {
   }
 
   onToolboxChanged(): void {
-    
+
   }
 
   save(): UserSettings {
