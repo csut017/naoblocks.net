@@ -39,7 +39,6 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <returns>The result of execution.</returns>
         [HttpDelete("{name}/logs")]
-        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> ClearLogs(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -106,16 +105,21 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The report format to generate.</param>
         /// <returns>The generated student details.</returns>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
         [HttpGet("{name}/export")]
         [HttpGet("{name}/export{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDetails(string? name, string? format)
+        public async Task<ActionResult> ExportDetails(string? name, string? format = ".xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating student details export");
+            var args = this.MakeArgs($"from={from}", $"to={to}");
             return await this.GenerateUserReport<Generators.StudentExport>(
                 this.executionEngine,
                 format,
-                name);
+                name,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
         }
 
         /// <summary>
@@ -125,7 +129,6 @@ namespace NaoBlocks.Web.Controllers
         /// <returns>The generated student list.</returns>
         [HttpGet("export")]
         [HttpGet("export{format}")]
-        [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format)
         {
             this.logger.LogInformation("Generating student list export");
@@ -140,16 +143,20 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The report format to generate.</param>
         /// <returns>The generated student logs.</returns>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
         [HttpGet("{name}/logs/export")]
         [HttpGet("{name}/logs/export{format}")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportLogs(string? name, string? format)
+        public async Task<ActionResult> ExportLogs(string? name, string? format = ".xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating student log export");
+            var args = this.MakeArgs($"from={from}", $"to={to}");
             return await this.GenerateUserReport<Generators.ProgramLogsList>(
                 this.executionEngine,
                 format,
-                name);
+                name,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
         }
 
         /// <summary>
@@ -158,16 +165,20 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The report format to generate.</param>
         /// <returns>The generated snapshots list.</returns>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
         [HttpGet("{name}/snapshots/export")]
         [HttpGet("{name}/snapshots/export{format}")]
-        [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportSnapshots(string? name, string? format)
+        public async Task<ActionResult> ExportSnapshots(string? name, string? format = ".xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating student snapshots export");
+            var args = this.MakeArgs($"from={from}", $"to={to}");
             return await this.GenerateUserReport<Generators.SnapshotsList>(
                 this.executionEngine,
                 format,
-                name);
+                name,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
         }
 
         /// <summary>

@@ -3,7 +3,7 @@
     /// <summary>
     /// An internal data representation of a row in a table.
     /// </summary>
-    internal class TableRow
+    public class TableRow
     {
         /// <summary>
         /// Gets or sets the row type.

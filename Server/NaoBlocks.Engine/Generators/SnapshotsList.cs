@@ -16,11 +16,13 @@ namespace NaoBlocks.Engine.Generators
         /// <returns>The output <see cref="Stream"/> containing the generated data.</returns>
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
+            var (fromDate, toDate) = this.ParseFromToDates();
             var generator = new Generator();
             var table = generator.AddTable("Snapshots");
             var data = await this.Session
                 .Query<Snapshot>()
                 .Where(s => s.UserId == this.User.Id)
+                .Where(s => s.WhenAdded >= fromDate && s.WhenAdded <= toDate)
                 .OrderBy(s => s.WhenAdded)
                 .ToListAsync()
                 .ConfigureAwait(false);

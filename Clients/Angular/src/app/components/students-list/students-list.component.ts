@@ -4,10 +4,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
+import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { Student } from 'src/app/data/student';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
+import { ReportSettingsService } from 'src/app/services/report-settings.service';
 import { StudentService } from 'src/app/services/student.service';
 
 @Component({
@@ -31,6 +33,7 @@ export class StudentsListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
     private multilineMessage: MultilineMessageService,
+    private exportSettings: ReportSettingsService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -134,6 +137,113 @@ export class StudentsListComponent implements OnInit {
       }
       this.currentItem!.id = this.currentItem!.name;
     }
+  }
+
+  exportList(): void {
+    console.log('[StudentsListComponent] Showing export settings for student list');
+    let settings = new ReportDialogSettings('Export Student List', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[StudentsListComponent] Generating student list');
+          console.log(result);
+          console.groupEnd();
+          this.downloaderService.download(
+            `v1/students/export.${result.selectedFormat}`, 
+            `students.${result.selectedFormat}`);
+        } else {
+          console.log('[StudentsListComponent] Export cancelled');
+        }
+      });
+  }
+
+  exportDetails(): void {
+    console.log('[StudentsListComponent] Showing export settings for details');
+    let settings = new ReportDialogSettings('Export Details', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[StudentsListComponent] Generating details export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/students/${t.name}/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
+              `${t.name}_${fromDate}_${toDate}-details.${result.selectedFormat}`));
+        } else {
+          console.log('[StudentsListComponent] Export cancelled');
+        }
+      });
+  }
+
+  exportLogs(): void {
+    console.log('[StudentsListComponent] Showing export settings for logs');
+    let settings = new ReportDialogSettings('Export Logs', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[StudentsListComponent] Generating logs export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/students/${t.name}/logs/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `${t.name}_${fromDate}_${toDate}-logs.${result.selectedFormat}`));
+        } else {
+          console.log('[StudentsListComponent] Export cancelled');
+        }
+      });
+  }
+
+  exportSnapshots(): void {
+    console.log('[StudentsListComponent] Showing export settings for snapshots');
+    let settings = new ReportDialogSettings('Export Snapshots', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[StudentsListComponent] Generating snapshots export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/students/${t.name}/snapshots/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `${t.name}_${fromDate}_${toDate}-snapshots.${result.selectedFormat}`));
+        } else {
+          console.log('[StudentsListComponent] Export cancelled');
+        }
+      });
   }
 
   private loadList(): void {

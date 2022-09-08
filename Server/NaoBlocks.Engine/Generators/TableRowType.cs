@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the type of <see cref="TableRow"/>.
     /// </summary>
-    internal enum TableRowType
+    public enum TableRowType
     {
         /// <summary>
         /// The row contains data.

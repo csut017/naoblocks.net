@@ -2,7 +2,6 @@
 using NaoBlocks.Engine.Indices;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
-using System.Globalization;
 
 namespace NaoBlocks.Engine.Generators
 {
@@ -19,25 +18,7 @@ namespace NaoBlocks.Engine.Generators
         /// <returns>The output <see cref="Stream"/> containing the generated data.</returns>
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
-            var toDate = DateTime.Now;
-            var fromDate = toDate.AddDays(-7);
-            var fromDateText = this.GetArgumentOrDefault("from");
-            var toDateText = this.GetArgumentOrDefault("to");
-            if (!string.IsNullOrEmpty(fromDateText))
-            {
-                if (!DateTime.TryParseExact(fromDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out fromDate))
-                {
-                    throw new ApplicationException($"From date is invalid, it should be yyyy-MM-dd, found {fromDateText}");
-                }
-            }
-            if (!string.IsNullOrEmpty(toDateText))
-            {
-                if (!DateTime.TryParseExact(toDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out toDate))
-                {
-                    throw new ApplicationException($"To date is invalid, it should be yyyy-MM-dd, found {toDateText}");
-                }
-            }
-
+            var (fromDate, toDate) = this.ParseFromToDates();
             var generator = new Generator();
             var table = generator.AddTable("Logs");
             var header = table.AddRow(

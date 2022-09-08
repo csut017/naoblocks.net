@@ -1,15 +1,13 @@
-﻿namespace NaoBlocks.Engine.Generators
+﻿using OfficeOpenXml;
+
+namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
     /// An internal data representation of a table.
     /// </summary>
-    internal class Table
+    public class Table
+        : ReportItem
     {
-        /// <summary>
-        /// Gets or sets the table name.
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
-
         /// <summary>
         /// Gets the rows in the table.
         /// </summary>
@@ -50,6 +48,48 @@
             {
                 var needed = maxLength - row.Values.Count;
                 row.Values.AddRange(new TableCell[needed]);
+            }
+        }
+
+        /// <summary>
+        /// Exports to CSV.
+        /// </summary>
+        /// <param name="writer">The <see cref="StreamWriter"/> to use.</param>
+        /// <param name="separator">The characters to use as a cell seperator.</param>
+        public override void ExportToCsv(StreamWriter writer, string separator)
+        {
+            foreach (var row in this.Rows)
+            {
+                var line = string.Join(
+                    separator,
+                    row.Values.Select(v => v?.ToString() ?? string.Empty));
+                writer.WriteLine(line);
+                writer.Flush();
+            }
+        }
+
+        /// <summary>
+        /// Exports to Excel.
+        /// </summary>
+        /// <param name="worksheet">The Excel worksheet to use.</param>
+        public override void ExportToExcel(ExcelWorksheet worksheet)
+        {
+            var rowNum = 0;
+            foreach (var row in this.Rows)
+            {
+                rowNum++;
+                var cellNum = 0;
+                foreach (var cell in row.Values)
+                {
+                    cellNum++;
+                    if (cell == null) continue;
+
+                    var destCell = worksheet.Cells[rowNum, cellNum];
+                    destCell.Value = cell.Value;
+                    var style = destCell.Style;
+                    if (cell.Format != null) style.Numberformat.Format = cell.Format;
+                    if (row.Type == TableRowType.Header) style.Font.Bold = true;
+                }
             }
         }
     }

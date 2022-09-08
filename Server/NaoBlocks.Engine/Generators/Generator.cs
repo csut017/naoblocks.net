@@ -6,9 +6,9 @@ namespace NaoBlocks.Engine.Generators
     /// <summary>
     /// A generator that will automatically generate documents based on the format.
     /// </summary>
-    internal class Generator
+    public class Generator
     {
-        private readonly List<Table> tables = new();
+        private readonly List<ReportItem> items = new();
 
         /// <summary>
         /// Initialise the license for EPPlus.
@@ -19,6 +19,18 @@ namespace NaoBlocks.Engine.Generators
         }
 
         /// <summary>
+        /// Starts a new page.
+        /// </summary>
+        /// <param name="name">The name of the page.</param>
+        /// <returns>A new <see cref="Page"/> instance.</returns>
+        public Page AddPage(string name)
+        {
+            var page = new Page { Name = name };
+            this.items.Add(page);
+            return page;
+        }
+
+        /// <summary>
         /// Starts a new <see cref="Table"/> and adds it.
         /// </summary>
         /// <param name="name">The name of the table.</param>
@@ -26,7 +38,7 @@ namespace NaoBlocks.Engine.Generators
         public Table AddTable(string name)
         {
             var table = new Table { Name = name };
-            this.tables.Add(table);
+            this.items.Add(table);
             return table;
         }
 
@@ -50,31 +62,15 @@ namespace NaoBlocks.Engine.Generators
         private async Task<(Stream, string)> GenerateExcel(string baseName)
         {
             using var package = new ExcelPackage();
-            var tableNum = 0;
-            foreach (var table in this.tables)
+            var itemNum = 0;
+            foreach (var item in this.items)
             {
-                tableNum++;
-                var tableName = string.IsNullOrWhiteSpace(table.Name)
-                    ? $"Table {tableNum}"
-                    : table.Name;
-                var worksheet = package.Workbook.Worksheets.Add(tableName);
-                var rowNum = 0;
-                foreach (var row in table.Rows)
-                {
-                    rowNum++;
-                    var cellNum = 0;
-                    foreach (var cell in row.Values)
-                    {
-                        cellNum++;
-                        if (cell == null) continue;
-
-                        var destCell = worksheet.Cells[rowNum, cellNum];
-                        destCell.Value = cell.Value;
-                        var style = destCell.Style;
-                        if (cell.Format != null) style.Numberformat.Format = cell.Format;
-                        if (row.Type == TableRowType.Header) style.Font.Bold = true;
-                    }
-                }
+                itemNum++;
+                var itemName = string.IsNullOrWhiteSpace(item.Name)
+                    ? $"Table {itemNum}"
+                    : item.Name;
+                var worksheet = package.Workbook.Worksheets.Add(itemName);
+                item.ExportToExcel(worksheet);
             }
 
             var stream = new MemoryStream();
@@ -88,27 +84,20 @@ namespace NaoBlocks.Engine.Generators
             var stream = new MemoryStream();
             using var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true);
 
-            var tableNum = 0;
-            foreach (var table in this.tables)
+            var itemNum = 0;
+            foreach (var item in this.items)
             {
-                tableNum++;
+                itemNum++;
                 if (includeHeader)
                 {
-                    var tableName = string.IsNullOrWhiteSpace(table.Name)
-                        ? $"Table {tableNum}"
-                        : table.Name;
+                    var tableName = string.IsNullOrWhiteSpace(item.Name)
+                        ? $"Table {itemNum}"
+                        : item.Name;
                     writer.WriteLine(tableName);
                     writer.WriteLine(new string('=', tableName.Length));
                 }
 
-                foreach (var row in table.Rows)
-                {
-                    var line = string.Join(
-                        separator,
-                        row.Values.Select(v => v?.ToString() ?? string.Empty));
-                    writer.WriteLine(line);
-                    writer.Flush();
-                }
+                item.ExportToCsv(writer, separator);
             }
 
             stream.Seek(0, SeekOrigin.Begin);

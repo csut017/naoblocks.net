@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Engine.Data;
+using System.Globalization;
 
 namespace NaoBlocks.Engine
 {
@@ -154,6 +155,36 @@ namespace NaoBlocks.Engine
             }
 
             return defaultValue;
+        }
+
+        /// <summary>
+        /// Attempts to parse the from and to dates.
+        /// </summary>
+        /// <param name="fromDefault">The default from date.</param>
+        /// <param name="toDefault">The default to date.</param>
+        /// <returns>The from and to dates.</returns>
+        /// <exception cref="ApplicationException">One of the date formats is incorrect.</exception>
+        protected (DateTime, DateTime) ParseFromToDates(DateTime? fromDefault = null, DateTime? toDefault = null)
+        {
+            var toDate = toDefault.GetValueOrDefault(DateTime.Now);
+            var fromDate = fromDefault.GetValueOrDefault(toDate.AddDays(-7));
+            var fromDateText = this.GetArgumentOrDefault("from");
+            var toDateText = this.GetArgumentOrDefault("to");
+            if (!string.IsNullOrEmpty(fromDateText))
+            {
+                if (!DateTime.TryParseExact(fromDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out fromDate))
+                {
+                    throw new ApplicationException($"From date is invalid, it should be yyyy-MM-dd, found {fromDateText}");
+                }
+            }
+            if (!string.IsNullOrEmpty(toDateText))
+            {
+                if (!DateTime.TryParseExact(toDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out toDate))
+                {
+                    throw new ApplicationException($"To date is invalid, it should be yyyy-MM-dd, found {toDateText}");
+                }
+            }
+            return (fromDate, toDate);
         }
     }
 }
