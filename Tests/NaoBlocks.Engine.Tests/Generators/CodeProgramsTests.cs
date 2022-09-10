@@ -51,8 +51,8 @@ Number,Name,When Added,Code
         {
             // Arrange
             var user = new User { Id = "users/1", Name = "Mia" };
-            var program1 = new CodeProgram { Code = "go()", Name = "None", Number = 1, UserId = user.Id, WhenAdded = now.AddDays(-1) };
-            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user.Id, WhenAdded = now };
+            var program1 = new CodeProgram { Code = "go()", Name = "None", Number = 1, UserId = user.Id, WhenAdded = DefaultTestDateTime.AddDays(-1) };
+            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user.Id, WhenAdded = DefaultTestDateTime };
             var program3 = new CodeProgram { Code = "start()", Number = 3, UserId = user.Id, WhenAdded = DateTime.Now };
             using var store = InitialiseDatabase(
                 user,
@@ -90,9 +90,9 @@ Number,Name,When Added,Code
             // Arrange
             var user1 = new User { Id = "users/1", Name = "Mia" };
             var user2 = new User { Id = "users/2", Name = "Mateo" };
-            var program1 = new CodeProgram { Code = "go()", Name = "None", Number = 1, UserId = user1.Id, WhenAdded = now.AddDays(-1) };
-            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user1.Id, WhenAdded = now };
-            var program3 = new CodeProgram { Code = "start()", Number = 1, UserId = user2.Id, WhenAdded = now.AddDays(-2) };
+            var program1 = new CodeProgram { Code = "go()", Name = "None", Number = 1, UserId = user1.Id, WhenAdded = DefaultTestDateTime.AddDays(-1) };
+            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user1.Id, WhenAdded = DefaultTestDateTime };
+            var program3 = new CodeProgram { Code = "start()", Number = 1, UserId = user2.Id, WhenAdded = DefaultTestDateTime.AddDays(-2) };
             using var store = InitialiseDatabase(
                 user1,
                 user2,

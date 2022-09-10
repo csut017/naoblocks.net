@@ -19,7 +19,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
             SetupControllerContext(controller, true);
 
             var connection = new Mock<IClientConnection>();
@@ -46,7 +46,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
             var response = SetupControllerContext(controller, false);
 
             // Act
@@ -63,7 +63,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<StandardClientConnection>());
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
             var response = SetupControllerContext(controller, false);
 
             // Act

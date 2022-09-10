@@ -26,14 +26,13 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="hub">The communications hub.</param>
         /// <param name="messageProcessor">The message processor for processing incoming messages.</param>
         /// <param name="clientLogger">The logger to use for any client connections.</param>
-        public ConnectionsController(ILogger<ConnectionsController> logger, IHub hub, IMessageProcessor messageProcessor, ILogger<StandardClientConnection> clientLogger)
+        public ConnectionsController(ILogger<ConnectionsController> logger, IHub hub, IMessageProcessor messageProcessor, ILogger<WebSocketClientConnection> clientLogger)
         {
             this._logger = logger;
             this._hub = hub;
             this._messageProcessor = messageProcessor;
-            this.GenerateConnection = (socket, type, processor) => new StandardClientConnection(socket, type, processor, clientLogger);
+            this.GenerateConnection = (socket, type, processor) => new WebSocketClientConnection(socket, type, processor, clientLogger);
         }
-
 
         /// <summary>
         /// Gets or sets the connection generator.
@@ -41,7 +40,7 @@ namespace NaoBlocks.Web.Controllers
         /// <remarks>
         /// This property is mainly to allow unit testing.
         /// </remarks>
-        public Func<WebSocket, ClientConnectionType, IMessageProcessor, IClientConnection> GenerateConnection { get; set; } 
+        public Func<WebSocket, ClientConnectionType, IMessageProcessor, IClientConnection> GenerateConnection { get; set; }
 
         /// <summary>
         /// Attempts to start a new connection.

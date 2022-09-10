@@ -48,7 +48,9 @@ namespace NaoBlocks.Web.IntegrationTests
                 HttpStatusCode.OK,
                 "/api/v1/Robots/export/list",
                 "/api/v1/Students/export",
-                "/api/v1/system/addresses/connect.txt");
+                "/api/v1/system/addresses/connect.txt",
+                "/api/v1/Students/mia/export",
+                "/api/v1/Students/mia/export.txt");
 
             // Forbidden teacher requests
             AddUrlsToCheck(
@@ -58,12 +60,6 @@ namespace NaoBlocks.Web.IntegrationTests
                 "/api/v1/Teachers",
                 "/api/v1/Users/mia",
                 "/api/v1/Users");
-
-            // These are some requests that are currently failing because the backend is not implemented yet
-            AddUrlsToCheck(
-                UserRole.Teacher,
-                HttpStatusCode.InternalServerError,
-                "/api/v1/Students/mia/export");
         }
     }
 }

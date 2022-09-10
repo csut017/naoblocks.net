@@ -13,11 +13,11 @@ namespace NaoBlocks.Web.Tests.Dtos
         [Fact]
         public void FromModelConvertsUserEntity()
         {
-            var entity = new StandardClientConnection(
+            var entity = new WebSocketClientConnection(
                 new Mock<WebSocket>().Object, 
                 ClientConnectionType.User, 
                 new Mock<IMessageProcessor>().Object, 
-                new FakeLogger<StandardClientConnection>())
+                new FakeLogger<WebSocketClientConnection>())
             {
                 Id = 1,
                 User = new Data.User { Name = "Mia" }
@@ -33,11 +33,11 @@ namespace NaoBlocks.Web.Tests.Dtos
         [Fact]
         public void FromModelConvertsRobotEntity()
         {
-            var entity = new StandardClientConnection(
+            var entity = new WebSocketClientConnection(
                 new Mock<WebSocket>().Object,
                 ClientConnectionType.Robot,
                 new Mock<IMessageProcessor>().Object,
-                new FakeLogger<StandardClientConnection>())
+                new FakeLogger<WebSocketClientConnection>())
             {
                 Id = 3,
                 Robot = new Data.Robot { MachineName = "karetao" }

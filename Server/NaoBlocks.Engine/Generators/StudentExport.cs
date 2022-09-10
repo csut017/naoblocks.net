@@ -16,9 +16,11 @@
             var (fromDate, toDate) = this.ParseFromToDates();
             var generator = new Generator();
             GenerateStudentDetails(generator);
-            await this.GenerateLogsAsync(generator, fromDate, toDate);
-            await this.GenerateProgramsAsync(generator, fromDate, toDate);
-            var (stream, name) = await generator.GenerateAsync(format, $"Student-Logs-{this.User.Name}");
+            var includeLogs = this.GetArgumentOrDefault("logs", "yes");
+            if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsAsync(generator, fromDate, toDate);
+            var includePrograms = this.GetArgumentOrDefault("programs", "yes");
+            if ("yes".Equals(includePrograms) || "true".Equals(includePrograms)) await this.GenerateProgramsAsync(generator, fromDate, toDate);
+            var (stream, name) = await generator.GenerateAsync(format, $"Student-Export-{this.User.Name}");
             return Tuple.Create(stream, name);
         }
 

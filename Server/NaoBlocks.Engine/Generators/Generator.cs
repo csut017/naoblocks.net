@@ -53,8 +53,8 @@ namespace NaoBlocks.Engine.Generators
             return format switch
             {
                 ReportFormat.Excel => await this.GenerateExcel(baseName),
-                ReportFormat.Csv => this.GenerateText(baseName, "csv", false, ","),
-                ReportFormat.Text => this.GenerateText(baseName, "txt", true, ","),
+                ReportFormat.Csv => this.GenerateText(baseName, "csv", false, ",", ","),
+                ReportFormat.Text => this.GenerateText(baseName, "txt", true, ",", ": "),
                 _ => throw new ApplicationException($"Unable to generate: unhandled {format}"),
             };
         }
@@ -79,7 +79,7 @@ namespace NaoBlocks.Engine.Generators
             return (stream, $"{baseName}.xlsx");
         }
 
-        private (Stream, string) GenerateText(string baseName, string extension, bool includeHeader, string separator)
+        private (Stream, string) GenerateText(string baseName, string extension, bool includeHeader, string tableSeparator, string pageSeperator)
         {
             var stream = new MemoryStream();
             using var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true);
@@ -97,9 +97,21 @@ namespace NaoBlocks.Engine.Generators
                     writer.WriteLine(new string('=', tableName.Length));
                 }
 
+                var separator = string.Empty;
+                switch (item)
+                {
+                    case Table:
+                        separator = tableSeparator;
+                        break;
+
+                    case Page _:
+                        separator = pageSeperator;
+                        break;
+                }
                 item.ExportToCsv(writer, separator);
             }
 
+            writer.Flush();
             stream.Seek(0, SeekOrigin.Begin);
             return (stream, $"{baseName}.{extension}");
         }

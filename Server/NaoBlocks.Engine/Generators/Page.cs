@@ -34,13 +34,8 @@ namespace NaoBlocks.Engine.Generators
         {
             foreach (var paragraph in this.Paragraphs)
             {
-                foreach (var block in paragraph.Blocks)
-                {
-                    writer.Write(block.Contents);
-                    writer.Write(separator);
-                }
-
-                writer.WriteLine();
+                var line = string.Join(separator, paragraph.Blocks.Select(b => b.Contents.ToString()));
+                writer.WriteLine(line);
             }
         }
 

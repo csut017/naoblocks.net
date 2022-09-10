@@ -86,11 +86,11 @@ namespace NaoBlocks.Web.Tests.Controllers
             var hub = new Mock<IHub>();
             hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
                 .Returns(new[] {
-                    new StandardClientConnection(
+                    new WebSocketClientConnection(
                         new Mock<WebSocket>().Object,
                         ClientConnectionType.Robot,
                         new Mock<IMessageProcessor>().Object, 
-                        new FakeLogger<StandardClientConnection>())
+                        new FakeLogger<WebSocketClientConnection>())
                 });
             var controller = new ClientsController(
                 logger,

@@ -7,14 +7,14 @@ using System.Net.WebSockets;
 namespace NaoBlocks.Web.Communications
 {
     /// <summary>
-    /// Defines a client connection.
+    /// Defines a client connection using WebSockets.
     /// </summary>
-    public class StandardClientConnection
+    public class WebSocketClientConnection
         : IClientConnection
     {
         private readonly CancellationTokenSource cancellationSource = new();
         private readonly IMessageProcessor messageProcessor;
-        private readonly ILogger<StandardClientConnection> logger;
+        private readonly ILogger<WebSocketClientConnection> logger;
         private readonly ConcurrentQueue<ClientMessage> queue = new();
         private readonly WebSocket socket;
         private readonly IList<IClientConnection> listeners = new List<IClientConnection>();
@@ -23,13 +23,13 @@ namespace NaoBlocks.Web.Communications
         private bool isRunning;
 
         /// <summary>
-        /// Initialises a new <see cref="StandardClientConnection"/> instance.
+        /// Initialises a new <see cref="WebSocketClientConnection"/> instance.
         /// </summary>
         /// <param name="socket">The socket to use.</param>
         /// <param name="type">The type of client.</param>
         /// <param name="messageProcessor">The processor to use for handling incoming messages.</param>
         /// <param name="logger">The logger to use.</param>
-        public StandardClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<StandardClientConnection> logger)
+        public WebSocketClientConnection(WebSocket socket, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<WebSocketClientConnection> logger)
         {
             this.socket = socket;
             this.Type = type;

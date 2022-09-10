@@ -31,7 +31,7 @@ namespace NaoBlocks.Web.Tests.Communications
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
+            var client = new WebSocketClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<WebSocketClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.Unknown);
@@ -55,7 +55,7 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Throws(new Exception("error"));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
+            var client = new WebSocketClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<WebSocketClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.ProgramStarted);
@@ -80,7 +80,7 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Returns((engine, session.Object));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
+            var client = new WebSocketClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<WebSocketClientConnection>());
 
             // Act
             var msg = new ClientMessage(ClientMessageType.ProgramStarted);
@@ -649,7 +649,7 @@ namespace NaoBlocks.Web.Tests.Communications
             await processor.ProcessAsync(client, msg);
 
             // Assert
-            hub.Verify(h => h.AddMonitor(It.IsAny<StandardClientConnection>()));
+            hub.Verify(h => h.AddMonitor(It.IsAny<WebSocketClientConnection>()));
         }
 
         [Fact]
@@ -666,7 +666,7 @@ namespace NaoBlocks.Web.Tests.Communications
             await processor.ProcessAsync(client, msg);
 
             // Assert
-            hub.Verify(h => h.RemoveClient(It.IsAny<StandardClientConnection>()));
+            hub.Verify(h => h.RemoveClient(It.IsAny<WebSocketClientConnection>()));
         }
 
         [Fact]
@@ -1453,7 +1453,7 @@ namespace NaoBlocks.Web.Tests.Communications
             return logger.Messages.ToArray();
         }
 
-        private static (FakeEngine, MessageProcessor, StandardClientConnection) InitialiseTestProcessor(ClientConnectionType type = ClientConnectionType.Unknown, IHub? hub = null)
+        private static (FakeEngine, MessageProcessor, WebSocketClientConnection) InitialiseTestProcessor(ClientConnectionType type = ClientConnectionType.Unknown, IHub? hub = null)
         {
             hub ??= new Mock<IHub>().Object;
             var logger = new FakeLogger<MessageProcessor>();
@@ -1464,34 +1464,34 @@ namespace NaoBlocks.Web.Tests.Communications
                 .Returns((engine, session.Object));
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, type, processor, new FakeLogger<StandardClientConnection>());
+            var client = new WebSocketClientConnection(socket.Object, type, processor, new FakeLogger<WebSocketClientConnection>());
             return (engine, processor, client);
         }
 
-        private static StandardClientConnection InitialiseListener(StandardClientConnection client)
+        private static WebSocketClientConnection InitialiseListener(WebSocketClientConnection client)
         {
             var hub = new Mock<IHub>();
             var logger = new FakeLogger<MessageProcessor>();
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var listener = new StandardClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<StandardClientConnection>());
+            var listener = new WebSocketClientConnection(socket.Object, ClientConnectionType.Unknown, processor, new FakeLogger<WebSocketClientConnection>());
             client.AddListener(listener);
             return listener;
         }
 
-        private static StandardClientConnection InitialiseClient(ClientConnectionType type = ClientConnectionType.Unknown)
+        private static WebSocketClientConnection InitialiseClient(ClientConnectionType type = ClientConnectionType.Unknown)
         {
             var hub = new Mock<IHub>();
             var logger = new FakeLogger<MessageProcessor>();
             var factory = new Mock<IEngineFactory>();
             var socket = new Mock<WebSocket>();
             var processor = new MessageProcessor(hub.Object, logger, factory.Object);
-            var client = new StandardClientConnection(socket.Object, type, processor, new FakeLogger<StandardClientConnection>());
+            var client = new WebSocketClientConnection(socket.Object, type, processor, new FakeLogger<WebSocketClientConnection>());
             return client;
         }
 
-        private static (IHub, StandardClientConnection) InitialiseHubConnection(long id)
+        private static (IHub, WebSocketClientConnection) InitialiseHubConnection(long id)
         {
             var client = InitialiseClient();
             var hub = new Mock<IHub>();

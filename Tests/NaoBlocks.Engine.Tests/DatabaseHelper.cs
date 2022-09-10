@@ -5,13 +5,15 @@ using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using Raven.TestDriver;
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NaoBlocks.Engine.Tests
 {
     public class DatabaseHelper : RavenTestDriver
     {
-        protected readonly DateTime now = new(2021, 3, 4, 5, 16, 27);
+        protected readonly DateTime DefaultTestDateTime = new(2021, 3, 4, 5, 16, 27);
 
         public IDocumentStore InitialiseDatabase(Action<IDocumentSession>? initialiseData = null)
         {
@@ -54,6 +56,21 @@ namespace NaoBlocks.Engine.Tests
             return query;
         }
 
+        protected static string ReplaceValues(string input, IDictionary<string, string> values)
+        {
+            var output = Regex.Replace(
+                input,
+                @"\{[a-zA-Z0-9]*\}",
+                match =>
+                {
+                    var end = match.Value.Length - 1;
+                    return values.TryGetValue(match.Value[1..end], out var value)
+                        ? value
+                        : match.Value;
+                });
+            return output;
+        }
+
         protected static IDatabaseSession WrapSession(IAsyncDocumentSession session)
         {
             return new MockingRavenDbWrapper(session);
@@ -89,8 +106,8 @@ namespace NaoBlocks.Engine.Tests
             {
                 Conversation = conversation,
                 RobotId = robot.Id,
-                WhenAdded = now.AddMinutes(-1),
-                WhenLastUpdated = now
+                WhenAdded = DefaultTestDateTime.AddMinutes(-1),
+                WhenLastUpdated = DefaultTestDateTime
             };
 
             var count = timeOffset;
@@ -100,7 +117,7 @@ namespace NaoBlocks.Engine.Tests
                 {
                     Description = message,
                     SourceMessageType = ClientMessageType.RobotDebugMessage,
-                    WhenAdded = now.AddMinutes(timeOffset),
+                    WhenAdded = DefaultTestDateTime.AddMinutes(timeOffset),
                 };
                 log.Lines.Add(line);
             }
