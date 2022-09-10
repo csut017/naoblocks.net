@@ -1,0 +1,201 @@
+# Socket Protocol
+
+This document specifies the communications protocol used for communciations between a robot and the server when using low-level sockets.
+
+## Overview
+
+Each message has the following header:
+
+Start Position | End Position | Purpose | Values
+---: | ---: | --- | ---
+0 | 1 | Message type | See below.
+2 | 3 | Message length | The length of the data section (between 0 and 255 bytes.)
+4 | 5 | Sequence number | The sequence number of the message. This number starts at 0 and goes up to 65536, then loops back to 0 again.
+
+All multi-byte numbers are stored in little-endian format (see [Wikipedia](https://en.wikipedia.org/wiki/Endianness).)
+
+After the header, the data is sent in an UTF-8 encoded string. The length of the data must exactly match the `message length` in the header.
+
+## Command Sequences
+
+These sequences are used at specific times in the communications process.
+
+### Initialisation
+
+When the robot first starts, it will need to authenticate with the server and register its details.
+
+### Execution
+
+This sequence is triggered by the server when a user requests the execution of a program.
+
+### State update
+
+The robot may send a state update at any time.
+
+## Commands
+
+These commands are defined in `ClientMessageType` in `NaoBlocks.Common` ([link](../Common/NaoBlocks.Common/ClientMessageType.cs).) This documentation explains how they are implemented in the socket protocol.
+
+**Note:** Specific robot implementations may implement these commands slightly differently depending on the capacities available.
+
+### Authenticate
+
+**Number:** 1
+
+Send the client credentials to the server
+
+### Authenticated
+
+**Number:** 2
+
+Credentials are valid
+
+### RequestRobot
+
+**Number:** 11
+
+Request a robot to run a program on
+
+### RobotAllocated
+
+**Number:** 12
+
+Allocate a robot to the client
+
+### NoRobotsAvailable
+
+**Number:** 13
+
+There are no clients available
+
+### TransferProgram
+
+**Number:** 20
+
+Request the server to inform the robot to download a program
+
+### ProgramTransferred
+
+**Number:** 21
+
+Reply from the server when the robot has finished downloading
+
+### DownloadProgram
+
+**Number:** 22
+
+Request the robot to download a program
+
+### ProgramDownloaded
+
+**Number:** 23
+
+The robot has finished downloading the program
+
+### UnableToDownloadProgram
+
+**Number:** 24
+
+The program cannot be downloaded to the robot
+
+### StartProgram
+
+**Number:** 101
+
+Start execution of a program
+
+### ProgramStarted
+
+**Number:** 102
+
+Program execution has started
+
+### ProgramFinished
+
+**Number:** 103
+
+Program execution has finished
+
+### StopProgram
+
+**Number:** 201
+
+Request cancellation of a program
+
+### ProgramStopped
+
+**Number:** 202
+
+Program has been cancelled
+
+### RobotStateUpdate
+
+**Number:** 501
+
+ An update from the robot about its state
+
+### RobotDebugMessage
+
+**Number:** 502
+
+ A debug message from the robot (normally a step has started)
+
+### RobotError
+
+**Number:** 503
+
+An error that occurred during execution of a program
+
+### Error
+
+**Number:** 1000
+
+A general error (e.g. message type not recognised)
+
+### NotAuthenticated
+
+**Number:** 1001
+
+The client has not been authenticated
+
+### Forbidden
+
+**Number:** 1002
+
+The client is not allowed to call the functionality
+
+### StartMonitoring
+
+**Number:** 1100
+
+Start monitoring all client changes
+
+### StopMonitoring
+
+**Number:** 1101
+
+Stop monitoring all client changes
+
+### ClientAdded
+
+**Number:** 1102
+
+A new client has connected to the system
+
+### ClientRemoved
+
+**Number:** 1103
+
+An existing client has disconnected
+
+### AlertsRequest
+
+**Number:** 1200
+
+Requests all current notifications on the robot
+
+### AlertBroadcast
+
+**Number:** 1201
+
+An alert is being broadcast to all listeners
