@@ -1,5 +1,7 @@
 ﻿using NaoBlocks.Common;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 
 namespace NaoBlocks.Web.Communications
 {
@@ -8,45 +10,29 @@ namespace NaoBlocks.Web.Communications
     /// </summary>
     public class LocalHub : IHub
     {
+        private readonly Semaphore allDone = new(0, 2);
         private readonly CancellationTokenSource cancellationSource = new();
         private readonly IDictionary<long, IClientConnection> clients = new Dictionary<long, IClientConnection>();
-        private long nextClientId;
-        private bool disposedValue;
-        private readonly HashSet<IClientConnection> monitors = new();
         private readonly ReaderWriterLockSlim clientsLock = new();
-        private readonly ReaderWriterLockSlim monitorLock = new();
         private readonly ILogger<LocalHub> logger;
+        private readonly ReaderWriterLockSlim monitorLock = new();
+        private readonly HashSet<IClientConnection> monitors = new();
+        private readonly IServiceProvider services;
+        private bool disposedValue;
+        private long nextClientId;
 
         /// <summary>
         /// Initialises a new <see cref="LocalHub"/> instance.
         /// </summary>
-        public LocalHub(ILogger<LocalHub> logger)
+        public LocalHub(ILogger<LocalHub> logger, IHostApplicationLifetime? appLifetime, IServiceProvider services)
         {
-            Task.Run(async () => await this.CheckClientsAreAvailable(this.cancellationSource.Token));
             this.logger = logger;
-        }
-
-        /// <summary>
-        /// Internal message processing loop to check robot clients are not in a stalled state.
-        /// </summary>
-        private async Task CheckClientsAreAvailable(CancellationToken cancelToken)
-        {
-            while (!cancelToken.IsCancellationRequested)
+            this.services = services;
+            appLifetime?.ApplicationStopping.Register(() =>
             {
-                logger.LogInformation("Checking for stalled robots");
-                var clients = this.GetClients(ClientConnectionType.Robot);
-                var deadline = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(2));
-                foreach (var client in clients.Where(c => c.RobotDetails != null))
-                {
-                    if (!client.Status.IsAvailable && (client.RobotDetails!.LastUpdateTime < deadline))
-                    {
-                        logger.LogInformation($"Robot {client.Robot?.MachineName} appears to be stalled: sending stop message");
-                        client.SendMessage(new ClientMessage(ClientMessageType.StopProgram));
-                    }
-                }
-
-                await Task.Delay(TimeSpan.FromMinutes(2), cancelToken);
-            }
+                this.cancellationSource.Cancel();
+                allDone.WaitOne();
+            });
         }
 
         /// <summary>
@@ -78,6 +64,68 @@ namespace NaoBlocks.Web.Communications
 
             var msg = GenerateAddClientMessage(client);
             this.SendToMonitors(msg);
+        }
+
+        /// <summary>
+        /// Adds a new monitor <see cref="IClientConnection"/>.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        public void AddMonitor(IClientConnection client)
+        {
+            var isLocked = false;
+            try
+            {
+                isLocked = this.monitorLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
+                if (isLocked)
+                {
+                    this.monitors.Add(client);
+                    client.Closed += (o, e) => this.RemoveMonitor(client);
+                }
+                else
+                {
+                    throw new TimeoutException("Unable to add monitor");
+                }
+            }
+            finally
+            {
+                if (isLocked) this.monitorLock.ExitWriteLock();
+            }
+
+            var clients = this.GetAllClients();
+            foreach (var existing in clients)
+            {
+                var msg = GenerateAddClientMessage(existing);
+                client.SendMessage(msg);
+            }
+        }
+
+        /// <summary>
+        /// Cleans up all resources used by this hub.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Retrieves all the current connections regardless of type.
+        /// </summary>
+        /// <returns>All the current connections.</returns>
+        public IEnumerable<IClientConnection> GetAllClients()
+        {
+            this.clientsLock.EnterReadLock();
+            try
+            {
+                var clients = this.clients
+                    .Select(c => c.Value)
+                    .ToArray();
+                return clients;
+            }
+            finally
+            {
+                this.clientsLock.ExitReadLock();
+            }
         }
 
         /// <summary>
@@ -121,54 +169,22 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Retrieves all the current connections regardless of type.
+        /// Retrieves all the current monitor connections.
         /// </summary>
-        /// <returns>All the current connections.</returns>
-        public IEnumerable<IClientConnection> GetAllClients()
+        /// <returns>All the current monitor connections.</returns>
+        public IEnumerable<IClientConnection> GetMonitors()
         {
-            this.clientsLock.EnterReadLock();
+            this.monitorLock.EnterReadLock();
             try
             {
-                var clients = this.clients
-                    .Select(c => c.Value)
+                var monitors = this.monitors
                     .ToArray();
-                return clients;
+                return monitors;
             }
             finally
             {
-                this.clientsLock.ExitReadLock();
+                this.monitorLock.ExitReadLock();
             }
-        }
-
-        /// <summary>
-        /// Sends a message to all connections.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        public void SendToAll(ClientMessage message)
-        {
-            var monitors = this.GetAllClients();
-            SendToAllInternal(message, monitors);
-        }
-
-        /// <summary>
-        /// Sends a message to all connections of a specific type.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        /// <param name="clientType">The type of client to send the messages to.</param>
-        public void SendToAll(ClientMessage message, ClientConnectionType clientType)
-        {
-            var monitors = this.GetClients(clientType);
-            SendToAllInternal(message, monitors);
-        }
-
-        /// <summary>
-        /// Sends a message to all monitors.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        public void SendToMonitors(ClientMessage message)
-        {
-            var monitors = this.GetMonitors();
-            SendToAllInternal(message, monitors);
         }
 
         /// <summary>
@@ -206,29 +222,10 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Retrieves all the current monitor connections.
+        /// Removes a monitor.
         /// </summary>
-        /// <returns>All the current monitor connections.</returns>
-        public IEnumerable<IClientConnection> GetMonitors()
-        {
-            this.monitorLock.EnterReadLock();
-            try
-            {
-                var monitors = this.monitors
-                    .ToArray();
-                return monitors;
-            }
-            finally
-            {
-                this.monitorLock.ExitReadLock();
-            }
-        }
-
-        /// <summary>
-        /// Adds a new monitor <see cref="IClientConnection"/>.
-        /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
-        public void AddMonitor(IClientConnection client)
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        public void RemoveMonitor(IClientConnection client)
         {
             var isLocked = false;
             try
@@ -236,24 +233,82 @@ namespace NaoBlocks.Web.Communications
                 isLocked = this.monitorLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
                 if (isLocked)
                 {
-                    this.monitors.Add(client);
-                    client.Closed += (o, e) => this.RemoveMonitor(client);
+                    if (this.monitors.Contains(client)) this.monitors.Remove(client);
                 }
                 else
                 {
-                    throw new TimeoutException("Unable to add monitor");
+                    throw new TimeoutException("Unable to remove monitor");
                 }
             }
             finally
             {
                 if (isLocked) this.monitorLock.ExitWriteLock();
             }
+        }
 
-            var clients = this.GetAllClients();
-            foreach (var existing in clients)
+        /// <summary>
+        /// Sends a message to all connections.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendToAll(ClientMessage message)
+        {
+            var monitors = this.GetAllClients();
+            SendToAllInternal(message, monitors);
+        }
+
+        /// <summary>
+        /// Sends a message to all connections of a specific type.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="clientType">The type of client to send the messages to.</param>
+        public void SendToAll(ClientMessage message, ClientConnectionType clientType)
+        {
+            var monitors = this.GetClients(clientType);
+            SendToAllInternal(message, monitors);
+        }
+
+        /// <summary>
+        /// Sends a message to all monitors.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendToMonitors(ClientMessage message)
+        {
+            var monitors = this.GetMonitors();
+            SendToAllInternal(message, monitors);
+        }
+
+        /// <summary>
+        /// Starts the hub's processing loops.
+        /// </summary>
+        public void Start()
+        {
+            new Task(
+                async () => await this.CheckClientsAreAvailable(this.cancellationSource.Token),
+                this.cancellationSource.Token,
+                TaskCreationOptions.LongRunning).Start();
+            new Task(
+                async () => await this.RunSocketListener(this.cancellationSource.Token),
+                this.cancellationSource.Token,
+                TaskCreationOptions.LongRunning).Start();
+        }
+
+        /// <summary>
+        /// Disposes of this hub.
+        /// </summary>
+        /// <param name="disposing">Whether this call is via GC or not.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
             {
-                var msg = GenerateAddClientMessage(existing);
-                client.SendMessage(msg);
+                if (disposing)
+                {
+                    this.clientsLock.Dispose();
+                    this.monitorLock.Dispose();
+                    this.cancellationSource.Cancel();
+                    this.cancellationSource.Dispose();
+                }
+
+                disposedValue = true;
             }
         }
 
@@ -288,60 +343,6 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Removes a monitor.
-        /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
-        public void RemoveMonitor(IClientConnection client)
-        {
-            var isLocked = false;
-            try
-            {
-                isLocked = this.monitorLock.TryEnterWriteLock(TimeSpan.FromSeconds(5));
-                if (isLocked)
-                {
-                    if (this.monitors.Contains(client)) this.monitors.Remove(client);
-                }
-                else
-                {
-                    throw new TimeoutException("Unable to remove monitor");
-                }
-            }
-            finally
-            {
-                if (isLocked) this.monitorLock.ExitWriteLock();
-            }
-        }
-
-        /// <summary>
-        /// Disposes of this hub.
-        /// </summary>
-        /// <param name="disposing">Whether this call is via GC or not.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    this.clientsLock.Dispose();
-                    this.monitorLock.Dispose();
-                    this.cancellationSource.Cancel();
-                    this.cancellationSource.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        /// <summary>
-        /// Cleans up all resources used by this hub.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
         /// Sends a message to all clients in the enumerable.
         /// </summary>
         /// <param name="message">The message to send.</param>
@@ -352,6 +353,95 @@ namespace NaoBlocks.Web.Communications
             {
                 client.SendMessage(message);
             }
+        }
+
+        /// <summary>
+        /// Internal message processing loop to check robot clients are not in a stalled state.
+        /// </summary>
+        /// <param name="cancelToken">The cancellation token to use in cancelling this loop.</param>
+        private async Task CheckClientsAreAvailable(CancellationToken cancelToken)
+        {
+            this.logger.LogInformation("Starting stalled client check");
+            while (!cancelToken.IsCancellationRequested)
+            {
+                logger.LogInformation("Checking for stalled robots");
+                var clients = this.GetClients(ClientConnectionType.Robot);
+                var deadline = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(2));
+                foreach (var client in clients.Where(c => c.RobotDetails != null))
+                {
+                    if (!client.Status.IsAvailable && (client.RobotDetails!.LastUpdateTime < deadline))
+                    {
+                        logger.LogInformation($"Robot {client.Robot?.MachineName} appears to be stalled: sending stop message");
+                        client.SendMessage(new ClientMessage(ClientMessageType.StopProgram));
+                    }
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(2), cancelToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Don't care about this exception, just means the task was cancelled
+                }
+            }
+
+            this.logger.LogInformation("Stopped stalled client check");
+            allDone.Release();
+        }
+
+        /// <summary>
+        /// Internal system for listening for incoming socket requests.
+        /// </summary>
+        /// <param name="cancelToken">The cancellation token to use in cancelling this system.</param>
+        private async Task RunSocketListener(CancellationToken cancelToken)
+        {
+            var hostInfo = await Dns.GetHostEntryAsync(Dns.GetHostName(), cancelToken);
+            var endpoint = new IPEndPoint(
+                hostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork),
+                5002);
+            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                this.logger.LogInformation($"Starting to listen on {endpoint}");
+                listener.Bind(endpoint);
+                listener.Listen(100);
+                while (!cancelToken.IsCancellationRequested)
+                {
+                    this.logger.LogInformation($"Waiting for connection on {endpoint}");
+                    var socket = await listener.AcceptAsync(cancelToken);
+                    if (cancelToken.IsCancellationRequested) continue;
+
+                    var client = new SocketClientConnection(
+                        socket,
+                        ClientConnectionType.Unknown,
+                        this.services.GetService<IMessageProcessor>()!,
+                        this.services.GetService<ILogger<SocketClientConnection>>()!);
+                    this.AddClient(client);
+                    new Task(
+                        async () => await client.StartAsync(),
+                        TaskCreationOptions.LongRunning).Start();
+                }
+            }
+            catch (Exception error)
+            {
+                if (!cancelToken.IsCancellationRequested)
+                {
+                    this.logger.LogError(error, "An error occurred during socket listening");
+                }
+            }
+
+            this.logger.LogInformation($"Closing listener on {endpoint}");
+            try
+            {
+                listener.Close();
+            }
+            catch
+            {
+                // Don't care what happens here
+            }
+            this.logger.LogInformation("Listener closed");
+            allDone.Release();
         }
     }
 }

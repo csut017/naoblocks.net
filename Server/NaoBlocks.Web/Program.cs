@@ -104,6 +104,9 @@ else
     app.UseHttpsRedirection();
 }
 
+var hub = app.Services.GetService<IHub>();
+hub?.Start();
+
 app.MapHealthChecks("/health");
 app.UseAngularUI();
 app.UseRouting();
@@ -115,7 +118,7 @@ app.UseWebSockets();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.Run();
+await app.RunAsync();
 
 /// <summary>
 /// Make the Program class explicit so it can be accessed by tests

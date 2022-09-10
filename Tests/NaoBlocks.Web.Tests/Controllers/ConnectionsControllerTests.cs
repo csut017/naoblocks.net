@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
+using System;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -13,13 +15,47 @@ namespace NaoBlocks.Web.Tests.Controllers
     public class ConnectionsControllerTests
     {
         [Fact]
+        public async Task StartCheckForWebSocketRequest()
+        {
+            // Arrange
+            var logger = new FakeLogger<ConnectionsController>();
+            var hub = new Mock<IHub>();
+            var processor = new Mock<IMessageProcessor>();
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, GenerateServiceProvider());
+            var response = SetupControllerContext(controller, false);
+
+            // Act
+            await controller.Start("user");
+
+            // Assert
+            Assert.Equal(400, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task StartChecksClientType()
+        {
+            // Arrange
+            var logger = new FakeLogger<ConnectionsController>();
+            var hub = new Mock<IHub>();
+            var processor = new Mock<IMessageProcessor>();
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, GenerateServiceProvider());
+            var response = SetupControllerContext(controller, false);
+
+            // Act
+            await controller.Start("rubbish");
+
+            // Assert
+            Assert.Equal(404, response.StatusCode);
+        }
+
+        [Fact]
         public async Task StartInitialisesConnection()
         {
             // Arrange
             var logger = new FakeLogger<ConnectionsController>();
             var hub = new Mock<IHub>();
             var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
+            var controller = new ConnectionsController(logger, hub.Object, processor.Object, GenerateServiceProvider());
             SetupControllerContext(controller, true);
 
             var connection = new Mock<IClientConnection>();
@@ -39,38 +75,12 @@ namespace NaoBlocks.Web.Tests.Controllers
             connection.Verify();
         }
 
-        [Fact]
-        public async Task StartCheckForWebSocketRequest()
+        private static IServiceProvider GenerateServiceProvider()
         {
-            // Arrange
-            var logger = new FakeLogger<ConnectionsController>();
-            var hub = new Mock<IHub>();
-            var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
-            var response = SetupControllerContext(controller, false);
-
-            // Act
-            await controller.Start("user");
-
-            // Assert
-            Assert.Equal(400, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task StartChecksClientType()
-        {
-            // Arrange
-            var logger = new FakeLogger<ConnectionsController>();
-            var hub = new Mock<IHub>();
-            var processor = new Mock<IMessageProcessor>();
-            var controller = new ConnectionsController(logger, hub.Object, processor.Object, new FakeLogger<WebSocketClientConnection>());
-            var response = SetupControllerContext(controller, false);
-
-            // Act
-            await controller.Start("rubbish");
-
-            // Assert
-            Assert.Equal(404, response.StatusCode);
+            var fake = new Mock<IServiceProvider>();
+            fake.Setup(s => s.GetService(typeof(ILogger<WebSocketClientConnection>)))
+                .Returns(new FakeLogger<SocketClientConnection>());
+            return fake.Object;
         }
 
         private static HttpResponse SetupControllerContext(ConnectionsController controller, bool isWebsocket)

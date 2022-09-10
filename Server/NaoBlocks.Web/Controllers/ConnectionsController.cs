@@ -25,13 +25,18 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="logger">The logger instance to use.</param>
         /// <param name="hub">The communications hub.</param>
         /// <param name="messageProcessor">The message processor for processing incoming messages.</param>
-        /// <param name="clientLogger">The logger to use for any client connections.</param>
-        public ConnectionsController(ILogger<ConnectionsController> logger, IHub hub, IMessageProcessor messageProcessor, ILogger<WebSocketClientConnection> clientLogger)
+        /// <param name="services">An <see cref="IServiceCollection"/> for initialising new services.</param>
+        public ConnectionsController(ILogger<ConnectionsController> logger, IHub hub, IMessageProcessor messageProcessor, IServiceProvider services)
         {
             this._logger = logger;
             this._hub = hub;
             this._messageProcessor = messageProcessor;
-            this.GenerateConnection = (socket, type, processor) => new WebSocketClientConnection(socket, type, processor, clientLogger);
+            this.GenerateConnection =
+                (socket, type, processor) => new WebSocketClientConnection(
+                    socket,
+                    type,
+                    processor,
+                    services.GetService<ILogger<WebSocketClientConnection>>()!);
         }
 
         /// <summary>

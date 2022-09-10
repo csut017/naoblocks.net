@@ -15,6 +15,18 @@ namespace NaoBlocks.Web.Communications
         void AddClient(IClientConnection client);
 
         /// <summary>
+        /// Adds a new monitor <see cref="IClientConnection"/>.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
+        void AddMonitor(IClientConnection client);
+
+        /// <summary>
+        /// Retrieves all the current connections regardless of type.
+        /// </summary>
+        /// <returns>All the current connections.</returns>
+        IEnumerable<IClientConnection> GetAllClients();
+
+        /// <summary>
         /// Retrieves a <see cref="IClientConnection"/> instance by its identifier.
         /// </summary>
         /// <param name="id">The client identifier.</param>
@@ -29,16 +41,22 @@ namespace NaoBlocks.Web.Communications
         IEnumerable<IClientConnection> GetClients(ClientConnectionType type);
 
         /// <summary>
-        /// Retrieves all the current connections regardless of type.
-        /// </summary>
-        /// <returns>All the current connections.</returns>
-        IEnumerable<IClientConnection> GetAllClients();
-
-        /// <summary>
         /// Retrieves all the current monitor connections.
         /// </summary>
         /// <returns>All the current monitor connections.</returns>
         IEnumerable<IClientConnection> GetMonitors();
+
+        /// <summary>
+        /// Removes a client.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        void RemoveClient(IClientConnection client);
+
+        /// <summary>
+        /// Removes a monitor.
+        /// </summary>
+        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
+        void RemoveMonitor(IClientConnection client);
 
         /// <summary>
         /// Sends a message to all connections.
@@ -60,21 +78,8 @@ namespace NaoBlocks.Web.Communications
         void SendToMonitors(ClientMessage message);
 
         /// <summary>
-        /// Removes a client.
+        /// Starts the hub's local processing loops.
         /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
-        void RemoveClient(IClientConnection client);
-
-        /// <summary>
-        /// Adds a new monitor <see cref="IClientConnection"/>.
-        /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to add.</param>
-        void AddMonitor(IClientConnection client);
-
-        /// <summary>
-        /// Removes a monitor.
-        /// </summary>
-        /// <param name="client">The <see cref="IClientConnection"/> to remove.</param>
-        void RemoveMonitor(IClientConnection client);
+        void Start();
     }
 }
