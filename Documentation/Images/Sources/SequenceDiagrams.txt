@@ -1,0 +1,55 @@
+These diagrams are generated via https://sequencediagram.org/
+
+WebSocket initialisation
+========================
+[->Robot:initialise
+
+autoactivation on
+Robot->Server:getVersion (HTTP)
+Robot<--Server:response
+
+Robot->Server:authenticate (HTTP)
+Robot<--Server:response
+
+autoactivation off
+Robot->Server:connect (HTTP)
+Robot->Server://Authenticate
+Robot<-Server://Authenticated
+Robot->Server://RobotStateUpdate
+
+WebSocket program execution (normal)
+====================================
+[->Browser:start program
+activate Browser
+
+Browser->Server:compile(HTTP)
+activate Server
+Browser<--Server:response
+deactivate Server
+
+Browser->Server:RequestRobot
+activate Server
+Browser<-Server:RobotAllocated
+
+Browser->Server:TransferProgram
+Server->Robot:DownloadProgram
+activate Robot
+Server<-Robot:ProgramDownloaded
+deactivate Robot
+Browser<-Server:ProgramTransferred
+
+Browser->Server:StartProgram
+Server->Robot:StartProgram
+activate Robot
+Server<-Robot:ProgramStarted
+Server<-Robot:RobotStateUpdate
+Browser<-Server:RobotStateUpdate
+Server<-Robot:RobotDebugMessage
+Browser<-Server:RobotDebugMessage
+Server<-Robot:ProgramFinished
+Server<-Robot:RobotStateUpdate
+deactivate Robot
+Browser<-Server:RobotStateUpdate
+Browser<-Server:ProgramFinished
+deactivate Server
+deactivate Browser
