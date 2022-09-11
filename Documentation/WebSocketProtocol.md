@@ -20,3 +20,6 @@ This sequence occurs when a user wants to execute a program. The following seque
 
 ![Normal Execution](Images/Seq-WS-Execution-Normal.png)
 
+The following errors can occur during the process:
+
+![Errors during Execution](Images/Seq-WS-Execution-Errors.png)

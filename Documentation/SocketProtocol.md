@@ -24,13 +24,25 @@ These sequences are used at specific times in the communications process.
 
 When the robot first starts, it will need to authenticate with the server and register its details.
 
+![Initialisation](Images/Seq-Socket-Initialisation.png)
+
 ### Execution
 
 This sequence is triggered by the server when a user requests the execution of a program.
 
+![Initialisation](Images/Seq-Socket-Execution-Normal.png)
+
 ### State update
 
 The robot may send a state update at any time.
+
+## StateEngine
+
+Many of the robots that use socket communications will not have the processing capacity to maintain an in-memory version of the program. The `StateEngine` component gets around this issue by storing the state of the robot on the server (or a proxy) instead.
+
+The `StateEngine` stores an in-memory representation of the execution state. It will update the state based on each execution step and send commands as required to the robot.
+
+Each `StateEngine` instance is started when program execution is requested and disposed when execution completes. The state is not persisted between execution instances.
 
 ## Commands
 
