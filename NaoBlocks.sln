@@ -41,9 +41,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Tangi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Definitions.Tangibles.Tests", "Tests\NaoBlocks.Definitions.Tangibles.Tests\NaoBlocks.Definitions.Tangibles.Tests.csproj", "{AA7FECEC-2075-4E68-9315-FC9103B97DC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Terminal", "Clients\NaoBlocks.Client.Terminal\NaoBlocks.Client.Terminal.csproj", "{693F259C-718A-4717-88E8-0C359EE57DD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Client.Terminal", "Clients\NaoBlocks.Client.Terminal\NaoBlocks.Client.Terminal.csproj", "{693F259C-718A-4717-88E8-0C359EE57DD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Client.Terminal.Tests", "Tests\NaoBlocks.Client.Terminal.Tests\NaoBlocks.Client.Terminal.Tests.csproj", "{7A690640-3DFF-443B-8A62-F7E4C4FB2579}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Client.Terminal.Tests", "Tests\NaoBlocks.Client.Terminal.Tests\NaoBlocks.Client.Terminal.Tests.csproj", "{7A690640-3DFF-443B-8A62-F7E4C4FB2579}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
