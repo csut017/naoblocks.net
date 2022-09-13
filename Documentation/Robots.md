@@ -120,6 +120,20 @@ This command will start the Nao client, attempt to automatically download the ap
 
 To automatically start the client when the robot starts you need to update autoload.ini. 
 
+The file must be saved to `/home/nao/naoqi/preferences`. The file will typically contain something like the following:
+
+```python
+[user]
+# Load a user library - needs to use full path
+
+[python]
+# Load a python script - needs to use full path
+/home/nao/naoblocks/auto.py
+
+[program]
+# Start a program - needs to use full path
+```
+
 _**TODO**: add information about the autoload.ini_
 
 ## Connect.txt
