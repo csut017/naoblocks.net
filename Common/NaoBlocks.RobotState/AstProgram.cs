@@ -53,6 +53,27 @@ namespace NaoBlocks.RobotState
             return tree;
         }
 
+        /// <summary>
+        /// Generates a string representation of this program.
+        /// </summary>
+        /// <returns>The string representation.</returns>
+        public override string ToString()
+        {
+            return this.ToString(-1);
+        }
+
+        /// <summary>
+        /// Generates a string representation of this program.
+        /// </summary>
+        /// <param name="nodeToIndicate">A node to indicate.</param>
+        /// <returns>The string representation.</returns>
+        public string ToString(int nodeToIndicate)
+        {
+            return string.Join(
+                Environment.NewLine,
+                this.rootNodes.Select(n => n.ToString(nodeToIndicate)));
+        }
+
         private IndexedNode IndexNode(AstNode node, int? parent = null)
         {
             var indexed = new IndexedNode(node, ++this.currentIndex, parent);

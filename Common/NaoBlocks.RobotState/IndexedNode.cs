@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Common;
+using System.Text;
 
 namespace NaoBlocks.RobotState
 {
@@ -61,6 +62,43 @@ namespace NaoBlocks.RobotState
         {
             this.arguments = ((List<IndexedNode>)this.arguments).AsReadOnly();
             this.children = ((List<IndexedNode>)this.children).AsReadOnly();
+        }
+
+        /// <summary>
+        /// Generates a string representation of this node.
+        /// </summary>
+        /// <returns>The string representation.</returns>
+        public override string ToString()
+        {
+            return this.ToString(-1);
+        }
+
+        /// <summary>
+        /// Generates a string representation of this node.
+        /// </summary>
+        /// <param name="nodeToIndicate">A node to indicate.</param>
+        /// <returns>The string representation.</returns>
+        public string ToString(int nodeToIndicate)
+        {
+            var opts = new AstNode.DisplayOptions
+            {
+                Arguments = AstNode.DisplayType.Ignore,
+                Children = AstNode.DisplayType.Ignore
+            };
+            var node = this.Node.ToString(opts);
+            var indication = nodeToIndicate == this.Index ? "**" : string.Empty;
+            var builder = new StringBuilder($"{this.Index}{indication}=>{node}");
+            if (this.arguments.Any())
+            {
+                builder.Append("(" + string.Join(",", this.arguments.Select(a => a.ToString(nodeToIndicate))) + ")");
+            }
+
+            if (this.children.Any())
+            {
+                builder.Append("{" + string.Join(",", this.children.Select(c => c.ToString(nodeToIndicate))) + "}");
+            }
+
+            return builder.ToString();
         }
     }
 }

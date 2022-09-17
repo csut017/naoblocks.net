@@ -4,14 +4,14 @@ namespace NaoBlocks.Common.Tests
 {
     public class AstNodeTests
     {
-        private const string numberValue = "123";
         private const string constantValue = "ConstantValue";
+        private const string numberValue = "123";
         private const string sourceIdValue = "ID1";
 
         [Fact]
         public void CanBeInitialised()
         {
-            var node = new AstNode(AstNodeType.Constant, 
+            var node = new AstNode(AstNodeType.Constant,
                 new Token(TokenType.Number, numberValue),
                 sourceIdValue);
             Assert.Equal(AstNodeType.Constant, node.Type);
@@ -31,9 +31,10 @@ namespace NaoBlocks.Common.Tests
         }
 
         [Theory]
-        [InlineData(true, "Function:Test(Constant:123)")]
-        [InlineData(false, "Function:Test()")]
-        public void ToStringHandlesArguments(bool include, string expected)
+        [InlineData(AstNode.DisplayType.Include, "Function:Test(Constant:123)")]
+        [InlineData(AstNode.DisplayType.Exclude, "Function:Test()")]
+        [InlineData(AstNode.DisplayType.Ignore, "Function:Test")]
+        public void ToStringHandlesArguments(AstNode.DisplayType displayType, string expected)
         {
             var node = new AstNode(AstNodeType.Function,
                 new Token(TokenType.Identifier, "Test"),
@@ -41,33 +42,22 @@ namespace NaoBlocks.Common.Tests
             node.Arguments.Add(new AstNode(AstNodeType.Constant, new Token(TokenType.Number, numberValue), string.Empty));
             var opts = new AstNode.DisplayOptions
             {
-                ExcludeArguments = !include
+                Arguments = displayType
             };
             Assert.Equal(expected, node.ToString(opts));
         }
 
         [Theory]
-        [InlineData(true, "Function:Test{Function:Child}")]
-        [InlineData(false, "Function:Test{}")]
-        public void ToStringHandlesChildren(bool include, string expected)
-        {
-            var node = new AstNode(AstNodeType.Function,
-                new Token(TokenType.Identifier, "Test"),
-                string.Empty);
-            node.Children.Add(new AstNode(AstNodeType.Function, new Token(TokenType.Identifier, "Child"), string.Empty));
-            var opts = new AstNode.DisplayOptions
-            {
-                ExcludeChildren = !include
-            };
-            Assert.Equal(expected, node.ToString(opts));
-        }
-
-        [Theory]
-        [InlineData(true, true, "Function:Test(Constant:123){Function:Child}")]
-        [InlineData(false, true, "Function:Test(){Function:Child}")]
-        [InlineData(true, false, "Function:Test(Constant:123){}")]
-        [InlineData(false, false, "Function:Test(){}")]
-        public void ToStringHandlesArgumentsAndChildren(bool includeArgs, bool boolIncludeChildren, string expected)
+        [InlineData(AstNode.DisplayType.Include, AstNode.DisplayType.Include, "Function:Test(Constant:123){Function:Child}")]
+        [InlineData(AstNode.DisplayType.Include, AstNode.DisplayType.Exclude, "Function:Test(Constant:123){}")]
+        [InlineData(AstNode.DisplayType.Include, AstNode.DisplayType.Ignore, "Function:Test(Constant:123)")]
+        [InlineData(AstNode.DisplayType.Exclude, AstNode.DisplayType.Include, "Function:Test(){Function:Child}")]
+        [InlineData(AstNode.DisplayType.Exclude, AstNode.DisplayType.Exclude, "Function:Test(){}")]
+        [InlineData(AstNode.DisplayType.Exclude, AstNode.DisplayType.Ignore, "Function:Test()")]
+        [InlineData(AstNode.DisplayType.Ignore, AstNode.DisplayType.Include, "Function:Test{Function:Child}")]
+        [InlineData(AstNode.DisplayType.Ignore, AstNode.DisplayType.Exclude, "Function:Test{}")]
+        [InlineData(AstNode.DisplayType.Ignore, AstNode.DisplayType.Ignore, "Function:Test")]
+        public void ToStringHandlesArgumentsAndChildren(AstNode.DisplayType argDisplay, AstNode.DisplayType childDisplay, string expected)
         {
             var node = new AstNode(AstNodeType.Function,
                 new Token(TokenType.Identifier, "Test"),
@@ -76,8 +66,25 @@ namespace NaoBlocks.Common.Tests
             node.Children.Add(new AstNode(AstNodeType.Function, new Token(TokenType.Identifier, "Child"), string.Empty));
             var opts = new AstNode.DisplayOptions
             {
-                ExcludeChildren = !boolIncludeChildren,
-                ExcludeArguments = !includeArgs
+                Children = childDisplay,
+                Arguments = argDisplay
+            };
+            Assert.Equal(expected, node.ToString(opts));
+        }
+
+        [Theory]
+        [InlineData(AstNode.DisplayType.Include, "Function:Test{Function:Child}")]
+        [InlineData(AstNode.DisplayType.Exclude, "Function:Test{}")]
+        [InlineData(AstNode.DisplayType.Ignore, "Function:Test")]
+        public void ToStringHandlesChildren(AstNode.DisplayType displayType, string expected)
+        {
+            var node = new AstNode(AstNodeType.Function,
+                new Token(TokenType.Identifier, "Test"),
+                string.Empty);
+            node.Children.Add(new AstNode(AstNodeType.Function, new Token(TokenType.Identifier, "Child"), string.Empty));
+            var opts = new AstNode.DisplayOptions
+            {
+                Children = displayType
             };
             Assert.Equal(expected, node.ToString(opts));
         }

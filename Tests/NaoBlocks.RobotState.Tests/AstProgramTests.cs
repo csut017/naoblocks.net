@@ -102,5 +102,86 @@ namespace NaoBlocks.RobotState.Tests
                 new[] { 0, 1 },
                 program.RootNodes.Select(n => n.Index).ToArray());
         }
+
+        [Theory]
+        [InlineData(-1, "0=>Empty:(1=>Empty:){2=>Empty:}\r\n3=>Empty:")]
+        [InlineData(0, "0**=>Empty:(1=>Empty:){2=>Empty:}\r\n3=>Empty:")]
+        [InlineData(2, "0=>Empty:(1=>Empty:){2**=>Empty:}\r\n3=>Empty:")]
+        public void ToStringFlagsNode(int node, string expected)
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+            nodes[0].Arguments.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Three"));
+            nodes[0].Children.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Four"));
+            var program = AstProgram.New(nodes);
+
+            // Act
+            var result = program.ToString(node);
+
+            // Assert
+            Assert.Equal(
+                expected,
+                result);
+        }
+
+        [Fact]
+        public void ToStringHandlesEmptyProgram()
+        {
+            // Arrange
+            var program = AstProgram.New(Array.Empty<AstNode>());
+
+            // Act
+            var result = program.ToString();
+
+            // Assert
+            Assert.Equal(
+                string.Empty,
+                result);
+        }
+
+        [Fact]
+        public void ToStringHandlesNodeTree()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+            nodes[0].Arguments.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Three"));
+            nodes[0].Children.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Four"));
+            var program = AstProgram.New(nodes);
+
+            // Act
+            var result = program.ToString();
+
+            // Assert
+            Assert.Equal(
+                "0=>Empty:(1=>Empty:){2=>Empty:}\r\n3=>Empty:",
+                result);
+        }
+
+        [Fact]
+        public void ToStringHandlesSingleNode()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+            };
+            var program = AstProgram.New(nodes);
+
+            // Act
+            var result = program.ToString();
+
+            // Assert
+            Assert.Equal(
+                "0=>Empty:",
+                result);
+        }
     }
 }

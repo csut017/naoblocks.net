@@ -23,6 +23,27 @@ namespace NaoBlocks.Common
         }
 
         /// <summary>
+        /// Defines the type of display.
+        /// </summary>
+        public enum DisplayType
+        {
+            /// <summary>
+            /// Includes the items.
+            /// </summary>
+            Include,
+
+            /// <summary>
+            /// Excludes the items, but contains the wrapping elements.
+            /// </summary>
+            Exclude,
+
+            /// <summary>
+            /// Ignores the items, including the wrapping elements.
+            /// </summary>
+            Ignore,
+        }
+
+        /// <summary>
         /// Any arguments that were passed into the node.
         /// </summary>
         public IList<AstNode> Arguments { get; private set; }
@@ -68,25 +89,29 @@ namespace NaoBlocks.Common
 
             if (this.Arguments.Any() == true)
             {
-                if (options.ExcludeArguments)
+                switch (options.Arguments)
                 {
-                    output.Append("()");
-                }
-                else
-                {
-                    output.Append("(" + string.Join(",", this.Arguments.Select(arg => arg.ToString(options))) + ")");
+                    case DisplayType.Exclude:
+                        output.Append("()");
+                        break;
+
+                    case DisplayType.Include:
+                        output.Append("(" + string.Join(",", this.Arguments.Select(arg => arg.ToString(options))) + ")");
+                        break;
                 }
             }
 
             if (this.Children.Any() == true)
             {
-                if (options.ExcludeChildren)
+                switch (options.Children)
                 {
-                    output.Append("{}");
-                }
-                else
-                {
-                    output.Append("{" + string.Join(",", this.Children.Select(arg => arg.ToString(options))) + "}");
+                    case DisplayType.Exclude:
+                        output.Append("{}");
+                        break;
+
+                    case DisplayType.Include:
+                        output.Append("{" + string.Join(",", this.Children.Select(arg => arg.ToString(options))) + "}");
+                        break;
                 }
             }
 
@@ -102,7 +127,7 @@ namespace NaoBlocks.Common
             return this.ToString(new DisplayOptions
             {
                 IncludeSourceIDs = false,
-                IncludeTokenTypes = false                
+                IncludeTokenTypes = false
             });
         }
 
@@ -112,24 +137,33 @@ namespace NaoBlocks.Common
         public struct DisplayOptions
         {
             /// <summary>
+            /// Initialises a new <see cref="DisplayOptions"/> instance.
+            /// </summary>
+            public DisplayOptions()
+            {
+                this.Arguments = DisplayType.Include;
+                this.Children = DisplayType.Include;
+            }
+
+            /// <summary>
+            /// How arguments are displayed.
+            /// </summary>
+            public DisplayType Arguments { get; set; }
+
+            /// <summary>
+            /// How children are displayed.
+            /// </summary>
+            public DisplayType Children { get; set; }
+
+            /// <summary>
             /// Include source IDs.
             /// </summary>
-            public bool IncludeSourceIDs { get; set; }
+            public bool IncludeSourceIDs { get; set; } = false;
 
             /// <summary>
             /// Include the token type.
             /// </summary>
-            public bool IncludeTokenTypes { get; set; }
-
-            /// <summary>
-            /// Exxclude arguments.
-            /// </summary>
-            public bool ExcludeArguments { get; set; }
-
-            /// <summary>
-            /// Exclude children.
-            /// </summary>
-            public bool ExcludeChildren { get; set; }
+            public bool IncludeTokenTypes { get; set; } = false;
         }
     }
 }

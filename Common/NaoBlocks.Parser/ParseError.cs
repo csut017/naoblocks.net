@@ -33,5 +33,14 @@ namespace NaoBlocks.Parser
         /// A message explaining the error.
         /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// Generates a string representation of the error.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{this.Message} [{this.LineNumber}:{this.LinePosition}]";
+        }
     }
 }
