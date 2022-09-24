@@ -1,5 +1,4 @@
 ﻿using NaoBlocks.Common;
-using System.Collections.ObjectModel;
 
 namespace NaoBlocks.RobotState
 {
@@ -8,14 +7,12 @@ namespace NaoBlocks.RobotState
     /// </summary>
     public class AstProgram
     {
-        private readonly List<IndexedNode> nodeSequence = new List<IndexedNode>();
-        private readonly List<IndexedNode> rootNodes = new List<IndexedNode>();
-        private readonly IReadOnlyList<IndexedNode> rootNodesAsReadonly;
+        private readonly List<IndexedNode> nodeSequence = new();
+        private readonly List<IndexedNode> rootNodes = new();
         private int currentIndex = -1;
 
         private AstProgram()
         {
-            this.rootNodesAsReadonly = new ReadOnlyCollection<IndexedNode>(this.rootNodes);
         }
 
         /// <summary>
@@ -23,7 +20,7 @@ namespace NaoBlocks.RobotState
         /// </summary>
         public IReadOnlyList<IndexedNode> RootNodes
         {
-            get { return this.rootNodesAsReadonly; }
+            get { return this.rootNodes.AsReadOnly(); }
         }
 
         /// <summary>
@@ -77,6 +74,7 @@ namespace NaoBlocks.RobotState
         private IndexedNode IndexNode(AstNode node, int? parent = null)
         {
             var indexed = new IndexedNode(node, ++this.currentIndex, parent);
+            this.nodeSequence.Add(indexed);
             foreach (var argment in node.Arguments)
             {
                 indexed.Arguments.Add(

@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Parser;
+using System.Reactive.Subjects;
 
 namespace NaoBlocks.RobotState
 {
@@ -11,6 +12,8 @@ namespace NaoBlocks.RobotState
         private readonly List<EngineFunction> currentFunctions = new();
         private readonly List<EngineFunction> defaultFunctions = new();
         private readonly Dictionary<string, EngineFunction> functions = new();
+        private EngineRunOptions? options;
+        private Subject<ClientMessage>? statusUpdateSubject;
 
         /// <summary>
         /// Initialises a new instance of <see cref="Engine"/>.
@@ -51,6 +54,12 @@ namespace NaoBlocks.RobotState
         {
             get { return this.currentFunctions.AsReadOnly(); }
         }
+
+        /// <summary>
+        /// Gets the current node in the program.
+        /// </summary>
+        /// <remarks>If the node is -1, then it means the engine is not running.</remarks>
+        public int CurrentNode { get; private set; } = -1;
 
         /// <summary>
         /// The program for the engine.
@@ -113,9 +122,20 @@ namespace NaoBlocks.RobotState
         /// Runs the current program.
         /// </summary>
         /// <param name="options">The run options.</param>
-        public Task RunAsync(EngineRunOptions? options = null)
+        /// <returns>An <see cref="IObservable{ClientMessage}"/> containing the status updates.</returns>
+        public Task<IObservable<ClientMessage>> StartAsync(EngineRunOptions? options = null)
         {
-            throw new NotImplementedException();
+            // Validate we have a program first
+            if (this.Program == null) throw new EngineException("Cannot start execution: no program loaded");
+
+            // Initialise the engine state
+            this.options = options ?? new EngineRunOptions();
+            this.statusUpdateSubject = new();
+            IObservable<ClientMessage> observable = this.statusUpdateSubject;
+            this.CurrentNode = 0;
+
+            // Return to the caller to decide what to do next
+            return Task.FromResult(observable);
         }
 
         /// <summary>

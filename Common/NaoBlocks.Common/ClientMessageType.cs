@@ -144,5 +144,20 @@
         /// An alert is being broadcast to all listeners.
         /// </summary>
         AlertBroadcast = 1201,
+
+        /// <summary>
+        /// A step has started.
+        /// </summary>
+        StepStarted = 1500,
+
+        /// <summary>
+        /// A step has finished.
+        /// </summary>
+        StepFinished = 1501,
+
+        /// <summary>
+        /// A step has errored.
+        /// </summary>
+        StepErrored = 1502,
     }
 }

@@ -35,6 +35,13 @@ namespace NaoBlocks.RobotState.Tests
         }
 
         [Fact]
+        public void DefaultCurrentNodeIsNegativeOne()
+        {
+            var engine = new Engine();
+            Assert.Equal(-1, engine.CurrentNode);
+        }
+
+        [Fact]
         public async Task FindFunctionFindsCustomFunction()
         {
             // Arrange
@@ -196,6 +203,35 @@ namespace NaoBlocks.RobotState.Tests
             // Assert
             var count = engine.CurrentFunctions.Where(f => f.Name == "reset").Count();
             Assert.Equal(1, count);
+        }
+
+        [Fact]
+        public async Task StartAsyncChecksForProgram()
+        {
+            // Arrange
+            var engine = new Engine();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<EngineException>(async () => await engine.StartAsync());
+
+            // Assert
+            Assert.Equal(
+                "Cannot start execution: no program loaded",
+                ex.Message);
+        }
+
+        [Fact]
+        public async Task StartAsyncSetsState()
+        {
+            // Arrange
+            var engine = new Engine();
+            await engine.InitialiseAsync("reset()");
+
+            // Act
+            await engine.StartAsync();
+
+            // Assert
+            Assert.Equal(0, engine.CurrentNode);
         }
     }
 }

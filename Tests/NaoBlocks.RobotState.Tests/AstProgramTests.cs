@@ -5,6 +5,44 @@ namespace NaoBlocks.RobotState.Tests
     public class AstProgramTests
     {
         [Fact]
+        public void IndexerReturnsNode()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+
+            // Act
+            var program = AstProgram.New(nodes);
+
+            // Assert
+            Assert.Equal("One", program[0].Node.SourceId);
+            Assert.Equal("Two", program[1].Node.SourceId);
+        }
+
+        [Fact]
+        public void IndexerReturnsNodeWithTree()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+            nodes[0].Arguments.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Three"));
+
+            // Act
+            var program = AstProgram.New(nodes);
+
+            // Assert
+            Assert.Equal("One", program[0].Node.SourceId);
+            Assert.Equal("Three", program[1].Node.SourceId);
+            Assert.Equal("Two", program[2].Node.SourceId);
+        }
+
+        [Fact]
         public void NewGeneratesProgram()
         {
             // Arrange
