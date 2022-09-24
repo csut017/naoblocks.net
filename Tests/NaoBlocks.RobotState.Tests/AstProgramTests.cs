@@ -141,6 +141,47 @@ namespace NaoBlocks.RobotState.Tests
                 program.RootNodes.Select(n => n.Index).ToArray());
         }
 
+        [Fact]
+        public void NewLocksAllNodes()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+            nodes[0].Arguments.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Three"));
+            nodes[0].Children.Add(new AstNode(AstNodeType.Empty, Token.Empty, "Four"));
+
+            // Act
+            var program = AstProgram.New(nodes);
+
+            // Assert
+            for (var loop = 0; loop < program.Count; loop++)
+            {
+                Assert.True(program[loop].IsLocked, $"Node {loop} is not locked");
+            }
+        }
+
+        [Fact]
+        public void NewSetsNext()
+        {
+            // Arrange
+            var nodes = new[]
+            {
+                new AstNode(AstNodeType.Empty, Token.Empty, "One"),
+                new AstNode(AstNodeType.Empty, Token.Empty, "Two"),
+            };
+
+            // Act
+            var program = AstProgram.New(nodes);
+
+            // Assert
+            Assert.Equal(
+                program[1].Index,
+                program[0].Next);
+        }
+
         [Theory]
         [InlineData(-1, "0=>Empty:(1=>Empty:){2=>Empty:}\r\n3=>Empty:")]
         [InlineData(0, "0**=>Empty:(1=>Empty:){2=>Empty:}\r\n3=>Empty:")]

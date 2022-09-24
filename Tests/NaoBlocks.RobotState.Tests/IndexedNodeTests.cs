@@ -5,6 +5,17 @@ namespace NaoBlocks.RobotState.Tests
     public class IndexedNodeTests
     {
         [Fact]
+        public void CanSetNext()
+        {
+            var ast = new AstNode(AstNodeType.Empty, Token.Empty, string.Empty);
+            var node = new IndexedNode(ast, 3)
+            {
+                Next = 5
+            };
+            Assert.Equal(5, node.Next);
+        }
+
+        [Fact]
         public void ConstructorSetsProperties()
         {
             var ast = new AstNode(AstNodeType.Empty, Token.Empty, string.Empty);
@@ -12,6 +23,19 @@ namespace NaoBlocks.RobotState.Tests
             Assert.Same(ast, node.Node);
             Assert.Equal(1, node.Index);
             Assert.Equal(2, node.Parent);
+        }
+
+        [Fact]
+        public void LockLocksNext()
+        {
+            var ast = new AstNode(AstNodeType.Empty, Token.Empty, string.Empty);
+            var node = new IndexedNode(ast, 3);
+            node.Lock();
+            var ex = Assert.Throws<InvalidOperationException>(() => node.Next = 5);
+            Assert.Equal(-1, node.Next);
+            Assert.Equal(
+                "Node has been locked, cannot modify",
+                ex.Message);
         }
 
         [Fact]

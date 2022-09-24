@@ -16,6 +16,14 @@ namespace NaoBlocks.RobotState
         }
 
         /// <summary>
+        /// Gets the total number of nodes in the program.
+        /// </summary>
+        public int Count
+        {
+            get { return this.currentIndex + 1; }
+        }
+
+        /// <summary>
         /// Gets the root nodes for the program.
         /// </summary>
         public IReadOnlyList<IndexedNode> RootNodes
@@ -41,12 +49,20 @@ namespace NaoBlocks.RobotState
         public static AstProgram New(IEnumerable<AstNode> nodes)
         {
             var tree = new AstProgram();
+            IndexedNode? lastNode = null;
             foreach (var node in nodes)
             {
                 var indexed = tree.IndexNode(node);
+                if (lastNode != null)
+                {
+                    lastNode.Next = indexed.Index;
+                    lastNode.Lock();
+                }
+                lastNode = indexed;
                 tree.rootNodes.Add(indexed);
             }
 
+            if (lastNode != null) lastNode.Lock();
             return tree;
         }
 
@@ -77,17 +93,25 @@ namespace NaoBlocks.RobotState
             this.nodeSequence.Add(indexed);
             foreach (var argment in node.Arguments)
             {
-                indexed.Arguments.Add(
-                    this.IndexNode(argment, indexed.Index));
+                var argNode = this.IndexNode(argment, indexed.Index);
+                indexed.Arguments.Add(argNode);
+                argNode.Lock();
             }
 
+            IndexedNode? lastNode = null;
             foreach (var child in node.Children)
             {
-                indexed.Children.Add(
-                    this.IndexNode(child, indexed.Index));
+                var childNode = this.IndexNode(child, indexed.Index);
+                indexed.Children.Add(childNode);
+                if (lastNode != null)
+                {
+                    lastNode.Next = childNode.Index;
+                    lastNode.Lock();
+                }
+                lastNode = childNode;
+                if (lastNode != null) lastNode.Lock();
             }
 
-            indexed.Lock();
             return indexed;
         }
     }

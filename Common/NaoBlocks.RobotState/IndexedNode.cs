@@ -11,6 +11,8 @@ namespace NaoBlocks.RobotState
         private IList<IndexedNode> arguments = new List<IndexedNode>();
         private IList<IndexedNode> children = new List<IndexedNode>();
 
+        private int nextSibling = -1;
+
         /// <summary>
         /// Initialises a new <see cref="IndexedNode"/> instance.
         /// </summary>
@@ -46,6 +48,24 @@ namespace NaoBlocks.RobotState
         public int Index { get; }
 
         /// <summary>
+        /// Gets whether this node is locked.
+        /// </summary>
+        public bool IsLocked { get; private set; }
+
+        /// <summary>
+        /// Gets the index of the next sibling.
+        /// </summary>
+        public int Next
+        {
+            get { return this.nextSibling; }
+            set
+            {
+                if (this.IsLocked) throw new InvalidOperationException("Node has been locked, cannot modify");
+                this.nextSibling = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the node.
         /// </summary>
         public AstNode Node { get; }
@@ -60,6 +80,7 @@ namespace NaoBlocks.RobotState
         /// </summary>
         public void Lock()
         {
+            this.IsLocked = true;
             this.arguments = ((List<IndexedNode>)this.arguments).AsReadOnly();
             this.children = ((List<IndexedNode>)this.children).AsReadOnly();
         }
