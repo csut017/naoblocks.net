@@ -47,7 +47,7 @@ namespace NaoBlocks.Engine.Tests.Generators
             var text = await reader.ReadToEndAsync();
             var dateText = now.ToString("yyyy-MM-dd");
             var timeText1 = now.ToString("HH:mm:ss");
-            var timeText2 = now.AddMinutes(1).ToString("hh:mm:ss");
+            var timeText2 = now.AddMinutes(1).ToString("HH:mm:ss");
             var expected = $@"Logs
 ====
 Robot,Date,Conversation,Time,Type,Description,info,debug,error,warn
