@@ -5,25 +5,10 @@ using System.Text;
 namespace NaoBlocks.Common
 {
     /// <summary>
-    /// A messages that can be passed via websockets.
+    /// A message that can be passed via websockets.
     /// </summary>
     public class ClientMessage
     {
-        /// <summary>
-        /// Gets or sets the identifier for the conversation this message is part of.
-        /// </summary>
-        public long? ConversationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the message type.
-        /// </summary>
-        public ClientMessageType Type { get; set; } = ClientMessageType.Unknown;
-
-        /// <summary>
-        /// Gets the associated values for this message.
-        /// </summary>
-        public IDictionary<string, string> Values { get; } = new Dictionary<string, string>();
-
         /// <summary>
         /// Initialises a new empty <see cref="ClientMessage"/> instance.
         /// </summary>
@@ -46,6 +31,21 @@ namespace NaoBlocks.Common
                 this.Values[prop.Name] = value?.ToString() ?? string.Empty;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the identifier for the conversation this message is part of.
+        /// </summary>
+        public long? ConversationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message type.
+        /// </summary>
+        public ClientMessageType Type { get; set; } = ClientMessageType.Unknown;
+
+        /// <summary>
+        /// Gets the associated values for this message.
+        /// </summary>
+        public IDictionary<string, string> Values { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Generates a new <see cref="ClientMessage"/> from a message buffer.
