@@ -8,6 +8,7 @@ namespace NaoBlocks.RobotState
     /// Contains a representation of a robot's state during program execution.
     /// </summary>
     public class Engine
+        : IEngine
     {
         private readonly List<EngineFunction> currentFunctions = new();
         private readonly List<EngineFunction> defaultFunctions = new();
@@ -107,6 +108,17 @@ namespace NaoBlocks.RobotState
         }
 
         /// <summary>
+        /// Registers a new function.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
+        /// <param name="node">The node for the function.</param>
+        public void RegisterFunction(string name, IndexedNode node)
+        {
+            this.currentFunctions.Add(
+                new Functions.Execute(name, node.Children));
+        }
+
+        /// <summary>
         /// Resets the engine.
         /// </summary>
         public Task ResetAsync()
@@ -155,7 +167,7 @@ namespace NaoBlocks.RobotState
         /// <param name="target">The target list to add the functions to.</param>
         private static void AddBaseLevelEngineFunctions(List<EngineFunction> target)
         {
-            target.Add(new EngineFunction("reset", async engine => { await engine.ResetAsync(); return new EngineFunctionResult(); }));
+            target.Add(new Functions.Reset());
         }
 
         /// <summary>
@@ -165,8 +177,13 @@ namespace NaoBlocks.RobotState
         private static void AddDefaultEngineFunctions(List<EngineFunction> target)
         {
             AddBaseLevelEngineFunctions(target);
-            target.Add(new EngineFunction("start", engine => { throw new NotImplementedException(); }));
-            target.Add(new EngineFunction("go", engine => { throw new NotImplementedException(); }));
+
+            // Add top-level functions
+            target.Add(new Functions.DefineFunction("start"));
+            target.Add(new Functions.Go());
+
+            // Behaviour functions
+            target.Add(new Functions.DefineFunction());
         }
 
         /// <summary>

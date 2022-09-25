@@ -17,8 +17,8 @@ namespace NaoBlocks.RobotState.Tests
         public void ConstructorChecksFunctionsAreUnique()
         {
             var ex = Assert.Throws<EngineException>(() => new Engine(
-                new EngineFunction("non-unique name", _ => Task.FromResult(new EngineFunctionResult())),
-                new EngineFunction("non-unique name", _ => Task.FromResult(new EngineFunctionResult()))));
+                new TestFunction("non-unique name"),
+                new TestFunction("non-unique name")));
             Assert.Equal(
                 "Function 'non-unique name' is already defined, each function name must be unique",
                 ex.Message);
@@ -28,7 +28,7 @@ namespace NaoBlocks.RobotState.Tests
         public void ConstructorChecksFunctionsCannotOverrideDefault()
         {
             var ex = Assert.Throws<EngineException>(() => new Engine(
-                new EngineFunction("reset", _ => Task.FromResult(new EngineFunctionResult()))));
+                new TestFunction("reset")));
             Assert.Equal(
                 "Function 'reset' is already defined, each function name must be unique",
                 ex.Message);
@@ -47,7 +47,7 @@ namespace NaoBlocks.RobotState.Tests
             // Arrange
             const string funcName = "a custom function";
             var engine = new Engine(
-                new EngineFunction(funcName, _ => Task.FromResult(new EngineFunctionResult())));
+                new TestFunction(funcName));
             await engine.ResetAsync();
 
             // Act
@@ -161,7 +161,7 @@ namespace NaoBlocks.RobotState.Tests
             // Arrange
             const string funcName = "a custom function";
             var engine = new Engine(
-                new EngineFunction(funcName, _ => Task.FromResult(new EngineFunctionResult())));
+                new TestFunction(funcName));
 
             // Act
             await engine.ResetAsync();

@@ -3,19 +3,15 @@
     /// <summary>
     /// Defines a function that the engine can perform.
     /// </summary>
-    public class EngineFunction
+    public abstract class EngineFunction
     {
-        private readonly Func<Engine, Task<EngineFunctionResult>> function;
-
         /// <summary>
         /// Initialises a new instance of <see cref="EngineFunction"/>.
         /// </summary>
         /// <param name="name">The name of the function.</param>
-        /// <param name="function">The function to execute.</param>
-        public EngineFunction(string name, Func<Engine, Task<EngineFunctionResult>> function)
+        protected EngineFunction(string name)
         {
             this.Name = name;
-            this.function = function;
         }
 
         /// <summary>
@@ -27,10 +23,26 @@
         /// Executes this function.
         /// </summary>
         /// <param name="engine">The <see cref="Engine"/> to use during execution.</param>
+        /// <param name="node">The node to execute.</param>
         /// <returns>A <see cref="EngineFunctionResult"/> containing the result of the execution.</returns>
-        public async Task<EngineFunctionResult> ExecuteAsync(Engine engine)
+        public async Task<EngineFunctionResult> ExecuteAsync(IEngine engine, IndexedNode node)
         {
-            return await function(engine);
+            try
+            {
+                return await this.DoExecuteAsync(engine, node);
+            }
+            catch (Exception ex)
+            {
+                return new EngineFunctionResult(ex);
+            }
         }
+
+        /// <summary>
+        /// Executes the internal implementation of this function.
+        /// </summary>
+        /// <param name="engine">The <see cref="Engine"/> to use during execution.</param>
+        /// <param name="node">The node to execute.</param>
+        /// <returns>A <see cref="EngineFunctionResult"/> containing the result of the execution.</returns>
+        protected abstract Task<EngineFunctionResult> DoExecuteAsync(IEngine engine, IndexedNode node);
     }
 }
