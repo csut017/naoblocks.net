@@ -9,10 +9,28 @@ namespace NaoBlocks.Utility.SocketHost
     /// Listener for socket connections.
     /// </summary>
     public class SocketListener
+        : IDisposable
     {
         private const int BUFFER_SIZE = 1024;
         private readonly ManualResetEvent allDone = new(false);
+        private readonly IPEndPoint endPoint;
+        private readonly Socket listener;
         private readonly CancellationTokenSource tokenSource = new();
+        private bool disposedValue;
+        private bool isOpen;
+
+        /// <summary>
+        /// Initialises a new <see cref="SocketListener"/> instance.
+        /// </summary>
+        /// <param name="endPoint">The end point to listen on.</param>
+        public SocketListener(IPEndPoint endPoint)
+        {
+            this.listener = new(
+                endPoint.AddressFamily,
+                SocketType.Stream,
+                ProtocolType.Tcp);
+            this.endPoint = endPoint;
+        }
 
         /// <summary>
         /// Fired when a client connects.
@@ -27,7 +45,7 @@ namespace NaoBlocks.Utility.SocketHost
         /// <summary>
         /// Fired whenever a message is received.
         /// </summary>
-        public event EventHandler<ClientMessage>? MessageReceived;
+        public event EventHandler<ReceivedMessage>? MessageReceived;
 
         /// <summary>
         /// Cancels listening.
@@ -38,19 +56,33 @@ namespace NaoBlocks.Utility.SocketHost
         }
 
         /// <summary>
+        /// Closes the listener.
+        /// </summary>
+        public void Close()
+        {
+            this.isOpen = false;
+            this.listener.Close();
+        }
+
+        /// <summary>
+        /// Cleans up the resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Starts listening on the specified port.
         /// </summary>
-        /// <param name="endPoint">The end point to listen on.</param>
-        public void Start(IPEndPoint endPoint)
+        public void Start()
         {
-            using Socket listener = new(
-                endPoint.AddressFamily,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-
-            listener.Bind(endPoint);
-            listener.Listen();
-            while (true)
+            this.listener.Bind(this.endPoint);
+            this.listener.Listen();
+            this.isOpen = true;
+            while (this.isOpen)
             {
                 this.allDone.Reset();
                 listener.BeginAccept(
@@ -60,9 +92,28 @@ namespace NaoBlocks.Utility.SocketHost
             }
         }
 
+        /// <summary>
+        /// Cleans up the resources.
+        /// </summary>
+        /// <param name="disposing">Are we in disposing mode or not.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    this.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
         private void AcceptCallback(IAsyncResult result)
         {
             this.allDone.Set();
+            if (!this.isOpen) return;
+
             var listener = (Socket)result.AsyncState!;
             var handler = listener.EndAccept(result);
             Client client = new(handler);
@@ -77,14 +128,14 @@ namespace NaoBlocks.Utility.SocketHost
                 state);
         }
 
-        private void GenerateInternalMessage(int messageType, byte[] receivedData, int dataPos)
+        private void GenerateInternalMessage(SocketState state)
         {
-            var message = new ClientMessage((ClientMessageType)messageType);
-            if (dataPos > 0)
+            var message = new ReceivedMessage(state.Client, (ClientMessageType)state.MessageType);
+            if (state.DataPosition > 0)
             {
                 var values = Encoding
                     .UTF8
-                    .GetString(receivedData, 0, dataPos - 1)
+                    .GetString(state.MessageData, 0, state.DataPosition - 1)
                     .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 foreach (var value in values)
                 {
@@ -109,7 +160,16 @@ namespace NaoBlocks.Utility.SocketHost
         {
             var state = (SocketState)result.AsyncState!;
             var handler = state.Socket;
-            var received = handler.EndReceive(result);
+            int received;
+            try
+            {
+                received = handler.EndReceive(result);
+            }
+            catch (SocketException)
+            {
+                received = 0;
+            }
+
             if (received == 0)
             {
                 handler.Close();
@@ -124,7 +184,7 @@ namespace NaoBlocks.Utility.SocketHost
                 if (state.IsInDataSegment)
                 {
                     if (character != 0) continue;
-                    GenerateInternalMessage(state.MessageType, state.MessageData, state.DataPosition);
+                    GenerateInternalMessage(state);
                     state.IsInDataSegment = false;
                     state.DataPosition = 0;
                 }
@@ -133,9 +193,9 @@ namespace NaoBlocks.Utility.SocketHost
                     if (state.DataPosition < 4) continue;
 
                     state.MessageType = state.MessageData[1];
-                    state.MessageType = state.MessageData[0] + (state.MessageType << 256);
+                    state.MessageType = state.MessageData[0] + (state.MessageType << 8);
                     state.SequenceNumber = state.MessageData[3];
-                    state.SequenceNumber = state.MessageData[2] + (state.SequenceNumber << 256);
+                    state.SequenceNumber = state.MessageData[2] + (state.SequenceNumber << 8);
                     state.IsInDataSegment = true;
                     state.DataPosition = 0;
                 }
@@ -174,5 +234,12 @@ namespace NaoBlocks.Utility.SocketHost
 
             public Socket Socket { get; }
         }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~SocketListener()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
     }
 }
