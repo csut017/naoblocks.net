@@ -4,7 +4,7 @@ namespace NaoBlocks.Utility.SocketHost
 {
     internal class Program
     {
-        private static async Task Main(string[] args)
+        private static void Main(string[] args)
         {
             // var address = ClientAddressList.RetrieveAddresses().FirstOrDefault()
             //     ?? IPAddress.Loopback;
@@ -13,6 +13,14 @@ namespace NaoBlocks.Utility.SocketHost
                 address,
                 5010);
             var server = new SocketListener();
+            server.ClientConnected += (o, e) =>
+            {
+                Console.WriteLine($"Client connected: {e.RemoteEndPoint}");
+            };
+            server.ClientDisconnected += (o, e) =>
+            {
+                Console.WriteLine($"Client disconnected: {e.RemoteEndPoint}");
+            };
             server.MessageReceived += (o, e) =>
             {
                 Console.WriteLine($"Received {e.Type}");
@@ -20,7 +28,7 @@ namespace NaoBlocks.Utility.SocketHost
 
             Console.WriteLine($"Listening on {endpoint}");
             Console.WriteLine("Press Ctrl-C to exit");
-            await server.StartAsync(endpoint);
+            server.Start(endpoint);
         }
     }
 }

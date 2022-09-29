@@ -10,7 +10,19 @@ namespace NaoBlocks.Utility.SocketHost
     /// </summary>
     public class SocketListener
     {
+        private const int BUFFER_SIZE = 1024;
+        private readonly ManualResetEvent allDone = new(false);
         private readonly CancellationTokenSource tokenSource = new();
+
+        /// <summary>
+        /// Fired when a client connects.
+        /// </summary>
+        public event EventHandler<Client>? ClientConnected;
+
+        /// <summary>
+        /// Fired when a client disconnects.
+        /// </summary>
+        public event EventHandler<Client>? ClientDisconnected;
 
         /// <summary>
         /// Fired whenever a message is received.
@@ -29,7 +41,7 @@ namespace NaoBlocks.Utility.SocketHost
         /// Starts listening on the specified port.
         /// </summary>
         /// <param name="endPoint">The end point to listen on.</param>
-        public async Task StartAsync(IPEndPoint endPoint)
+        public void Start(IPEndPoint endPoint)
         {
             using Socket listener = new(
                 endPoint.AddressFamily,
@@ -38,47 +50,31 @@ namespace NaoBlocks.Utility.SocketHost
 
             listener.Bind(endPoint);
             listener.Listen();
-            var handler = await listener.AcceptAsync(this.tokenSource.Token);
-            int messageType = 0;
-            int sequenceNum = 0;
-            var isInData = false;
-            var receivedData = new byte[1_024];
-            var dataPos = 0;
-            while (handler.Connected && !this.tokenSource.IsCancellationRequested)
+            while (true)
             {
-                var buffer = new byte[1_024];
-                var received = await handler.ReceiveAsync(buffer, SocketFlags.None, this.tokenSource.Token);
-                if (received == 0)
-                {
-                    await handler.DisconnectAsync(false);
-                }
-                else
-                {
-                    for (var loop = 0; loop < received; loop++)
-                    {
-                        var character = buffer[loop];
-                        receivedData[dataPos++] = character;
-                        if (isInData)
-                        {
-                            if (character != 0) continue;
-                            GenerateInternalMessage(messageType, receivedData, dataPos);
-                            isInData = false;
-                            dataPos = 0;
-                        }
-                        else
-                        {
-                            if (dataPos < 4) continue;
-
-                            messageType = receivedData[1];
-                            messageType = receivedData[0] + (messageType << 256);
-                            sequenceNum = receivedData[3];
-                            sequenceNum = receivedData[2] + (receivedData[3] << 256);
-                            isInData = true;
-                            dataPos = 0;
-                        }
-                    }
-                }
+                this.allDone.Reset();
+                listener.BeginAccept(
+                    new AsyncCallback(this.AcceptCallback),
+                    listener);
+                this.allDone.WaitOne();
             }
+        }
+
+        private void AcceptCallback(IAsyncResult result)
+        {
+            this.allDone.Set();
+            var listener = (Socket)result.AsyncState!;
+            var handler = listener.EndAccept(result);
+            Client client = new(handler);
+            var state = new SocketState(handler, client);
+            this.ClientConnected?.Invoke(this, client);
+            handler.BeginReceive(
+                state.Buffer,
+                0,
+                BUFFER_SIZE,
+                SocketFlags.None,
+                new AsyncCallback(ReceiveCallback),
+                state);
         }
 
         private void GenerateInternalMessage(int messageType, byte[] receivedData, int dataPos)
@@ -107,6 +103,76 @@ namespace NaoBlocks.Utility.SocketHost
             }
 
             this.MessageReceived?.Invoke(this, message);
+        }
+
+        private void ReceiveCallback(IAsyncResult result)
+        {
+            var state = (SocketState)result.AsyncState!;
+            var handler = state.Socket;
+            var received = handler.EndReceive(result);
+            if (received == 0)
+            {
+                handler.Close();
+                this.ClientDisconnected?.Invoke(this, state.Client);
+                return;
+            }
+
+            for (var loop = 0; loop < received; loop++)
+            {
+                var character = state.Buffer[loop];
+                state.MessageData[state.DataPosition++] = character;
+                if (state.IsInDataSegment)
+                {
+                    if (character != 0) continue;
+                    GenerateInternalMessage(state.MessageType, state.MessageData, state.DataPosition);
+                    state.IsInDataSegment = false;
+                    state.DataPosition = 0;
+                }
+                else
+                {
+                    if (state.DataPosition < 4) continue;
+
+                    state.MessageType = state.MessageData[1];
+                    state.MessageType = state.MessageData[0] + (state.MessageType << 256);
+                    state.SequenceNumber = state.MessageData[3];
+                    state.SequenceNumber = state.MessageData[2] + (state.SequenceNumber << 256);
+                    state.IsInDataSegment = true;
+                    state.DataPosition = 0;
+                }
+            }
+
+            handler.BeginReceive(
+                state.Buffer,
+                0,
+                BUFFER_SIZE,
+                SocketFlags.None,
+                new AsyncCallback(ReceiveCallback),
+                state);
+        }
+
+        private class SocketState
+        {
+            public SocketState(Socket socket, Client client)
+            {
+                this.Socket = socket;
+                this.Client = client;
+            }
+
+            public byte[] Buffer { get; } = new byte[BUFFER_SIZE];
+
+            public Client Client { get; }
+
+            public int DataPosition { get; set; }
+
+            public bool IsInDataSegment { get; set; }
+
+            public byte[] MessageData { get; } = new byte[BUFFER_SIZE];
+
+            public int MessageType { get; set; }
+
+            public int SequenceNumber { get; set; }
+
+            public Socket Socket { get; }
         }
     }
 }
