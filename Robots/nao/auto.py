@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+
+""" Nao updater client
+
+This client runs directly on a Nao robot and handles updating the python files.
+After the update, it will launch main.py (the actual client.)
+"""
+
 import argparse
 import base64
 import csv
