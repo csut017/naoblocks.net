@@ -6,15 +6,14 @@ This document specifies the communications protocol used for communciations betw
 
 Each message has the following header:
 
-Start Position | End Position | Purpose | Values
----: | ---: | --- | ---
-0 | 1 | Message type | See below.
-2 | 3 | Message length | The length of the data section (between 0 and 255 bytes.)
-4 | 5 | Sequence number | The sequence number of the message. This number starts at 0 and goes up to 65536, then loops back to 0 again.
+Start Position | End Position | Length | Purpose | Values
+---: | ---: | ---: | --- | ---
+0 | 1 | 2 | Message type | See below.
+2 | 3 | 2 | Sequence number | The sequence number of the message. This number starts at 0 and goes up to 65536, then loops back to 0 again.
 
-All multi-byte numbers are stored in little-endian format (see [Wikipedia](https://en.wikipedia.org/wiki/Endianness).)
+All multi-byte numbers are stored in little-endian format. The first byte is the least significant, followed by the more significant bytes (see [Wikipedia](https://en.wikipedia.org/wiki/Endianness).)
 
-After the header, the data is sent in an UTF-8 encoded string. The length of the data must exactly match the `message length` in the header.
+After the header, the data is sent in an UTF-8 encoded string. The maximum length of the data is 1,024 bytes. The data is terminated by a zero byte.
 
 ## Command Sequences
 
