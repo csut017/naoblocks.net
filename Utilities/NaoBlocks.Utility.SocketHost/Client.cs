@@ -58,9 +58,9 @@ namespace NaoBlocks.Utility.SocketHost
         {
             int messageType = (int)message.Type;
             this.buffer[0] = (byte)(messageType & 255);
-            this.buffer[1] = (byte)(messageType >> 8);
+            this.buffer[1] = (byte)(messageType >> 8 & 255);
             this.buffer[2] = (byte)(this.sequence & 255);
-            this.buffer[3] = (byte)(this.sequence >> 8);
+            this.buffer[3] = (byte)(this.sequence >> 8 & 255);
             this.sequence++;
 
             var values = string.Join(

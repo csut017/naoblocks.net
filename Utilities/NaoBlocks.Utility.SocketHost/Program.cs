@@ -151,7 +151,7 @@ namespace NaoBlocks.Utility.SocketHost
 
             await client.SendMessageAsync(message, TimeSpan.FromSeconds(5))
                 .ConfigureAwait(false);
-            Console.WriteLine($"Sent {message.Type} to client #{client.FullName}");
+            Console.WriteLine($"Sent {message.Type} to client {client.FullName}");
         }
     }
 }

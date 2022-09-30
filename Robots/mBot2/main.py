@@ -2,25 +2,40 @@
 
 This client runs directly on an mBot2 client. It handles communicates with the
 server and execution of the commands.
+
+This file needs to be deployed via mBlock. All the code must be in a single file,
+otherwise mBlock won't compile it correctly.
 """
 
+import cyberpi
 import socket
+import time
+
+import urequests as requests
+
+### Configuration settings ###
 
 HOST = '192.168.0.5'
+SERVER = 'http://' + HOST + ':5000'
 PORT = 5010
+WIFI_SSID= 'robotics'
+WIFI_PASSWORD= 'letmein1'
+NAME = cyberpi.get_name()
 
-class message(object):
+### Common code ###
+
+class Message(object):
     def __init__(self, type, seq):
         self.type = type
         self.seq = seq
         self.values = {}
 
-class connection(object):
+class Connection(object):
     def __init__(self, address, port):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((address, port))
         self._seq = 0
-        self._data = bytearray(1024);
+        self._data = bytearray(1024)
         self._next_pos = 0
         self._last_pos = 0
         self._pending = b''
@@ -33,7 +48,7 @@ class connection(object):
         self._socket.sendall(self._seq.to_bytes(2, 'little'))
 
     def send_value(self, key, value):
-        self._socket.sendall(f'{key}={value}'.encode('utf-8'))
+        self._socket.sendall((key + '=' + value).encode('utf-8'))
 
     def end_message(self):
         self._socket.sendall(b'\x00')
@@ -60,10 +75,10 @@ class connection(object):
                 self._next_pos += 1
                 continue
 
-            type = int.from_bytes(self._data[0:1], byteorder='little')
-            seq = int.from_bytes(self._data[2:3], byteorder='little')
-            msg = message(type, seq)
-            values = self._data[4:self._next_pos-1].decode('utf-8')
+            type = int.from_bytes(self._data[0:2], 'little')
+            seq = int.from_bytes(self._data[2:4], 'little')
+            msg = Message(type, seq)
+            values = self._data[4:self._next_pos].decode('utf-8')
             if len(values) > 0:
                 for value in values.split(','):
                     index = value.index('=')
@@ -72,11 +87,65 @@ class connection(object):
                     else:
                         msg.values[value[0:index]] = value[index+1:]
             self._last_pos = pos + 1
+            self._next_pos = 0
             return msg
 
-if __name__ == "__main__":
-    conn = connection(HOST, PORT)
-    conn.send_message(1, {'name': 'me'})
-    msg = conn.receive_next_message()
-    conn.send_message(102)
-    conn.send_message(103)
+### mBot2 code ###
+
+class robot():
+    def __init__(self):
+        self.lines = 100
+        self.is_connected = False
+        self.conn = None
+        cyberpi.quad_rgb_sensor.set_led('w')
+
+    def display(self, message, clear_screen = False):
+        self.lines += 1
+        if clear_screen or (self.lines > 6):
+            cyberpi.console.clear()
+            self.lines = 1
+            cyberpi.console.print('>')
+            cyberpi.console.print(NAME)
+            
+        cyberpi.console.println(' ')
+        cyberpi.console.print(message)
+
+    def initialise_wifi(self):
+        cyberpi.wifi.connect(WIFI_SSID, WIFI_PASSWORD)
+        count = 20
+        self.display('Wifi connect')
+        while (count > 0) and not cyberpi.wifi.is_connect():
+            time.sleep(0.5)
+            count -= 1
+
+        if not cyberpi.wifi.is_connect():
+            self.display('...failed')
+            return False
+        self.display('...connected')
+
+        self.display('Host connect')
+        try:
+            self.conn = Connection(HOST, PORT)
+        except:
+            self.display('...failed')
+            return False
+
+        self.display('...connected')
+        self.is_connected = True
+        return True
+
+    def run(self):
+        while True:
+            msg = self.conn.receive_next_message()
+            if msg is None:
+                continue
+
+            self.display('Received ' + str(msg.type))
+
+r = robot()
+
+@cyberpi.event.start
+def on_start():
+    cyberpi.speaker.set_vol(100)
+    if r.initialise_wifi():
+        r.run()
