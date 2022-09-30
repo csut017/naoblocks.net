@@ -45,6 +45,7 @@ class Connection(object):
     def start_message(self, type):
         self._socket.sendall(type.to_bytes(2, 'little'))
         self._socket.sendall(self._seq.to_bytes(2, 'little'))
+        self._socket.sendall(self._conversation.to_bytes(2, 'little'))
 
     def send_value(self, key, value):
         self._socket.sendall((key + '=' + value).encode('utf-8'))
@@ -69,15 +70,16 @@ class Connection(object):
             return None
         
         for pos in range(self._last_pos, len(self._pending)):
-            if (self._next_pos < 4) or (self._pending[pos] != 0):
+            if (self._next_pos < 6) or (self._pending[pos] != 0):
                 self._data[self._next_pos] = self._pending[pos]
                 self._next_pos += 1
                 continue
 
             type = int.from_bytes(self._data[0:2], 'little')
             seq = int.from_bytes(self._data[2:4], 'little')
+            self._conversation = int.from_bytes(self._data[4:6], 'little')
             msg = Message(type, seq)
-            values = self._data[4:self._next_pos].decode('utf-8')
+            values = self._data[6:self._next_pos].decode('utf-8')
             if len(values) > 0:
                 for value in values.split(','):
                     index = value.index('=')
@@ -562,7 +564,6 @@ class App(object):
 
             elif msg.type == 201:   # Cancel execution
                 pass
-
 
 ### Test code ###
 

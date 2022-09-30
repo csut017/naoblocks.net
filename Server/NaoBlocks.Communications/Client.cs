@@ -66,14 +66,17 @@ namespace NaoBlocks.Communications
             this.buffer[1] = (byte)(messageType >> 8 & 255);
             this.buffer[2] = (byte)(this.sequence & 255);
             this.buffer[3] = (byte)(this.sequence >> 8 & 255);
+            var conversation = message.ConversationId ?? 0;
+            this.buffer[4] = (byte)(conversation & 255);
+            this.buffer[5] = (byte)(conversation >> 8 & 255);
             this.sequence++;
 
             var values = string.Join(
                 ",",
                 message.Values.Select(kvp => $"{kvp.Key}={kvp.Value}"));
             var valuesBytes = Encoding.UTF8.GetBytes(values);
-            valuesBytes.CopyTo(this.buffer, 4);
-            var size = valuesBytes.Length + 4;
+            valuesBytes.CopyTo(this.buffer, 6);
+            var size = valuesBytes.Length + 6;
             this.buffer[size] = 0;
 
             try

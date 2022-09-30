@@ -175,7 +175,7 @@ namespace NaoBlocks.Web.Communications
         /// Queues a message for sending.
         /// </summary>
         /// <param name="message">The <see cref="ClientMessage"/> to send.</param>
-        public void SendMessage(ClientMessage message)
+        public virtual void SendMessage(ClientMessage message)
         {
             this.queue.Enqueue(message);
         }

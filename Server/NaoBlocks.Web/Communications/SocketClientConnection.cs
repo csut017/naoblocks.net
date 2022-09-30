@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Communications;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Communications;
 
 namespace NaoBlocks.Web.Communications
 {
@@ -39,6 +40,17 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
+        /// Sends a message.
+        /// </summary>
+        /// <param name="message">The <see cref="ClientMessage"/> to send.</param>
+        public override void SendMessage(ClientMessage message)
+        {
+            this.client
+                .SendMessageAsync(message, TimeSpan.FromSeconds(5))
+                .Wait();
+        }
+
+        /// <summary>
         /// Disposes of the internal resources.
         /// </summary>
         /// <param name="disposing">True if the instance is being disposed.</param>
@@ -54,6 +66,7 @@ namespace NaoBlocks.Web.Communications
         private void OnMessageReceived(object? sender, ReceivedMessage e)
         {
             this.logger.LogInformation($"Message received from {e.Client.FullName} [{e.Type}]");
+            this.messageProcessor.ProcessAsync(this, e).Wait();
         }
     }
 }

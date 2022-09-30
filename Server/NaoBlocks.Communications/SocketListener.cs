@@ -124,6 +124,7 @@ namespace NaoBlocks.Communications
         private void GenerateInternalMessage(SocketState state)
         {
             var message = new ReceivedMessage(state.Client, (ClientMessageType)state.MessageType);
+            message.ConversationId = state.Conversation;
             if (state.DataPosition > 0)
             {
                 var values = Encoding
@@ -184,12 +185,14 @@ namespace NaoBlocks.Communications
                 }
                 else
                 {
-                    if (state.DataPosition < 4) continue;
+                    if (state.DataPosition < 6) continue;
 
                     state.MessageType = state.MessageData[1];
                     state.MessageType = state.MessageData[0] + (state.MessageType << 8);
                     state.SequenceNumber = state.MessageData[3];
                     state.SequenceNumber = state.MessageData[2] + (state.SequenceNumber << 8);
+                    state.Conversation = state.MessageData[5];
+                    state.Conversation = state.MessageData[4] + (state.SequenceNumber << 8);
                     state.IsInDataSegment = true;
                     state.DataPosition = 0;
                 }
@@ -216,6 +219,8 @@ namespace NaoBlocks.Communications
 
             public Client Client { get; }
 
+            public int Conversation { get; set; }
+
             public int DataPosition { get; set; }
 
             public bool IsInDataSegment { get; set; }
@@ -225,7 +230,6 @@ namespace NaoBlocks.Communications
             public int MessageType { get; set; }
 
             public int SequenceNumber { get; set; }
-
             public Socket Socket { get; }
         }
     }
