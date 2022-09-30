@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Web.Helpers
+﻿using NaoBlocks.Communications;
+
+namespace NaoBlocks.Web.Helpers
 {
     /// <summary>
     /// Configures the IP addresses to use for the server.

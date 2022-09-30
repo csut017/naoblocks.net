@@ -1,4 +1,4 @@
-﻿using System.Net.Sockets;
+﻿using NaoBlocks.Communications;
 
 namespace NaoBlocks.Web.Communications
 {
@@ -8,24 +8,24 @@ namespace NaoBlocks.Web.Communications
     public class SocketClientConnection
         : ClientConnectionBase, IClientConnection
     {
+        private readonly Client client;
         private readonly ILogger<SocketClientConnection> logger;
         private readonly IMessageProcessor messageProcessor;
-        private readonly Socket socket;
 
         /// <summary>
         /// Initialises a new <see cref="SocketClientConnection"/> instance.
         /// </summary>
-        /// <param name="socket">The socket to use.</param>
+        /// <param name="client">The underlying <see cref="Client"/> instance.</param>
         /// <param name="type">The type of client.</param>
         /// <param name="messageProcessor">The processor to use for handling incoming messages.</param>
         /// <param name="logger">The logger to use.</param>
-        public SocketClientConnection(Socket socket, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<SocketClientConnection> logger)
+        public SocketClientConnection(Client client, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<SocketClientConnection> logger)
         {
             this.Type = type;
-            this.socket = socket;
-            this.Type = type;
+            this.client = client;
             this.messageProcessor = messageProcessor;
             this.logger = logger;
+            this.client.MessageReceived += OnMessageReceived;
         }
 
         /// <summary>
@@ -33,15 +33,9 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         public override void Close()
         {
-            throw new NotImplementedException();
-        }
+            this.logger.LogInformation($"Closing socket connection {this.Id}: server closed");
 
-        /// <summary>
-        /// Starts the message processing loop.
-        /// </summary>
-        public override Task StartAsync()
-        {
-            throw new NotImplementedException();
+            this.RaiseClosed();
         }
 
         /// <summary>
@@ -52,8 +46,14 @@ namespace NaoBlocks.Web.Communications
         {
             if (disposing)
             {
+                this.client.MessageReceived -= OnMessageReceived;
                 this.Close();
             }
+        }
+
+        private void OnMessageReceived(object? sender, ReceivedMessage e)
+        {
+            this.logger.LogInformation($"Message received from {e.Client.FullName} [{e.Type}]");
         }
     }
 }

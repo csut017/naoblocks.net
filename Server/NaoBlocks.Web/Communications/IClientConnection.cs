@@ -10,6 +10,11 @@ namespace NaoBlocks.Web.Communications
         : IDisposable
     {
         /// <summary>
+        /// Fired when the connection is closed.
+        /// </summary>
+        event EventHandler<EventArgs>? Closed;
+
+        /// <summary>
         /// Gets or sets the hub this client is associated with.
         /// </summary>
         IHub? Hub { get; set; }
@@ -53,11 +58,6 @@ namespace NaoBlocks.Web.Communications
         /// Gets or sets the associated user (for user clients).
         /// </summary>
         User? User { get; set; }
-
-        /// <summary>
-        /// Fired when the connection is closed.
-        /// </summary>
-        event EventHandler<EventArgs>? Closed;
 
         /// <summary>
         /// Adds a new listener for this client.
@@ -117,10 +117,5 @@ namespace NaoBlocks.Web.Communications
         /// </summary>
         /// <param name="message">The <see cref="ClientMessage"/> to send.</param>
         void SendMessage(ClientMessage message);
-
-        /// <summary>
-        /// Starts the message processing loop.
-        /// </summary>
-        Task StartAsync();
     }
 }

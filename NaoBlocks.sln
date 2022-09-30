@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Utility.SocketHost", "Utilities\NaoBlocks.Utility.SocketHost\NaoBlocks.Utility.SocketHost.csproj", "{B3832557-DBC2-40D5-9D8C-DDAEC9D74B6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Communications", "Server\NaoBlocks.Communications\NaoBlocks.Communications.csproj", "{322E8986-57D5-45D8-B18E-AE66DCE6BC7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,10 @@ Global
 		{B3832557-DBC2-40D5-9D8C-DDAEC9D74B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3832557-DBC2-40D5-9D8C-DDAEC9D74B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3832557-DBC2-40D5-9D8C-DDAEC9D74B6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{322E8986-57D5-45D8-B18E-AE66DCE6BC7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{322E8986-57D5-45D8-B18E-AE66DCE6BC7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{322E8986-57D5-45D8-B18E-AE66DCE6BC7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{322E8986-57D5-45D8-B18E-AE66DCE6BC7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +170,7 @@ Global
 		{73871A3D-2620-4F37-A8A4-1A34926FC843} = {BA31CEE3-5837-47A7-8657-B73973E79334}
 		{9A9DB4BC-FCEC-493D-B42C-CDA06A8A204A} = {BB37E9F0-B8EF-41CB-9184-2C64D20A0671}
 		{B3832557-DBC2-40D5-9D8C-DDAEC9D74B6E} = {E9B14551-8F40-4FAA-B7A4-3D7F366C6160}
+		{322E8986-57D5-45D8-B18E-AE66DCE6BC7B} = {5C41FF87-0F4C-4E69-82CE-A25FFA4F9657}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {486CBC41-CBAA-4E40-87BA-40F08D5DACAD}

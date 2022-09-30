@@ -58,7 +58,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var controller = new ConnectionsController(logger, hub.Object, processor.Object, GenerateServiceProvider());
             SetupControllerContext(controller, true);
 
-            var connection = new Mock<IClientConnection>();
+            var connection = new Mock<IStartableClientConnection>();
             connection
                 .Setup(c => c.StartAsync())
                 .Returns(Task.CompletedTask)

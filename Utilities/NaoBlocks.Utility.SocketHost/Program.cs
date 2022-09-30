@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Common;
+using NaoBlocks.Communications;
 using System.Net;
 
 namespace NaoBlocks.Utility.SocketHost

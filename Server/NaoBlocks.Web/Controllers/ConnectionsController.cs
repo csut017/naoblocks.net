@@ -69,7 +69,7 @@ namespace NaoBlocks.Web.Controllers
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 var client = this.GenerateConnection(webSocket, clientType, this._messageProcessor);
                 this._hub.AddClient(client);
-                await client.StartAsync();
+                if (client is IStartableClientConnection startable) await startable.StartAsync();
                 client.Dispose();
             }
             else

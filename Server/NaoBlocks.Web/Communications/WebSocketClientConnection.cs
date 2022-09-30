@@ -7,7 +7,7 @@ namespace NaoBlocks.Web.Communications
     /// Defines a client connection using WebSockets.
     /// </summary>
     public class WebSocketClientConnection
-        : ClientConnectionBase, IClientConnection
+        : ClientConnectionBase, IClientConnection, IStartableClientConnection
     {
         private readonly CancellationTokenSource cancellationSource = new();
         private readonly ILogger<WebSocketClientConnection> logger;
@@ -50,7 +50,7 @@ namespace NaoBlocks.Web.Communications
         /// <summary>
         /// Starts the message processing loop.
         /// </summary>
-        public override async Task StartAsync()
+        public async Task StartAsync()
         {
             this.logger.LogInformation($"Starting socket connection {this.Id}");
             this.IsClosing = false;

@@ -1,4 +1,4 @@
-﻿namespace NaoBlocks.Utility.SocketHost
+﻿namespace NaoBlocks.Communications
 {
     /// <summary>
     /// A listener result.

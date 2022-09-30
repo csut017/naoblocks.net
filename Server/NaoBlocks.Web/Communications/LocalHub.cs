@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Common;
+using NaoBlocks.Communications;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
@@ -10,7 +11,7 @@ namespace NaoBlocks.Web.Communications
     /// </summary>
     public class LocalHub : IHub
     {
-        private readonly Semaphore allDone = new(0, 2);
+        private readonly Semaphore allDone = new(0, 1);
         private readonly CancellationTokenSource cancellationSource = new();
         private readonly IDictionary<long, IClientConnection> clients = new Dictionary<long, IClientConnection>();
         private readonly ReaderWriterLockSlim clientsLock = new();
@@ -20,6 +21,7 @@ namespace NaoBlocks.Web.Communications
         private readonly IServiceProvider services;
         private bool disposedValue;
         private long nextClientId;
+        private SocketListener? socketListener;
 
         /// <summary>
         /// Initialises a new <see cref="LocalHub"/> instance.
@@ -31,6 +33,9 @@ namespace NaoBlocks.Web.Communications
             appLifetime?.ApplicationStopping.Register(() =>
             {
                 this.cancellationSource.Cancel();
+
+                this.socketListener?.Close();
+                this.logger.LogInformation("Socket listener closed");
                 allDone.WaitOne();
             });
         }
@@ -400,48 +405,39 @@ namespace NaoBlocks.Web.Communications
             var endpoint = new IPEndPoint(
                 hostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork),
                 5002);
-            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
                 this.logger.LogInformation($"Starting to listen on {endpoint}");
-                listener.Bind(endpoint);
-                listener.Listen(100);
-                while (!cancelToken.IsCancellationRequested)
+                this.socketListener = new SocketListener(endpoint);
+                var connections = new Dictionary<int, SocketClientConnection>();
+                var nextClient = 0;
+                this.socketListener.ClientConnected += (_, c) =>
                 {
-                    this.logger.LogInformation($"Waiting for connection on {endpoint}");
-                    var socket = await listener.AcceptAsync(cancelToken);
-                    if (cancelToken.IsCancellationRequested) continue;
-
-                    var client = new SocketClientConnection(
-                        socket,
-                        ClientConnectionType.Unknown,
-                        this.services.GetService<IMessageProcessor>()!,
-                        this.services.GetService<ILogger<SocketClientConnection>>()!);
-                    this.AddClient(client);
-                    new Task(
-                        async () => await client.StartAsync(),
-                        TaskCreationOptions.LongRunning).Start();
-                }
+                    this.logger.LogInformation($"Client connected from {c.RemoteEndPoint}");
+                    var connection = new SocketClientConnection(
+                                                c,
+                                                ClientConnectionType.Unknown,
+                                                this.services.GetService<IMessageProcessor>()!,
+                                                this.services.GetService<ILogger<SocketClientConnection>>()!);
+                    this.AddClient(connection);
+                    c.Index = ++nextClient;
+                    connections.Add(c.Index, connection);
+                };
+                this.socketListener.ClientDisconnected += (_, c) =>
+                {
+                    this.logger.LogInformation($"Client disconnected from {c.RemoteEndPoint}");
+                    var connection = connections[c.Index];
+                    this.RemoveClient(connection);
+                    connection.Dispose();
+                };
+                new Task(
+                    () => this.socketListener.Start(),
+                    TaskCreationOptions.LongRunning).Start();
             }
             catch (Exception error)
             {
-                if (!cancelToken.IsCancellationRequested)
-                {
-                    this.logger.LogError(error, "An error occurred during socket listening");
-                }
+                this.logger.LogError(error, "An error occurred during socket initialisation");
             }
-
-            this.logger.LogInformation($"Closing listener on {endpoint}");
-            try
-            {
-                listener.Close();
-            }
-            catch
-            {
-                // Don't care what happens here
-            }
-            this.logger.LogInformation("Listener closed");
-            allDone.Release();
         }
     }
 }

@@ -14,7 +14,7 @@ import time
 
 HOST = '192.168.0.5'
 SERVER = 'http://' + HOST + ':5000'
-PORT = 5010
+PORT = 5002
 
 ### Common code ###
 

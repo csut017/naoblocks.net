@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace NaoBlocks.Utility.SocketHost
+namespace NaoBlocks.Communications
 {
     /// <summary>
     /// A client connection.
@@ -23,6 +23,11 @@ namespace NaoBlocks.Utility.SocketHost
             this.handler = handler;
             this.RemoteEndPoint = handler.RemoteEndPoint;
         }
+
+        /// <summary>
+        /// Fired whenever a message is received.
+        /// </summary>
+        public event EventHandler<ReceivedMessage>? MessageReceived;
 
         /// <summary>
         /// Gets the client's full name
@@ -100,6 +105,11 @@ namespace NaoBlocks.Utility.SocketHost
                 return Result.Fail<int>(
                     new Exception("SendMessageAsync timed out"));
             }
+        }
+
+        internal void FireMessageReceived(SocketListener listener, ReceivedMessage message)
+        {
+            this.MessageReceived?.Invoke(listener, message);
         }
     }
 }

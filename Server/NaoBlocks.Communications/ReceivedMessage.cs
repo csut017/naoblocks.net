@@ -1,6 +1,6 @@
 ﻿using NaoBlocks.Common;
 
-namespace NaoBlocks.Utility.SocketHost
+namespace NaoBlocks.Communications
 {
     /// <summary>
     /// A message that was received from a client.

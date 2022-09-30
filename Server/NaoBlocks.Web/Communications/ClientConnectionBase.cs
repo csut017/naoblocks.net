@@ -181,11 +181,6 @@ namespace NaoBlocks.Web.Communications
         }
 
         /// <summary>
-        /// Starts the message processing loop.
-        /// </summary>
-        public abstract Task StartAsync();
-
-        /// <summary>
         /// Disposes of the internal resources.
         /// </summary>
         /// <param name="disposing">True if the instance is being disposed.</param>

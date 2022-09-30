@@ -2,7 +2,7 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace NaoBlocks.Utility.SocketHost
+namespace NaoBlocks.Communications
 {
     /// <summary>
     /// Helper for retrieving client addresses.

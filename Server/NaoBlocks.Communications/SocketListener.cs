@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace NaoBlocks.Utility.SocketHost
+namespace NaoBlocks.Communications
 {
     /// <summary>
     /// Listener for socket connections.
@@ -15,7 +15,6 @@ namespace NaoBlocks.Utility.SocketHost
         private readonly ManualResetEvent allDone = new(false);
         private readonly IPEndPoint endPoint;
         private readonly Socket listener;
-        private readonly CancellationTokenSource tokenSource = new();
         private bool disposedValue;
         private bool isOpen;
 
@@ -48,20 +47,14 @@ namespace NaoBlocks.Utility.SocketHost
         public event EventHandler<ReceivedMessage>? MessageReceived;
 
         /// <summary>
-        /// Cancels listening.
-        /// </summary>
-        public void Cancel()
-        {
-            tokenSource.Cancel();
-        }
-
-        /// <summary>
-        /// Closes the listener.
+        /// Closes the socket.
         /// </summary>
         public void Close()
         {
+            if (!this.isOpen) return;
             this.isOpen = false;
             this.listener.Close();
+            this.allDone.WaitOne();
         }
 
         /// <summary>
@@ -102,7 +95,7 @@ namespace NaoBlocks.Utility.SocketHost
             {
                 if (disposing)
                 {
-                    this.Dispose();
+                    this.Close();
                 }
 
                 disposedValue = true;
@@ -154,6 +147,7 @@ namespace NaoBlocks.Utility.SocketHost
             }
 
             this.MessageReceived?.Invoke(this, message);
+            state.Client.FireMessageReceived(this, message);
         }
 
         private void ReceiveCallback(IAsyncResult result)
@@ -234,12 +228,5 @@ namespace NaoBlocks.Utility.SocketHost
 
             public Socket Socket { get; }
         }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~SocketListener()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
     }
 }
