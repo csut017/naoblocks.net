@@ -85,12 +85,24 @@ def generate_angular(json_definition, output):
             update_json = True
 
         if not 'nextStatement' in def_json_parsed:
-            def_json_parsed['nextStatement'] = None
-            update_json = True
+            try:
+                add_next = not block['angular']['end']
+            except KeyError:
+                add_next = True
+
+            if add_next:
+                def_json_parsed['nextStatement'] = None
+                update_json = True
 
         if not 'previousStatement' in def_json_parsed:
-            def_json_parsed['previousStatement'] = None
-            update_json = True
+            try:
+                add_prev = not block['angular']['start']
+            except KeyError:
+                add_prev = True
+
+            if add_prev:
+                def_json_parsed['previousStatement'] = None
+                update_json = True
 
         if update_json:
             def_json = json.dumps(def_json_parsed)

@@ -13,7 +13,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Points left arm out.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"Points left arm out.\"}"
             }
         },
         {
@@ -28,7 +28,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Points right arm out.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"Points right arm out.\"}"
             }
         },
         {
@@ -43,7 +43,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Moves to the Sit Back position.\"}"
+                "definition": "{\"colour\":330,\"tooltip\":\"Moves to the Sit Back position.\"}"
             }
         },
         {
@@ -53,7 +53,7 @@
             "generator": "var code = 'position(\\'Sit\\')\\n';return ##PREFIX##code;",
             "category": "Robot Postures",
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Moves to the Sit Forward position.\"}"
+                "definition": "{\"colour\":330,\"tooltip\":\"Moves to the Sit Forward position.\"}"
             }
         },
         {
@@ -65,7 +65,7 @@
             },
             "category": "Robot Postures",
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Moves to the Sit Forward position.\"}"
+                "definition": "{\"colour\":330,\"tooltip\":\"Moves to the Sit Forward position.\"}"
             },
             "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA60lEQVR4nO2ZsQ3DIBBFIcoSDHIM5aWgYzQ2ALqfKkXiuLB9zjfSPekaKOD5+yyQPQA3Mw/2Bs5iAmwuEei9I+eMGCNijMg5o/d+TbMBUK0xBkIIcM59VAgBYwxor6eeQCnF1VpX47VWV0rRXk4/ARFZPf13icj9E/g36gLLshyaO8zsTawuAMC11pBSgohARJBSQmtNffMAnAfsLETluTXhvb9VNAD8r/HpEzABNmpfob09s/VO72X6BEyAjQmwMQE2JsDGBNiYAJvNG9lZvk+bV93wpk/ABNiYABsTYGMCbEyAjf0fYGMCbF4M80/FzrJVBwAAAABJRU5ErkJggg==",
             "text": "Stand up",
@@ -83,7 +83,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"Moves to the Lie on Back position.\"}"
+                "definition": "{\"colour\":330,\"tooltip\":\"Moves to the Lie on Back position.\"}"
             }
         },
         {
@@ -98,7 +98,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"message0\":\"Gangnam (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"colour\":65,\"tooltip\":\"Performs the gangnam dance.\"}",
+                "definition": "{\"message0\":\"Gangnam (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"colour\":230,\"tooltip\":\"Performs the gangnam dance.\"}",
                 "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'gangnam\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
             }
         },
@@ -110,7 +110,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "image": "->question",
             "category": "Robot Moves",
@@ -118,22 +118,23 @@
             "generator": "return ##PREFIX##'wipe_forehead()\\n';"
         },
         {
-            "name": "loop_for_start",
+            "name": "robot_loop_start",
             "topCodes": {
                 "numbers": [
                     61
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\",\"message0\":\"Program %1\",\"args0\":[{\"type\":\"input_statement\",\"name\":\"BLOCKS\"}]}"
+                "definition": "{\"colour\":120,\"tooltip\":\"TODO.\",\"message0\":\"Repeat %1\",\"message1\":\"%1\",\"args0\":[{\"type\":\"input_value\",\"name\":\"TIMES\"}],\"args1\":[{\"type\":\"input_statement\",\"name\":\"DO\"}]}",
+                "generator":"if (block.getField('TIMES')) {var repeats = String(parseInt(block.getFieldValue('TIMES'), 10));} else {var repeats = Blockly.NaoLang.valueToCode(block, 'TIMES', Blockly.NaoLang.ORDER_NONE) || '0';}Blockly.NaoLang.prefixLevel++;var branch = Blockly.NaoLang.statementToCode(block, 'DO'),code = 'loop(' + repeats + '){\\n' + branch;Blockly.NaoLang.prefixLevel--;return Blockly.NaoLang.generatePrefix() + code +Blockly.NaoLang.generatePrefix() + '}\\n';"
             },
             "category": "Control",
             "image": "->question",
-            "text": "Repeat Start",
+            "text": "Start Repeat",
             "generator": "var code ='loop(' ;return ##PREFIX##code "
         },
         {
-            "name": "loop_for_end",
+            "name": "robot_loop_end",
             "topCodes": {
                 "numbers": [
                     327
@@ -141,7 +142,7 @@
             },
             "category": "Control",
             "image": "->question",
-            "text": "Repeat End",
+            "text": "End Repeat",
             "generator": "return ##PREFIX##'}\\n'"
         },
         {
@@ -152,7 +153,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -212,7 +213,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -220,19 +221,23 @@
             "generator": "var code = 'position(\\'Stand\\')\\n';return ##PREFIX##code;"
         },
         {
-            "name": "program_start",
+            "name": "robot_on_program_start",
             "topCodes": {
                 "numbers": [
                     339
                 ]
             },
+            "angular": {
+                "definition": "{\"colour\":120,\"tooltip\":\"TODO.\",\"message0\":\"Program\"}",
+                "start": true
+            },
             "category": "Control",
             "image": "->question",
-            "text": "Program Start",
+            "text": "Start Program",
             "generator": "var code = 'position(\\'Stand\\')\\n';return ##PREFIX##code;"
         },
         {
-            "name": "program_end",
+            "name": "robot_program_end",
             "topCodes": {
                 "numbers": [
                     271
@@ -240,7 +245,7 @@
             },
             "category": "Control",
             "image": "->question",
-            "text": "Program End",
+            "text": "End Program",
             "generator": "var code = 'position(\\'Stand\\')\\n';return ##PREFIX##code;"
         },
         {
@@ -251,7 +256,10 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\",\"output\":\"Number\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['2', Blockly.NaoLang.ORDER_NONE];"
             },
             "category": "Numbers",
             "image": "->question",
@@ -266,7 +274,10 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\",\"output\":\"Number\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['3', Blockly.NaoLang.ORDER_NONE];"
             },
             "category": "Numbers",
             "image": "->question",
@@ -281,7 +292,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -296,7 +307,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -311,7 +322,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -371,7 +382,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -386,7 +397,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -401,7 +412,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -416,7 +427,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -431,7 +442,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -446,7 +457,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -461,7 +472,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -476,7 +487,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -491,7 +502,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
@@ -506,7 +517,7 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
             },
             "category": "Ballet Movements",
             "image": "->question",
