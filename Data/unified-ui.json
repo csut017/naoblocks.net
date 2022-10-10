@@ -153,7 +153,8 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\",\"inputsInline\":false,\"message0\":\"Look %1\",\"args0\":[{\"type\":\"input_value\",\"name\":\"DIR\"}]}",
+                "generator": "var dir = Blockly.NaoLang.valueToCode(block, 'DIR', Blockly.NaoLang.ORDER_NONE),code = 'look(' + dir + ')\\n';return code;"
             },
             "category": "Robot Moves",
             "image": "->question",
@@ -168,7 +169,10 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\",\"output\":\"Direction\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['\\'left\\'', Blockly.NaoLang.ORDER_NONE];"
             },
             "category": "Directions",
             "image": "->question",
@@ -183,7 +187,10 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\"}"
+                "definition": "{\"colour\":260,\"tooltip\":\"TODO.\",\"output\":\"Direction\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['\\'right\\'', Blockly.NaoLang.ORDER_NONE];"
             },
             "category": "Directions",
             "image": "->question",
