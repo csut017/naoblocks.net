@@ -48,7 +48,10 @@ def generate_angular(json_definition, output):
     for block in json_definition['blocks']:
         skip = False
         try:
-            skip = block['angular']['skip']
+            if 'angular' in block:
+                skip = block['angular']['skip']
+            else:
+                skip = True
         except KeyError:
             pass
         if skip:
@@ -60,9 +63,39 @@ def generate_angular(json_definition, output):
             'name': name
         }
 
-        new_block['text'] = block['text']
-        new_block['category'] = block['category']
-        new_block['definition'] = block['angular']['definition']
+        text = block['text']
+        new_block['text'] = text
+        try:
+            new_block['category'] = block['category']
+        except KeyError:
+            new_block['category'] = 'Unknown'
+        def_json = block['angular']['definition']
+        def_json_parsed = json.loads(def_json)
+        update_json = False
+        if not 'type' in def_json_parsed:
+            def_json_parsed['type'] = name
+            update_json = True
+
+        if not 'message0' in def_json_parsed:
+            def_json_parsed['message0'] = text
+            update_json = True
+
+        if not 'inputsInline' in def_json_parsed:
+            def_json_parsed['inputsInline'] = True
+            update_json = True
+
+        if not 'nextStatement' in def_json_parsed:
+            def_json_parsed['nextStatement'] = None
+            update_json = True
+
+        if not 'previousStatement' in def_json_parsed:
+            def_json_parsed['previousStatement'] = None
+            update_json = True
+
+        if update_json:
+            def_json = json.dumps(def_json_parsed)
+
+        new_block['definition'] = def_json
         try:
             generator = block['angular']['generator']
         except KeyError:
@@ -72,6 +105,7 @@ def generate_angular(json_definition, output):
         blocks.append(new_block)
         count += 1
     print('Added ' + str(count) + ' block(s)')
+    blocks.sort(key=lambda i: i['name'])
 
     # Convert the nodes (converters)
     count = 0
@@ -94,6 +128,7 @@ def generate_angular(json_definition, output):
         nodes.append(new_node)
         count += 1
     print('Added ' + str(count) + ' node(s)')
+    nodes.sort(key=lambda i: i['name'])
 
     save_definition(output, definition, 'angular')
 
@@ -111,7 +146,10 @@ def generate_topCodes(json_definition, output):
     for block in json_definition['blocks']:
         skip = False
         try:
-            skip = block['topCodes']['skip']
+            if 'topCodes' in block:
+                skip = block['topCodes']['skip']
+            else:
+                skip = True
         except KeyError:
             pass
         if skip:
@@ -135,6 +173,7 @@ def generate_topCodes(json_definition, output):
         blocks.append(new_block)
         count += 1
     print('Added ' + str(count) + ' block(s)')
+    blocks.sort(key=lambda i: i['name'])
 
     # Convert the images
     count = 0
@@ -157,6 +196,7 @@ def generate_topCodes(json_definition, output):
         images.append(new_image)
         count += 1
     print('Added ' + str(count) + ' image(s)')
+    images.sort(key=lambda i: i['name'])
 
     save_definition(output, definition, 'topCodes')
 
