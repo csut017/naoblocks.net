@@ -19,11 +19,11 @@ namespace NaoBlocks.Parser
         /// <summary>
         /// The errors from the parse operation.
         /// </summary>
-        public ICollection<ParseError> Errors { get; private set; }
+        public IList<ParseError> Errors { get; private set; }
 
         /// <summary>
         /// The generated Abstract Syntax Tree.
         /// </summary>
-        public ICollection<AstNode> Nodes { get; private set; }
+        public IList<AstNode> Nodes { get; private set; }
     }
 }

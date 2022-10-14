@@ -81,7 +81,12 @@ namespace NaoBlocks.Common
                 output.Append($"[{SourceId}]");
             }
 
-            output.Append($"{Type}:{Token.Value}");
+            if (options.IncludeNodeTypes)
+            {
+                output.Append($"{Type}:");
+            }
+
+            output.Append(Token.Value);
             if (options.IncludeTokenTypes)
             {
                 output.Append($"=>{Token.Type.ToString().ToUpperInvariant()}");
@@ -154,6 +159,11 @@ namespace NaoBlocks.Common
             /// How children are displayed.
             /// </summary>
             public DisplayType Children { get; set; }
+
+            /// <summary>
+            /// Include the node type.
+            /// </summary>
+            public bool IncludeNodeTypes { get; set; } = false;
 
             /// <summary>
             /// Include source IDs.
