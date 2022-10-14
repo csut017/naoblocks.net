@@ -235,8 +235,10 @@
                 ]
             },
             "angular": {
-                "definition": "{\"colour\":120,\"tooltip\":\"TODO.\",\"message0\":\"Program\"}",
-                "start": true
+                "definition": "{\"colour\":120,\"tooltip\":\"TODO.\",\"message0\":\"On start\",\"message1\":\"%1\",\"args1\":[{\"type\":\"input_statement\",\"name\":\"ACTION\"}]}",
+                "generator": "var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = 'start{\\n' +innerCode +'}\\n';return code;",
+                "start": true,
+                "end": true
             },
             "category": "Control",
             "image": "->question",
