@@ -2,6 +2,7 @@
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
 namespace NaoBlocks.Engine.Database
@@ -46,8 +47,12 @@ namespace NaoBlocks.Engine.Database
             logger.LogInformation("Starting database store");
             store.Initialize();
 
-            logger.LogInformation("Generating indexes");
+            logger.LogInformation("Generating indices");
+            var timer = new Stopwatch();
+            timer.Start();
             IndexCreation.CreateIndexes(typeof(RavenDbDatabase).Assembly, store);
+            timer.Stop();
+            logger.LogInformation($"Indices generated in {timer.Elapsed.TotalSeconds:0.00}s");
             return new RavenDbDatabase(logger, store);
         }
 
@@ -90,8 +95,16 @@ namespace NaoBlocks.Engine.Database
 
             logger.LogInformation($"Embedded database can be accessed on {options.ServerUrl}");
             logger.LogInformation("Starting embedded server");
+            var timer = new Stopwatch();
+            timer.Start();
             EmbeddedServer.Instance.StartServer(options);
+            timer.Stop();
+            logger.LogInformation($"Server started in {timer.Elapsed.TotalSeconds:0.00}s");
+            logger.LogInformation("Getting document store");
+            timer.Restart();
             store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
+            timer.Stop();
+            logger.LogInformation($"Store retrieved in {timer.Elapsed.TotalSeconds:0.00}s");
             return store;
         }
 
