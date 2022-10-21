@@ -416,7 +416,7 @@ namespace NaoBlocks.Web.Communications
                     this.logger.LogInformation($"Client connected from {c.RemoteEndPoint}");
                     var connection = new SocketClientConnection(
                                                 c,
-                                                ClientConnectionType.Unknown,
+                                                ClientConnectionType.Robot,
                                                 this.services.GetService<IMessageProcessor>()!,
                                                 this.services.GetService<ILogger<SocketClientConnection>>()!);
                     this.AddClient(connection);

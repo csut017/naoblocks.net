@@ -1,5 +1,5 @@
 {
-    "$comment": "This definition is a unified set of commands for both the tangible and angular (Blockly) interfaces. Use Utilities/generate_ui_definitions.py to split it into the seperate JSON files.",
+    "$comment": "This definition is a unified set of commands for both the tangible and angular (Blockly) interfaces. The blocks allow programming a Nao robot to perform ballet. Use Utilities/generate_ui_definitions.py to split it into the seperate JSON files.",
     "blocks": [
         {
             "name": "robot_arm_left_out",

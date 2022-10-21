@@ -16,10 +16,10 @@ There are the following optional arguments:
 * --user   : a username and password pair for logging onto the server. Seperate the two components with a colon.
 
 Example command line (basic):
-    py -3 generate_ui_definitions.py ../../Data/unified-ui.json ../../Data/From_Unified
+    py -3 generate_ui_definitions.py ../../Data/unified-ballet.json ../../Data/From_Unified
 
 Example command line (basic):
-    py -3 generate_ui_definitions.py ../../Data/unified-ui.json ../../Data/From_Unified --server http://192.168.0.5:5000 --user user:password
+    py -3 generate_ui_definitions.py ../../Data/unified-ballet.json ../../Data/From_Unified --server http://192.168.0.5:5000 --user user:password
 
 """
 

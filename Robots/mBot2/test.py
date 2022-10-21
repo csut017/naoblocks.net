@@ -8,7 +8,7 @@ Unfortunately, due to how mBlock deploys, this is a copy-paste job.
 import random
 import requests
 import socket
-import time
+from time import sleep
 
 ### Configuration settings ###
 
@@ -17,6 +17,9 @@ SERVER = 'http://' + HOST + ':5000'
 PORT = 5002
 
 ### Common code ###
+
+def debugMessage(msg):
+    print(msg)
 
 class Message(object):
     def __init__(self, type, seq):
@@ -191,10 +194,12 @@ class Engine(object):
         ''' Initialises the engine. '''
         self._conn = conn
         self._robot = robot
+        self._robot.engine = self
         self._opts = EngineSettings(None)
         self._reset(None)
         self.is_cancelled = False
         self._variables = {}
+        self.ast = None
 
         self._robot.play_led('rainbow')
 
@@ -207,9 +212,9 @@ class Engine(object):
         ''' Cancels the current run. '''
         self.is_cancelled = True
 
-    def run(self, ast):
-        ''' Executes an AST. '''
-        self._execute(ast, None, True)
+    def run(self):
+        ''' Executes the current AST. '''
+        self._execute(self.ast, None, True)
 
     def trigger(self, block_name, value=None):
         ''' Triggers a block in the engine. '''
@@ -266,7 +271,7 @@ class Engine(object):
             for _ in range(0, seconds):
                 if self.is_cancelled:
                     break
-                time.sleep(1)
+                sleep(1)
 
     def _error(self, message):
         self._conn.record_error(message)
@@ -324,6 +329,9 @@ class Engine(object):
             'wait': EngineFunction(self._wait),
             'stop': EngineFunction(self._stop),
             'randomColour': EngineFunction(self._random_colour),
+            'move_forward': EngineFunction(self._move_forward),
+            'turn_left': EngineFunction(self._turn_left),
+            'turn_right': EngineFunction(self._turn_right),
             
             # Programming functions
             'loop': EngineFunction(self._loop),
@@ -346,6 +354,7 @@ class Engine(object):
 
     def _generate_register_block(self, block_name):
         ''' Generates a closure to register block. '''
+        debugMessage('Registering start block')
         def _register_block(state):
             ''' Registers the on start block. '''
             self._blocks[block_name] = state.ast
@@ -371,7 +380,7 @@ class Engine(object):
         for _ in range(0, int(seconds)):
             if self.is_cancelled:
                 break
-            time.sleep(1)
+            sleep(1)
 
 
     def _stop(self, state):
@@ -529,6 +538,18 @@ class Engine(object):
         index = random.randint(0, 7)
         return colours[index]
 
+    def _move_forward(self, state):
+        self._robot.log('Forward')
+        self._robot.forward(2)
+
+    def _turn_left(self, state):
+        self._robot.log('Left')
+        self._robot.turn(-45)
+
+    def _turn_right(self, state):
+        self._robot.log('Right')
+        self._robot.turn(45)
+
 class App(object):
     def __init__(self, robot, conn, name, password):
         self._conn = conn
@@ -551,24 +572,37 @@ class App(object):
             msg = self._conn.receive_next_message()
             if msg.type == 2:       # Authenticate
                 self._robot.log('...ready')
-                self._conn.send_message(501, {'state': 'Waiting'})
+                self._conn.set_state('Waiting')
 
             elif msg.type == 22:    # Download program
-                self._conn.send_message(501, {'state': 'Downloading'})
+                self._conn.set_state('Downloading')
                 self._robot.log('Downloading')
-                self._ast = self._conn.download_code(msg)
+                self._engine.ast = self._conn.download_code(msg)
+                debugMessage('Received code')
+                debugMessage(self._engine.ast)
                 self._robot.log('...done')
+                self._conn.send_message(23)
+                self._conn.set_state('Prepared')
 
             elif msg.type == 101:   # Start execution
+                self._conn.set_state('Starting')
+                self._robot.log('Starting')
+                self._robot.start_execution()
                 pass
 
             elif msg.type == 201:   # Cancel execution
+                self._conn.set_state('Cancelling')
+                self._robot.log('Cancelling')
+                self._engine.cancel()
                 pass
 
 ### Test code ###
 
 class Robot(object):
     ''' Abstract the robot functions so we can test the engine. '''
+    def __init__(self):
+        self.engine = None
+
     def play_led(self, name):
         print('Playing ' + name)
 
@@ -578,8 +612,21 @@ class Robot(object):
     def log(self, message):
         print(message)
 
+    def forward(self, time):
+        print(f'Moving forward for {time}s')
+        sleep(time)
+
+    def turn(self, angle):
+        print(f'Turning {angle} degree')
+        sleep(angle / 45)
+
+    def start_execution(self):
+        print('Starting execution')
+        self.engine.run()
+        print('Execution finished')
+
 if __name__ == "__main__":
-    robot = Robot()
     conn = Connection(HOST, PORT)
+    robot = Robot()
     app = App(robot, conn, socket.gethostname(), 'one')
     app.start()
