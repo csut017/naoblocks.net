@@ -123,8 +123,10 @@ namespace NaoBlocks.Communications
 
         private void GenerateInternalMessage(SocketState state)
         {
-            var message = new ReceivedMessage(state.Client, (ClientMessageType)state.MessageType);
-            message.ConversationId = state.Conversation;
+            var message = new ReceivedMessage(state.Client, (ClientMessageType)state.MessageType)
+            {
+                ConversationId = state.Conversation
+            };
             if (state.DataPosition > 0)
             {
                 var values = Encoding
