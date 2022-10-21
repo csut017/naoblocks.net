@@ -1,3 +1,4 @@
+from enum import Enum, IntEnum
 import logging
 import json
 import socket
@@ -19,6 +20,40 @@ except ImportError:
     Robot = RobotMock
 
 logging.basicConfig()
+
+class ClientMessageType(IntEnum):
+    ''' Defines the available message types. This is a copy of ClientMessageType.cs in NaoBlocks.Common. '''
+    UNKNOWN = 0
+    AUTHENTICATE = 1
+    AUTHENTICATED = 2
+    REQUEST_ROBOT = 11
+    ROBOT_ALLOCATED = 12
+    NO_ROBOTS_AVAILABLE = 13
+    TRANSFER_PROGRAM = 20
+    PROGRAM_TRANSFERRED = 21
+    DOWNLOAD_PROGRAM = 22
+    PROGRAM_DOWNLOADED = 23
+    UNABLE_TO_DOWNLOAD_PROGRAM = 24
+    START_PROGRAM = 101
+    PROGRAM_STARTED = 102
+    PROGRAM_FINISHED = 103
+    STOP_PROGRAM = 201
+    PROGRAM_STOPPED = 202
+    ROBOT_STATE_UPDATE = 501
+    ROBOT_DEBUG_MESSAGE = 502
+    ROBOT_ERROR = 503
+    ERROR = 1000
+    NOT_AUTHENTICATED = 1001
+    FORBIDDEN = 1002
+    START_MONITORING = 1100
+    STOP_MONITORING = 1101
+    CLIENT_ADDED = 1102
+    CLIENT_REMOVED = 1103
+    ALERTS_REQUEST = 1200
+    ALERT_BROADCAST = 1201
+    STEP_STARTED = 1500
+    STEP_FINISHED = 1501
+    STEP_ERRORED = 1502
 
 class Communications(object):
     '''The communications interface. '''
@@ -141,20 +176,20 @@ class Communications(object):
             logger.log('[Comms] Broadcasting notification %d', id)
             r = Robot('127.0.0.1')
             n = r.getNotification(id)
-            self.send(1201, {'id': id, 'message': n.message, 'severity': n.severity})
+            self.send(ClientMessageType.ALERT_BROADCAST, {'id': id, 'message': n.message, 'severity': n.severity})
         else:
             logger.log('[Comms] Not connected to robot, skipping notification %d', id)
 
     def _execute_code(self, data):
         logger.log('[Comms] Running code')
-        self.send(501, {'state': 'Initialising'})
+        self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Initialising'})
         try:
             opts = json.loads(data['values']['opts'])
         except KeyError:
             opts = {}
         self._engine.configure(opts)
-        self.send(102, {})
-        self.send(501, {'state': 'Running'})
+        self.send(ClientMessageType.PROGRAM_STARTED, {})
+        self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Running'})
         self._lock.acquire()
         self._is_running = True
         self._lock.release()
@@ -162,17 +197,24 @@ class Communications(object):
         self._lock.acquire()
         self._is_running = False
         self._lock.release()
-        self.send(202 if self._engine.is_cancelled else 103, {})
-        self.send(501, {'state': 'Waiting'})
+        self.send(ClientMessageType.PROGRAM_STOPPED if self._engine.is_cancelled else 103, {})
+        self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Waiting'})
         self._conversationId = 0
 
     def _message(self, *args):
         message = args[-1]
-        logger.log('[Comms] Received %s', message)
+        logger.log('[Comms] <- %s', message)
         data = json.loads(message)
+        try:
+            msg_type = ClientMessageType(data['type'])
+            logger.log('[Comms] Received %s', repr(msg_type))
+        except:
+            # Do nothing, this is just debug information so we can ignore it if it failed
+            pass
+
         self._conversationId = data['conversationId']
-        if data['type'] == 22:
-            self.send(501, {'state': 'Downloading'})
+        if data['type'] == ClientMessageType.DOWNLOAD_PROGRAM:
+            self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Downloading'})
             program_address = ('https' if self._secure else 'http') + '://' + self._base_address + '/api/v1/code/' + data['values']['user'] + '/' + data['values']['program']
             logger.log('[Comms] Downloading program from %s', program_address)
             headers = {'Authorization': 'Bearer ' + self._token}
@@ -185,34 +227,34 @@ class Communications(object):
                 result = json.loads(req.text)
                 self._ast = result['output']['nodes']
 
-                self.send(23, {})
-                self.send(501, {'state': 'Prepared'})
+                self.send(ClientMessageType.PROGRAM_DOWNLOADED, {})
+                self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Prepared'})
             except Exception as e:
                 logger.log('[Comms] unknown error: %s!', e)
-                self.send(24, { 'error': str(e) } )
-                self.send(501, {'state': 'Waiting'})
+                self.send(ClientMessageType.UNABLE_TO_DOWNLOAD_PROGRAM, { 'error': str(e) } )
+                self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Waiting'})
                 self._conversationId = 0
 
-        elif data['type'] == 101:
+        elif data['type'] == ClientMessageType.START_PROGRAM:
             thrd = Thread(target=self._execute_code, args=(data,))
             thrd.start()
 
-        elif data['type'] == 201:
+        elif data['type'] == ClientMessageType.STOP_PROGRAM:
             self._lock.acquire()
             is_running = self._is_running
             self._lock.release()
 
             if is_running:
                 logger.log('[Comms] Cancelling current run')
-                self.send(501, {'state': 'Cancelling'})
+                self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Cancelling'})
                 self._engine.cancel()
             else:
                 logger.log('[Comms] Ignoring cancellation - already completed')
 
-        elif data['type'] == 2:
+        elif data['type'] == ClientMessageType.AUTHENTICATED:
             logger.log('[Comms] Robot has been authenticated')
             time.sleep(1)       # Need to add a delay as the server needs time to update the database after the first authentication
-            self.send(501, {'state': 'Waiting'})
+            self.send(ClientMessageType.ROBOT_STATE_UPDATE, {'state': 'Waiting'})
             self._conversationId = 0
 
         else:
@@ -233,16 +275,21 @@ class Communications(object):
         logger.log('[Comms] Opened')
         self._serverDisconnected = False
         self._connectionCount = 0
-        self.send(1, { 'token': self._token })
+        self.send(ClientMessageType.AUTHENTICATE, { 'token': self._token })
         try:
             self._engine = Engine(self, self._use_robot)
         except:
             traceback.print_exc()
         
     def send(self, msg_type, data):
-        logger.log('[Comms] Sending message of type %s', str(msg_type))
+        try:
+            msg_type_value = msg_type.value
+            logger.log('[Comms] Sending %s', repr(msg_type))
+        except AttributeError:
+            msg_type_value = msg_type
+            logger.log('[Comms] Sending message of type %s', str(msg_type))
         msg = json.dumps({
-            'type': msg_type,
+            'type': msg_type_value,
             'conversationId': self._conversationId,
             'values': data
         })
