@@ -47,11 +47,25 @@ Blockly.NaoLang.finish = function (code) {
     return 'reset()\n' + code + 'go()\n';
 };
 
+Blockly.NaoLang.encodeID = function(id) {
+    let mapping = {
+        ',': '/0',
+        '/': '/1',
+        '[': '/2',
+        ']': '/3'
+    };
+    let outId = '';
+    for (let c of id) {
+        outId += (mapping[c] || c);
+    }
+    return outId;
+}
+
 // Common tasks for generating code from blocks
 Blockly.NaoLang.scrub_ = function (block, code) {
     var nextBlock = block.nextConnection && block.nextConnection.targetBlock(),
         nextCode = Blockly.NaoLang.blockToCode(nextBlock);
-    return (Blockly.NaoLang.includeId ? '[' + block.id.replace(/]/g, '\\') + ']' : '') + code + nextCode;
+    return (Blockly.NaoLang.includeId ? '[' + Blockly.NaoLang.encodeID(block.id) + ']' : '') + code + nextCode;
 };
 
 Blockly.NaoLang.generatePrefix = function () {

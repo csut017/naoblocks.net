@@ -345,11 +345,33 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   onHighlightBlock(id: string, action: string): void {
+    id = this.decodeId(id);
     this.lastHighlightBlock = id;
     this.workspace.highlightBlock(id, action === 'start');
   }
 
   onShowDebug(): void {
     this.executionStatus.close(false);
+  }
+
+  private decodeId(id: string): string {
+    let mapping = {
+      '0': ',',
+      '1': '/',
+      '2': '[',
+      '3': ']'
+    };
+    let outId = '';
+    for (let loop = 0; loop < id.length; loop++) {
+      let c = id[loop];
+      if (c === '/') {
+        c = id[++loop];
+        outId += mapping[c];
+      } else {
+        outId += c;
+      }
+    }
+
+    return outId;
   }
 }
