@@ -5,6 +5,7 @@ This client simulates running an mBot2 client.
 Unfortunately, due to how mBlock deploys, this is a copy-paste job.
 """
 
+import json
 import random
 import requests
 import socket
@@ -94,7 +95,7 @@ class Connection(object):
         self._socket.sendall(b'\x00')
 
     def send_message(self, type, values = None):
-        debugMessage('Comms', f'Sending message {type}')
+        debugMessage('Comms', 'Sending message ' + str(type))
         if not values is None:
             debugMessage('Comms', values)
         self.start_message(type)
@@ -195,13 +196,14 @@ class EngineSettings(object):
             self.delay = 0
             return
 
+        opts = json.loads(msg)
         try:
-            self.debug = msg.values['debug']
+            self.debug = opts['debug']
         except KeyError:
             self.debug = False
 
         try:
-            self.delay = msg.values['delay']
+            self.delay = opts['delay']
         except KeyError:
             self.delay = 0
 
@@ -636,6 +638,7 @@ class App(object):
 
             elif msg.type == ClientMessageType.START_PROGRAM:
                 self._conn.set_state('Initialising')
+                self._engine.configure(msg.values['opts']);
                 self._robot.log('Starting')
                 self._robot.start_execution()
                 pass
