@@ -310,6 +310,24 @@
             "image": "->question",
             "text": "En_avont",
             "generator": "var code = 'enavont()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "singlelady",
+            "numbers": [
+                301
+            ],
+            "image": "->question",
+            "text": "Single Lady",
+            "generator": "var code = 'single()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "gangnam",
+            "numbers": [
+                307
+            ],
+            "image": "->question",
+            "text": "Single Lady",
+            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
         }
         
     ],
