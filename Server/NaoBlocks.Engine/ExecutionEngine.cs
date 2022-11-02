@@ -8,10 +8,10 @@ namespace NaoBlocks.Engine
     /// </summary>
     public class ExecutionEngine : IExecutionEngine
     {
-        private readonly IDatabaseSession session;
         private readonly IDatabase database;
-        private readonly Dictionary<Type, DataQuery> queries = new();
         private readonly Dictionary<Type, ReportGenerator> generators = new();
+        private readonly Dictionary<Type, DataQuery> queries = new();
+        private readonly IDatabaseSession session;
 
         /// <summary>
         /// Initialises a new <see cref="ExecutionEngine"/> instance.
@@ -32,6 +32,15 @@ namespace NaoBlocks.Engine
         public ILogger Logger { get; private set; }
 
         /// <summary>
+        /// Saves (commits) the changes to the database.
+        /// </summary>
+        public async Task CommitAsync()
+        {
+            await this.session.SaveChangesAsync().ConfigureAwait(false);
+            this.Logger.LogTrace("Session saved");
+        }
+
+        /// <summary>
         /// Executes a command and stores the resulting execution log.
         /// </summary>
         /// <param name="command">The command to execute.</param>
@@ -42,12 +51,11 @@ namespace NaoBlocks.Engine
             var result = await command.ExecuteAsync(this.session, this).ConfigureAwait(false);
             if (result.WasSuccessful)
             {
-                this.Logger.LogInformation($"Command {name} executed successfully");
+                this.Logger.LogInformation("Command {name} executed successfully", name);
             }
             else
             {
-                this.Logger.LogInformation($"Command {name} execution failed");
-
+                this.Logger.LogInformation("Command {name} execution failed", name);
             }
             var log = new CommandLog
             {
@@ -70,12 +78,33 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
-        /// Saves (commits) the changes to the database.
+        /// Retrieves a report generator.
         /// </summary>
-        public async Task CommitAsync()
+        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
+        /// <returns>An instance of the generator.</returns>
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
         {
-            await this.session.SaveChangesAsync().ConfigureAwait(false);
-            this.Logger.LogTrace("Session saved");
+            if (this.generators.TryGetValue(typeof(TGenerator), out var generator)) return (TGenerator)generator;
+            generator = new TGenerator();
+            generator.InitialiseSession(this.session);
+            this.generators.Add(typeof(TGenerator), generator);
+            return (TGenerator)generator;
+        }
+
+        /// <summary>
+        /// Retrieves a database query.
+        /// </summary>
+        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
+        /// <returns>An instance of the query.</returns>
+        public TQuery Query<TQuery>()
+            where TQuery : DataQuery, new()
+        {
+            if (this.queries.TryGetValue(typeof(TQuery), out var query)) return (TQuery)query;
+            query = new TQuery();
+            query.InitialiseSession(this.session);
+            this.queries.Add(typeof(TQuery), query);
+            return (TQuery)query;
         }
 
         /// <summary>
@@ -125,43 +154,13 @@ namespace NaoBlocks.Engine
 
             if (errors.Any())
             {
-                this.Logger.LogWarning($"Command {name} failed validation");
+                this.Logger.LogWarning("Command {name} failed validation", name);
             }
             else
             {
-                this.Logger.LogInformation($"Command {name} validated");
+                this.Logger.LogInformation("Command {name} validated", name);
             }
             return errors;
-        }
-
-        /// <summary>
-        /// Retrieves a database query.
-        /// </summary>
-        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
-        /// <returns>An instance of the query.</returns>
-        public TQuery Query<TQuery>()
-            where TQuery : DataQuery, new()
-        {
-            if (this.queries.TryGetValue(typeof(TQuery), out var query)) return (TQuery)query;
-            query = new TQuery();
-            query.InitialiseSession(this.session);
-            this.queries.Add(typeof(TQuery), query);
-            return (TQuery)query;
-        }
-
-        /// <summary>
-        /// Retrieves a report generator.
-        /// </summary>
-        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
-        /// <returns>An instance of the generator.</returns>
-        public TGenerator Generator<TGenerator>()
-            where TGenerator : ReportGenerator, new()
-        {
-            if (this.generators.TryGetValue(typeof(TGenerator), out var generator)) return (TGenerator)generator;
-            generator = new TGenerator();
-            generator.InitialiseSession(this.session);
-            this.generators.Add(typeof(TGenerator), generator);
-            return (TGenerator)generator;
         }
     }
 }

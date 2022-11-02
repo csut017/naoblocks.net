@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
@@ -52,8 +53,26 @@ namespace NaoBlocks.Engine.Database
             timer.Start();
             IndexCreation.CreateIndexes(typeof(RavenDbDatabase).Assembly, store);
             timer.Stop();
-            logger.LogInformation($"Indices generated in {timer.Elapsed.TotalSeconds:0.00}s");
+            logger.LogInformation("Indices generated in {time:0.00}s", timer.Elapsed.TotalSeconds);
             return new RavenDbDatabase(logger, store);
+        }
+
+        /// <summary>
+        /// Start the database in a background thread.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceProvider"/> to use.</param>
+        public static void Start(IServiceProvider services)
+        {
+            Task.Run(() =>
+            {
+                var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
+                logger.LogInformation("Starting database");
+                var timer = new Stopwatch();
+                timer.Start();
+                services.GetService<IDatabase>();
+                timer.Stop();
+                logger.LogInformation("Database started in {time:0.00}s", timer.Elapsed.TotalSeconds);
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -79,32 +98,32 @@ namespace NaoBlocks.Engine.Database
                 if (!string.IsNullOrWhiteSpace(configuration.DotNetPath))
                 {
                     options.DotNetPath = configuration.DotNetPath;
-                    logger.LogInformation($"=> DotNetPath={options.DotNetPath}");
+                    logger.LogInformation("=> DotNetPath={path}", options.DotNetPath);
                 }
                 if (!string.IsNullOrWhiteSpace(configuration.FrameworkVersion))
                 {
                     options.FrameworkVersion = configuration.FrameworkVersion;
-                    logger.LogInformation($"=> FrameworkVersion={options.FrameworkVersion}");
+                    logger.LogInformation("=> FrameworkVersion={version}", options.FrameworkVersion);
                 }
                 if (!string.IsNullOrWhiteSpace(configuration.DataDirectory))
                 {
                     options.DataDirectory = configuration.DataDirectory;
-                    logger.LogInformation($"=> DataDirectory={options.DataDirectory}");
+                    logger.LogInformation("=> DataDirectory={directory}", options.DataDirectory);
                 }
             }
 
-            logger.LogInformation($"Embedded database can be accessed on {options.ServerUrl}");
+            logger.LogInformation("Embedded database can be accessed on {url}", options.ServerUrl);
             logger.LogInformation("Starting embedded server");
             var timer = new Stopwatch();
             timer.Start();
             EmbeddedServer.Instance.StartServer(options);
             timer.Stop();
-            logger.LogInformation($"Server started in {timer.Elapsed.TotalSeconds:0.00}s");
+            logger.LogInformation("Server started in {time:0.00}s", timer.Elapsed.TotalSeconds);
             logger.LogInformation("Getting document store");
             timer.Restart();
             store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
             timer.Stop();
-            logger.LogInformation($"Store retrieved in {timer.Elapsed.TotalSeconds:0.00}s");
+            logger.LogInformation("Store retrieved in {time:0.00}s", timer.Elapsed.TotalSeconds);
             return store;
         }
 
@@ -117,19 +136,19 @@ namespace NaoBlocks.Engine.Database
                 certPath = Path.Combine(certificatePath, certPath);
             }
 
-            logger.LogInformation($"Loading certificate from {certPath}");
+            logger.LogInformation("Loading certificate from {path}", certPath);
             var bytes = await File.ReadAllBytesAsync(certPath);
             var cert = new X509Certificate2(bytes);
-            logger.LogInformation($"Loaded certificate with subject {cert.Subject} [{cert.Thumbprint}]");
+            logger.LogInformation("Loaded certificate with subject {subject} [{thumbprint}]", cert.Subject, cert.Thumbprint);
 
             var dbName = configuration?.Name ?? "NaoBlocks";
-            logger.LogInformation($"Connecting to remote RavenDB server:");
+            logger.LogInformation("Connecting to remote RavenDB server:");
             var urls = configuration?.Urls ?? Array.Empty<string>();
             foreach (var url in urls)
             {
-                logger.LogInformation($"=> {url}");
+                logger.LogInformation("=> {url}", url);
             }
-            logger.LogInformation($"Using database {dbName}");
+            logger.LogInformation("Using database {name}", dbName);
 
             store = new DocumentStore
             {

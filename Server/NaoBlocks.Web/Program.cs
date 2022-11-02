@@ -62,14 +62,14 @@ builder.Services.AddSwaggerGen(opts =>
 });
 
 // Define the database services
-builder.Services.AddSingleton<IDatabase>(services =>
+builder.Services.AddSingleton(services =>
     {
         var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
         var config = services.GetService<IOptions<RavenDbConfiguration>>();
         var env = services.GetRequiredService<IWebHostEnvironment>();
         return RavenDbDatabase.New(logger, config?.Value, env.ContentRootPath).Result;
     });
-builder.Services.AddScoped<IDatabaseSession>(services =>
+builder.Services.AddScoped(services =>
 {
     var database = services.GetRequiredService<IDatabase>();
     return database.StartSession();
@@ -107,6 +107,7 @@ else
 var hub = app.Services.GetService<IHub>();
 hub?.Start();
 
+RavenDbDatabase.Start(app.Services);
 app.MapHealthChecks("/health");
 app.UseAngularUI();
 app.UseRouting();
