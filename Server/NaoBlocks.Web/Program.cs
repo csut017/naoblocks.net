@@ -4,6 +4,8 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Database;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -15,6 +17,17 @@ using Tangibles = NaoBlocks.Definitions.Tangibles;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors();
 builder.Services.AddHealthChecks();
+builder.Logging.ClearProviders();
+var logger = new LoggerConfiguration()
+    .Enrich.WithThreadId()
+    .Enrich.WithMachineName()
+    .WriteTo.Console()
+    .WriteTo.File("logs/naoblocks.log",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: LogEventLevel.Verbose,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({MachineName}:{ThreadId}) {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+builder.Logging.AddSerilog(logger);
 
 // Register the configuration settings
 builder.Services.Configure<RavenDbConfiguration>(

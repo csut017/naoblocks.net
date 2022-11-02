@@ -53,7 +53,7 @@ namespace NaoBlocks.Engine.Database
             timer.Start();
             IndexCreation.CreateIndexes(typeof(RavenDbDatabase).Assembly, store);
             timer.Stop();
-            logger.LogInformation("Indices generated in {time:0.00}s", timer.Elapsed.TotalSeconds);
+            logger.LogInformation("Indices generated in {time:#,##0}ms", timer.Elapsed.TotalMilliseconds);
             return new RavenDbDatabase(logger, store);
         }
 
@@ -71,7 +71,7 @@ namespace NaoBlocks.Engine.Database
                 timer.Start();
                 services.GetService<IDatabase>();
                 timer.Stop();
-                logger.LogInformation("Database started in {time:0.00}s", timer.Elapsed.TotalSeconds);
+                logger.LogInformation("Database started in {time:#,##0}ms", timer.Elapsed.TotalMilliseconds);
             }).ConfigureAwait(false);
         }
 
@@ -118,12 +118,12 @@ namespace NaoBlocks.Engine.Database
             timer.Start();
             EmbeddedServer.Instance.StartServer(options);
             timer.Stop();
-            logger.LogInformation("Server started in {time:0.00}s", timer.Elapsed.TotalSeconds);
+            logger.LogInformation("Server started in {time:#,##0}ms", timer.Elapsed.TotalMilliseconds);
             logger.LogInformation("Getting document store");
             timer.Restart();
             store = EmbeddedServer.Instance.GetDocumentStore("NaoBlocks");
             timer.Stop();
-            logger.LogInformation("Store retrieved in {time:0.00}s", timer.Elapsed.TotalSeconds);
+            logger.LogInformation("Store retrieved in {time:#,##0}ms", timer.Elapsed.TotalMilliseconds);
             return store;
         }
 
