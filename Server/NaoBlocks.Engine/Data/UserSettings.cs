@@ -10,7 +10,8 @@
         /// </summary>
         /// <remarks>
         /// 0 = random
-        /// 1 = assigned robot
+        /// 1 = require robot
+        /// 2 = preferred robot
         /// </remarks>
         public int AllocationMode { get; set; }
 
@@ -38,5 +39,15 @@
         /// Gets the optional toolbox categories to include.
         /// </summary>
         public IList<string> ToolboxCategories { get; private set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the view mode.
+        /// </summary>
+        /// <remarks>
+        /// 0 = Blockly
+        /// 1 = Tangibles
+        /// 2 = Role home
+        /// </remarks>
+        public int ViewMode { get; set; }
     }
 }

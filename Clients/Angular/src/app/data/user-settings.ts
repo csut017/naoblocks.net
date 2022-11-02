@@ -5,6 +5,7 @@ export class UserSettings {
     robotId?: string;
     allocationMode?: number;
 
+    viewMode?: number;
     toolbox?: string;
     toolboxCategories?: string[];
 }

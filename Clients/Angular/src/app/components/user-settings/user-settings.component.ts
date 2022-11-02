@@ -33,6 +33,7 @@ export class UserSettingsComponent implements OnInit {
     private robotService: RobotService) {
     this.form = new UntypedFormGroup({
       type: new UntypedFormControl('', [Validators.required]),
+      viewMode: new UntypedFormControl(0, [Validators.required]),
       allocationMode: new UntypedFormControl('', [Validators.required]),
       robotId: new UntypedFormControl('', []),
       toolbox: new UntypedFormControl('', [Validators.required]),
@@ -63,6 +64,7 @@ export class UserSettingsComponent implements OnInit {
     this.form.setValue({
       type: this.internalSettings.robotType || defaultRobotId,
       allocationMode: this.allocationMode,
+      viewMode: this.internalSettings.viewMode || 0,
       robotId: this.internalSettings.robotId || '',
       toolbox: this.internalSettings.toolbox || '',
     });
@@ -101,6 +103,7 @@ export class UserSettingsComponent implements OnInit {
     let settings = new UserSettings();
     settings.robotType = this.form.get('type')?.value;
     settings.allocationMode = this.form.get('allocationMode')?.value;
+    settings.viewMode = this.form.get('viewMode')?.value;
     settings.robotId = this.form.get('robotId')?.value;
     this.configurationMode = this.form.get('configMode')?.value;
     settings.toolbox = this.form.get('toolbox')?.value;

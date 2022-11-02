@@ -286,11 +286,20 @@ namespace NaoBlocks.Web.Controllers
 
             await executionEngine.CommitAsync().ConfigureAwait(false);
             var remaining = expiry.Subtract(this.CurrentTimeFunc());
+            int? defaultView = null;
+            if (result.Output?.UserId != null)
+            {
+                var userDetails = await executionEngine.Query<UserData>()
+                    .RetrieveByIdAsync(result.Output.UserId);
+                defaultView = userDetails?.Settings?.ViewMode;
+            }
+
             return ExecutionResult.New(new UserSessionResult
             {
                 Token = tokenHandler.WriteToken(token),
                 TimeRemaining = Convert.ToInt32(remaining.TotalMinutes),
-                Role = role.ToString()
+                Role = role.ToString(),
+                DefaultView = defaultView
             });
         }
 

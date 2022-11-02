@@ -69,7 +69,23 @@ export class LoginComponent implements OnInit {
     this.loggingIn = false;
     if (data.successful) {
       this.loginInvalid = false;
-      const view = this.returnTo || data.output?.view || 'student';
+      let view = this.returnTo;
+      if (!view) {
+        switch (data.output?.defaultView) {
+          case 1:
+            view = 'student/tangibles';
+            break;
+
+          case 2:
+            view = data.output.role?.toLowerCase();
+            break;
+
+          default:
+            view = 'student/blockly';
+            break;
+        }
+      }
+
       this.router.navigateByUrl(view.toLowerCase());
     } else {
       console.log(data.msg);

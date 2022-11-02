@@ -6,9 +6,14 @@
     public class UserSessionResult
     {
         /// <summary>
-        /// Gets or sets how long until the session expires in minutes.
+        /// Gets or sets the default view.
         /// </summary>
-        public int TimeRemaining { get; set; }
+        public int? DefaultView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the user.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the role of the user.
@@ -16,9 +21,9 @@
         public string Role { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the name of the user.
+        /// Gets or sets how long until the session expires in minutes.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public int TimeRemaining { get; set; }
 
         /// <summary>
         /// Gets or sets the session token.

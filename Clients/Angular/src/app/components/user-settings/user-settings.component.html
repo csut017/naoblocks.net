@@ -1,5 +1,22 @@
 <form [formGroup]="form" class="editor lower-3">
     <mat-card>
+        <mat-card-title>View</mat-card-title>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Default View</mat-label>
+                <mat-select formControlName="viewMode" required>
+                    <mat-option [value]="0">Blocks</mat-option>
+                    <mat-option [value]="1">Tangibles</mat-option>
+                    <mat-option [value]="2">Role Home</mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a default view mode
+                </mat-error>
+                <mat-hint>What is the default view mode?</mat-hint>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+    <mat-card>
         <mat-card-title>Robot</mat-card-title>
         <mat-card-content>
             <mat-form-field class="fill-width">

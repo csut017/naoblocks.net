@@ -19,7 +19,7 @@ export interface LoginResult extends SessionChecker {
 export interface LoginToken {
   role: string,
   token: string,
-  view: string
+  defaultView?: Number
 }
 
 export enum UserRole {
