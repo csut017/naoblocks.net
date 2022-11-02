@@ -34,7 +34,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   controllerSubscription?: Subscription;
   error: string = '';
   isExecuting: boolean = false;
-  isInDebugMode: boolean = false;
+  showVideoInput: boolean = true;
   isInFlippedMode: boolean = false;
   isLoading: boolean = true;
   isProcessing: boolean = false;
@@ -63,8 +63,8 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     if (event.altKey && event.shiftKey) {
       switch (event.key) {
         case 'D':
-          this.isInDebugMode = !this.isInDebugMode;
-          console.log(`[TangibleEditor] ${this.isInDebugMode ? 'Showing' : 'Hiding'} debug display`);
+          this.showVideoInput = !this.showVideoInput;
+          console.log(`[TangibleEditor] ${this.showVideoInput ? 'Showing' : 'Hiding'} debug display`);
           break;
 
         case 'F':

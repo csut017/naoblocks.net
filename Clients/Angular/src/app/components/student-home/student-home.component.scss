@@ -40,3 +40,14 @@
 .error-icon {
     width: 30px;
 }
+
+button.mat-list-item.large-button {
+    font-size: 5rem;
+    vertical-align: middle;
+    padding: auto auto;
+    height: calc(100vh - 100px);
+
+    .mat-icon {
+        display: none;
+    }
+}

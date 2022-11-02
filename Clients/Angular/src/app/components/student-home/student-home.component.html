@@ -6,10 +6,10 @@
             <span class="app-title">NaoBlocks</span>
         </mat-toolbar>
         <mat-action-list *ngIf="showCommands">
-            <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying">
+            <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
                 <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
             </button>
-            <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying">
+            <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
                 <mat-icon matListIcon aria-label="Stop current program">stop</mat-icon> Stop
             </button>
             <mat-divider *ngIf="!controller.isPlaying && showFileCommands"></mat-divider>
@@ -21,10 +21,6 @@
             </button>
             <button mat-list-item (click)="saveProgram()" *ngIf="!controller.isPlaying && showFileCommands">
                 <mat-icon matListIcon aria-label="Save current program">publish</mat-icon> Save
-            </button>
-            <mat-divider *ngIf="!controller.isPlaying"></mat-divider>
-            <button mat-list-item (click)="showDebugSettings()" *ngIf="!controller.isPlaying">
-                <mat-icon matListIcon aria-label="Change execution settings">tune</mat-icon> Debug Settings
             </button>
         </mat-action-list>
     </mat-sidenav>
@@ -44,7 +40,11 @@
                     <mat-icon>settings</mat-icon>
                     <span>User Settings</span>
                 </button>
-                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="showDebugSettings()" *ngIf="!controller.isPlaying">
+                    <mat-icon>tune</mat-icon> 
+                    <span>Debug Settings</span>
+                </button>
+                    <mat-divider></mat-divider>
                 <button mat-menu-item (click)="openChangeRole('Student')" *ngIf="canChangeRole()">
                     <mat-icon>account_circle</mat-icon>
                     <span>Change Role</span>
