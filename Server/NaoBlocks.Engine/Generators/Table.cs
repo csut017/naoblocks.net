@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using System.Text;
 
 namespace NaoBlocks.Engine.Generators
 {
@@ -91,6 +92,26 @@ namespace NaoBlocks.Engine.Generators
                     if (row.Type == TableRowType.Header) style.Font.Bold = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// Exports to HTML.
+        /// </summary>
+        /// <param name="builder">The <see cref="StringBuilder"/> to use.</param>
+        public override void ExportToHtml(StringBuilder builder)
+        {
+            builder.Append("<table>");
+            foreach (var row in this.Rows)
+            {
+                var cellType = row.Type == TableRowType.Header ? "th" : "td";
+                builder.Append($"<tr> ");
+                var line = string.Join(
+                    $"</{cellType}><{cellType}>",
+                    row.Values.Select(v => v?.ToString() ?? string.Empty));
+                builder.Append($"<{cellType}>{line}<{cellType}>");
+                builder.Append($"</tr> ");
+            }
+            builder.Append("</table>");
         }
     }
 }

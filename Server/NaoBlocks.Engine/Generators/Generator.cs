@@ -1,4 +1,6 @@
-﻿using OfficeOpenXml;
+﻿using IronPdf;
+using IronPdf.Rendering;
+using OfficeOpenXml;
 using System.Text;
 
 namespace NaoBlocks.Engine.Generators
@@ -17,6 +19,16 @@ namespace NaoBlocks.Engine.Generators
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
+
+        /// <summary>
+        /// Gets or sets whether the output is rendered in landscape (true) or portrait (false) orientation.
+        /// </summary>
+        public bool IsLandScape { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of the report.
+        /// </summary>
+        public string? Title { get; set; }
 
         /// <summary>
         /// Starts a new page.
@@ -54,6 +66,7 @@ namespace NaoBlocks.Engine.Generators
             {
                 ReportFormat.Excel => await this.GenerateExcel(baseName),
                 ReportFormat.Csv => this.GenerateText(baseName, "csv", false, ",", ","),
+                ReportFormat.Pdf => await this.GeneratePdf(baseName),
                 ReportFormat.Text => this.GenerateText(baseName, "txt", true, ",", ": "),
                 _ => throw new ApplicationException($"Unable to generate: unhandled {format}"),
             };
@@ -77,6 +90,57 @@ namespace NaoBlocks.Engine.Generators
             await package.SaveAsAsync(stream);
             stream.Seek(0, SeekOrigin.Begin);
             return (stream, $"{baseName}.xlsx");
+        }
+
+        private async Task<(Stream, string)> GeneratePdf(string baseName)
+        {
+            var renderer = new ChromePdfRenderer();
+            renderer.RenderingOptions.MarginBottom = 10;
+            renderer.RenderingOptions.MarginLeft = 10;
+            renderer.RenderingOptions.MarginRight = 10;
+            renderer.RenderingOptions.MarginTop = 10;
+            renderer.RenderingOptions.PaperOrientation = this.IsLandScape ? PdfPaperOrientation.Landscape : PdfPaperOrientation.Portrait;
+
+            renderer.RenderingOptions.HtmlFooter = new HtmlHeaderFooter
+            {
+                MaxHeight = 15,
+                HtmlFragment = $"<div style=\"font-size: smaller;\">Generated {DateTime.Now:d-MMM-yyyy}</div>"
+            };
+            if (!string.IsNullOrEmpty(this.Title))
+            {
+                renderer.RenderingOptions.HtmlHeader = new HtmlHeaderFooter
+                {
+                    MaxHeight = 15,
+                    HtmlFragment = $"<div style=\"font-size: smaller;\">{this.Title}</div>"
+                };
+            }
+
+            var html = new StringBuilder();
+            html.Append("<!DOCTYPE html>");
+            html.Append("<html lang =\"en\">");
+            html.Append("<head>");
+            if (!string.IsNullOrEmpty(this.Title)) html.Append($"<title>{this.Title}</title>");
+            html.Append("<meta charset=\"utf-8\">");
+            html.Append("</head>");
+            html.Append("<body>");
+            var itemNum = 0;
+            foreach (var item in this.items)
+            {
+                itemNum++;
+                var itemName = string.IsNullOrWhiteSpace(item.Name)
+                    ? $"Table {itemNum}"
+                    : item.Name;
+                html.Append($"<h1>{itemName}</h1>");
+                item.ExportToHtml(html);
+            }
+
+            html.Append("</body>");
+
+            using var pdfdoc = await renderer.RenderHtmlAsPdfAsync(html.ToString());
+            var stream = new MemoryStream();
+            pdfdoc.Stream.CopyTo(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return (stream, $"{baseName}.pdf");
         }
 
         private (Stream, string) GenerateText(string baseName, string extension, bool includeHeader, string tableSeparator, string pageSeperator)

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="6.0.8" />
+    <PackageReference Include="IronPdf" Version="2022.10.9622" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="6.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

@@ -21,11 +21,14 @@ namespace NaoBlocks.Engine.Generators
             table.AddRow(
                 TableRowType.Header,
                 "Name",
-                "Robot",
+                "Robot Type",
                 "When Added",
                 "Toolbox",
                 "Age",
-                "Gender");
+                "Gender",
+                "View Mode",
+                "Allocation Mode",
+                "Allocated Robot");
 
             var students = await this.Session
                 .Query<User>()
@@ -47,11 +50,16 @@ namespace NaoBlocks.Engine.Generators
                         student.WhenAdded,
                         student.Settings.Toolbox ?? string.Empty,
                         student.StudentDetails?.Age,
-                        student.StudentDetails?.Gender);
+                        student.StudentDetails?.Gender,
+                        ValueMappings.ViewModes[student.Settings.ViewMode],
+                        ValueMappings.AllocationModes[student.Settings.AllocationMode],
+                        student.Settings.AllocationMode > 0 ? student.Settings.RobotId : string.Empty);
                 }
             }
 
             table.EnsureAllRowsSameLength();
+            generator.Title = "Students List";
+            generator.IsLandScape = true;
             var (stream, name) = await generator.GenerateAsync(format, "Student-List");
             return Tuple.Create(stream, name);
         }

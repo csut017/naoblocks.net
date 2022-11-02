@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using System.Text;
 
 namespace NaoBlocks.Engine.Generators
 {
@@ -59,6 +60,30 @@ namespace NaoBlocks.Engine.Generators
                     var style = destCell.Style;
                     if (block.IsEmphasized) style.Font.Bold = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Exports to HTML.
+        /// </summary>
+        /// <param name="builder">The <see cref="StringBuilder"/> to use.</param>
+        public override void ExportToHtml(StringBuilder builder)
+        {
+            foreach (var paragraph in this.Paragraphs)
+            {
+                builder.Append("<div>");
+                foreach (var block in paragraph.Blocks)
+                {
+                    if (block.IsEmphasized)
+                    {
+                        builder.Append($"<b>{block.Contents} </b>");
+                    }
+                    else
+                    {
+                        builder.Append($"{block.Contents} ");
+                    }
+                }
+                builder.Append("</div>");
             }
         }
     }

@@ -117,6 +117,10 @@ else
     app.UseHttpsRedirection();
 }
 
+// Register IronPDF
+IronPdfSetup.Initialise(builder, app.Logger);
+
+// Start the communications hub
 var hub = app.Services.GetService<IHub>();
 hub?.Start();
 

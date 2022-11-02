@@ -25,5 +25,11 @@
         /// Gets or sets whether this block should be emphasized.
         /// </summary>
         public bool IsEmphasized { get; set; }
+
+        /// <summary>
+        /// Implicitly casts to a <see cref="PageBlock"/>.
+        /// </summary>
+        /// <param name="value">The value in the block.</param>
+        public static implicit operator PageBlock(string value) => new(value);
     }
 }

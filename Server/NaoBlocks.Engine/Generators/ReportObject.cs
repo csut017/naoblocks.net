@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using System.Text;
 
 namespace NaoBlocks.Engine.Generators
 {
@@ -24,5 +25,11 @@ namespace NaoBlocks.Engine.Generators
         /// </summary>
         /// <param name="worksheet">The Excel worksheet to use.</param>
         public abstract void ExportToExcel(ExcelWorksheet worksheet);
+
+        /// <summary>
+        /// Exports to HTML.
+        /// </summary>
+        /// <param name="builder">The <see cref="StringBuilder"/> to use.</param>
+        public abstract void ExportToHtml(StringBuilder builder);
     }
 }

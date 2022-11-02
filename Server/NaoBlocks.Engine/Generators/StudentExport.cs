@@ -20,6 +20,8 @@
             if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsAsync(generator, fromDate, toDate);
             var includePrograms = this.GetArgumentOrDefault("programs", "yes");
             if ("yes".Equals(includePrograms) || "true".Equals(includePrograms)) await this.GenerateProgramsAsync(generator, fromDate, toDate);
+            generator.Title = "Student Details";
+            generator.IsLandScape = true;
             var (stream, name) = await generator.GenerateAsync(format, $"Student-Export-{this.User.Name}");
             return Tuple.Create(stream, name);
         }
@@ -56,6 +58,25 @@
                 page.AddParagraph(
                     new PageBlock("Age", true),
                     new PageBlock(studentDetails.Age ?? 0));
+            }
+
+            if ((this.User != null) && (this.User.Settings != null))
+            {
+                page.AddParagraph(
+                    new PageBlock("Robot Type", true),
+                    this.User.Settings.RobotType ?? string.Empty);
+                page.AddParagraph(
+                    new PageBlock("Toolbox", true),
+                    this.User.Settings.Toolbox ?? string.Empty);
+                page.AddParagraph(
+                    new PageBlock("View Mode", true),
+                    ValueMappings.ViewModes[this.User.Settings.ViewMode]);
+                page.AddParagraph(
+                    new PageBlock("Allocation Mode", true),
+                    ValueMappings.AllocationModes[this.User.Settings.AllocationMode]);
+                page.AddParagraph(
+                    new PageBlock("Allocated Robot", true),
+                    (this.User.Settings.AllocationMode > 0 ? this.User.Settings.RobotId : null) ?? string.Empty);
             }
         }
     }

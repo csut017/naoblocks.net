@@ -146,6 +146,7 @@ export class StudentsListComponent implements OnInit {
       ReportDialogSettings.Excel,
       ReportDialogSettings.Csv,
       ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
     ]
     this.exportSettings.show(settings)
       .subscribe(result => {
@@ -169,6 +170,7 @@ export class StudentsListComponent implements OnInit {
       ReportDialogSettings.Excel,
       ReportDialogSettings.Csv,
       ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
     ]
     this.exportSettings.show(settings)
       .subscribe(result => {
