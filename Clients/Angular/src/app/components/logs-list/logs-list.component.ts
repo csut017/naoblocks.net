@@ -26,6 +26,7 @@ export class LogsListComponent implements OnInit {
   @Output() currentItemChanged = new EventEmitter<string>();
 
   includeDebug: boolean = false;
+  includeInitialisation: boolean = false;
   includeState: boolean = false
   isLoading: boolean = true;
   isLogLoading: boolean = false;
@@ -39,6 +40,21 @@ export class LogsListComponent implements OnInit {
 
   ngOnInit() {
     this.loadList();
+  }
+
+  applyFilter(robot?: RobotWrapper): void {
+    if (!robot) {
+      this.robots.forEach(r => this.applyFilter(r));
+      return;
+    }
+
+    if (!robot.isLoaded) return;
+
+    if (this.includeInitialisation) {
+      robot.robot.filteredLogs = robot.robot.logs;
+    } else {
+      robot.robot.filteredLogs = robot.robot.logs.filter(r => r.type != 1);
+    }
   }
 
   toggleRobot(robot: RobotWrapper): void {
@@ -66,6 +82,7 @@ export class LogsListComponent implements OnInit {
             return log;
           })
         ];
+        this.applyFilter(robot);
         robot.hasMore = robot.robot.logs.length < data.count;
         robot.lastPage = data.page;
       });

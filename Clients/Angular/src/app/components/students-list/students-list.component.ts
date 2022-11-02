@@ -246,6 +246,11 @@ export class StudentsListComponent implements OnInit {
       });
   }
 
+  formatAge(age: Number): String {
+    if (age <= 0) return 'n/a';
+    return age.toString();
+  }
+
   private loadList(): void {
     this.isLoading = true;
     this.studentService.list()

@@ -78,11 +78,11 @@
             </ng-container>
             <ng-container matColumnDef="isDefault">
                 <th mat-header-cell *matHeaderCellDef> Default </th>
-                <td mat-cell *matCellDef="let record"> {{record.isDefault ? 'System' : ''}} </td>
+                <td mat-cell *matCellDef="let record"> {{record.isDefault ? 'Default' : 'User'}} </td>
             </ng-container>
             <ng-container matColumnDef="toolbox">
                 <th mat-header-cell *matHeaderCellDef> Toolbox </th>
-                <td mat-cell *matCellDef="let record"> {{!record.hasToolbox ? 'Missing' : ''}} </td>
+                <td mat-cell *matCellDef="let record"> {{!record.hasToolbox ? 'Missing' : 'Ready'}} </td>
             </ng-container>
             <ng-container matColumnDef="select">
                 <th mat-header-cell *matHeaderCellDef>

@@ -11,6 +11,7 @@ export class Robot {
     isLoading: boolean = false;
     isInitialised: boolean = false;
     logs: RobotLog[] = [];
+    filteredLogs: RobotLog[] = [];
 
     constructor(isNew: boolean = false) {
         this.isNew = isNew;

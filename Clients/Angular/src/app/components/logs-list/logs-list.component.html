@@ -6,8 +6,11 @@
                 Loading, please wait...
             </div>
         </div>
-        <mat-card *ngIf="!isLoading">
+        <mat-card *ngIf="!isLoading" class="scrollable-list">
             <mat-card-content>
+                <div>
+                    <mat-checkbox [(ngModel)]="includeInitialisation" (change)="applyFilter()" class="space-right">Show initialisations</mat-checkbox>    
+                </div>
                 <div *ngFor="let robot of robots">
                     <div (click)="toggleRobot(robot)" class="log-main-entry">
                         <mat-icon class="item-icon">{{robot.isExpanded ? 'expand_less' : 'expand_more'}}</mat-icon>
@@ -15,7 +18,7 @@
                         {{robot.robot.machineName}} [{{robot.robot.friendlyName}}]
                     </div>
                     <div *ngIf="robot.isExpanded" class="log-lines">
-                        <div *ngFor="let log of robot.robot.logs" (click)="viewLogs(robot.robot, log)"
+                        <div *ngFor="let log of robot.robot.filteredLogs" (click)="viewLogs(robot.robot, log)"
                             [ngClass]="{'log-selected':log.selected}">
                             <mat-icon class="item-icon">{{log.typeIcon}}</mat-icon>
                             {{log.whenAdded | date:'h:mm:ss a - d MMM, y' }}
@@ -34,7 +37,7 @@
             </mat-card-content>
         </mat-card>
     </div>
-    <div class="logs-col" *ngIf="isLogSelected">
+    <div class="logs-col" *ngIf="isLogSelected" class="scrollable-list">
         <div *ngIf="isLogLoading">
             <mat-spinner [diameter]="24"></mat-spinner>
             <div class="message">
@@ -43,10 +46,12 @@
         </div>
         <mat-card *ngIf="!isLogLoading">
             <mat-card-content>
+                <div>
                 <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()" class="space-right">Show debug
                     messages</mat-checkbox>
                 <mat-checkbox [(ngModel)]="includeState" (change)="refreshLogs()" class="space-right">Show state
                     messages</mat-checkbox>
+                </div>
                 <table>
                     <thead>
                         <tr>
