@@ -287,7 +287,7 @@ namespace NaoBlocks.Web.Controllers
             await executionEngine.CommitAsync().ConfigureAwait(false);
             var remaining = expiry.Subtract(this.CurrentTimeFunc());
             int? defaultView = null;
-            if (result.Output?.UserId != null)
+            if ((role != Data.UserRole.Robot) && (result.Output?.UserId != null))
             {
                 var userDetails = await executionEngine.Query<UserData>()
                     .RetrieveByIdAsync(result.Output.UserId);

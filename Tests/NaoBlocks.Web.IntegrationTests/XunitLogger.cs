@@ -94,7 +94,14 @@ namespace NaoBlocks.Web.IntegrationTests
             }
 
             var message = sb.ToString();
-            output.WriteLine(message);
+            try
+            {
+                output.WriteLine(message);
+            }
+            catch
+            {
+                // Sometimes we get errors here because we are trying to log after the test has completed
+            }
         }
 
         private bool TryAppendScopes(StringBuilder sb)

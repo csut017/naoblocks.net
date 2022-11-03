@@ -74,9 +74,12 @@
                 page.AddParagraph(
                     new PageBlock("Allocation Mode", true),
                     ValueMappings.AllocationModes[this.User.Settings.AllocationMode]);
-                page.AddParagraph(
-                    new PageBlock("Allocated Robot", true),
-                    (this.User.Settings.AllocationMode > 0 ? this.User.Settings.RobotId : null) ?? string.Empty);
+                if (this.User.Settings.AllocationMode != 0)
+                {
+                    page.AddParagraph(
+                        new PageBlock("Allocated Robot", true),
+                        (this.User.Settings.AllocationMode > 0 ? this.User.Settings.RobotId : null) ?? string.Empty);
+                }
             }
         }
     }

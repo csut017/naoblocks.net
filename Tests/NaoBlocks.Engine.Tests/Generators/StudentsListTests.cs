@@ -36,7 +36,10 @@ namespace NaoBlocks.Engine.Tests.Generators
                 Settings = new UserSettings
                 {
                     RobotType = "Karetao",
-                    Toolbox = "Test"
+                    Toolbox = "Test",
+                    AllocationMode = 2,
+                    ViewMode = 1,
+                    RobotId = "Mihīni"
                 }
             };
             using var store = InitialiseDatabase(
@@ -57,10 +60,10 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Equal(
                     @"Students
 ========
-Name,Robot,When Added,Toolbox,Age,Gender
-Ari,Karetao,2021-07-08,Test,,
-Mia,,2021-03-04,,,
-Moana,Karetao,2021-05-06,,10,Female
+Name,Robot Type,When Added,Toolbox,Age,Gender,View Mode,Allocation Mode,Allocated Robot
+Ari,Karetao,2021-07-08,Test,,,Tangibles,Prefer,Mihīni
+Mia,,2021-03-04,,,,,,
+Moana,Karetao,2021-05-06,,10,Female,Blocks,Any,
 ",
                 text);
         }

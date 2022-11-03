@@ -47,7 +47,6 @@ namespace NaoBlocks.Web.IntegrationTests
                 "/api/v1/Clients/robot",
                 "/api/v1/Clients/6/logs",
                 "/api/v1/robots/karetao/Logs/1",
-                "/api/v1/Robots/export/list",
                 "/api/v1/robots/types/1/export/logs",
                 "/api/v1/robots/types/1/export/logs.csv",
                 "/api/v1/robots/types/1/export/package",

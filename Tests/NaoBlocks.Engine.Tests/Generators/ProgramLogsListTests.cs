@@ -144,7 +144,7 @@ Number,When Added,Name,Program
         }
 
         [Theory]
-        [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text)]
+        [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text, ReportFormat.Csv)]
         public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
         {
             var generator = new UserLogs();

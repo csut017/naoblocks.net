@@ -129,11 +129,7 @@ namespace NaoBlocks.Common
         /// <returns>A string containing the human-readable version.</returns>
         public override string ToString()
         {
-            return this.ToString(new DisplayOptions
-            {
-                IncludeSourceIDs = false,
-                IncludeTokenTypes = false
-            });
+            return this.ToString(new DisplayOptions());
         }
 
         /// <summary>
@@ -163,7 +159,7 @@ namespace NaoBlocks.Common
             /// <summary>
             /// Include the node type.
             /// </summary>
-            public bool IncludeNodeTypes { get; set; } = false;
+            public bool IncludeNodeTypes { get; set; } = true;
 
             /// <summary>
             /// Include source IDs.

@@ -51,7 +51,7 @@ namespace NaoBlocks.Web.Helpers
             {
                 return controller.BadRequest(new
                 {
-                    Error = $"Report format {format} is not available"
+                    Error = $"Report format {reportFormat} is not available"
                 });
             }
 

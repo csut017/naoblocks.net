@@ -10,11 +10,6 @@ namespace NaoBlocks.Engine.Tests.Generators
 {
     public class StudentExportTests : DatabaseHelper
     {
-        private const string DetailsText = @"Details
-=======
-Name: Mia
-";
-
         private const string LogsText = @"Logs
 ====
 Robot,Date,Conversation,Time,Type,Description,info,debug,error,warn
@@ -32,8 +27,24 @@ Number,When Added,Name,Program
 2,{dateText},hōtaka,go()
 ";
 
-        private const string StudentsDetails = @"Gender: Male
+        private const string StudentDetailsText = @"Details
+=======
+Name: Mia
+Gender: Male
 Age: 5
+Robot Type: Nao
+Toolbox: Default
+View Mode: Blocks
+Allocation Mode: Any
+";
+
+        private const string UserDetailsText = @"Details
+=======
+Name: Mia
+Robot Type: Nao
+Toolbox: Default
+View Mode: Blocks
+Allocation Mode: Any
 ";
 
         [Fact]
@@ -41,6 +52,8 @@ Age: 5
         {
             // Arrange
             var student = new User { Name = "Mia", Id = "users/1" };
+            student.Settings.RobotType = "Nao";
+            student.Settings.Toolbox = "Default";
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
             var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             var timeOff = 0;
@@ -72,7 +85,7 @@ Age: 5
             using var reader = new StreamReader(output.Item1);
             var text = await reader.ReadToEndAsync();
             var expected = ReplaceValues(
-                $"{DetailsText}{LogsText}{ProgramsText}",
+                $"{UserDetailsText}{LogsText}{ProgramsText}",
                 new Dictionary<string, string>
                 {
                     { "dateText", now.ToString("yyyy-MM-dd") },
@@ -83,12 +96,12 @@ Age: 5
         }
 
         [Theory]
-        [InlineData($"{DetailsText}{StudentsDetails}{LogsText}{ProgramsText}", "programs=true", "logs=true")]
-        [InlineData($"{DetailsText}{StudentsDetails}{LogsText}{ProgramsText}", "programs=yes", "logs=yes")]
-        [InlineData($"{DetailsText}{StudentsDetails}", "programs=false", "logs=false")]
-        [InlineData($"{DetailsText}{StudentsDetails}", "programs=no", "logs=no")]
-        [InlineData($"{DetailsText}{StudentsDetails}{ProgramsText}", "programs=yes", "logs=no")]
-        [InlineData($"{DetailsText}{StudentsDetails}{LogsText}", "programs=no", "logs=yes")]
+        [InlineData($"{StudentDetailsText}{LogsText}{ProgramsText}", "programs=true", "logs=true")]
+        [InlineData($"{StudentDetailsText}{LogsText}{ProgramsText}", "programs=yes", "logs=yes")]
+        [InlineData($"{StudentDetailsText}", "programs=false", "logs=false")]
+        [InlineData($"{StudentDetailsText}", "programs=no", "logs=no")]
+        [InlineData($"{StudentDetailsText}{ProgramsText}", "programs=yes", "logs=no")]
+        [InlineData($"{StudentDetailsText}{LogsText}", "programs=no", "logs=yes")]
         public async Task GenerateAsyncGeneratesReportWithComponents(string expected, params string[] opts)
         {
             // Arrange
@@ -102,6 +115,8 @@ Age: 5
                     Gender = "Male"
                 }
             };
+            student.Settings.RobotType = "Nao";
+            student.Settings.Toolbox = "Default";
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
             var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             var timeOff = 0;
@@ -158,6 +173,8 @@ Age: 5
         {
             // Arrange
             var student = new User { Name = "Mia", Id = "users/1" };
+            student.Settings.RobotType = "Nao";
+            student.Settings.Toolbox = "Default";
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
             var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             var timeOff = 0;
@@ -193,7 +210,7 @@ Age: 5
             Assert.Equal("Student-Export-Mia.txt", output.Item2);
             using var reader = new StreamReader(output.Item1);
             var text = await reader.ReadToEndAsync();
-            var expected = $@"{DetailsText}Logs
+            var expected = $@"{UserDetailsText}Logs
 ====
 Robot,Date,Conversation,Time,Type,Description,info,warn
 Mihīni,2021-03-04,1124,05:16:27,RobotDebugMessage,wha,tekau,tekau mā tahi
@@ -220,6 +237,8 @@ Number,When Added,Name,Program
                     Gender = "Male"
                 }
             };
+            student.Settings.RobotType = "Nao";
+            student.Settings.Toolbox = "Default";
             var robot = new Robot { MachineName = "karetao", FriendlyName = "Mihīni", Id = "robots/1" };
             var conversation = new Conversation { ConversationId = 1124, SourceId = student.Id };
             var timeOff = 0;
@@ -253,7 +272,7 @@ Number,When Added,Name,Program
             var dateText = now.ToString("yyyy-MM-dd");
             var timeText1 = now.ToString("HH:mm:ss");
             var timeText2 = now.AddMinutes(1).ToString("HH:mm:ss");
-            var expected = ReplaceValues($"{DetailsText}{StudentsDetails}{LogsText}{ProgramsText}",
+            var expected = ReplaceValues($"{StudentDetailsText}{LogsText}{ProgramsText}",
                 new Dictionary<string, string>
                 {
                     { "dateText", now.ToString("yyyy-MM-dd") },

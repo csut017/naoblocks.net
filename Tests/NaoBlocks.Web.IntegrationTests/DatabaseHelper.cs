@@ -13,7 +13,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.IntegrationTests
 {
@@ -21,21 +20,21 @@ namespace NaoBlocks.Web.IntegrationTests
     {
         public const string DefaultPassword = "test-1234";
 
+        public static Robot GenerateRobot()
+        {
+            return new Robot
+            {
+                MachineName = "Karetao",
+                Password = Password.New(DefaultPassword)
+            };
+        }
+
         public static User GenerateUser(UserRole role = UserRole.Student)
         {
             return new User
             {
                 Role = role,
                 Name = "Mia",
-                Password = Password.New(DefaultPassword)
-            };
-        }
-
-        public static Robot GenerateRobot()
-        {
-            return new Robot
-            {
-                MachineName = "Karetao",
                 Password = Password.New(DefaultPassword)
             };
         }
@@ -52,16 +51,6 @@ namespace NaoBlocks.Web.IntegrationTests
             session.SaveChanges();
             WaitForIndexing(store);
             return store;
-        }
-
-        protected void AddDatabaseToServices(IServiceCollection services, params object[] entities)
-        {
-            services.AddSingleton<IDatabase>(services =>
-            {
-                var store = InitialiseDatabase(entities);
-                var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
-                return new RavenDbDatabase(logger, store);
-            });
         }
 
         protected static async Task<string> GenerateSessionToken(User user, HttpClient client)
@@ -84,6 +73,16 @@ namespace NaoBlocks.Web.IntegrationTests
             var token = result!.Output!.Token;
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return token;
+        }
+
+        protected void AddDatabaseToServices(IServiceCollection services, params object[] entities)
+        {
+            services.AddSingleton<IDatabase>(services =>
+            {
+                var store = InitialiseDatabase(entities);
+                var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
+                return new RavenDbDatabase(logger, store);
+            });
         }
     }
 }

@@ -63,7 +63,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Theory]
-        [InlineData(null, ReportFormat.Csv, "text/csv", "karetao-logs.csv")]
+        [InlineData(null, ReportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "karetao-logs.xlsx")]
         [InlineData("csv", ReportFormat.Csv, "text/csv", "karetao-logs.csv")]
         [InlineData("CSV", ReportFormat.Csv, "text/csv", "karetao-logs.csv")]
         [InlineData(".csv", ReportFormat.Csv, "text/csv", "karetao-logs.csv")]
