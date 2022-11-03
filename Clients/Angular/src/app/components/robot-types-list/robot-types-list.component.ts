@@ -121,8 +121,19 @@ export class RobotTypesListComponent implements OnInit {
 
   importPackage(): void {
     let settings = new ImportSettings(this.selection.selected, this.doSendPackage, this);
-    settings.prompt = 'Select the package files you would like to import:';
-    settings.title = 'Import Files for Package';
+    settings.prompt = 'Select the package you would like to import:';
+    settings.title = 'Import Package';
+    settings.allowMultiple = true;
+    this.importService.start(settings)
+      .subscribe(result => {
+
+      });
+  }
+
+  importRobots(): void {
+    let settings = new ImportSettings(this.selection.selected, this.doSendPackage, this);
+    settings.prompt = 'Select the list of robots you would like to import:';
+    settings.title = 'Import Robots';
     settings.allowMultiple = true;
     this.importService.start(settings)
       .subscribe(result => {
@@ -291,6 +302,10 @@ export class RobotTypesListComponent implements OnInit {
           console.log('[RobotTypesList] Export cancelled');
         }
       });
+  }
+
+  exportPackage(): void {
+    
   }
 
   private loadList(): void {

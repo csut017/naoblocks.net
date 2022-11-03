@@ -21,6 +21,7 @@
                         </button>
                         <mat-menu #importMenu="matMenu">
                             <button mat-menu-item (click)="importPackage()" [disabled]="selection.selected.length != 1">Package Files</button>
+                            <button mat-menu-item (click)="importRobots()" [disabled]="selection.selected.length != 1">Robots</button>
                         </mat-menu>
                     </div>
                 </div>
@@ -59,6 +60,7 @@
                         <button mat-menu-item (click)="exportList()">List</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportDetails()">Details</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportLogs()">Logs</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportPackage()">Package</button>
                     </mat-menu>
                 </div>
             </div>
