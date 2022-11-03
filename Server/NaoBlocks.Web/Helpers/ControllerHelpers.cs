@@ -68,6 +68,58 @@ namespace NaoBlocks.Web.Helpers
         }
 
         /// <summary>
+        /// Attempts to generate a report for a robot.
+        /// </summary>
+        /// <typeparam name="TGenerator">The report generator to use.</typeparam>
+        /// <param name="controller">The controller attempting to generate the report.</param>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        /// <param name="format">The output format.</param>
+        /// <param name="name">The machine name of the robot.</param>
+        /// <param name="generate">An optional generation function.</param>
+        /// <param name="defaultFormat">The default report generation format.</param>
+        /// <param name="args">Any additional arguments.</param>
+        /// <returns>A <see cref="ActionResult"/> containing the result of the validation and generation.</returns>
+        public static async Task<ActionResult> GenerateRobotReport<TGenerator>(
+            this ControllerBase controller,
+            IExecutionEngine engine,
+            string? format,
+            string? name,
+            Func<TGenerator, ReportFormat, Task<Tuple<Stream, string>>>? generate = null,
+            ReportFormat defaultFormat = ReportFormat.Excel,
+            Dictionary<string, string>? args = null)
+           where TGenerator : ReportGenerator, new()
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return controller.BadRequest(new
+                {
+                    Error = "Missing robot details"
+                });
+            }
+
+            var robot = await engine
+                .Query<RobotData>()
+                .RetrieveByNameAsync(name);
+            if (robot == null)
+            {
+                return controller.NotFound();
+            }
+
+            if (generate == null)
+            {
+                generate = (generator, format) => generator.GenerateAsync(format, robot);
+            }
+
+            return await GenerateReport(
+                controller,
+                engine,
+                format,
+                generate,
+                defaultFormat,
+                args);
+        }
+
+        /// <summary>
         /// Attempts to generate a report for a robot type.
         /// </summary>
         /// <typeparam name="TGenerator">The report generator to use.</typeparam>

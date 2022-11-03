@@ -20,8 +20,8 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class RobotsController : ControllerBase
     {
-        private readonly ILogger<RobotsController> _logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<RobotsController> logger;
 
         /// <summary>
         /// Initialises a new <see cref="RobotsController"/> instance.
@@ -30,7 +30,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
         public RobotsController(ILogger<RobotsController> logger, IExecutionEngine executionEngine)
         {
-            this._logger = logger;
+            this.logger = logger;
             this.executionEngine = executionEngine;
         }
 
@@ -43,7 +43,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this._logger.LogInformation($"Deleting robot '{id}'");
+            this.logger.LogInformation($"Deleting robot '{id}'");
             var command = new DeleteRobot
             {
                 Name = id
@@ -52,18 +52,64 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Generates the robot details export.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <param name="format">The format to use.</param>
+        /// <returns>The generated robot details.</returns>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
+        [HttpGet("{name}/export")]
+        [HttpGet("{name}/export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportDetails(string name, string format = ".xlsx", string? from = null, string? to = null)
+        {
+            this.logger.LogInformation("Generating robot details export");
+            var args = this.MakeArgs($"from={from}", $"to={to}");
+            return await this.GenerateRobotReport<Generators.RobotExport>(
+                this.executionEngine,
+                format,
+                name,
+                defaultFormat: ReportFormat.Excel,
+                args: args);
+        }
+
+        /// <summary>
         /// Generates the robot list export.
         /// </summary>
         /// <param name="format">The format to use.</param>
         /// <returns>The generated robot list.</returns>
-        [HttpGet("export/list")]
-        [HttpGet("export/list{format}")]
+        [HttpGet("export")]
+        [HttpGet("export{format}")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format)
         {
+            this.logger.LogInformation("Generating robot list export");
             return await this.GenerateReport<Generators.RobotsList>(
                 this.executionEngine,
                 format);
+        }
+
+        /// <summary>
+        /// Exports the logs for a robot.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <param name="format">The report format to generate.</param>
+        /// <returns>The generated robot logs.</returns>
+        /// <param name="from">The start date.</param>
+        /// <param name="to">The end date.</param>
+        [HttpGet("{name}/logs/export")]
+        [HttpGet("{name}/logs/export{format}")]
+        public async Task<ActionResult> ExportLogs(string? name, string? format = ".xlsx", string? from = null, string? to = null)
+        {
+            this.logger.LogInformation("Generating robot log export");
+            var args = this.MakeArgs($"from={from}", $"to={to}");
+            return await this.GenerateRobotReport<Generators.RobotLogs>(
+                this.executionEngine,
+                format,
+                name,
+                defaultFormat: ReportFormat.Excel,
+                args: args);
         }
 
         /// <summary>
@@ -74,7 +120,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Transfer.Robot>> Get(string name)
         {
-            this._logger.LogDebug($"Retrieving robot: id {name}");
+            this.logger.LogDebug($"Retrieving robot: id {name}");
             var robot = await this.executionEngine
                 .Query<RobotData>()
                 .RetrieveByNameAsync(name, true)
@@ -84,7 +130,7 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this._logger.LogDebug("Retrieved robot");
+            this.logger.LogDebug("Retrieved robot");
             return Transfer.Robot.FromModel(robot);
         }
 
@@ -99,7 +145,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<ListResult<Transfer.Robot>>> List(int? page, int? size, string? type)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
-            this._logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
             string? typeFilter = null;
 
             if (!string.IsNullOrEmpty(type))
@@ -121,7 +167,7 @@ namespace NaoBlocks.Web.Controllers
                 .RetrievePageAsync(pageNum, pageSize, typeFilter)
                 .ConfigureAwait(false);
             var count = robots.Items?.Count();
-            this._logger.LogDebug($"Retrieved {count} robots");
+            this.logger.LogDebug($"Retrieved {count} robots");
             var result = new ListResult<Transfer.Robot>
             {
                 Count = robots.Count,
@@ -148,7 +194,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Adding new robot '{robot.MachineName}'");
+            this.logger.LogInformation($"Adding new robot '{robot.MachineName}'");
             var command = new AddRobot
             {
                 MachineName = robot.MachineName,
@@ -179,7 +225,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Updating robot '{id}'");
+            this.logger.LogInformation($"Updating robot '{id}'");
             var command = new UpdateRobot
             {
                 MachineName = id,
@@ -209,7 +255,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Registering new robot '{robot.MachineName}'");
+            this.logger.LogInformation($"Registering new robot '{robot.MachineName}'");
             var command = new RegisterRobot
             {
                 MachineName = robot.MachineName

@@ -28,7 +28,7 @@
                     <button mat-raised-button class="command-button"
                         [disabled]="selection.selected.length != 1" (click)="edit()">Edit</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()" (click)="delete()">Delete</button>
-                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()" [matMenuTriggerFor]="exportMenu">
+                    <button mat-raised-button class="command-button" [matMenuTriggerFor]="exportMenu">
                         Export
                         <mat-icon>arrow_drop_down</mat-icon>
                     </button>
@@ -36,7 +36,7 @@
                         <button mat-menu-item (click)="exportList()">List</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportDetails()">Details</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportLogs()">Logs</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportSnapshots()">Snapshots</button>
+                        <!-- <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportSnapshots()">Snapshots</button> -->
                     </mat-menu>
                 </div>
             </div>

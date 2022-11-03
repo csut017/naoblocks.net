@@ -4,7 +4,7 @@
     /// Generates the student details export.
     /// </summary>
     public class StudentExport
-        : UserReportGenerator
+        : ReportGenerator
     {
         /// <summary>
         /// Generates the students list report.
@@ -17,9 +17,9 @@
             var generator = new Generator();
             GenerateStudentDetails(generator);
             var includeLogs = this.GetArgumentOrDefault("logs", "yes");
-            if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsAsync(generator, fromDate, toDate);
+            if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsForUserAsync(generator, fromDate, toDate);
             var includePrograms = this.GetArgumentOrDefault("programs", "yes");
-            if ("yes".Equals(includePrograms) || "true".Equals(includePrograms)) await this.GenerateProgramsAsync(generator, fromDate, toDate);
+            if ("yes".Equals(includePrograms) || "true".Equals(includePrograms)) await this.GenerateProgramsForUserAsync(generator, fromDate, toDate);
             generator.Title = "Student Details";
             generator.IsLandScape = true;
             var (stream, name) = await generator.GenerateAsync(format, $"Student-Export-{this.User.Name}");

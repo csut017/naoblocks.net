@@ -4,11 +4,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
+import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { Robot } from 'src/app/data/robot';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
+import { ReportSettingsService } from 'src/app/services/report-settings.service';
 import { RobotService } from 'src/app/services/robot.service';
 
 @Component({
@@ -32,6 +34,7 @@ export class RobotsListComponent implements OnInit {
     private authenticationService: AuthenticationService,
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
+    private exportSettings: ReportSettingsService,
     private multilineMessage: MultilineMessageService,
     private downloaderService: FileDownloaderService) { }
 
@@ -122,6 +125,87 @@ export class RobotsListComponent implements OnInit {
       this.currentItem!.id = this.currentItem!.machineName;
     }
     this.currentItemChanged.emit('');
+  }
+
+  exportList(): void {
+    console.log('[RobotsListComponent] Showing export settings for robot list');
+    let settings = new ReportDialogSettings('Export robot List', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotsListComponent] Generating robot list');
+          console.log(result);
+          console.groupEnd();
+          this.downloaderService.download(
+            `v1/robots/export.${result.selectedFormat}`, 
+            `robots.${result.selectedFormat}`);
+        } else {
+          console.log('[RobotsListComponent] Export cancelled');
+        }
+      });
+  }
+
+  exportDetails(): void {
+    console.log('[RobotsListComponent] Showing export settings for details');
+    let settings = new ReportDialogSettings('Export Details', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotsListComponent] Generating details export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/robots/${t.machineName}/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
+              `${t.friendlyName}_${fromDate}_${toDate}-details.${result.selectedFormat}`));
+        } else {
+          console.log('[RobotsListComponent] Export cancelled');
+        }
+      });
+  }
+
+  exportLogs(): void {
+    console.log('[RobotsListComponent] Showing export settings for logs');
+    let settings = new ReportDialogSettings('Export Logs', true);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotsListComponent] Generating logs export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/robots/${t.machineName}/logs/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `${t.friendlyName}_${fromDate}_${toDate}-logs.${result.selectedFormat}`));
+        } else {
+          console.log('[RobotsListComponent] Export cancelled');
+        }
+      });
   }
 
   private loadList(): void {

@@ -6,7 +6,7 @@ namespace NaoBlocks.Engine.Generators
     /// <summary>
     /// Generates the snapshots list.
     /// </summary>
-    public class SnapshotsList
+    public class UserSnapshots
         : ReportGenerator
     {
         /// <summary>

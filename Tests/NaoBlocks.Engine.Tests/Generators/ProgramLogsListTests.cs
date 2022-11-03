@@ -36,7 +36,7 @@ namespace NaoBlocks.Engine.Tests.Generators
                 new CodeProgram { UserId = "Mia", WhenAdded = now, Code = "go()", Number = 1 },
                 new CodeProgram { UserId = "Mia", WhenAdded = now.AddMinutes(1), Code = "go()", Number = 2, Name = "hōtaka" });
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<ProgramLogsList>(session);
+            var generator = InitialiseGenerator<UserLogs>(session);
 
             // Act
             var output = await generator.GenerateAsync(ReportFormat.Text, student);
@@ -91,7 +91,7 @@ Number,When Added,Name,Program
                 new CodeProgram { UserId = "Mia", WhenAdded = now, Code = "go()", Number = 1 },
                 new CodeProgram { UserId = "Mia", WhenAdded = DefaultTestDateTime, Code = "go()", Number = 2, Name = "hōtaka" });
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<ProgramLogsList>(session);
+            var generator = InitialiseGenerator<UserLogs>(session);
 
             // Act
             generator.UseArguments(new Dictionary<string, string>
@@ -133,7 +133,7 @@ Number,When Added,Name,Program
                 this.GenerateLog(conversation, robot, 0, "tahi", "rua", "toru"),
                 this.GenerateLog(conversation, robot, 1, "wha", "rima"));
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<ProgramLogsList>(session);
+            var generator = InitialiseGenerator<UserLogs>(session);
 
             // Act
             var output = await generator.GenerateAsync(format, student);
@@ -147,7 +147,7 @@ Number,When Added,Name,Program
         [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text)]
         public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
         {
-            var generator = new ProgramLogsList();
+            var generator = new UserLogs();
             Assert.Equal(allowed, generator.IsFormatAvailable(format));
         }
     }

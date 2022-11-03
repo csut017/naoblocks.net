@@ -3,8 +3,8 @@
     /// <summary>
     /// Generates the program logs list.
     /// </summary>
-    public class ProgramLogsList
-        : UserReportGenerator
+    public class UserLogs
+        : ReportGenerator
     {
         /// <summary>
         /// Generates the students list report.
@@ -15,8 +15,8 @@
         {
             var (fromDate, toDate) = this.ParseFromToDates();
             var generator = new Generator();
-            await this.GenerateLogsAsync(generator, fromDate, toDate);
-            await this.GenerateProgramsAsync(generator, fromDate, toDate);
+            await this.GenerateLogsForUserAsync(generator, fromDate, toDate);
+            await this.GenerateProgramsForUserAsync(generator, fromDate, toDate);
             var (stream, name) = await generator.GenerateAsync(format, $"Student-Logs-{this.User.Name}");
             return Tuple.Create(stream, name);
         }
@@ -33,6 +33,7 @@
                 ReportFormat.Excel => true,
                 ReportFormat.Pdf => true,
                 ReportFormat.Text => true,
+                ReportFormat.Csv => true,
                 _ => false,
             };
         }

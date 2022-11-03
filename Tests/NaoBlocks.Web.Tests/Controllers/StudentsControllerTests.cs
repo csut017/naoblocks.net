@@ -330,7 +330,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.ProgramLogsList>();
+            var generator = new Mock<Generators.UserLogs>();
             var result = Tuple.Create((Stream)new MemoryStream(), fileName);
             generator.Setup(g => g.GenerateAsync(expected))
                 .Returns(Task.FromResult(result))
@@ -406,7 +406,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.ProgramLogsList>();
+            var generator = new Mock<Generators.UserLogs>();
             engine.RegisterGenerator(generator.Object);
             GenerateUserDataQuery(engine, null);
             var controller = new StudentsController(
@@ -426,7 +426,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.ProgramLogsList>();
+            var generator = new Mock<Generators.UserLogs>();
             engine.RegisterGenerator(generator.Object);
             GenerateUserDataQuery(engine, new Data.User
             {
@@ -455,7 +455,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.SnapshotsList>();
+            var generator = new Mock<Generators.UserSnapshots>();
             var result = Tuple.Create((Stream)new MemoryStream(), fileName);
             generator.Setup(g => g.GenerateAsync(expected))
                 .Returns(Task.FromResult(result))
@@ -531,7 +531,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.SnapshotsList>();
+            var generator = new Mock<Generators.UserSnapshots>();
             engine.RegisterGenerator(generator.Object);
             GenerateUserDataQuery(engine, null);
             var controller = new StudentsController(
@@ -551,7 +551,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var logger = new FakeLogger<StudentsController>();
             var engine = new FakeEngine();
-            var generator = new Mock<Generators.SnapshotsList>();
+            var generator = new Mock<Generators.UserSnapshots>();
             engine.RegisterGenerator(generator.Object);
             GenerateUserDataQuery(engine, new Data.User
             {

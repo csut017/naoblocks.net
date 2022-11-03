@@ -77,6 +77,40 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Exports the robot types.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <returns>The robot types export.</returns>
+        [HttpGet("export")]
+        [HttpGet("export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> Export(string? format = ".xlsx")
+        {
+            return await this.GenerateReport<Generators.RobotTypesList>(
+                this.executionEngine,
+                format,
+                defaultFormat: ReportFormat.Excel);
+        }
+
+        /// <summary>
+        /// Exports the robot type export.
+        /// </summary>
+        /// <param name="id">The name of the robot type.</param>
+        /// <param name="format">The export format.</param>
+        /// <returns>The logs for the robot type.</returns>
+        [HttpGet("{id}/export")]
+        [HttpGet("{id}/export{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportDetails(string id, string? format = ".xlsx")
+        {
+            return await this.GenerateRobotTypeReport<Generators.RobotTypeExport>(
+                this.executionEngine,
+                format,
+                id,
+                defaultFormat: ReportFormat.Excel);
+        }
+
+        /// <summary>
         /// Exports the logs for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
@@ -94,7 +128,7 @@ namespace NaoBlocks.Web.Controllers
                 this.executionEngine,
                 format,
                 id,
-                defaultFormat: ReportFormat.Csv,
+                defaultFormat: ReportFormat.Excel,
                 args: args);
         }
 

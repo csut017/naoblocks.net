@@ -118,7 +118,7 @@ namespace NaoBlocks.Web.Controllers
                 this.executionEngine,
                 format,
                 name,
-                defaultFormat: ReportFormat.Csv,
+                defaultFormat: ReportFormat.Excel,
                 args: args);
         }
 
@@ -151,11 +151,11 @@ namespace NaoBlocks.Web.Controllers
         {
             this.logger.LogInformation("Generating student log export");
             var args = this.MakeArgs($"from={from}", $"to={to}");
-            return await this.GenerateUserReport<Generators.ProgramLogsList>(
+            return await this.GenerateUserReport<Generators.UserLogs>(
                 this.executionEngine,
                 format,
                 name,
-                defaultFormat: ReportFormat.Csv,
+                defaultFormat: ReportFormat.Excel,
                 args: args);
         }
 
@@ -173,11 +173,11 @@ namespace NaoBlocks.Web.Controllers
         {
             this.logger.LogInformation("Generating student snapshots export");
             var args = this.MakeArgs($"from={from}", $"to={to}");
-            return await this.GenerateUserReport<Generators.SnapshotsList>(
+            return await this.GenerateUserReport<Generators.UserSnapshots>(
                 this.executionEngine,
                 format,
                 name,
-                defaultFormat: ReportFormat.Csv,
+                defaultFormat: ReportFormat.Excel,
                 args: args);
         }
 

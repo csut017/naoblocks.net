@@ -12,6 +12,7 @@ namespace NaoBlocks.Engine
     public abstract class ReportGenerator
     {
         private Dictionary<string, string> arguments = new();
+        private Robot? robot;
         private RobotType? robotType;
         private IDatabaseSession? session;
         private User? user;
@@ -30,6 +31,18 @@ namespace NaoBlocks.Engine
         public bool HasUser
         {
             get { return this.user != null; }
+        }
+
+        /// <summary>
+        /// Gets the initialised robot.
+        /// </summary>
+        public Robot Robot
+        {
+            get
+            {
+                if (this.robot == null) throw new InvalidOperationException("Robot has not been initialised");
+                return this.robot;
+            }
         }
 
         /// <summary>
@@ -84,6 +97,18 @@ namespace NaoBlocks.Engine
         public Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format, User user)
         {
             this.user = user;
+            return this.GenerateAsync(format);
+        }
+
+        /// <summary>
+        /// Generates a robot-based report.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <param name="robot">The robot to generate the report for.</param>
+        /// <returns>The output <see cref="Stream"/> containing the generated data and filename.</returns>
+        public Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format, Robot robot)
+        {
+            this.robot = robot;
             return this.GenerateAsync(format);
         }
 

@@ -20,16 +20,15 @@
                         (click)="edit()">Edit</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
                         (click)="delete()">Delete</button>
-                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
+                    <button mat-raised-button class="command-button"
                         [matMenuTriggerFor]="exportMenu">
                         Export
                         <mat-icon>arrow_drop_down</mat-icon>
                     </button>
                     <mat-menu #exportMenu="matMenu">
-                        <button mat-menu-item>List</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1">Details</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1">Logs</button>
-                        <button mat-menu-item [disabled]="selection.selected.length != 1">Snapshots</button>
+                        <button mat-menu-item (click)="exportList()">List</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportDetails()">Details</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportLogs()">Logs</button>
                     </mat-menu>
                 </div>
             </div>

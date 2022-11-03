@@ -211,6 +211,59 @@ export class RobotTypesListComponent implements OnInit {
     this.currentItemChanged.emit(`${this.currentItem.name} [Toolboxes]`);
   }
 
+  exportList(): void {
+    console.log('[RobotTypesList] Showing export settings for robot list');
+    let settings = new ReportDialogSettings('Export robot List', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotTypesList] Generating robot type list');
+          console.log(result);
+          console.groupEnd();
+          this.downloaderService.download(
+            `v1/robots/types/export.${result.selectedFormat}`, 
+            `robots-types.${result.selectedFormat}`);
+        } else {
+          console.log('[RobotTypesList] Export cancelled');
+        }
+      });
+  }
+
+  exportDetails(): void {
+    console.log('[RobotTypesList] Showing export settings for details');
+    let settings = new ReportDialogSettings('Export Details', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Excel,
+      ReportDialogSettings.Csv,
+      ReportDialogSettings.Text,
+      ReportDialogSettings.Pdf,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotTypesList] Generating details export');
+          console.log(result);
+          console.groupEnd();
+
+          const fromDate = result.dateFrom?.toISODate() || '',
+            toDate = result.dateTo?.toISODate() || '';
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/robots/types/${t.name}/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
+              `${t.name}-details.${result.selectedFormat}`));
+        } else {
+          console.log('[RobotTypesList] Export cancelled');
+        }
+      });
+  }
+
   exportLogs(): void {
     console.log('[RobotTypesList] Showing export settings for logs');
     let settings = new ReportDialogSettings('Export Logs', true);

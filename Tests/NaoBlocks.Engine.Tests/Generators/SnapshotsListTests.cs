@@ -37,7 +37,7 @@ namespace NaoBlocks.Engine.Tests.Generators
                 snapshot2,
                 snapshot1);
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<SnapshotsList>(session);
+            var generator = InitialiseGenerator<UserSnapshots>(session);
 
             // Act
             var output = await generator.GenerateAsync(ReportFormat.Text, student);
@@ -85,7 +85,7 @@ Date/Time,Source,State,tahi,toru
                 snapshot2,
                 snapshot1);
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<SnapshotsList>(session);
+            var generator = InitialiseGenerator<UserSnapshots>(session);
 
             // Act
             var output = await generator.GenerateAsync(ReportFormat.Text, student);
@@ -123,7 +123,7 @@ Date/Time,Source,State,tahi,toru
                 student,
                 snapshot);
             using var session = store.OpenAsyncSession();
-            var generator = InitialiseGenerator<SnapshotsList>(session);
+            var generator = InitialiseGenerator<UserSnapshots>(session);
 
             // Act
             var output = await generator.GenerateAsync(format, student);
@@ -137,7 +137,7 @@ Date/Time,Source,State,tahi,toru
         [ReportFormatData(ReportFormat.Excel, ReportFormat.Pdf, ReportFormat.Text, ReportFormat.Csv)]
         public void IsFormatAvailableChecksAllowedTypes(ReportFormat format, bool allowed)
         {
-            var generator = new SnapshotsList();
+            var generator = new UserSnapshots();
             Assert.Equal(allowed, generator.IsFormatAvailable(format));
         }
     }

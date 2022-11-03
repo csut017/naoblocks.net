@@ -1,9 +1,4 @@
-﻿using NaoBlocks.Engine.Data;
-using NaoBlocks.Engine.Indices;
-using Raven.Client.Documents;
-using Raven.Client.Documents.Linq;
-
-namespace NaoBlocks.Engine.Generators
+﻿namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
     /// Exports the robot logs.
@@ -20,80 +15,12 @@ namespace NaoBlocks.Engine.Generators
         {
             var (fromDate, toDate) = this.ParseFromToDates();
             var generator = new Generator();
-            var table = generator.AddTable("Logs");
-            var header = table.AddRow(
-                TableRowType.Header,
-                "Robot",
-                "Date",
-                "Conversation",
-                "Time",
-                "Type",
-                "Description");
-            var columns = new Dictionary<string, int>();
 
-            fromDate = fromDate.ToUniversalTime();
-            toDate = toDate.ToUniversalTime();
-            List<RobotLog> logs;
-            var reportName = "All";
-            if (this.HasRobotType)
-            {
-                var robotTypeId = this.RobotType.Id;
-                reportName = this.RobotType.Name;
-                logs = await this.Session
-                    .Query<RobotLogByRobotTypeId.Result, RobotLogByRobotTypeId>()
-                    .Where(rl => rl.RobotTypeId == robotTypeId)
-                    .OfType<RobotLog>()
-                    .Include(rl => rl.RobotId)
-                    .Where(rl => (rl.WhenAdded >= fromDate) && (rl.WhenAdded <= toDate))
-                    .OrderByDescending(rl => rl.WhenAdded)
-                    .ToListAsync();
-            }
-            else
-            {
-                logs = await this.Session
-                    .Query<RobotLogByRobotTypeId.Result, RobotLogByRobotTypeId>()
-                    .OfType<RobotLog>()
-                    .Include(rl => rl.RobotId)
-                    .Where(rl => (rl.WhenAdded >= fromDate) && (rl.WhenAdded <= toDate))
-                    .OrderByDescending(rl => rl.WhenAdded)
-                    .ToListAsync();
-            }
+            var reportName = this.HasRobotType
+                ? this.RobotType.Name
+                : "All";
+            await this.GenerateLogsForRobotAsync(generator, fromDate, toDate);
 
-            foreach (var log in logs)
-            {
-                var robot = await this.Session
-                    .LoadAsync<Robot>(log.RobotId)
-                    .ConfigureAwait(false);
-                foreach (var line in log.Lines)
-                {
-                    var row = table.AddRow(
-                        robot?.FriendlyName,
-                        log!.WhenAdded.ToLocalTime(),
-                        log.Conversation.ConversationId,
-                        new TableCell(line.WhenAdded.ToLocalTime(), "HH:mm:ss"),
-                        line.SourceMessageType.ToString(),
-                        line.Description);
-                    foreach (var value in line.Values)
-                    {
-                        if (string.Equals("token", value.Name, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            // Ignore any security tokens
-                            // They are not needed in the analysis and could be a potential security hole
-                            continue;
-                        }
-
-                        if (!columns.TryGetValue(value.Name, out int column))
-                        {
-                            column = header.Values.Count;
-                            columns[value.Name] = column;
-                            header.Values.Add(value.Name);
-                        }
-                        row.SetCell(column, value.Value);
-                    }
-                }
-            }
-
-            table.EnsureAllRowsSameLength();
             var (stream, name) = await generator.GenerateAsync(format, $"{reportName}-logs");
             return Tuple.Create(stream, name);
         }
