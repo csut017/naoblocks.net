@@ -3,7 +3,7 @@
     <div>
         {{data.prompt}}
     </div>
-    <mat-grid-list cols="2" rowHeight="2:1">
+    <mat-grid-list cols="2">
         <mat-grid-tile *ngIf="!status.isUploading && !status.isUploadCompleted">
             <div class="dropzone" appDragAndDrop (fileDropped)="fileBrowseHandler($event)">
                 <input type="file" #packageDropRef id="packageDropRef" multiple (change)="fileBrowseHandler($event)" />
@@ -47,9 +47,9 @@
     </mat-grid-list>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button *ngIf="data.showCancel && !status.isUploadCompleted" (click)="cancelUpload()">Cancel</button>
-    <button mat-button [disabled]="status.isUploading" *ngIf="!status.isUploadCompleted"
+    <button mat-stroked-button *ngIf="data.showCancel && !status.isUploadCompleted" (click)="cancelUpload()">Cancel</button>
+    <button mat-stroked-button [disabled]="status.isUploading" *ngIf="!status.isUploadCompleted"
         (click)="startUpload()">Upload</button>
-    <button mat-button *ngIf="status.isUploadCompleted" [mat-dialog-close]="true">Close</button>
-    <button mat-button *ngIf="status.isUploadCompleted && data.allowReImport" (click)="startUpload()">Retry</button>
+    <button mat-stroked-button *ngIf="status.isUploadCompleted" [mat-dialog-close]="true">Close</button>
+    <button mat-stroked-button *ngIf="status.isUploadCompleted && data.allowReImport" (click)="startUpload()">Retry</button>
 </mat-dialog-actions>

@@ -21,7 +21,7 @@ export class ImportDialogComponent implements OnInit {
   }
 
   fileBrowseHandler($event: any): void {
-    let files = $event.target.files;
+    let files = $event.target ? $event.target.files : $event;
     for (const file of files) {
       if (this.status.files.length == 0 || this.data.allowMultiple) {
         this.status.files.push(file);

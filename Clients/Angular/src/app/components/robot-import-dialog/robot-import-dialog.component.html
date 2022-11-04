@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Import Robots</h2>
+<mat-dialog-content>
+    <mat-stepper #stepper linear>
+        <mat-step label="Select Input Source" [stepControl]="controlFile">
+            <div class="panel-content">
+                <div class="dropzone" appDragAndDrop (fileDropped)="fileBrowseHandler($event)">
+                    <input type="file" #packageDropRef id="packageDropRef" multiple
+                        (change)="fileBrowseHandler($event)" />
+                    <mat-icon>cloud_upload</mat-icon>
+                    <h3>Drag file for upload here</h3>
+                    <h3>or</h3>
+                    <label for="packageDropRef" class="btn btn-success">Browse for files</label>
+                </div>
+            </div>
+            <div class="panel-commands"></div>
+        </mat-step>
+        <mat-step label="Verify Data" [stepControl]="controlVerification">
+            <div class="panel-content"></div>
+            <div class="panel-commands">
+            <button mat-stroked-button matStepperPrevious>Back</button>
+            <button mat-stroked-button matStepperNext class="pull-right">Next</button>
+            </div>
+        </mat-step>
+        <mat-step label="Import robots">
+            <div class="panel-content"></div>
+            <div class="panel-commands">
+                <button mat-stroked-button matStepperPrevious>Back</button>
+            </div>
+        </mat-step>
+    </mat-stepper>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-stroked-button *ngIf="!isFinished" [mat-dialog-close]="false">Cancel</button>
+    <button mat-stroked-button *ngIf="isFinished" [mat-dialog-close]="true">Close</button>
+</mat-dialog-actions>

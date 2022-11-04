@@ -16,6 +16,8 @@ import { ImportStatus } from 'src/app/data/import-status';
 import { ReportSettingsService } from 'src/app/services/report-settings.service';
 import { ReportSettings } from 'src/app/data/report-settings';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
+import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
+import { RobotImportSettings } from 'src/app/data/robot-import-settings';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -42,6 +44,7 @@ export class RobotTypesListComponent implements OnInit {
     private multilineMessage: MultilineMessageService,
     private importService: ImportService,
     private exportSettings: ReportSettingsService,
+    private importRobotService: RobotImportDialogService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -131,13 +134,10 @@ export class RobotTypesListComponent implements OnInit {
   }
 
   importRobots(): void {
-    let settings = new ImportSettings(this.selection.selected, this.doSendPackage, this);
-    settings.prompt = 'Select the list of robots you would like to import:';
-    settings.title = 'Import Robots';
-    settings.allowMultiple = true;
-    this.importService.start(settings)
+    let settings = new RobotImportSettings();
+    this.importRobotService.start(settings)
       .subscribe(result => {
-
+        if (result) this.loadList();
       });
   }
 
@@ -305,7 +305,7 @@ export class RobotTypesListComponent implements OnInit {
   }
 
   exportPackage(): void {
-    
+
   }
 
   private loadList(): void {

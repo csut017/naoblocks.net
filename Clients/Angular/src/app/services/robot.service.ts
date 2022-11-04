@@ -18,7 +18,7 @@ export class RobotService extends ClientService {
     errorHandler: ErrorHandlerService) {
     super(errorHandler);
     this.serviceName = 'RobotService';
-}
+  }
 
   list(page: number = 0, size: number = 20): Observable<ResultSet<Robot>> {
     const url = `${environment.apiURL}v1/robots?page=${page}&size=${size}`;
@@ -89,7 +89,23 @@ export class RobotService extends ClientService {
           this.log('Deleted robot');
           result.output = robot;
         }),
-        catchError(this.handleError('saveExisting', msg => new ExecutionResult<Robot>(undefined, msg)))
+        catchError(this.handleError('delete', msg => new ExecutionResult<Robot>(undefined, msg)))
+      );
+  }
+
+  parseImportFile(file: File): Observable<ResultSet<Robot>> {
+    const url = `${environment.apiURL}v1/robots/import?action=parse`;
+    this.log('Parsing import file');
+    return this.http.post<ResultSet<Robot>>(url, file.stream())
+      .pipe(
+        tap(result => {
+          if (result.errorMsg) {
+            this.log(`Failed to parse input file: ${result.errorMsg}`);
+          } else {
+            this.log(`Parsed import file: found ${result.count} robots`);
+          }
+        }),
+        catchError(this.handleError('parseImportFile', msg => new ResultSet<Robot>(msg))),
       );
   }
 }

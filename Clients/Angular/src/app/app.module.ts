@@ -50,10 +50,13 @@ import { ReportSettingsComponent } from './components/report-settings/report-set
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
 import { ExportDataComponent } from './components/export-data/export-data.component';
+import { RobotImportDialogComponent } from './components/robot-import-dialog/robot-import-dialog.component';
+import { DragAndDropDirective } from './drag-and-drop.directive';
 
 
 @NgModule({
   declarations: [
+    DragAndDropDirective,
     AppComponent,
     LandingComponent,
     LoginComponent,
@@ -93,7 +96,8 @@ import { ExportDataComponent } from './components/export-data/export-data.compon
     ToolboxListComponent,
     UserInterfaceEditorComponent,
     ReportSettingsComponent,
-    ExportDataComponent
+    ExportDataComponent,
+    RobotImportDialogComponent
   ],
   imports: [
     BrowserModule,
