@@ -1,6 +1,6 @@
 .dropzone {
     width: 80%;
-    height: 200px;
+    height: 11rem;
     padding: 2rem;
     text-align: center;
     border: dashed 1px #666;
@@ -47,4 +47,8 @@
     .pull-right {
         float: right;
     }
+}
+
+.error-message {
+    color: red;
 }

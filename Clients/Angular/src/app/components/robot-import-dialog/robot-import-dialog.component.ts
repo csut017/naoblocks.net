@@ -12,6 +12,7 @@ export class RobotImportDialogComponent implements OnInit {
 
   controlFile: FormControl = new FormControl(null, { validators: Validators.required });
   controlVerification: FormControl = new FormControl(null, { validators: Validators.required });
+  errorMessage: string = '';
   isFinished: boolean = false;
   @ViewChild('stepper') stepper?: MatStepper;
 
@@ -24,9 +25,12 @@ export class RobotImportDialogComponent implements OnInit {
     const files = $event.target ? $event.target.files : $event;
     this.robotService.parseImportFile(files[0])
       .subscribe(result => {
-        if (result.errorMsg) {
+        if (!result.successful) {
+          this.errorMessage = result.allErrors().join();
           return;
         }
+
+        this.errorMessage = '';
         this.controlFile.setValue(files[0]);
         this.stepper?.next();
       });

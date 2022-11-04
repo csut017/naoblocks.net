@@ -10,7 +10,16 @@ namespace NaoBlocks.Engine
     /// This class provides the basic infrastructure for validating and executing a command.
     /// </remarks>
     public abstract class CommandBase
+        : IDisposable
     {
+        /// <summary>
+        /// Perform any final clean-up
+        /// </summary>
+        ~CommandBase()
+        {
+            Dispose(false);
+        }
+
         /// <summary>
         /// Gets or sets the unique identifier of the command.
         /// </summary>
@@ -48,6 +57,16 @@ namespace NaoBlocks.Engine
         public virtual Task<bool> CheckCanRollbackAsync(IDatabaseSession session)
         {
             return Task.FromResult(false);
+        }
+
+        /// <summary>
+        /// Disposes of any resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -118,6 +137,14 @@ namespace NaoBlocks.Engine
                     throw new InvalidOperationException("Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync");
                 }
             }
+        }
+
+        /// <summary>
+        /// Perform any final cleanup.
+        /// </summary>
+        /// <param name="disposing">Whether to clean up managed resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
         }
 
         /// <summary>

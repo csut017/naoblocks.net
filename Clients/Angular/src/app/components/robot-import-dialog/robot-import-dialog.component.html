@@ -12,13 +12,18 @@
                     <label for="packageDropRef" class="btn btn-success">Browse for files</label>
                 </div>
             </div>
-            <div class="panel-commands"></div>
+            <div class="panel-commands">
+                <span *ngIf="errorMessage" class="error-message">
+                    <mat-icon>error</mat-icon>
+                    {{errorMessage}}
+                </span>
+            </div>
         </mat-step>
         <mat-step label="Verify Data" [stepControl]="controlVerification">
             <div class="panel-content"></div>
             <div class="panel-commands">
-            <button mat-stroked-button matStepperPrevious>Back</button>
-            <button mat-stroked-button matStepperNext class="pull-right">Next</button>
+                <button mat-stroked-button matStepperPrevious>Back</button>
+                <button mat-stroked-button matStepperNext class="pull-right">Next</button>
             </div>
         </mat-step>
         <mat-step label="Import robots">

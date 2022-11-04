@@ -66,9 +66,10 @@ namespace NaoBlocks.Engine
             };
             if (log.Type.EndsWith("Command", StringComparison.InvariantCulture)) log.Type = log.Type[0..^7];
 
-            // Always store the command log - use a seperate session to ensure it is saved
-            using (var logSession = this.database.StartSession())
+            if (!IsCommandTransient(command))
             {
+                // Always store the command log - use a seperate session to ensure it is saved
+                using var logSession = this.database.StartSession();
                 await logSession.StoreAsync(log).ConfigureAwait(false);
                 await logSession.SaveChangesAsync().ConfigureAwait(false);
                 this.Logger.LogTrace("Log saved");
@@ -161,6 +162,16 @@ namespace NaoBlocks.Engine
                 this.Logger.LogInformation("Command {name} validated", name);
             }
             return errors;
+        }
+
+        /// <summary>
+        /// Checks if a command is transient or not.
+        /// </summary>
+        /// <param name="command">The command to check.</param>
+        /// <returns>True if the command is transient; false otherwise.</returns>
+        private static bool IsCommandTransient(CommandBase command)
+        {
+            return command.GetType().GetCustomAttributes(typeof(TransientAttribute), false).Any();
         }
     }
 }

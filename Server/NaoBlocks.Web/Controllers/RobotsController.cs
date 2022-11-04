@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Collections.ObjectModel;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -132,6 +133,53 @@ namespace NaoBlocks.Web.Controllers
 
             this.logger.LogDebug("Retrieved robot");
             return Transfer.Robot.FromModel(robot);
+        }
+
+        /// <summary>
+        /// Imports a toolbox for a robot type.
+        /// </summary>
+        /// <param name="action">The action to perform. Options are "parse".</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("import")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<ListResult<Transfer.Robot>>>> Import([FromQuery] string? action)
+        {
+            var files = this.Request.Form.Files;
+            if (files == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Expected a file to process"
+                });
+            }
+
+            if (files.Count != 1)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Invalid number of files, can only handle one file at a time"
+                });
+            }
+
+            if (!"parse".Equals(action))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Action {action} is invalid"
+                });
+            }
+
+            this.logger.LogInformation("Parsing robots import");
+            using var inputStream = files.First().OpenReadStream();
+            var command = new ParseRobotsImport
+            {
+                Data = inputStream
+            };
+
+            return await this.executionEngine
+                .ExecuteForHttp<ReadOnlyCollection<Data.Robot>, ListResult<Transfer.Robot>>
+                (command,
+                robots => ListResult.New(robots.Select(r => Transfer.Robot.FromModel(r!))));
         }
 
         /// <summary>
