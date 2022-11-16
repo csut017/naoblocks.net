@@ -154,7 +154,16 @@ namespace NaoBlocks.Engine.Commands
                 toolbox.Categories.Clear();
             }
 
-            toolbox.UseEvents = this.UseEvents;
+            var useEventsAt = this.document.Root.Attribute("useEvents");
+            if (useEventsAt != null)
+            {
+                toolbox.UseEvents = string.Equals("yes", useEventsAt.Value, StringComparison.InvariantCultureIgnoreCase);
+            }
+            else
+            {
+                toolbox.UseEvents = this.UseEvents;
+            }
+
             foreach (var category in categories)
             {
                 toolbox.Categories.Add(category);
