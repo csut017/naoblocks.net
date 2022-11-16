@@ -20,6 +20,25 @@ export class StudentService extends ClientService {
     this.serviceName = 'StudentService';
   }
 
+  parseImportFile(file: File): Observable<ExecutionResult<ResultSet<Student>>> {
+    const url = `${environment.apiURL}v1/students/import?action=parse`;
+    this.log('Parsing import file');
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ExecutionResult<ResultSet<Student>>>(url, formData)
+      .pipe(
+        tap(result => {
+          if (!result.successful) {
+            this.log(`Failed to parse input file`);
+          } else {
+            this.log(`Parsed import file: found ${result.output?.count} students`);
+          }
+        }),
+        catchError(this.handleError('parseImportFile', msg => new ExecutionResult<ResultSet<Student>>(new ResultSet<Student>(), msg))),
+      );
+  }
+
+
   list(page: number = 0, size: number = 20): Observable<ResultSet<Student>> {
     const url = `${environment.apiURL}v1/students?page=${page}&size=${size}`;
     this.log('Listing students');

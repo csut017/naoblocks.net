@@ -280,7 +280,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<ReadOnlyCollection<Data.User>, ListResult<Transfer.User>>
                 (command,
-                users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!))));
+                users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!, true))));
         }
 
         /// <summary>

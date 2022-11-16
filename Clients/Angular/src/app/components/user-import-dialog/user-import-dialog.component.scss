@@ -39,6 +39,7 @@
 
 .panel-content {
     height: 16rem;
+    overflow-y: auto;
 }
 
 .panel-commands {
@@ -56,6 +57,11 @@
 .data-list {
     height: 15rem;
     overflow-y: auto;
+    overflow-x: auto;
+}
+
+.student-list {
+    width: 80rem;
 }
 
 table.mat-table {

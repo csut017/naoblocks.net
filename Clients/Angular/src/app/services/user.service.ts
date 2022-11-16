@@ -14,7 +14,7 @@ import { User } from '../data/user';
 })
 export class UserService  extends ClientService {
 
-  parseStudentImportFile(file: File): Observable<ExecutionResult<ResultSet<User>>> {
+  parseImportFile(file: File): Observable<ExecutionResult<ResultSet<User>>> {
     const url = `${environment.apiURL}v1/students/import?action=parse`;
     this.log('Parsing import file');
     const formData = new FormData();

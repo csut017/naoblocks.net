@@ -11,6 +11,16 @@ namespace NaoBlocks.Engine.Commands
         : CommandBase
     {
         /// <summary>
+        /// Gets or sets the user's age.
+        /// </summary>
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's gender.
+        /// </summary>
+        public string? Gender { get; set; }
+
+        /// <summary>
         /// Gets or sets the user's hashed password.
         /// </summary>
         public Password HashedPassword { get; set; } = Data.Password.Empty;
@@ -36,22 +46,12 @@ namespace NaoBlocks.Engine.Commands
         public UserSettings? Settings { get; set; }
 
         /// <summary>
-        /// Gets or sets the user's age.
-        /// </summary>
-        public int? Age { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user's gender.
-        /// </summary>
-        public string? Gender { get; set; }
-
-        /// <summary>
         /// Validates the values for the new user.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             var roleName = this.Role.ToString();
@@ -75,6 +75,36 @@ namespace NaoBlocks.Engine.Commands
             {
                 this.HashedPassword = Data.Password.New(this.Password);
                 this.Password = null;
+            }
+
+            if (!string.IsNullOrEmpty(this.Settings?.RobotType))
+            {
+                var robotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.Settings.RobotType)
+                    .ConfigureAwait(false);
+                if (robotType == null)
+                {
+                    errors.Add(this.GenerateError($"Unknown robot type {this.Settings.RobotType}"));
+                }
+                else
+                {
+                    this.Settings.RobotType = robotType.Name;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(this.Settings?.RobotId))
+            {
+                var robot = await session.Query<Robot>()
+                    .FirstOrDefaultAsync(rt => (rt.MachineName == this.Settings.RobotId) || (rt.FriendlyName == this.Settings.RobotId))
+                    .ConfigureAwait(false);
+                if (robot == null)
+                {
+                    errors.Add(this.GenerateError($"Unknown robot {this.Settings.RobotId}"));
+                }
+                else
+                {
+                    this.Settings.RobotId = robot.MachineName;
+                }
             }
 
             if (!errors.Any() && await session.Query<User>().AnyAsync(s => s.Name == this.Name).ConfigureAwait(false))

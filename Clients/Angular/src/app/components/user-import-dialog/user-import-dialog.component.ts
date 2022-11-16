@@ -4,8 +4,10 @@ import { FormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatStepper } from '@angular/material/stepper';
 import { MatTableDataSource } from '@angular/material/table';
+import { Student } from 'src/app/data/student';
 import { User } from 'src/app/data/user';
 import { UserImportSettings } from 'src/app/data/user-import-settings';
+import { StudentService } from 'src/app/services/student.service';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -17,18 +19,19 @@ export class UserImportDialogComponent implements OnInit {
 
   controlFile: FormControl = new FormControl(null, { validators: Validators.required });
   controlVerification: FormControl = new FormControl(true, { validators: Validators.required });
-  columns: string[] = ['select', 'name', 'age', 'gender', 'password', 'message'];
+  columns: string[] = ['select', 'name', 'age', 'gender', 'password', 'robotType', 'toolbox', 'viewMode', 'allocationMode', 'robot', 'message'];
   currentIndex: number = 1;
   errorMessage: string = '';
   isFinished: boolean = false;
   isImporting: boolean = false;
-  dataSource: MatTableDataSource<User> = new MatTableDataSource();
+  dataSource: MatTableDataSource<User | Student> = new MatTableDataSource();
   results: string[] = [];
-  selection = new SelectionModel<User>(true, []);
+  selection = new SelectionModel<User | Student>(true, []);
   successful: number = 0;
   @ViewChild('stepper') stepper?: MatStepper;
 
   constructor(private userService: UserService,
+    private studentService: StudentService,
     @Inject(MAT_DIALOG_DATA) public settings: UserImportSettings) {
   }
 
@@ -37,7 +40,7 @@ export class UserImportDialogComponent implements OnInit {
 
   fileBrowseHandler($event: any): void {
     const files = $event.target ? $event.target.files : $event;
-    this.userService.parseStudentImportFile(files[0])
+    this.studentService.parseImportFile(files[0])
       .subscribe(result => {
         if (!result.successful) {
           this.errorMessage = result.allErrors().join();
@@ -90,7 +93,7 @@ export class UserImportDialogComponent implements OnInit {
   importUser(): void {
     let user = this.selection.selected[this.currentIndex++];
     user.isNew = true;
-    this.userService.save(user)
+    this.studentService.save(user)
       .subscribe(res => {
         if (res.successful) {
           this.results.push(`Successfully imported ${user.name}`);
@@ -105,5 +108,37 @@ export class UserImportDialogComponent implements OnInit {
           this.isFinished = true;
         }
       });
+  }
+
+  convertAllocationMode(mode: number): string {
+    switch (mode) {
+      case 0:
+        return 'Any';
+
+      case 0:
+        return 'Require';
+
+      case 0:
+        return 'Prefer';
+
+      default:
+        return 'Unknown';
+    }
+  }
+
+  convertViewMode(mode: number): string {
+    switch (mode) {
+      case 0:
+        return 'Blocks';
+
+      case 0:
+        return 'Tangibles';
+
+      case 0:
+        return 'Home';
+
+      default:
+        return 'Unknown';
+    }
   }
 }

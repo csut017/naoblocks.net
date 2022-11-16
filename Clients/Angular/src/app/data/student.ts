@@ -9,6 +9,7 @@ export class Student {
     settings: UserSettings = new UserSettings();
     age?: number;
     gender?: string;
+    message?: string;
     isFullyLoaded: boolean = false;
 
     constructor(isNew: boolean = false) {

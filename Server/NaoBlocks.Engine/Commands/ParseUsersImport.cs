@@ -92,6 +92,17 @@ namespace NaoBlocks.Engine.Commands
             var columns = worksheet.Dimension.End.Column;
             var rows = worksheet.Dimension.End.Row;
             var mappings = new Dictionary<int, Action<User, string>>();
+            var allocationModes = new Dictionary<string, int>
+            {
+                { "any", 0 },
+                { "require", 1 },
+                { "prefer", 2 },
+            };
+            var viewModes = new Dictionary<string, int>
+            {
+                { "blocks", 0 },
+                { "tangibles", 1 },
+            };
 
             // Assuming the first row is headers
             for (var column = 1; column <= columns; column++)
@@ -134,6 +145,44 @@ namespace NaoBlocks.Engine.Commands
                             user.Role = parsedRole;
                         });
                         break;
+
+                    case "robot type":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (string.IsNullOrEmpty(value)) return;
+                            user.Settings.RobotType = value;
+                        });
+                        break;
+
+                    case "toolbox":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (string.IsNullOrEmpty(value)) return;
+                            user.Settings.Toolbox = value;
+                        });
+                        break;
+
+                    case "view mode":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (viewModes.TryGetValue(value.ToLowerInvariant(), out int mode)) user.Settings.ViewMode = mode;
+                        });
+                        break;
+
+                    case "allocation mode":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (allocationModes.TryGetValue(value.ToLowerInvariant(), out int mode)) user.Settings.AllocationMode = mode;
+                        });
+                        break;
+
+                    case "allocated robot":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (string.IsNullOrEmpty(value)) return;
+                            user.Settings.RobotId = value;
+                        });
+                        break;
                 }
             }
 
@@ -141,12 +190,16 @@ namespace NaoBlocks.Engine.Commands
             for (var row = 2; row <= rows; row++)
             {
                 var user = new User();
+                var hasData = false;
                 foreach (var mapping in mappings)
                 {
                     var value = worksheet.Cells[row, mapping.Key].Value?.ToString() ?? string.Empty;
+                    if (string.IsNullOrEmpty(value)) continue;
                     mapping.Value(user, value);
+                    hasData = true;
                 }
 
+                if (!hasData) continue;
                 if (this.Role != null) user.Role = this.Role.Value;
                 this.users.Add(user);
             }
@@ -155,6 +208,8 @@ namespace NaoBlocks.Engine.Commands
         private async Task ValidateUsers(IDatabaseSession session)
         {
             // Validate all the users
+            var robotTypes = new Dictionary<string, bool>();
+            var robots = new Dictionary<string, bool>();
             foreach (var user in this.users)
             {
                 var errors = new List<string>();
@@ -168,6 +223,32 @@ namespace NaoBlocks.Engine.Commands
                         .AnyAsync(r => r.Name == user.Name)
                         .ConfigureAwait(false);
                     if (userExists) errors.Add($"User '{user.Name}' already exists");
+                }
+
+                if (!string.IsNullOrEmpty(user.Settings.RobotType))
+                {
+                    if (!robotTypes.TryGetValue(user.Settings.RobotType, out var isTypeValid))
+                    {
+                        isTypeValid = await session.Query<RobotType>()
+                            .AnyAsync(rt => rt.Name == user.Settings.RobotType)
+                            .ConfigureAwait(false);
+                        robotTypes.Add(user.Settings.RobotType, isTypeValid);
+                    }
+
+                    if (!isTypeValid) errors.Add($"Unknown robot type '{user.Settings.RobotTypeId}'");
+                }
+
+                if (!string.IsNullOrEmpty(user.Settings.RobotId))
+                {
+                    if (!robotTypes.TryGetValue(user.Settings.RobotId, out var isTypeValid))
+                    {
+                        isTypeValid = await session.Query<Robot>()
+                            .AnyAsync(rt => rt.MachineName == user.Settings.RobotId)
+                            .ConfigureAwait(false);
+                        robotTypes.Add(user.Settings.RobotId, isTypeValid);
+                    }
+
+                    if (!isTypeValid) errors.Add($"Unknown robot '{user.Settings.RobotId}'");
                 }
 
                 if (errors.Any())
