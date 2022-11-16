@@ -12,7 +12,7 @@ This topography assumes the use of a single WiFi router, one Surface Pro as the 
 
 ### WiFi router
 
-The router for this topography should broadcast its SSID as `robotics` with the password `letmein1`.
+The router for this topography should broadcast its SSID as `naoblocks`.
 
 ### Machines
 
