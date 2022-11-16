@@ -15,7 +15,7 @@ These introductions explain how to setup and run a demo.
 1. Start the client on each robot
     1. SSH to the robot
         * `ssh nao@ipaddress`
-        * Where *ipaddress* is the address of the robot *(see [Topographies](Documentation/Topography1.md))*
+        * Where *ipaddress* is the address of the robot *(see [Topographies](Topography1.md))*
     1. Change to the correct directory
         * `cd naoblocks`
     1. Start the client
@@ -24,7 +24,7 @@ These introductions explain how to setup and run a demo.
     * Start the laptop and connect to the correct network
     * Start a browser (tested in Chrome)
     * Navigate to the server web address
-        * *If the hosts file has been configured, it will be `one|two|three|four.naoblocks.nz` (see [Topographies](Documentation/Topography1.md))*
+        * *If the hosts file has been configured, it will be `one|two|three|four.naoblocks.nz` (see [Topographies](Topography1.md))*
 
 ## Running the demo
 
