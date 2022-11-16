@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
+import { ReportFlag } from 'src/app/data/report-flag';
 import { Robot } from 'src/app/data/robot';
 import { RobotImportSettings } from 'src/app/data/robot-import-settings';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -142,7 +143,10 @@ export class RobotsListComponent implements OnInit {
       ReportDialogSettings.Csv,
       ReportDialogSettings.Text,
       ReportDialogSettings.Pdf,
-    ]
+    ];
+    settings.flags = [
+      new ReportFlag('import', 'Use import format')
+    ];
     this.exportSettings.show(settings)
       .subscribe(result => {
         if (!!result) {
@@ -150,7 +154,7 @@ export class RobotsListComponent implements OnInit {
           console.log(result);
           console.groupEnd();
           this.downloaderService.download(
-            `v1/robots/export.${result.selectedFormat}`, 
+            `v1/robots/export.${result.selectedFormat}?flags=${result.encodeFlags()}`, 
             `robots.${result.selectedFormat}`);
         } else {
           console.log('[RobotsListComponent] Export cancelled');

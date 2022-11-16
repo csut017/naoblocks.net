@@ -79,16 +79,18 @@ namespace NaoBlocks.Web.Controllers
         /// Generates the robot list export.
         /// </summary>
         /// <param name="format">The format to use.</param>
+        /// <param name="flags">The optional export flags.</param>
         /// <returns>The generated robot list.</returns>
         [HttpGet("export")]
         [HttpGet("export{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportList(string? format)
+        public async Task<ActionResult> ExportList(string? format, [FromQuery] string? flags = null)
         {
             this.logger.LogInformation("Generating robot list export");
             return await this.GenerateReport<Generators.RobotsList>(
                 this.executionEngine,
-                format);
+                format,
+                args: this.ParseFlags(flags));
         }
 
         /// <summary>

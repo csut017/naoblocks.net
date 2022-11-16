@@ -18,13 +18,26 @@ namespace NaoBlocks.Engine.Generators
         {
             var generator = new Generator();
             var table = generator.AddTable("Robots");
-            table.AddRow(
-                TableRowType.Header,
-                "Machine Name",
-                "Friendly Name",
-                "Type",
-                "When Added",
-                "Initialized");
+            var useImportFormat = GetArgumentOrDefault("import", "no") == "yes";
+            if (useImportFormat)
+            {
+                table.AddRow(
+                    TableRowType.Header,
+                    "Machine Name",
+                    "Friendly Name",
+                    "Type",
+                    "Password");
+            }
+            else
+            {
+                table.AddRow(
+                    TableRowType.Header,
+                    "Machine Name",
+                    "Friendly Name",
+                    "Type",
+                    "When Added",
+                    "Initialized");
+            }
 
             var robots = await this.Session.Query<Robot>()
                 .Include(r => r.RobotTypeId)
@@ -36,12 +49,23 @@ namespace NaoBlocks.Engine.Generators
                 var type = await this.Session
                     .LoadAsync<RobotType>(robot.RobotTypeId)
                     .ConfigureAwait(false);
-                table.AddRow(
-                    robot.MachineName,
-                    robot.FriendlyName,
-                    type?.Name,
-                    robot.WhenAdded,
-                    robot.IsInitialised);
+                if (useImportFormat)
+                {
+                    table.AddRow(
+                        robot.MachineName,
+                        robot.FriendlyName,
+                        type?.Name,
+                        string.Empty);
+                }
+                else
+                {
+                    table.AddRow(
+                        robot.MachineName,
+                        robot.FriendlyName,
+                        type?.Name,
+                        robot.WhenAdded,
+                        robot.IsInitialised);
+                }
             }
 
             table.EnsureAllRowsSameLength();

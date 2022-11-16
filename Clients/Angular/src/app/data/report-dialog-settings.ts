@@ -1,4 +1,5 @@
 import { NamedValue } from "./named-value";
+import { ReportFlag } from "./report-flag";
 
 export class ReportDialogSettings {
     static readonly Csv: NamedValue = new NamedValue('CSV', 'csv');
@@ -11,6 +12,7 @@ export class ReportDialogSettings {
     allowedFormats: NamedValue[] = [
         ReportDialogSettings.Text
     ];
+    flags: ReportFlag[] = [];
     showDateRange: boolean;
     title: string;
 

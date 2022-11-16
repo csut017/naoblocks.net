@@ -104,7 +104,10 @@ namespace NaoBlocks.Engine.Commands
                         break;
 
                     case "password":
-                        mappings.Add(column, (robot, value) => robot.PlainPassword = value);
+                        mappings.Add(column, (robot, value) =>
+                        {
+                            if (!string.IsNullOrWhiteSpace(value)) robot.PlainPassword = value;
+                        });
                         break;
                 }
             }

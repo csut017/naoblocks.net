@@ -265,6 +265,25 @@ namespace NaoBlocks.Web.Helpers
         }
 
         /// <summary>
+        /// Parses a set of flags.
+        /// </summary>
+        /// <param name="controller">The controller to use.</param>
+        /// <param name="flags">The flags to parse.</param>
+        /// <returns>A <see cref="Dictionary{String, String}"/> containing the parsed flags.</returns>
+        public static Dictionary<string, string> ParseFlags(this ControllerBase controller, string? flags)
+        {
+            var args = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(flags))
+            {
+                foreach (var flag in flags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    args[flag] = "yes";
+                }
+            }
+            return args;
+        }
+
+        /// <summary>
         /// Attempt to convert an incoming format string into a valid <see cref="ReportFormat"/>.
         /// </summary>
         /// <param name="controller">The controller to use for retrieving the user.</param>

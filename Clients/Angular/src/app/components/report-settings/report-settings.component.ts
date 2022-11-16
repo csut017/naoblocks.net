@@ -26,6 +26,9 @@ export class ReportSettingsComponent implements OnInit {
       controls['dateFrom'] = new UntypedFormControl(fromDate, [Validators.required]);
       controls['dateTo'] = new UntypedFormControl(now, [Validators.required]);
     }
+    for (let flag of data.flags) {
+      controls[flag.name] = new UntypedFormControl(flag.value);
+    }
     this.form = new UntypedFormGroup(controls);
   }
 
@@ -43,6 +46,12 @@ export class ReportSettingsComponent implements OnInit {
       settings.dateFrom = this.form.get('dateFrom')?.value;
       settings.dateTo = this.form.get('dateTo')?.value;
     }
+
+    for (let flag of this.data.flags) {
+      let flagValue = this.form.get(flag.name)?.value;
+      if (flagValue) settings.flags.push(flag.name);
+    }
+
     this.dialogRef.close(settings);
   }
 
