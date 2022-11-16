@@ -6,11 +6,13 @@ import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { Robot } from 'src/app/data/robot';
+import { RobotImportSettings } from 'src/app/data/robot-import-settings';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 import { ReportSettingsService } from 'src/app/services/report-settings.service';
+import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
 import { RobotService } from 'src/app/services/robot.service';
 
 @Component({
@@ -36,6 +38,7 @@ export class RobotsListComponent implements OnInit {
     private deleteConfirm: DeletionConfirmationService,
     private exportSettings: ReportSettingsService,
     private multilineMessage: MultilineMessageService,
+    private importRobotService: RobotImportDialogService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -109,8 +112,12 @@ export class RobotsListComponent implements OnInit {
     this.currentItemChanged.emit(this.currentItem.machineName);
   }
 
-  import(): void {
-
+  importRobots(): void {
+    let settings = new RobotImportSettings();
+    this.importRobotService.start(settings)
+      .subscribe(result => {
+        if (result) this.loadList();
+      });
   }
 
   onClosed(saved: boolean) {

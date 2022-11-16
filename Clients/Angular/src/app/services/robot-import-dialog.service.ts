@@ -11,7 +11,7 @@ export class RobotImportDialogService {
 
   constructor(private dialog: MatDialog) { }
 
-  start<Type>(settings?: RobotImportSettings): Observable<boolean> {
+  start(settings?: RobotImportSettings): Observable<boolean> {
     const dialogRef = this.dialog.open(RobotImportDialogComponent, {
       data: settings,
       width: '75vw'

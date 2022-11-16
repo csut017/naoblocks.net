@@ -1,6 +1,7 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
 using OfficeOpenXml;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Commands
 {
@@ -50,6 +51,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
+                        await this.ValidateRobots(session).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -100,6 +102,10 @@ namespace NaoBlocks.Engine.Commands
                     case "type":
                         mappings.Add(column, (robot, value) => robot.RobotTypeId = value);
                         break;
+
+                    case "password":
+                        mappings.Add(column, (robot, value) => robot.PlainPassword = value);
+                        break;
                 }
             }
 
@@ -114,6 +120,50 @@ namespace NaoBlocks.Engine.Commands
                 }
 
                 this.robots.Add(robot);
+            }
+        }
+
+        private async Task ValidateRobots(IDatabaseSession session)
+        {
+            // Validate all the robots
+            var robotTypes = new Dictionary<string, bool>();
+            foreach (var robot in this.robots)
+            {
+                var errors = new List<string>();
+                if (!string.IsNullOrEmpty(robot.RobotTypeId))
+                {
+                    if (!robotTypes.TryGetValue(robot.RobotTypeId, out var isTypeValid))
+                    {
+                        isTypeValid = await session.Query<RobotType>()
+                            .AnyAsync(rt => rt.Name == robot.RobotTypeId)
+                            .ConfigureAwait(false);
+                        robotTypes.Add(robot.RobotTypeId, isTypeValid);
+                    }
+
+                    if (!isTypeValid) errors.Add($"Unknown robot type '{robot.RobotTypeId}'");
+                }
+                else
+                {
+                    errors.Add("Robot type is required");
+                }
+
+                if (string.IsNullOrEmpty(robot.FriendlyName)) robot.FriendlyName = robot.MachineName;
+                if (string.IsNullOrEmpty(robot.MachineName))
+                {
+                    errors.Add("Machine name is required");
+                }
+                else
+                {
+                    var robotExists = await session.Query<Robot>()
+                        .AnyAsync(r => r.MachineName == robot.MachineName)
+                        .ConfigureAwait(false);
+                    if (robotExists) errors.Add($"Robot '{robot.MachineName}' already exists");
+                }
+
+                if (errors.Any())
+                {
+                    robot.Message = string.Join(", ", errors);
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ export class Robot {
     machineName?: string;
     type?: string;
     password?: string;
+    message?: string;
     whenAdded?: Date;
     isNew: boolean;
     isLoading: boolean = false;

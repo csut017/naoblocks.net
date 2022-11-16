@@ -28,9 +28,23 @@ namespace NaoBlocks.Engine.Data
         public string MachineName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets a message associated with the robot.
+        /// </summary>
+        public string? Message { get; set; }
+
+        /// <summary>
         /// Gets or sets the password the robot uses to connect.
         /// </summary>
         public Password Password { get; set; } = Password.Empty;
+
+        /// <summary>
+        /// Gets or sets the plain text password.
+        /// </summary>
+        /// <remarks>
+        /// This property will not be persisted, it is only used for internal passing of the password.
+        /// </remarks>
+        [JsonIgnore]
+        public string? PlainPassword { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier of the robot type.

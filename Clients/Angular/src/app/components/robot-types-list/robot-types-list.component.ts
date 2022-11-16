@@ -135,9 +135,10 @@ export class RobotTypesListComponent implements OnInit {
 
   importRobots(): void {
     let settings = new RobotImportSettings();
+    settings.robotType = this.selection.selected[0].name;
     this.importRobotService.start(settings)
       .subscribe(result => {
-        if (result) this.loadList();
+        if (result) this.multilineMessage.show(['Import finished']);
       });
   }
 

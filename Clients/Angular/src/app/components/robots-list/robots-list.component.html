@@ -11,6 +11,20 @@
                     </div>
                 </div>
             </div>
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" [matMenuTriggerFor]="importMenu">
+                            Import <mat-icon>arrow_drop_down</mat-icon>
+                        </button>
+                        <mat-menu #importMenu="matMenu">
+                            <button mat-menu-item (click)="importRobots()">Robots</button>
+                        </mat-menu>
+                    </div>
+                </div>
+            </div>
             <div class="list-commands-selection">
                 <div class="list-commands-header">
                     Selection

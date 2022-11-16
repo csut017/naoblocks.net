@@ -23,6 +23,11 @@ namespace NaoBlocks.Web.Dtos
         public string MachineName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets a message associated with the robot.
+        /// </summary>
+        public string? Message { get; set; }
+
+        /// <summary>
         /// Gets or sets the robot's password.
         /// </summary>
         public string? Password { get; set; }
@@ -49,7 +54,9 @@ namespace NaoBlocks.Web.Dtos
                 FriendlyName = value.FriendlyName,
                 IsInitialised = value.IsInitialised,
                 MachineName = value.MachineName,
-                Type = value.Type?.Name,
+                Message = value.Message,
+                Password = value.PlainPassword,
+                Type = value.Type?.Name ?? value.RobotTypeId,
                 WhenAdded = value.WhenAdded,
             };
         }
