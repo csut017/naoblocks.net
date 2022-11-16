@@ -12,8 +12,13 @@ Some initial documentation:
 * [Project Layout](Documentation/ProjectLayout.md)
 * [Available Robot Commands](Documentation/Commands.md)
 * [Research Publications](Documentation/Publications.md)
-* [Topographies](Documentation/Topography1.md) ***Note:** UoA specific*
 * [Communications Protocols](Documentation/Protocols.md)
+
+Waipapa Taumata Rau - The University of Auckland specific documentation:
+* [Topographies](Documentation/Topography1.md)
+* [Running a Demo](Documentation/RunningADemo.md)
+
+*These can be used in other locations but may require some modifications.*
 
 ## Editors
 
