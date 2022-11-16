@@ -1,0 +1,73 @@
+.error-message {
+    color: #aa0000;
+    border: #aa0000 solid 1px;
+    padding: 6px;
+    border-radius: 4px;
+    min-height: 24px;
+    max-width: 30rem;
+
+    mat-icon {
+        float: left;
+    }
+
+    .inner {
+        padding-left: 30px;
+    }
+}
+
+.error-space {
+    min-height: 40px;
+}
+
+.steps {
+    margin: 0;
+    padding: 0;
+
+    li {
+        list-style-type: none;
+        margin-bottom: 12px;
+    }
+
+    .step-title {
+        padding-left: 30px;
+        display: block;
+        font-size: larger;
+        font-weight: bolder;
+    }
+
+    .step-description {
+        padding-left: 30px;
+        display: block;
+        max-width: 30rem;
+    }
+
+    mat-icon {
+        float: left;
+    }
+
+    mat-icon.error {
+        color: #aa0000;
+    }
+
+    mat-icon.normal {
+        color: #444444;
+    }
+
+    mat-icon.success {
+        color: #00aa00;
+    }
+}
+
+.rotate {
+    animation: rotation 2s infinite linear;
+    color: #0000aa !important;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}

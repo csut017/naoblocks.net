@@ -1,0 +1,23 @@
+mat-card {
+    max-width: 400px;
+    margin: 6rem auto;
+}
+
+mat-form-field {
+    display: block;
+}
+
+.app-icon {
+    background-color: #fff;
+    background-image: url("/assets/AppIcon.png");
+    height: 32px;
+    width: 32px;
+}
+
+.spinner {
+    display: inline;
+}
+
+.mat-progress-spinner{
+    display: inline-block;
+}

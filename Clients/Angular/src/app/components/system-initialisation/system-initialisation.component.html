@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-card>
+        <mat-card-header>
+            <div mat-card-avatar class="app-icon"></div>
+            <mat-card-title>Initialise System</mat-card-title>
+            <mat-card-subtitle>
+                NaoBlocks
+                <span *ngIf="version">({{version.version}})</span>
+            </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <div>
+                The system has not been initialised. Please enter an admin password.
+            </div>
+            <div>
+                This password will be used for the <b>admin</b> account.
+            </div>
+            <mat-error *ngIf="initialisationFailed">
+                Unable to initialise system
+            </mat-error>
+            <mat-form-field class="full-width-input">
+                <input matInput type="password" placeholder="Password" formControlName="password" required>
+                <mat-error>
+                    Please provide a valid password
+                </mat-error>
+            </mat-form-field>
+            <div>
+                Options
+            </div>
+            <div>
+                <mat-slide-toggle formControlName="useDefaultUi">Use default User Interface commands</mat-slide-toggle>
+            </div>
+            <div>
+                <mat-slide-toggle formControlName="addNaoRobot">Use Nao robot definition</mat-slide-toggle>
+            </div>
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-stroked-button type="submit" *ngIf="!initialising">
+                Initialise
+            </button>
+            <div class="spinner" *ngIf="initialising">
+                <span>
+                    <mat-spinner class="inner" diameter="14"></mat-spinner>
+                    Initialising, please wait...
+                </span>
+            </div>
+        </mat-card-actions>
+    </mat-card>
+</form>

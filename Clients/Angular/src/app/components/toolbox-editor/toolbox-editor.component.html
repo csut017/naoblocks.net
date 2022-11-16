@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-grid-list cols="3" rowHeight="30px">
+                <mat-grid-tile [rowspan]="2">
+                    <mat-form-field class="fill-width">
+                        <mat-label>Toolbox Name</mat-label>
+                        <input matInput placeholder="Blockset Name" formControlName="name" required>
+                        <mat-error>
+                            Please provide a name for the toolbox
+                        </mat-error>
+                    </mat-form-field>
+                </mat-grid-tile>
+                <mat-grid-tile>
+                    <div class="option-line">
+                        <mat-slide-toggle formControlName="isDefault">Default Toobox</mat-slide-toggle>
+                    </div>
+                    <div class="option-line">
+                        <mat-slide-toggle formControlName="useEvents">Use Events</mat-slide-toggle>
+                    </div>
+                </mat-grid-tile>
+            </mat-grid-list>
+        </mat-card-content>
+    </mat-card>
+    <div id="blockly"></div>
+    <div class="status-bar">
+        <div *ngIf="isValid">
+            <mat-icon class="valid">task_alt</mat-icon>
+            <div class="message">
+                The blockset definition is valid
+            </div>        
+        </div>
+        <div *ngIf="!isValid">
+            <mat-icon class="invalid">error_outline</mat-icon>
+            <div class="message">
+                The blockset definition is invalid: {{error}}
+            </div>        
+        </div>
+    </div>
+</form>

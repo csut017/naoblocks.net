@@ -1,0 +1,80 @@
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+table.data-list {
+    width: calc(100% - 2rem);
+    margin: 1rem;
+}
+
+.mat-column-select {
+    width: 48px;
+    text-align: center !important;
+}
+
+.list-commands {
+    margin: 1rem 1rem;
+}
+
+.list-commands-all {
+    display: inline-block;
+    width: 10rem;
+
+    button {
+        width: 9rem;
+    }
+}
+
+.list-commands-selection {
+    display: inline-block;
+}
+
+.mat-raised-button.command-button {
+    margin: 0 0.5rem;
+}
+
+.list-commands-header {
+    margin: 0 1rem 0.5rem 0;
+    padding: 0 -1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    display: inline-block;
+    font-size: smaller;
+    width: 100%;
+}
+
+form.editor {
+    margin: 1rem;
+
+    .commands {
+        margin-bottom: 1rem;
+        display: flex;
+
+        .spacer {
+            flex: 1 1 auto;
+        }
+    }
+}
+
+.lower-1 {
+    margin-top: 1rem;
+}
+
+.lower-3 {
+    margin-top: 3rem;
+}
+
+mat-form-field.fill-width {
+    width: 100%;
+}
+
+.mat-grid-tile-content {
+    justify-content: flex-start !important ;
+    align-items: flex-start !important;
+ }

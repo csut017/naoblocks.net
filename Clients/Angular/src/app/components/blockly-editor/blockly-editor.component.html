@@ -1,0 +1,21 @@
+<div id="blockly"></div>
+<div class="status-bar">
+    <div *ngIf="isLoading">
+        <mat-spinner [diameter]="24"></mat-spinner>
+        <div class="message">
+            Loading, please wait...
+        </div>        
+    </div>
+    <div *ngIf="isValid && !isLoading">
+        <mat-icon class="valid">task_alt</mat-icon>
+        <div class="message">
+            The program is valid
+        </div>        
+    </div>
+    <div *ngIf="!isValid && !isLoading">
+        <mat-icon class="invalid">error_outline</mat-icon>
+        <div class="message">
+            There is an error in the program: {{error}}
+        </div>        
+    </div>
+</div>

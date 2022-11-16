@@ -1,0 +1,8 @@
+<mat-nav-list>
+    <div *ngFor="let view of data.views">
+        <a href="#" mat-list-item  (click)="changeView($event, view.name)">
+            <mat-icon>{{isCurrent(view) ? 'preview' : 'web_asset'}}</mat-icon>
+            <span mat-line>{{view.title}}</span>
+        </a>
+    </div>
+</mat-nav-list>

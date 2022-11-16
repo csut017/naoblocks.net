@@ -1,0 +1,53 @@
+.sidenav-container {
+    height: 100%;
+}
+
+.sidenav {
+    width: 200px;
+}
+
+.sidenav .mat-toolbar {
+    background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.example-spacer {
+    flex: 1 1 auto;
+}
+
+.app-icon {
+    background-color: rgba($color: #fff, $alpha: 0);
+    background-image: url("/assets/AppIcon.png");
+    height: 32px;
+    width: 32px;
+    margin: 0 auto;
+}
+
+.app-title {
+    color: #000;
+}
+
+.configure-button {
+    margin-left: 1em;
+    color: #fff;
+}
+
+.error-icon {
+    width: 30px;
+}
+
+button.mat-list-item.large-button {
+    font-size: 5rem;
+    vertical-align: middle;
+    padding: auto auto;
+    height: calc(100vh - 100px);
+
+    .mat-icon {
+        display: none;
+    }
+}

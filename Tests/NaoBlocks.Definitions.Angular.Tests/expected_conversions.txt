@@ -1,0 +1,7 @@
+﻿export class AstConversionDefinitions {
+    constructor() {
+        this.astNodes = {
+            'wait': new BlockDefinition('robot_wait', new ValueDefinition('TIME'))
+        };
+    }
+}

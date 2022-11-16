@@ -1,0 +1,43 @@
+.tangible-editor {
+    display: flex;
+
+    .video {
+        margin: 0.5rem;
+        border: 1px solid #000;
+        display: none;
+    }
+
+    .visible {
+        display: block;
+    }
+}
+
+.tangible {
+    display: flex;
+    flex-direction: column;
+    margin: 1rem auto;
+
+    .block {
+        width: 20rem;
+        border: 1px solid #888;
+        border-radius: 1rem;
+        text-align: center;
+        margin-bottom: 4px;
+        max-height: 4.5rem;
+
+        img {
+            float: left;
+            margin: 0.5rem 0.5rem;
+        }
+
+        p {
+            margin: 1.5rem 0;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+    }
+
+    .highlight {
+        background-color: #B3E5FC;
+    }
+}

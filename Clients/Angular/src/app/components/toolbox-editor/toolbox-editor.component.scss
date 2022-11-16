@@ -1,0 +1,31 @@
+#blockly {
+    width: calc(100vw - 235px);
+    height: calc(100vh - 295px);
+    margin-top: 1rem;
+}
+
+.status-bar {
+    width: calc(100vw - 235px);
+    height: 28px;
+    margin: 0;
+    padding: 4px;
+    vertical-align: middle;
+
+    .message {
+        margin-left: 0.25rem;
+        display: inline-block;
+        vertical-align: super;
+    }
+
+    .valid {
+        color: #008000;
+    }
+
+    .invalid {
+        color: #800000;
+    }
+}
+
+.option-line {
+    margin-right: 1rem;
+}

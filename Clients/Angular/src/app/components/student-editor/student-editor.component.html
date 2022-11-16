@@ -1,0 +1,50 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Student Name</mat-label>
+                <input matInput placeholder="Student Name" formControlName="name" required>
+                <mat-error>
+                    Please provide a student name
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Age</mat-label>
+                <input type="number" min="0" max="100" matInput placeholder="Age" formControlName="age">
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Gender</mat-label>
+                <select matNativeControl formControlName="gender">
+                    <option>Unknown</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </select>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Password</mat-label>
+                <input matInput placeholder="Password" formControlName="password">
+                <mat-error>
+                    Password is required for new students
+                </mat-error>
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the student:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+</form>
+
+<app-user-settings [showAllocation]="true" [showConfiguration]="true" [settings]="item!.settings"></app-user-settings>

@@ -1,0 +1,158 @@
+{
+    "$comment": "This definition is a unified set of commands for both the tangible and angular (Blockly) interfaces. The target robot is the mBot2. Use Utilities/generate_ui_definitions.py to split it into the seperate JSON files.",
+    "blocks": [
+        {
+            "name": "robot_forward",
+            "text": "Move forward",
+            "image": "->question",
+            "generator": "return ##PREFIX##'move_forward(2)\\n';",
+            "category": "Movements",
+            "topCodes": {
+                "numbers": [
+                    47
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":210,\"tooltip\":\"Move the robot forward for two seconds.\"}"
+            }
+        },
+        {
+            "name": "robot_turn_left",
+            "text": "Turn left",
+            "image": "->question",
+            "generator": "return ##PREFIX##'turn_left(45)\\n';",
+            "category": "Movements",
+            "topCodes": {
+                "numbers": [
+                    151
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":210,\"tooltip\":\"Turns the robot 45 degrees to the left.\"}"
+            }
+        },
+        {
+            "name": "robot_turn_right",
+            "text": "Turn right",
+            "image": "->question",
+            "generator": "return ##PREFIX##'turn_right(45)\\n';",
+            "category": "Movements",
+            "topCodes": {
+                "numbers": [
+                    157
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":210,\"tooltip\":\"Turns the robot 45 degrees to the right.\"}"
+            }
+        },
+        {
+            "name": "robot_loop_start",
+            "topCodes": {
+                "numbers": [
+                    61
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":120,\"tooltip\":\"Repeats the inside code a set amount of times.\",\"message0\":\"Repeat %1\",\"message1\":\"%1\",\"args0\":[{\"type\":\"input_value\",\"name\":\"TIMES\"}],\"args1\":[{\"type\":\"input_statement\",\"name\":\"DO\"}]}",
+                "generator":"if (block.getField('TIMES')) {var repeats = String(parseInt(block.getFieldValue('TIMES'), 10));} else {var repeats = Blockly.NaoLang.valueToCode(block, 'TIMES', Blockly.NaoLang.ORDER_NONE) || '0';}Blockly.NaoLang.prefixLevel++;var branch = Blockly.NaoLang.statementToCode(block, 'DO'),code = 'loop(' + repeats + '){\\n' + branch;Blockly.NaoLang.prefixLevel--;return Blockly.NaoLang.generatePrefix() + code +Blockly.NaoLang.generatePrefix() + '}\\n';"
+            },
+            "category": "Control",
+            "image": "->question",
+            "text": "Start Repeat",
+            "generator": "var code ='loop(' ;return ##PREFIX##code "
+        },
+        {
+            "name": "robot_loop_end",
+            "topCodes": {
+                "numbers": [
+                    327
+                ]
+            },
+            "category": "Control",
+            "image": "->question",
+            "text": "End Repeat",
+            "generator": "return ##PREFIX##'}\\n'"
+        },
+        {
+            "name": "robot_on_program_start",
+            "topCodes": {
+                "numbers": [
+                    339
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":120,\"tooltip\":\"Defines a program for the robot to run.\",\"message0\":\"On start\",\"message1\":\"%1\",\"args1\":[{\"type\":\"input_statement\",\"name\":\"ACTION\"}]}",
+                "generator": "var innerCode = Blockly.NaoLang.statementToCode(block, 'ACTION'),code = 'start{\\n' +innerCode +'}\\n';return code;",
+                "start": true,
+                "end": true
+            },
+            "category": "Control",
+            "image": "->question",
+            "text": "Start Program",
+            "generator": "return ##PREFIX##'stop()\\n';"
+        },
+        {
+            "name": "robot_program_end",
+            "topCodes": {
+                "numbers": [
+                    271
+                ]
+            },
+            "category": "Control",
+            "image": "->question",
+            "text": "End Program",
+            "generator": "return ##PREFIX##'stop()\\n';"
+        },
+        {
+            "name": "quantifier_two",
+            "topCodes": {
+                "numbers": [
+                    179
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\",\"output\":\"Number\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['2', Blockly.NaoLang.ORDER_NONE];"
+            },
+            "category": "Numbers",
+            "image": "->question",
+            "text": "2",
+            "generator": "var code ='2){\\n'; return ##PREFIX##code"
+        },
+        {
+            "name": "quantifier_three",
+            "topCodes": {
+                "numbers": [
+                    181
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":65,\"tooltip\":\"TODO.\",\"output\":\"Number\"}",
+                "start": true,
+                "end": true,
+                "generator": "return ['3', Blockly.NaoLang.ORDER_NONE];"
+            },
+            "category": "Numbers",
+            "image": "->question",
+            "text": "3",
+            "generator": "var code ='3){\\n'; return ##PREFIX##code"
+        }
+    ],
+    "images": [
+        {
+            "name": "question",
+            "image": "data:image/png;base64,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"
+        }
+    ],
+    "converters": [
+        {
+            "name": "append",
+            "angular": {
+                "converter": "new BlockDefinition('text_concat', [new ValueDefinition('VAR'), new ValueDefinition('TEXT')])"
+            }
+        }
+    ]
+}

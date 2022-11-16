@@ -1,0 +1,62 @@
+.mat-progress-spinner {
+    display: inline-block;
+}
+
+.message {
+    display: inline-block;
+}
+
+.logs-main {
+    display: flex;
+    flex-wrap: column;
+    height: calc(100vh - 100px);
+}
+
+.logs-col {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.item-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.log-main-entry {
+    cursor: pointer;
+}
+
+.log-lines {
+    margin-left: 2rem;
+}
+
+.right {
+    text-align: right;
+}
+
+.left {
+    text-align: left;
+}
+
+.log-selected {
+    font-weight: bold;
+    background-color: #ccc;
+}
+
+.space-right {
+    margin-right: 1rem;
+}
+
+.top-align {
+    vertical-align: top;
+}
+
+.error-line {
+    color: #f44336;
+}
+
+.scrollable-list {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}

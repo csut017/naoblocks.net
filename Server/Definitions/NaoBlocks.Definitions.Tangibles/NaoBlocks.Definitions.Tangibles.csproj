@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="all.template" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="all.template" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Esprima" Version="2.1.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
+		<ProjectReference Include="..\..\NaoBlocks.Engine\NaoBlocks.Engine.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+﻿var blocks = [<[[blocks]]>];
+console.groupCollapsed('[NaoLang] Defining blocks');
+blocks.forEach(function (block) {
+    console.log('[NaoLang] Defining ' + block.type);
+    Blockly.Blocks[block.type] = {
+        init: function () {
+            console.log('[NaoLang] Initialising ' + block.type);
+            this.jsonInit(block);
+            var thisBlock = this;
+            this.setTooltip(function () {
+                return block.tooltip;
+            });
+        }
+    };
+});
+console.groupEnd();

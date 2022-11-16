@@ -1,0 +1,46 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Machine Name</mat-label>
+                <input matInput placeholder="Machine Name" formControlName="machineName" required>
+                <mat-error>
+                    Please provide a machine name
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Friendly Name</mat-label>
+                <input matInput placeholder="Friendly Name" formControlName="friendlyName">
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <select matNativeControl formControlName="type" required>
+                    <option></option>
+                    <option *ngFor="let type of types" value="{{type.name}}">{{type.name}}</option>
+                </select>
+                <mat-error>
+                    Please select a robot type
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Password</mat-label>
+                <input matInput placeholder="Password" formControlName="password">
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the robot:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+</form>

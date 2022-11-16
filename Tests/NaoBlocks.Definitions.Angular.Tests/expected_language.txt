@@ -1,0 +1,79 @@
+﻿Blockly.NaoLang = new Blockly.Generator('NaoLang');
+
+// Define the orders
+Blockly.NaoLang.ORDER_ATOMIC = 0;
+Blockly.NaoLang.ORDER_COLLECTION = 1;
+Blockly.NaoLang.ORDER_STRING_CONVERSION = 1;
+Blockly.NaoLang.ORDER_MEMBER = 2.1;
+Blockly.NaoLang.ORDER_FUNCTION_CALL = 2.2;
+Blockly.NaoLang.ORDER_EXPONENTIATION = 3;
+Blockly.NaoLang.ORDER_UNARY_SIGN = 4;
+Blockly.NaoLang.ORDER_BITWISE_NOT = 4;
+Blockly.NaoLang.ORDER_MULTIPLICATIVE = 5;
+Blockly.NaoLang.ORDER_ADDITIVE = 6;
+Blockly.NaoLang.ORDER_BITWISE_SHIFT = 7;
+Blockly.NaoLang.ORDER_BITWISE_AND = 8;
+Blockly.NaoLang.ORDER_BITWISE_XOR = 9;
+Blockly.NaoLang.ORDER_BITWISE_OR = 10;
+Blockly.NaoLang.ORDER_RELATIONAL = 11;
+Blockly.NaoLang.ORDER_LOGICAL_NOT = 12;
+Blockly.NaoLang.ORDER_LOGICAL_AND = 13;
+Blockly.NaoLang.ORDER_LOGICAL_OR = 14;
+Blockly.NaoLang.ORDER_CONDITIONAL = 15;
+Blockly.NaoLang.ORDER_LAMBDA = 16;
+Blockly.NaoLang.ORDER_NONE = 99;
+
+Blockly.NaoLang.addReservedWords('FALSE,TRUE');
+Blockly.NaoLang.includeId = true;
+Blockly.NaoLang.prefix = '  ';
+Blockly.NaoLang.prefixLevel = 0;
+
+// Initialise code generation
+Blockly.NaoLang.init = function (workspace) {
+    Blockly.NaoLang.prefixLevel = 1;
+    if (!Blockly.NaoLang.nameDB_) {
+        Blockly.NaoLang.nameDB_ = new Blockly.Names(Blockly.NaoLang.RESERVED_WORDS_);
+    } else {
+        Blockly.NaoLang.nameDB_.reset();
+    }
+    Blockly.NaoLang.nameDB_.setVariableMap(workspace.getVariableMap());
+};
+
+// Finish generation
+Blockly.NaoLang.finish = function (code) {
+    if (Blockly.NaoLang.addStart) {
+        return 'reset()\nstart{\n' + code + '}\ngo()\n';
+    }
+    return 'reset()\n' + code + 'go()\n';
+};
+
+Blockly.NaoLang.encodeID = function(id) {
+    let mapping = {
+        ',': '/0',
+        '/': '/1',
+        '[': '/2',
+        ']': '/3'
+    };
+    let outId = '';
+    for (let c of id) {
+        outId += (mapping[c] || c);
+    }
+    return outId;
+}
+
+// Common tasks for generating code from blocks
+Blockly.NaoLang.scrub_ = function (block, code) {
+    var nextBlock = block.nextConnection && block.nextConnection.targetBlock(),
+        nextCode = Blockly.NaoLang.blockToCode(nextBlock);
+    return (Blockly.NaoLang.includeId ? '[' + Blockly.NaoLang.encodeID(block.id) + ']' : '') + code + nextCode;
+};
+
+Blockly.NaoLang.generatePrefix = function () {
+    return Blockly.NaoLang.includeId
+        ? ''
+        : Blockly.NaoLang.prefix.repeat(Blockly.NaoLang.prefixLevel);
+}
+
+Blockly.NaoLang.robot_wait = function (block) {
+var time = Blockly.NaoLang.valueToCode(block, 'TIME', Blockly.NaoLang.ORDER_ATOMIC);var code = 'wait(' + time + ')\n';return Blockly.NaoLang.generatePrefix() + code;
+};

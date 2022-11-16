@@ -1,0 +1,340 @@
+{
+    "blocks": [
+        {
+            "name": "liedown",
+            "numbers": [
+                283
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAByElEQVR4nO2XT46CMBSHy8TEYFi4tXsvQHTTxA2u3wHYeRW3sOAA3MJjNF7BhBWcwv5mIzrVUVDKdJr0S5rYljz69dk/BACYy3zZHsBQvIBtvIBtvIBtvIBtJu2PIAi0IxlA8PfDeR/nM+AFbDPpfuQz7tfUu8znc7bZbNhqtWJpmrLlcvn7mgTALldq/Cxt+6flPt6QMpvNUBQFzufzw7h6CyilkOc5iAhRFIFzDiJClmVQSj0GNijQlu12+/CuXgJN0yCO46eB4zhG0zQYW4AxhqIo3hNQSiFJks7ASZJoszP0LymlxG63QxiGWpwwDHE6ndBboCzL3rNTlqUxgbbUdY3pdKrF2u/313id2+jhcNDqQggmpWRVVTEhxMtnTbBYLII0TbW24/F4q3TNGOdca5dSXvuklFof59x4Brre48RBtl6vtTOgrutbpWvGiEhrF0JASomqqiCE0PqIaJQMvIr37xfxYAFb26gxAcDMQWZVoM1ElmUgInDOEUURiAh5nve6SowlEFw6jX+R/VU8J7bRVzz9Hhh6nx87XovzGfACtnm6",
+            "text": "Lie down",
+            "generator": "var code = 'position(\\'LyingBack\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "dance",
+            "numbers": [
+                55
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACGklEQVR4nO2Yu6riUBSG/8gINiKS9GKjBAQvaWwEC7G1FmxMkTewiTcs7SzF17ASLMVK8gYWooXgfgT1n+oIM+foGJPMVsgHq0iyd7K+ZK2EHYUkPpmI7AS8EgrIJhSQTSggm48X+OV2wmw2IwBUKhXouq48GiuE4H6/R7FYfDjOEyRdhaIoBMDpdMpH49rtNgEQAE3TfDjWS7iekE6nCYCdTuduUo7j3JL/CsdxApFw3QP5fB4AsNlsfKsCT7g1Ho1GBMBYLMbtdnv3rpqm+Z4ldDwemUgkCIDlcpnn8/lucqfTKbDSeVmAJCaTye3u1mo1Hg6HQJN8FArpfj1Ako1GA/P5HAAQjUbRbDZRrVaRy+UQidxvrVKpBEVR/Hutvmp+uVxo2za/XqvPRjwe53g89u2JeT7BarWiaZqMx+OuRIbDoS8SvtXi9XqlruuuJAaDgWcJXxvKMIx/Jp3JZJjNZm/b/X7fk8R/FzAMg0IIFgqF275er/eyhBQBkvBLQprATxLdbte1hFSBnyRs23YlIV3gb4lkMkkhxNMSb7EiU1VVWS6XqNfrWK/XUFX16S+16xVZUKiqqiwWC9fzAhHQNA2pVOqPfbvdDkII/y8WRA9YlvWthi3LutsDXuItesALoYBsQgHZhAKy+XgBX7/Etm1DCAFd178da7VaMAwDmqb5ecnXfqu8Ex9fQqGAbEIB2YQCsvl4gd+x7pdk+xZNzAAAAABJRU5ErkJggg==",
+            "text": "Dance",
+            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "sit",
+            "numbers": [
+                157
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABA0lEQVR4nO2YzQ3DIAxGcdUlGMQMlaXMlMDt66lSW7WVSUhdhJ/kQyT+nlDsOAQgzMzF+gBHcQFrXMCaLoFaK3LOSCmBiIZGSgk5Z9Ra+9IiAFW01hBjRAjh1IgxorUG7bnUAiJy+uHvISLjBZj5ZwLMrBYgbSUmoqeBAEg1Ucne9dfKQv+IC1izjgAzPz2PrsTf9hoisG2betGjdO21zKcEgFBKgYjgjKrMzBARlFLUh++qxJ/oraCjK/o6WehfWUvgXUf2OqYn3z+O947MO7LBNcE7sllwAWuueye+y+kWTH8DLmDN7nfg7DqgZfobcAFrXMCaw38lrJn+BlzAGhew5gaf9m88HzsYCwAAAABJRU5ErkJggg==",
+            "text": "Sit down",
+            "generator": "var code = 'position(\\'Sit\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "stand",
+            "numbers": [
+                31
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA60lEQVR4nO2ZsQ3DIBBFIcoSDHIM5aWgYzQ2ALqfKkXiuLB9zjfSPekaKOD5+yyQPQA3Mw/2Bs5iAmwuEei9I+eMGCNijMg5o/d+TbMBUK0xBkIIcM59VAgBYwxor6eeQCnF1VpX47VWV0rRXk4/ARFZPf13icj9E/g36gLLshyaO8zsTawuAMC11pBSgohARJBSQmtNffMAnAfsLETluTXhvb9VNAD8r/HpEzABNmpfob09s/VO72X6BEyAjQmwMQE2JsDGBNiYAJvNG9lZvk+bV93wpk/ABNiYABsTYGMCbEyAjf0fYGMCbF4M80/FzrJVBwAAAABJRU5ErkJggg==",
+            "text": "Stand up",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "LeftArmOut",
+            "numbers": [
+                47
+            ],
+            "image": "->question",
+            "text": "Left Arm Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'leftArmOut()\\n';"
+        },  {
+            "name": "RightArmOut",
+            "numbers": [
+                151
+            ],
+            "image": "->question",
+            "text": "Right Arm Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'rightArmOut()\\n';"
+        },
+        {
+            "name": "kiaora",
+            "numbers": [
+                331
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACgElEQVR4nO2YPc/xUBjHT73kZrGKtSERGyI2MwmTL8AmwWA0MUlYfQCDhYjF4jNImdhExGpCvDTx8r+H53Hnqeob7d160iu5hp5cp/3/Tv/puU4pAOSTw6K3gHfDBNA7TAC9wwTQOwwJ0O/3kUqlcLlcpDcpAIZJlmVRKBRACAEhBOVyGVJzdBd9z8VigXA4/COeEAKLxYLhcCgKYQgL9ft9hEIhMplMOONWq5Xsdjvxyb+xsslkUnAVi8UiZ9XvSdM0xuOxfhY6Ho+oVCpwOBz4s07P62q1Gk98Op3GZrORFK8ZwGAwAE3THFFCtdfrFfF4HIQQfH19odlsyhKuCcDdLs8sITZvvV4jFovJsowmAI92UQrwTmpiFzGA5XKpKozgirZaLUQiEUlhcvN+b7/fj/1+rxoEb4BlWXg8npeFut1utNttQQBCCDKZjHYArVbrJeE2mw2lUgnb7RZ3oUIAhBAwDKMKBG/gFdt4vV5Mp1OOICmARqOhCoDtcWdmGIZzDYB6rFEjRqPR03GKokQ70Ec9uvVCQgBKwxDN3DuhG0A0GlXlPjyASCTCuaYoClLp8/kwm80U/eITAgBAieWzCf/XZ/Q3NrJsNqvdRgZo20oEAgEcDgdtAZ4WCghS2sytVivVxKsCcH9jhm+n5Qgy9IFGiSAlR8rb7YZEIgFCND5SKrXE6XRCtVqF0+kUra/X67y3pcmh/lVPLxYLpFIpwfpcLvfUcjRNy9orNAeQk51OBy6Xiwdht9vR7XZFn2UIAABkPp8jGAxyniHn16KqIt5NlmWRz+d/AD7q5+6/2ev1kEwmcT6fJQGov/b42DAPNHqHCaB3mAB6x8cDfAPDvz5PETvmQQAAAABJRU5ErkJggg==",
+            "text": "Say 'Kia ora'",
+            "generator": "var code = 'say(\\'key or a\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "wipeforehead",
+            "numbers": [
+                59
+            ],
+            "image": "->question",
+            "text": "Wipe forehead",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'wipe_forehead()\\n';"
+        },
+        {
+            "name": "for",
+            "numbers": [
+                61
+            ],
+            "image": "->question",
+            "text": "For",
+            "generator": "var code ='loop(' ;return Tangibles.NaoLang.generatePrefix() + code "
+        },
+        {
+            "name": "endfor",
+            "numbers": [
+                327
+            ],
+            "image": "->question",
+            "text": "End for",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '}\\n'"
+        },
+        {
+            "name": "look",
+            "numbers": [
+                87
+            ],
+            "image": "->question",
+            "text": "Look",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'look('"
+        },
+        {
+            "name": "left",
+            "numbers": [
+                91
+            ],
+            "image": "->question",
+            "text": "Left",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'left\\')\\n'"
+        },
+        {
+            "name": "right",
+            "numbers": [
+                93
+            ],
+            "image": "->question",
+            "text": "Right",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'right\\')\\n'"
+        },
+        {
+            "name": "ahead",
+            "numbers": [
+                103
+            ],
+            "image": "->question",
+            "text": "Ahead",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'ahead\\')\\n'"
+        }, {
+            "name": "rest",
+            "numbers": [
+                107
+            ],
+            "image": "->question",
+            "text": "Rest",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        }, {
+            "name": "Start",
+            "numbers": [
+                339
+            ],
+            "image": "->question",
+            "text": "Start",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        }, {
+            "name": "End",
+            "numbers": [
+                271
+            ],
+            "image": "->question",
+            "text": "End",
+            "generator": "var code = 'position(\\'Stand\\')\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "two",
+            "numbers": [
+                179
+            ],
+            "image": "->question",
+            "text": "2",
+            "generator": "var code ='2){\\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "three",
+            "numbers": [
+                181
+            ],
+            "image": "->question",
+            "text": "3",
+            "generator": "var code ='3){\\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "walk",
+            "numbers": [
+                115
+            ],
+            "image": "->question",
+            "text": "Walk",
+            "generator": "var code ='walk(1,0) \\n'; return Tangibles.NaoLang.generatePrefix() + code"
+        },
+        {
+            "name": "pointleft",
+            "numbers": [
+                109
+            ],
+            "image": "->question",
+            "text": "Point Left and",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'point(\\'left\\','"
+        },
+        {
+            "name": "pointright",
+            "numbers": [
+                185
+            ],
+            "image": "->question",
+            "text": "Point Right and",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'point(\\'right\\','"
+        },
+        {
+            "name": "up",
+            "numbers": [
+                333
+            ],
+            "image": "->question",
+            "text": "Up",
+            "generator": "var code = 'up()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "down",
+            "numbers": [
+                121
+            ],
+            "image": "->question",
+            "text": "Down",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'down\\')\\n'"
+        },
+        {
+            "name": "out",
+            "numbers": [
+                143
+            ],
+            "image": "->question",
+            "text": "Out",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + '\\'out\\')\\n'"
+        },
+        {
+            "name": "openhand",
+            "numbers": [
+                199
+            ],
+            "image": "->question",
+            "text": "Open hands",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'changeHand(\\'open\\',\\'both\\')\\n';"
+        },
+        {
+            "name": "closehand",
+            "numbers": [
+                173
+            ],
+            "image": "->question",
+            "text": "Close hands",
+            "generator": "return Tangibles.NaoLang.generatePrefix() + 'changeHand(\\'close\\',\\'both\\')\\n';"
+        },
+        {
+            "name": "arabasqueRight",
+            "numbers": [
+                279
+            ],
+            "image": "->question",
+            "text": "Arabasque Right",
+            "generator": "var code = 'arabasqueRight()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "plie",
+            "numbers": [
+                203
+            ],
+            "image": "->question",
+            "text": "plie",
+            "generator": "var code = 'plie()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "arabasque",
+            "numbers": [
+                205
+            ],
+            "image": "->question",
+            "text": "Arabasque",
+            "generator": "var code = 'arabasque()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "fly",
+            "numbers": [
+                211
+            ],
+            "image": "->question",
+            "text": "Fly",
+            "generator": "var code = 'fly()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "firstposition",
+            "numbers": [
+                213
+            ],
+            "image": "->question",
+            "text": "First Position",
+            "generator": "var code = 'ballet1()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "secondposition",
+            "numbers": [
+                217
+            ],
+            "image": "->question",
+            "text": "Second Position",
+            "generator": "var code = 'ballet2()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "thirdposition",
+            "numbers": [
+                295
+            ],
+            "image": "->question",
+            "text": "Third Position",
+            "generator": "var code = 'ballet3()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "enavont",
+            "numbers": [
+                285
+            ],
+            "image": "->question",
+            "text": "En_avont",
+            "generator": "var code = 'enavont()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "singlelady",
+            "numbers": [
+                301
+            ],
+            "image": "->question",
+            "text": "Single Lady",
+            "generator": "var code = 'single()\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        },
+        {
+            "name": "gangnam",
+            "numbers": [
+                307
+            ],
+            "image": "->question",
+            "text": "Single Lady",
+            "generator": "var code = 'dance(\\'gangnam\\', TRUE)\\n';return Tangibles.NaoLang.generatePrefix() + code;"
+        }
+        
+    ],
+    "images": [
+        {
+            "name": "question",
+            "image": "data:image/png;base64,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"
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+﻿Tangibles = {};
+Tangibles.blocks = [<[[blocks]]>];
+Tangibles.NaoLang = {};
+
+Tangibles.NaoLang.prefix = '  ';
+Tangibles.NaoLang.prefixLevel = 0;
+
+// Initialise code generation
+Tangibles.NaoLang.init = function () {
+    Tangibles.NaoLang.prefixLevel = 1;
+};
+
+// Finish generation
+Tangibles.NaoLang.finish = function (code) {
+    return 'reset()\nstart{\n' + code + '}\ngo()\n';
+};
+
+Tangibles.NaoLang.generatePrefix = function () {
+    return Tangibles.NaoLang.includeId
+        ? ''
+        : Tangibles.NaoLang.prefix.repeat(Tangibles.NaoLang.prefixLevel);
+}
+
+<[[language]]>

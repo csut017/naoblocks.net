@@ -1,0 +1,30 @@
+#blockly {
+    width: calc(100vw - 200px);
+    height: calc(100vh - 103px);
+}
+
+.status-bar {
+    width: calc(100vw - 210px);
+    height: 28px;
+    margin: 0;
+    padding: 4px;
+    vertical-align: middle;
+
+    .message {
+        margin-left: 0.25rem;
+        display: inline-block;
+        vertical-align: super;
+    }
+
+    .valid {
+        color: #008000;
+    }
+
+    .invalid {
+        color: #800000;
+    }
+}
+
+.mat-progress-spinner{
+    display: inline-block;
+}

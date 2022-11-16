@@ -1,0 +1,95 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
+        <mat-toolbar color="primary">
+            <span mat-card-avatar class="app-icon"></span>
+            <span class="app-title">NaoBlocks</span>
+        </mat-toolbar>
+        <mat-nav-list>
+            <a mat-list-item href="#" (click)="changeView($event, 'Dashboard')">
+                <mat-icon aria-label="Dashboard" class="menu-icon">dashboard</mat-icon> Dashboard
+            </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#" (click)="changeView($event, 'Robots')">
+                <mat-icon aria-label="Robots" class="menu-icon">settings_input_composite</mat-icon> Robots
+            </a>
+            <a mat-list-item href="#" (click)="changeView($event, 'Students')">
+                <mat-icon aria-label="Students" class="menu-icon">people</mat-icon> Students
+            </a>
+            <mat-divider></mat-divider>
+            <a mat-list-item href="#" (click)="changeView($event, 'Data')">
+                <mat-icon aria-label="System configuration" class="menu-icon">query_stats</mat-icon> Export Data
+            </a>
+            <!-- <a mat-list-item href="#" (click)="changeView($event, 'Configuration')">
+                <mat-icon aria-label="System configuration" class="menu-icon">construction</mat-icon> Configuration
+            </a> -->
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">
+            <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
+                *ngIf="isHandset$ | async">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span>
+                Teacher
+                <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentView}}
+                <span *ngIf="currentItem">
+                    <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentItem}}
+                </span>
+            </span>
+            <span class="example-spacer"></span>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="openChangeRole('Teacher')" *ngIf="canChangeRole()">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>Change Role</span>
+                </button>
+                <button mat-menu-item (click)="openAbout()">
+                    <mat-icon>help_outline</mat-icon>
+                    <span>About</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Log Out</span>
+                </button>
+            </mat-menu>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn" *ngIf="!hasAccess">
+            <button mat-icon-button aria-label="Access error">
+                <mat-icon>error_outline</mat-icon>
+            </button>
+            <span>You do not have access to this role</span>
+            <span class="example-spacer"></span>
+            <button mat-stroked-button (click)="openChangeRole('Teacher')">Change Role</button>
+        </mat-toolbar>
+
+        <div *ngIf="hasAccess" [ngSwitch]="currentView">
+            <app-system-dashboard *ngSwitchCase="'Dashboard'" (currentItemChanged)="onItemChanged($event)"></app-system-dashboard>
+            <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
+            <app-students-list *ngSwitchCase="'Students'" (currentItemChanged)="onItemChanged($event)"></app-students-list>
+            <app-export-data *ngSwitchCase="'Data'"></app-export-data>
+            <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)"></app-system-configuration>
+            <div *ngSwitchDefault class="unknown-view">
+                <mat-card>
+                    <mat-card-title>
+                        <mat-icon color="warn">device_unknown</mat-icon>
+                        Unknown view
+                    </mat-card-title>
+                    <mat-card-content>
+                        <div>
+                            The view '{{currentView}}' is not a valid teacher view.
+                        </div>
+                        <div>
+                            Please select a different view.
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

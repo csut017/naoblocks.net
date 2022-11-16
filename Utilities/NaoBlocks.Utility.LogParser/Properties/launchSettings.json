@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NaoBlocks.Utility.LogParser": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\csut017\\OneDrive - The University of Auckland\\Research\\[Children's Robotics]\\NaoBlocks.Net\\Data\\All_2022-10-10_2022-10-13-programs.xlsx\" \"C:\\Users\\csut017\\OneDrive - The University of Auckland\\Research\\[Children's Robotics]\\NaoBlocks.Net\\Data\\All_2022-10-10_2022-10-13-programs-parsed.xlsx\""
+    }
+  }
+}

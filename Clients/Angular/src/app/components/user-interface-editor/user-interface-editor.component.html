@@ -1,0 +1,71 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <!-- <button mat-raised-button color="primary" type="submit">
+            Save
+        </button> -->
+    </div>
+    <mat-card>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Key</mat-label>
+                <input matInput placeholder="Key" formControlName="key" required readonly>
+                <mat-error>
+                    Please provide a key for the User Interface
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Name</mat-label>
+                <input matInput placeholder="Name" formControlName="name" required readonly>
+                <mat-error>
+                    Please provide a name for the User Interface
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Description</mat-label>
+                <input matInput placeholder="Description" formControlName="description" readonly>
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the interface:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+    <br />
+    <mat-card>
+        <mat-card-content>
+            <table class="item-description">
+                <thead>
+                    <tr>
+                        <th class="left">Name</th>
+                        <th class="right">Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of description" class="item-line">
+                        <td class="item-line">
+                            <div (click)="item.isOpen = !item.isOpen">
+                                <mat-icon class="item-icon">{{item.isOpen ? 'expand_less' : 'expand_more'}}</mat-icon>
+                                {{item.name}}
+                            </div>
+                            <ul *ngIf="item.isOpen">
+                                <li *ngFor="let child of item.children">
+                                    <img *ngIf="child.image" src="{{child.image}}"/>
+                                    {{child.name}}
+                                </li>
+                            </ul>
+                        </td>
+                        <td class="right item-line">
+                            {{getItemCount(item)}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </mat-card-content>
+    </mat-card>
+</form>

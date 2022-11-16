@@ -1,0 +1,112 @@
+<div [ngSwitch]="view">
+    <div *ngSwitchCase="'list'">
+        <div class="list-commands">
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" (click)="add()">Add Robot
+                            Type</button>
+                    </div>
+                </div>
+            </div>
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                        <button mat-raised-button color="accent" class="command-button" [matMenuTriggerFor]="importMenu">
+                            Import <mat-icon>arrow_drop_down</mat-icon>
+                        </button>
+                        <mat-menu #importMenu="matMenu">
+                            <button mat-menu-item (click)="importPackage()" [disabled]="selection.selected.length != 1">Package Files</button>
+                            <button mat-menu-item (click)="importRobots()" [disabled]="selection.selected.length != 1">Robots</button>
+                        </mat-menu>
+                    </div>
+                </div>
+            </div>
+            <div class="list-commands-selection">
+                <div class="list-commands-header">
+                    Selection
+                </div>
+                <div>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        [matMenuTriggerFor]="viewMenu">
+                        View
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #viewMenu="matMenu">
+                        <button mat-menu-item (click)="viewToolboxes()">Toolboxes</button>
+                    </mat-menu>
+                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
+                        (click)="edit()">Edit</button>
+                    <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
+                        (click)="delete()">Delete</button>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        [matMenuTriggerFor]="setMenu">
+                        Set
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #setMenu="matMenu">
+                        <button mat-menu-item (click)="setSystemDefault()">System Default</button>
+                    </mat-menu>
+                    <button mat-raised-button class="command-button"
+                        [matMenuTriggerFor]="exportMenu">
+                        Export
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #exportMenu="matMenu">
+                        <button mat-menu-item (click)="exportList()">List</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportDetails()">Details</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportLogs()">Logs</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportPackage()">Package</button>
+                    </mat-menu>
+                </div>
+            </div>
+        </div>
+
+        <mat-error class="missing-default" *ngIf="!hasSystemDefault">
+            <mat-icon>warning</mat-icon>
+            There is no system default robot type.
+        </mat-error>
+
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <td mat-cell *matCellDef="let record"> {{record.name}} </td>
+            </ng-container>
+            <ng-container matColumnDef="isDefault">
+                <th mat-header-cell *matHeaderCellDef> Default </th>
+                <td mat-cell *matCellDef="let record"> {{record.isDefault ? 'Default' : 'User'}} </td>
+            </ng-container>
+            <ng-container matColumnDef="toolbox">
+                <th mat-header-cell *matHeaderCellDef> Toolbox </th>
+                <td mat-cell *matCellDef="let record"> {{!record.hasToolbox ? 'Missing' : 'Ready'}} </td>
+            </ng-container>
+            <ng-container matColumnDef="select">
+                <th mat-header-cell *matHeaderCellDef>
+                    <mat-checkbox (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
+                    </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                    </mat-checkbox>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+        </table>
+    </div>
+    <div *ngSwitchCase="'editor'">
+        <app-robot-type-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-type-editor>
+    </div>
+    <div *ngSwitchCase="'toolboxes'">
+        <app-toolbox-list [item]="currentItem" (closed)="onClosed($event)"></app-toolbox-list>
+    </div>
+</div>

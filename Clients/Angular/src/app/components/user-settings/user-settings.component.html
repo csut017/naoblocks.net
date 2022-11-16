@@ -1,0 +1,77 @@
+<form [formGroup]="form" class="editor lower-3">
+    <mat-card>
+        <mat-card-title>View</mat-card-title>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Default View</mat-label>
+                <mat-select formControlName="viewMode" required>
+                    <mat-option [value]="0">Blocks</mat-option>
+                    <mat-option [value]="1">Tangibles</mat-option>
+                    <mat-option [value]="2">Role Home</mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a default view mode
+                </mat-error>
+                <mat-hint>What is the default view mode?</mat-hint>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+    <mat-card>
+        <mat-card-title>Robot</mat-card-title>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <mat-select appearance="fill" formControlName="type" required (selectionChange)="onRobotTypeChange()">
+                    <mat-option></mat-option>
+                    <mat-option *ngFor="let type of types" [value]="type.name">{{type.name}}</mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a robot type
+                </mat-error>
+                <mat-hint>The type of robot to program</mat-hint>
+            </mat-form-field>
+
+            <div *ngIf="showAllocation">
+                <mat-form-field class="fill-width">
+                    <mat-label>Allocation Mode</mat-label>
+                    <mat-select formControlName="allocationMode" required (selectionChange)="onAllocationModeChange()">
+                        <mat-option [value]="0">Any robot</mat-option>
+                        <mat-option [value]="1" *ngIf="!!robots.length">Require robot</mat-option>
+                        <mat-option [value]="2" *ngIf="!!robots.length">Prefer robot</mat-option>
+                    </mat-select>
+                    <mat-error>
+                        Please select an allocation mode
+                    </mat-error>
+                    <mat-hint>Which robot will the student use</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field class="fill-width" *ngIf="allocationMode">
+                    <mat-label>Robot</mat-label>
+                    <mat-select formControlName="robotId" required>
+                        <mat-option></mat-option>
+                        <mat-option [value]="robot.machineName" *ngFor="let robot of robots">
+                            {{robot.friendlyName}}
+                            [{{robot.machineName}}]</mat-option>
+                    </mat-select>
+                    <mat-error>
+                        Please select a robot
+                    </mat-error>
+                    <mat-hint>The assigned robot</mat-hint>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field class="fill-width" *ngIf="showConfiguration && hasRobot">
+                <mat-label>Toolbox</mat-label>
+                <mat-select formControlName="toolbox" required (selectionChange)="onToolboxChanged()">
+                    <mat-option [value]="toolbox.name" *ngFor="let toolbox of toolboxes">
+                        {{toolbox.name}}
+                    </mat-option>
+                </mat-select>
+                <mat-error>
+                    Please select a toolbox
+                </mat-error>
+                <mat-hint>Which toolbox should be used</mat-hint>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+</form>

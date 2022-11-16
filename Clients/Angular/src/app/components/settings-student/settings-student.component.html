@@ -1,0 +1,21 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <div>
+        <app-user-settings (closed)="doClose()" [showAllocation]="true" [settings]="settings.user"></app-user-settings>
+
+        <mat-error *ngIf="errors.length > 0" class="lower-1">
+            There were some errors saving the robot type:
+            <ul>
+                <li *ngFor="let error of errors">{{error}}</li>
+            </ul>
+        </mat-error>
+    </div>
+</form>

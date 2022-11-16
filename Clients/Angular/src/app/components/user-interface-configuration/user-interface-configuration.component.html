@@ -1,0 +1,66 @@
+<div [ngSwitch]="view">
+    <div *ngSwitchCase="'list'">
+        <div class="list-commands">
+            <div class="list-commands-all">
+                <div>
+                    <div>
+                    </div>
+                    <div>
+                    </div>
+                </div>
+            </div>
+            <div class="list-commands-selection">
+                <div class="list-commands-header">
+                    Selection
+                </div>
+                <div>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        (click)="show()">View</button>
+                        <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        (click)="import()">Import</button>
+                        <button mat-raised-button class="command-button" [disabled]="selection.selected.length < 1"
+                        (click)="export()">Export</button>
+                </div>
+            </div>
+        </div>
+
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
+
+            <ng-container matColumnDef="key">
+                <th mat-header-cell *matHeaderCellDef> Key </th>
+                <td mat-cell *matCellDef="let record"> {{record.key}} </td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <td mat-cell *matCellDef="let record"> {{record.name}} </td>
+            </ng-container>
+            <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef> Description </th>
+                <td mat-cell *matCellDef="let record"> {{record.description}} </td>
+            </ng-container>
+            <ng-container matColumnDef="isInitialised">
+                <th mat-header-cell *matHeaderCellDef> </th>
+                <td mat-cell *matCellDef="let record"> {{record.isInitialised ? '' : 'Uninitialised'}} </td>
+            </ng-container>
+            <ng-container matColumnDef="select">
+                <th mat-header-cell *matHeaderCellDef>
+                    <mat-checkbox (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
+                    </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                    </mat-checkbox>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+        </table>
+    </div>
+    <div *ngSwitchCase="'item'">
+        <app-user-interface-editor [item]="currentItem" (closed)="onClosed($event)"></app-user-interface-editor>
+    </div>
+</div>

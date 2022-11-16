@@ -1,0 +1,43 @@
+<form [formGroup]="form" (ngSubmit)="doSave()" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="submit">
+            Save
+        </button>
+    </div>
+    <mat-card>
+        <mat-card-title>Details</mat-card-title>
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Robot Type Name</mat-label>
+                <input matInput placeholder="Name" formControlName="name" required>
+                <mat-error>
+                    Please provide a robot type name
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <input matInput placeholder="Type" formControlName="type" readonly>
+            </mat-form-field>
+            <mat-error *ngIf="errors.length > 0" class="lower-1">
+                There were some errors saving the robot type:
+                <ul>
+                    <li *ngFor="let error of errors">{{error}}</li>
+                </ul>
+            </mat-error>
+        </mat-card-content>
+    </mat-card>
+    <mat-card style="margin-top: 1rem;" *ngIf="!item?.isNew">
+        <mat-card-title>Toolboxes</mat-card-title>
+        <mat-card-content>
+            <mat-selection-list [multiple]="false">
+                <mat-list-option *ngFor="let toolbox of toolboxes" [value]="toolbox">
+                  {{toolbox.name}}
+                </mat-list-option>
+              </mat-selection-list>
+        </mat-card-content>
+    </mat-card>
+</form>

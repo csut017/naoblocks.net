@@ -1,0 +1,45 @@
+.sidenav-container {
+    height: 100%;
+}
+
+.sidenav {
+    width: 200px;
+}
+
+.sidenav .mat-toolbar {
+    background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.example-spacer {
+    flex: 1 1 auto;
+}
+
+.app-icon {
+    background-color: rgba($color: #fff, $alpha: 0);
+    background-image: url("/assets/AppIcon.png");
+    height: 32px;
+    width: 32px;
+    margin: 0 auto;
+}
+
+.app-title {
+    color: #000;
+}
+
+.menu-icon {
+    margin-right: 0.5rem;
+}
+
+.unknown-view {
+    padding: 2rem;
+}
+
+.breadcrumb {
+    vertical-align: sub;
+}

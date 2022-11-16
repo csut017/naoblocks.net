@@ -1,0 +1,174 @@
+These diagrams are generated via https://sequencediagram.org/
+
+Socket initialisation
+========================
+[->Robot:initialise
+activate Robot
+
+Robot->Server:Register
+activate Server
+Robot<-Server:Registered
+deactivate Server
+Robot->Server:RobotStateUpdate
+box right of Server:State is\n//waiting//
+deactivate Robot
+
+Socket program execution (normal)
+====================================
+[->Browser:start program
+activate Browser
+
+Browser->Server://compile// (HTTP)
+activate Server
+Browser<--Server:response
+deactivate Server
+
+Browser->Server:RequestRobot
+activate Server
+Browser<-Server:RobotAllocated
+
+Browser->Server:TransferProgram
+Server->>StateEngine:DownloadProgram
+activate StateEngine
+Server<<--StateEngine:ProgramDownloaded
+deactivate StateEngine
+Browser<-Server:ProgramTransferred
+
+Browser->Server:StartProgram
+Server->>StateEngine:StartProgram
+activate StateEngine
+Server<<--StateEngine:ProgramStarted
+StateEngine->Robot:StartProgram
+activate Robot
+StateEngine<--Robot:Ready
+deactivate Robot
+Server<<-StateEngine:RobotStateUpdate
+Browser<-Server:RobotStateUpdate
+
+StateEngine->Robot:ExecuteInstruction
+activate Robot
+StateEngine<--Robot:ExecutionStarted
+Server<<-StateEngine:RobotDebugMessage
+Browser<-Server:RobotDebugMessage
+StateEngine<--Robot:ExecutionFinished
+deactivate Robot
+Server<<-StateEngine:RobotDebugMessage
+Browser<-Server:RobotDebugMessage
+
+StateEngine->>StateEngine:ExecuteInstruction
+Server<<-StateEngine:RobotDebugMessage
+Browser<-Server:RobotDebugMessage
+
+StateEngine->Robot:StopProgram
+activate Robot
+StateEngine<--Robot:ProgramStopped
+deactivate Robot
+Server<<-StateEngine:ProgramFinished
+Server<<-StateEngine:RobotStateUpdate
+deactivate StateEngine
+Browser<-Server:RobotStateUpdate
+Browser<-Server:ProgramFinished
+deactivate Server
+deactivate Browser
+
+WebSocket initialisation
+========================
+[->Robot:initialise
+
+autoactivation on
+Robot->Server:getVersion (HTTP)
+Robot<--Server:response
+
+Robot->Server:authenticate (HTTP)
+Robot<--Server:response
+
+autoactivation off
+Robot->Server:connect (HTTP)
+Robot->Server://Authenticate
+Robot<-Server://Authenticated
+Robot->Server://RobotStateUpdate
+
+WebSocket program execution (normal)
+====================================
+[->Browser:start program
+activate Browser
+
+Browser->Server:compile(HTTP)
+activate Server
+Browser<--Server:response
+deactivate Server
+
+Browser->Server:RequestRobot
+activate Server
+Browser<-Server:RobotAllocated
+
+Browser->Server:TransferProgram
+Server->Robot:DownloadProgram
+activate Robot
+Server<-Robot:ProgramDownloaded
+deactivate Robot
+Browser<-Server:ProgramTransferred
+
+Browser->Server:StartProgram
+Server->Robot:StartProgram
+activate Robot
+Server<-Robot:ProgramStarted
+Server<-Robot:RobotStateUpdate
+Browser<-Server:RobotStateUpdate
+Server<-Robot:RobotDebugMessage
+Browser<-Server:RobotDebugMessage
+Server<-Robot:ProgramFinished
+Server<-Robot:RobotStateUpdate
+deactivate Robot
+Browser<-Server:RobotStateUpdate
+Browser<-Server:ProgramFinished
+deactivate Server
+deactivate Browser
+
+WebSocket program errors
+========================
+[->Browser:start program
+activate Browser
+
+Browser->Server:compile(HTTP)
+activate Server
+Browser<--Server:response
+deactivate Server
+
+==<color:#red>Allocation error</color>==
+
+Browser->Server:RequestRobot
+activate Server
+Browser x-Server:NoRobotsAvailable
+deactivate Server
+note left of Browser:Cancelled due to\nno robots\navailable for\nallocation
+
+==<color:#red>Download error</color>==
+
+Browser->Server:TransferProgram
+activate Server
+Server->Robot:DownloadProgram
+activate Robot
+Server<-Robot:UnableToDownloadProgram
+deactivate Robot
+Browser x-Server:UnableToDownloadProgram
+deactivate Server
+note left of Browser:Cancelled due\nerror in program\ndownload
+
+==<color:#red>Execution error</color>==
+
+Browser->Server:StartProgram
+activate Server
+Server->Robot:StartProgram
+activate Robot
+Server<-Robot:ProgramStarted
+Server<-Robot:RobotStateUpdate
+Browser<-Server:RobotStateUpdate
+Server<-Robot:RobotError
+Browser<-Server:RobotError
+Server<-Robot:RobotStateUpdate
+deactivate Robot
+Browser<-Server:RobotStateUpdate
+Browser x-Server:ProgramStopped
+deactivate Server
+note left of Browser:Cancelled due to\nexecution error

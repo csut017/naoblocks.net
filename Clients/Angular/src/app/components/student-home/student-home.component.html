@@ -1,0 +1,102 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
+        <mat-toolbar color="primary">
+            <span mat-card-avatar class="app-icon"></span>
+            <span class="app-title">NaoBlocks</span>
+        </mat-toolbar>
+        <mat-action-list *ngIf="showCommands">
+            <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
+                <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
+            </button>
+            <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
+                <mat-icon matListIcon aria-label="Stop current program">stop</mat-icon> Stop
+            </button>
+            <mat-divider *ngIf="!controller.isPlaying && showFileCommands"></mat-divider>
+            <button mat-list-item (click)="deleteProgram()" *ngIf="!controller.isPlaying && showFileCommands">
+                <mat-icon matListIcon aria-label="Delete current program">delete_outline</mat-icon> Clear
+            </button>
+            <button mat-list-item (click)="loadProgram()" *ngIf="!controller.isPlaying && showFileCommands">
+                <mat-icon matListIcon aria-label="Load existing program">file_download</mat-icon> Load
+            </button>
+            <button mat-list-item (click)="saveProgram()" *ngIf="!controller.isPlaying && showFileCommands">
+                <mat-icon matListIcon aria-label="Save current program">publish</mat-icon> Save
+            </button>
+        </mat-action-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">
+            <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
+                *ngIf="isHandset$ | async">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span>Programming: {{title}}</span>
+            <span class="example-spacer"></span>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="showSettings()">
+                    <mat-icon>settings</mat-icon>
+                    <span>User Settings</span>
+                </button>
+                <button mat-menu-item (click)="showDebugSettings()" *ngIf="!controller.isPlaying">
+                    <mat-icon>tune</mat-icon> 
+                    <span>Debug Settings</span>
+                </button>
+                    <mat-divider></mat-divider>
+                <button mat-menu-item (click)="openChangeRole('Student')" *ngIf="canChangeRole()">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>Change Role</span>
+                </button>
+                <button mat-menu-item (click)="openChangeView()" *ngIf="canChangeView()">
+                    <mat-icon>wysiwyg</mat-icon>
+                    <span>Change View</span>
+                </button>
+                <button mat-menu-item (click)="openAbout()">
+                    <mat-icon>help_outline</mat-icon>
+                    <span>About</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Log Out</span>
+                </button>
+            </mat-menu>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn" *ngIf="!hasAccess">
+            <button mat-icon-button aria-label="Access error">
+                <mat-icon>error_outline</mat-icon>
+            </button>
+            <span>You do not have access to this role</span>
+            <span class="example-spacer"></span>
+            <button mat-stroked-button (click)="openChangeRole('Student')">Change Role</button>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn"
+            *ngIf="editorSettings.isLoaded && (!editorSettings.isSystemInitialised || !editorSettings.toolbox)">
+            <mat-icon class="error-icon">error_outline</mat-icon>
+            <span *ngIf="!editorSettings.isSystemInitialised">The system has not been completely initialised - there is no default robot type. </span>
+            <span *ngIf="editorSettings.isSystemInitialised && !editorSettings.toolbox">The current robot type does not have a toolbox. </span>
+            <a mat-stroked-button [routerLink]="['/administrator', 'Robot Types']" class="configure-button"
+                *ngIf="isAdmin">
+                Configure
+            </a>
+        </mat-toolbar>
+
+        <div [ngSwitch]="view">
+            <div *ngSwitchCase="'editor'" [ngSwitch]="editorView">
+                <app-blockly-editor *ngSwitchCase="'blockly'" [editorSettings]="editorSettings"
+                    [controller]="controller"></app-blockly-editor>
+                <app-tangible-editor *ngSwitchCase="'tangibles'" [editorSettings]="editorSettings"
+                    [controller]="controller"></app-tangible-editor>
+            </div>
+            <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onSettingsClosed($event)"
+                [settings]="runSettings"></app-settings-debug>
+            <app-settings-student *ngSwitchCase="'user-settings'" (closed)="onClosed($event, true)" [settings]="editorSettings"></app-settings-student>
+            <app-program-load *ngSwitchCase="'load-program'" (closed)="onClosed($event, false)"></app-program-load>
+            <app-program-save *ngSwitchCase="'save-program'" (closed)="onClosed($event, false)"></app-program-save>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>
