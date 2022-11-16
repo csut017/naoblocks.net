@@ -7,5 +7,4 @@ List of documentation (in alphabetical order):
 - [Related Academic Papers](papers.md)
 - [Robots](robot.md)
 - [Robot Functionality/Blocks](functionality.md)
-- [Tangibles](tangibles.md)
 - [Testing](testing.md)
