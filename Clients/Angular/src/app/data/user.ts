@@ -11,6 +11,7 @@ export class User {
     isFullyLoaded: boolean = false;
 
     hasError: boolean = false;
+    message?: string;
 
     constructor(isNew: boolean = false) {
         this.isNew = isNew;

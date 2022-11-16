@@ -14,6 +14,24 @@ import { User } from '../data/user';
 })
 export class UserService  extends ClientService {
 
+  parseStudentImportFile(file: File): Observable<ExecutionResult<ResultSet<User>>> {
+    const url = `${environment.apiURL}v1/students/import?action=parse`;
+    this.log('Parsing import file');
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ExecutionResult<ResultSet<User>>>(url, formData)
+      .pipe(
+        tap(result => {
+          if (!result.successful) {
+            this.log(`Failed to parse input file`);
+          } else {
+            this.log(`Parsed import file: found ${result.output?.count} students`);
+          }
+        }),
+        catchError(this.handleError('parseImportFile', msg => new ExecutionResult<ResultSet<User>>(new ResultSet<User>(), msg))),
+      );
+  }
+
   constructor(private http: HttpClient,
     errorHandler: ErrorHandlerService) {
     super(errorHandler);

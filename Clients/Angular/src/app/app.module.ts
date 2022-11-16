@@ -52,6 +52,7 @@ import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
 import { ExportDataComponent } from './components/export-data/export-data.component';
 import { RobotImportDialogComponent } from './components/robot-import-dialog/robot-import-dialog.component';
 import { DragAndDropDirective } from './drag-and-drop.directive';
+import { UserImportDialogComponent } from './components/user-import-dialog/user-import-dialog.component';
 
 
 @NgModule({
@@ -97,7 +98,8 @@ import { DragAndDropDirective } from './drag-and-drop.directive';
     UserInterfaceEditorComponent,
     ReportSettingsComponent,
     ExportDataComponent,
-    RobotImportDialogComponent
+    RobotImportDialogComponent,
+    UserImportDialogComponent
   ],
   imports: [
     BrowserModule,

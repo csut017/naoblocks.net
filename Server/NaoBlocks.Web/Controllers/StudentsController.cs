@@ -2,11 +2,16 @@
 using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Collections.ObjectModel;
+
 using Commands = NaoBlocks.Engine.Commands;
+
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
@@ -228,6 +233,54 @@ namespace NaoBlocks.Web.Controllers
                 Items = dataPage.Items?.Select(s => Dtos.Student.FromModel(s))
             };
             return result;
+        }
+
+        /// <summary>
+        /// Imports a list of students.
+        /// </summary>
+        /// <param name="action">The action to perform. Options are "parse".</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("import")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<ListResult<Transfer.User>>>> Import([FromQuery] string? action)
+        {
+            var files = this.Request.Form.Files;
+            if (files == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Expected a file to process"
+                });
+            }
+
+            if (files.Count != 1)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Invalid number of files, can only handle one file at a time"
+                });
+            }
+
+            if (!"parse".Equals(action))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Action {action} is invalid"
+                });
+            }
+
+            this.logger.LogInformation("Parsing students import");
+            using var inputStream = files.First().OpenReadStream();
+            var command = new ParseUsersImport
+            {
+                Data = inputStream,
+                Role = Data.UserRole.Student
+            };
+
+            return await this.executionEngine
+                .ExecuteForHttp<ReadOnlyCollection<Data.User>, ListResult<Transfer.User>>
+                (command,
+                users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!))));
         }
 
         /// <summary>

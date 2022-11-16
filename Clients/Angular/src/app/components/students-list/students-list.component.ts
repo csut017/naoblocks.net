@@ -6,11 +6,13 @@ import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { Student } from 'src/app/data/student';
+import { UserImportSettings } from 'src/app/data/user-import-settings';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { MultilineMessageService } from 'src/app/services/multiline-message.service';
 import { ReportSettingsService } from 'src/app/services/report-settings.service';
 import { StudentService } from 'src/app/services/student.service';
+import { UserImportDialogService } from 'src/app/services/user-import-dialog.service';
 
 @Component({
   selector: 'app-students-list',
@@ -34,6 +36,7 @@ export class StudentsListComponent implements OnInit {
     private deleteConfirm: DeletionConfirmationService,
     private multilineMessage: MultilineMessageService,
     private exportSettings: ReportSettingsService,
+    private importUserService: UserImportDialogService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -94,6 +97,14 @@ export class StudentsListComponent implements OnInit {
     } else {
         this.doEdit(item);
     }
+  }
+
+  importStudents(): void {
+    let settings = new UserImportSettings();
+    this.importUserService.start(settings)
+      .subscribe(result => {
+        if (result) this.loadList();
+      });
   }
 
   private doEdit(item: Student): void {

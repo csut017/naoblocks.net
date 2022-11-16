@@ -16,7 +16,12 @@
                     <div>
                     </div>
                     <div>
-                        <button mat-raised-button color="accent" class="command-button">Import Students</button>
+                        <button mat-raised-button color="accent" class="command-button" [matMenuTriggerFor]="importMenu">
+                            Import <mat-icon>arrow_drop_down</mat-icon>
+                        </button>
+                        <mat-menu #importMenu="matMenu">
+                            <button mat-menu-item (click)="importStudents()">Students</button>
+                        </mat-menu>
                     </div>
                 </div>
             </div>

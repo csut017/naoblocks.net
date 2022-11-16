@@ -138,7 +138,7 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
-        /// Imports a toolbox for a robot type.
+        /// Imports a list of robots.
         /// </summary>
         /// <param name="action">The action to perform. Options are "parse".</param>
         /// <returns>The result of execution.</returns>

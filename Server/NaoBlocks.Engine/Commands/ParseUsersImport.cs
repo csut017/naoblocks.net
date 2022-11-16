@@ -6,13 +6,13 @@ using Raven.Client.Documents;
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
-    /// A command for parsing a robot import file.
+    /// A command for parsing a user import file.
     /// </summary>
     [Transient]
-    public class ParseRobotsImport
+    public class ParseUsersImport
         : CommandBase
     {
-        private readonly List<Robot> robots = new();
+        private readonly List<User> users = new();
 
         /// <summary>
         /// Gets or sets the  data.
@@ -20,7 +20,15 @@ namespace NaoBlocks.Engine.Commands
         public Stream? Data { get; set; }
 
         /// <summary>
-        /// Validates the robot details.
+        /// Gets or sets the user role.
+        /// </summary>
+        /// <remarks>
+        /// If this value is set, it will override any incoming values.
+        /// </remarks>
+        public UserRole? Role { get; set; }
+
+        /// <summary>
+        /// Validates the user details.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
@@ -51,7 +59,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
-                        await this.ValidateRobots(session).ConfigureAwait(false);
+                        await this.ValidateUsers(session).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -71,11 +79,11 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            return Task.FromResult(CommandResult.New(this.Number, this.robots.AsReadOnly()));
+            return Task.FromResult(CommandResult.New(this.Number, this.users.AsReadOnly()));
         }
 
         /// <summary>
-        /// Parses the workbook into a series of <see cref="Robot"/> instance.
+        /// Parses the workbook into a series of <see cref="User"/> instance.
         /// </summary>
         /// <param name="workbook">The <see cref="ExcelWorkbook"/> to parse.</param>
         private void ParseExcel(ExcelWorkbook workbook)
@@ -83,7 +91,7 @@ namespace NaoBlocks.Engine.Commands
             var worksheet = workbook.Worksheets.First();
             var columns = worksheet.Dimension.End.Column;
             var rows = worksheet.Dimension.End.Row;
-            var mappings = new Dictionary<int, Action<Robot, string>>();
+            var mappings = new Dictionary<int, Action<User, string>>();
 
             // Assuming the first row is headers
             for (var column = 1; column <= columns; column++)
@@ -91,22 +99,39 @@ namespace NaoBlocks.Engine.Commands
                 var name = worksheet.Cells[1, column].Value?.ToString() ?? string.Empty;
                 switch (name.Trim().ToLowerInvariant())
                 {
-                    case "machine name":
-                        mappings.Add(column, (robot, value) => robot.MachineName = value);
+                    case "name":
+                        mappings.Add(column, (user, value) => user.Name = value);
                         break;
 
-                    case "friendly name":
-                        mappings.Add(column, (robot, value) => robot.FriendlyName = value);
+                    case "age":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (!int.TryParse(value, out var age)) return;
+                            if (user.StudentDetails == null) user.StudentDetails = new StudentDetails();
+                            user.StudentDetails.Age = age;
+                        });
                         break;
 
-                    case "type":
-                        mappings.Add(column, (robot, value) => robot.RobotTypeId = value);
+                    case "gender":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (user.StudentDetails == null) user.StudentDetails = new StudentDetails();
+                            user.StudentDetails.Gender = value;
+                        });
                         break;
 
                     case "password":
-                        mappings.Add(column, (robot, value) =>
+                        mappings.Add(column, (user, value) =>
                         {
-                            if (!string.IsNullOrWhiteSpace(value)) robot.PlainPassword = value;
+                            if (!string.IsNullOrWhiteSpace(value)) user.PlainPassword = value;
+                        });
+                        break;
+
+                    case "role":
+                        mappings.Add(column, (user, value) =>
+                        {
+                            if (!Enum.TryParse<UserRole>(value, true, out var parsedRole)) return;
+                            user.Role = parsedRole;
                         });
                         break;
                 }
@@ -115,57 +140,39 @@ namespace NaoBlocks.Engine.Commands
             // Process the rest of the rows
             for (var row = 2; row <= rows; row++)
             {
-                var robot = new Robot();
+                var user = new User();
                 foreach (var mapping in mappings)
                 {
                     var value = worksheet.Cells[row, mapping.Key].Value?.ToString() ?? string.Empty;
-                    mapping.Value(robot, value);
+                    mapping.Value(user, value);
                 }
 
-                this.robots.Add(robot);
+                if (this.Role != null) user.Role = this.Role.Value;
+                this.users.Add(user);
             }
         }
 
-        private async Task ValidateRobots(IDatabaseSession session)
+        private async Task ValidateUsers(IDatabaseSession session)
         {
-            // Validate all the robots
-            var robotTypes = new Dictionary<string, bool>();
-            foreach (var robot in this.robots)
+            // Validate all the users
+            foreach (var user in this.users)
             {
                 var errors = new List<string>();
-                if (!string.IsNullOrEmpty(robot.RobotTypeId))
+                if (string.IsNullOrEmpty(user.Name))
                 {
-                    if (!robotTypes.TryGetValue(robot.RobotTypeId, out var isTypeValid))
-                    {
-                        isTypeValid = await session.Query<RobotType>()
-                            .AnyAsync(rt => rt.Name == robot.RobotTypeId)
-                            .ConfigureAwait(false);
-                        robotTypes.Add(robot.RobotTypeId, isTypeValid);
-                    }
-
-                    if (!isTypeValid) errors.Add($"Unknown robot type '{robot.RobotTypeId}'");
+                    errors.Add("Name is required");
                 }
                 else
                 {
-                    errors.Add("Robot type is required");
-                }
-
-                if (string.IsNullOrEmpty(robot.FriendlyName)) robot.FriendlyName = robot.MachineName;
-                if (string.IsNullOrEmpty(robot.MachineName))
-                {
-                    errors.Add("Machine name is required");
-                }
-                else
-                {
-                    var robotExists = await session.Query<Robot>()
-                        .AnyAsync(r => r.MachineName == robot.MachineName)
+                    var userExists = await session.Query<User>()
+                        .AnyAsync(r => r.Name == user.Name)
                         .ConfigureAwait(false);
-                    if (robotExists) errors.Add($"Robot '{robot.MachineName}' already exists");
+                    if (userExists) errors.Add($"User '{user.Name}' already exists");
                 }
 
                 if (errors.Any())
                 {
-                    robot.Message = string.Join(", ", errors);
+                    user.Message = string.Join(", ", errors);
                 }
             }
         }

@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// The details of a user.
@@ -9,6 +11,16 @@
         /// Gets or sets the user's identifier.
         /// </summary>
         public string? Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user's last login token.
+        /// </summary>
+        public string? LoginToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a message associated with the user.
+        /// </summary>
+        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the user's name.
@@ -26,6 +38,15 @@
         public Password Password { get; set; } = Password.Empty;
 
         /// <summary>
+        /// Gets or sets the plain text password.
+        /// </summary>
+        /// <remarks>
+        /// This property will not be persisted, it is only used for internal passing of the password.
+        /// </remarks>
+        [JsonIgnore]
+        public string? PlainPassword { get; set; }
+
+        /// <summary>
         /// Gets or sets the user's role.
         /// </summary>
         public UserRole Role { get; set; }
@@ -36,18 +57,13 @@
         public UserSettings Settings { get; set; } = new UserSettings();
 
         /// <summary>
-        /// Gets or sets when the user was added.
-        /// </summary>
-        public DateTime WhenAdded { get; set; }
-
-        /// <summary>
         /// Gets or sets any associated student details.
         /// </summary>
         public StudentDetails? StudentDetails { get; set; }
 
         /// <summary>
-        /// Gets or sets the user's last login token.
+        /// Gets or sets when the user was added.
         /// </summary>
-        public string? LoginToken { get; set; }
+        public DateTime WhenAdded { get; set; }
     }
 }

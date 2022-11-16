@@ -8,9 +8,9 @@ namespace NaoBlocks.Web.Dtos
     public class User
     {
         /// <summary>
-        /// Gets or sets the user settings.
+        /// Gets or sets a message associated with the user.
         /// </summary>
-        public Data.UserSettings? Settings { get; set; }
+        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the user name.
@@ -28,14 +28,19 @@ namespace NaoBlocks.Web.Dtos
         public string? Role { get; set; }
 
         /// <summary>
-        /// Gets or sets when the user was added.
+        /// Gets or sets the user settings.
         /// </summary>
-        public DateTime? WhenAdded { get; set; }
+        public Data.UserSettings? Settings { get; set; }
 
         /// <summary>
         /// Gets or sets the login token for the user.
         /// </summary>
         public string? Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets when the user was added.
+        /// </summary>
+        public DateTime? WhenAdded { get; set; }
 
         /// <summary>
         /// Converts a database entity to a Data Transfer Object.
@@ -49,6 +54,8 @@ namespace NaoBlocks.Web.Dtos
             {
                 Name = value.Name,
                 Role = value.Role.ToString(),
+                Message = value.Message,
+                Password = value.PlainPassword,
                 WhenAdded = value.WhenAdded
             };
 
