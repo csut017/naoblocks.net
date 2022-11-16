@@ -16,6 +16,11 @@
         public int HttpsPort { get; set; } = 5001;
 
         /// <summary>
+        /// Gets or sets whether to listen on localhost (127.0.0.1)
+        /// </summary>
+        public bool ListenOnLocalHost { get; set; }
+
+        /// <summary>
         /// Gets or sets whether to use HTTP or not.
         /// </summary>
         public bool UseHttp { get; set; } = true;

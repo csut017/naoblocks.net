@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Communications;
+using System.Net;
 
 namespace NaoBlocks.Web.Helpers
 {
@@ -13,7 +14,9 @@ namespace NaoBlocks.Web.Helpers
         /// <param name="builder">The builder to add the endpoints to.</param>
         public static void UseLocalAddresses(this WebApplicationBuilder builder)
         {
-            var settings = builder.Configuration.Get<Configuration.Addresses>();
+            var settings = builder.Configuration
+                .GetSection("Addresses")
+                .Get<Configuration.Addresses>();
             if (settings != null)
             {
                 builder.WebHost.UseKestrel(opts =>
@@ -24,6 +27,8 @@ namespace NaoBlocks.Web.Helpers
                         {
                             opts.Listen(address, settings.HttpPort);
                         }
+
+                        if (settings.ListenOnLocalHost) opts.Listen(IPAddress.Loopback, settings.HttpPort);
                     }
                     if (settings.UseHttps)
                     {
@@ -31,6 +36,8 @@ namespace NaoBlocks.Web.Helpers
                         {
                             opts.Listen(address, settings.HttpsPort, conf => conf.UseHttps());
                         }
+
+                        if (settings.ListenOnLocalHost) opts.Listen(IPAddress.Loopback, settings.HttpsPort, conf => conf.UseHttps());
                     }
                 });
             }

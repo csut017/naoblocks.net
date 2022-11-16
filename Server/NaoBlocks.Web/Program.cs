@@ -30,12 +30,9 @@ var logger = new LoggerConfiguration()
 builder.Logging.AddSerilog(logger);
 
 // Register the configuration settings
-builder.Services.Configure<RavenDbConfiguration>(
-    builder.Configuration.GetSection("Database"));
-builder.Services.Configure<Configuration.Security>(
-    builder.Configuration.GetSection("Security"));
-builder.Services.Configure<Configuration.Addresses>(
-    builder.Configuration.GetSection("Addresses"));
+builder.Services.Configure<RavenDbConfiguration>(builder.Configuration.GetSection("Database"));
+builder.Services.Configure<Configuration.Security>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<Configuration.Addresses>(builder.Configuration.GetSection("Addresses"));
 
 // Configure the addresses
 builder.UseLocalAddresses();
