@@ -241,7 +241,7 @@ namespace NaoBlocks.Web.Controllers
             string etag = string.Empty;
             if (Request.Headers.ContainsKey("ETag"))
             {
-                etag = Request.Headers["ETag"].First();
+                etag = Request?.Headers["ETag"].First() ?? string.Empty;
                 if (etag.StartsWith("\"", StringComparison.Ordinal) && etag.EndsWith("\"", StringComparison.Ordinal))
                 {
                     etag = etag[1..^1];
