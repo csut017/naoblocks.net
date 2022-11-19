@@ -9,7 +9,7 @@
         /// Initialise IronPDF.
         /// </summary>
         /// <param name="builder">The <see cref="WebApplicationBuilder"/> to use.</param>
-        /// <param name="logger">The <see cref="ILogger"/> to use.</param>
+        /// <param name="logger">The ILogger to use.</param>
         public static void Initialise(WebApplicationBuilder builder, ILogger logger)
         {
             var ironPdfLicense = builder.Configuration["ironPdf:license"];

@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -82,7 +83,7 @@ namespace NaoBlocks.Engine.Tests.Queries
             var query = InitialiseQuery<RobotData>(session);
             var result = await query.RetrievePageAsync(0, 10);
             Assert.Equal(1, result.Count);
-            Assert.NotEmpty(result.Items);
+            Assert.NotEmpty(result.Items ?? Array.Empty<Robot>());
             Assert.Equal(0, result.Page);
         }
 
@@ -96,7 +97,7 @@ namespace NaoBlocks.Engine.Tests.Queries
             var query = InitialiseQuery<RobotData>(session);
             var result = await query.RetrievePageAsync(0, 10, "types/4");
             Assert.Equal(1, result.Count);
-            Assert.NotEmpty(result.Items);
+            Assert.NotEmpty(result.Items ?? Array.Empty<Robot>());
             Assert.Equal(0, result.Page);
         }
     }

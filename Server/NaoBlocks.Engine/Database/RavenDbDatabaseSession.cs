@@ -87,7 +87,7 @@ namespace NaoBlocks.Engine.Database
         /// Queries the database for one or more entities.
         /// </summary>
         /// <typeparam name="T">The type of data to query.</typeparam>
-        /// <returns>An <see cref="IQueryable{T}"/> for retrieving the data.</returns>
+        /// <returns>An IQueryable for retrieving the data.</returns>
         public IQueryable<T> Query<T>()
         {
             return this.session.Query<T>();
@@ -98,7 +98,7 @@ namespace NaoBlocks.Engine.Database
         /// </summary>
         /// <typeparam name="TIndex">The index to use.</typeparam>
         /// <typeparam name="T">The type of data to query.</typeparam>
-        /// <returns>An <see cref="IQueryable{T}"/> for retrieving the data.</returns>
+        /// <returns>An IQueryable for retrieving the data.</returns>
         public IQueryable<T> Query<T, TIndex>()
             where TIndex : AbstractCommonApiForIndexes, new()
         {

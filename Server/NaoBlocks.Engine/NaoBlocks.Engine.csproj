@@ -16,13 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="6.0.8" />
-    <PackageReference Include="IronPdf" Version="2022.10.9622" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="6.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="EPPlus" Version="6.1.0" />
+    <PackageReference Include="IronPdf" Version="2022.11.10347" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="RavenDB.Client" Version="5.3.101" />
-    <PackageReference Include="RavenDB.Embedded" Version="5.3.101" />
+    <PackageReference Include="RavenDB.Client" Version="5.4.4" />
+    <PackageReference Include="RavenDB.Embedded" Version="5.4.4" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -45,8 +46,8 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             using var verifySession = store.OpenSession();
             var record = verifySession.Query<RobotType>().FirstOrDefault();
-            Assert.Contains(record?.Toolboxes, t => t.Name == "To Leave");
-            Assert.DoesNotContain(record?.Toolboxes, t => t.Name == "To Delete");
+            Assert.Contains(record?.Toolboxes ?? Array.Empty<Toolbox>(), t => t.Name == "To Leave");
+            Assert.DoesNotContain(record?.Toolboxes ?? Array.Empty<Toolbox>(), t => t.Name == "To Delete");
         }
 
         [Fact]
@@ -72,7 +73,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             using var verifySession = store.OpenSession();
             var record = verifySession.Query<RobotType>().FirstOrDefault();
-            Assert.Empty(record?.Toolboxes);
+            Assert.Empty(record?.Toolboxes ?? Array.Empty<Toolbox>());
         }
 
         [Fact]
@@ -99,7 +100,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             using var verifySession = store.OpenSession();
             var record = verifySession.Query<RobotType>().FirstOrDefault();
-            Assert.Contains(record?.Toolboxes, t => t.IsDefault);
+            Assert.Contains(record?.Toolboxes ?? Array.Empty<Toolbox>(), t => t.IsDefault);
         }
 
         [Fact]

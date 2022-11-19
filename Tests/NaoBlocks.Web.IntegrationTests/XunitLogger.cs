@@ -30,6 +30,7 @@ namespace NaoBlocks.Web.IntegrationTests
         }
 
         public IDisposable BeginScope<TState>(TState state)
+            where TState : notnull
         {
             if (this.scopes == null) return new Scope();
             return this.scopes.Push(state);

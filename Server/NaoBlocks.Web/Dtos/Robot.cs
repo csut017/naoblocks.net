@@ -49,6 +49,7 @@ namespace NaoBlocks.Web.Dtos
         /// <returns>A new <see cref="Robot"/> instance containing the required properties.</returns>
         public static Robot FromModel(Data.Robot value)
         {
+            var type = value.Type?.Name ?? value.RobotTypeId;
             return new Robot
             {
                 FriendlyName = value.FriendlyName,
@@ -56,7 +57,7 @@ namespace NaoBlocks.Web.Dtos
                 MachineName = value.MachineName,
                 Message = value.Message,
                 Password = value.PlainPassword,
-                Type = value.Type?.Name ?? value.RobotTypeId,
+                Type = string.IsNullOrEmpty(type) ? null : type,
                 WhenAdded = value.WhenAdded,
             };
         }
