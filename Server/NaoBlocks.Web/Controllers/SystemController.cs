@@ -82,6 +82,35 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Exports all the configuration in the system.
+        /// </summary>
+        /// <param name="format">The export format.</param>
+        /// <returns>The configuration settings.</returns>
+        [HttpGet("system/export/allConfig")]
+        [HttpGet("system/export/allConfig{format}")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult> ExportAllConfiguration(string? format = ".xlsx")
+        {
+            var args = new Dictionary<string, string>
+            {
+                { "robots", "yes" },
+                { "students", "yes" },
+            };
+            var user = await this.LoadUserAsync(this.executionEngine)
+                .ConfigureAwait(false);
+            if (user?.Role == Data.UserRole.Administrator)
+            {
+                args.Add("types", "yes");
+            }
+
+            return await this.GenerateReport<Generators.AllLists>(
+                this.executionEngine,
+                format,
+                defaultFormat: ReportFormat.Csv,
+                args: args);
+        }
+
+        /// <summary>
         /// Exports all the code programs in the system.
         /// </summary>
         /// <param name="format">The export format.</param>

@@ -1,23 +1,23 @@
 ﻿namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
-    /// Generates the students list export.
+    /// Generates an export with all lists.
     /// </summary>
-    public class StudentsList
+    public class AllLists
         : ListReportGenerator
     {
         /// <summary>
-        /// Generates the students list report.
+        /// Generates the robots list report.
         /// </summary>
         /// <param name="format">The export format.</param>
         /// <returns>The output <see cref="Stream"/> containing the generated data.</returns>
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
             var generator = new Generator();
-            await PopulateStudents(generator).ConfigureAwait(false);
-            generator.Title = "Students List";
-            generator.IsLandScape = true;
-            var (stream, name) = await generator.GenerateAsync(format, "Student-List");
+            if (GetArgumentOrDefault("robots", "no") == "yes") await PopulateRobots(generator).ConfigureAwait(false);
+            if (GetArgumentOrDefault("students", "no") == "yes") await PopulateStudents(generator).ConfigureAwait(false);
+            if (GetArgumentOrDefault("types", "no") == "yes") await PopulateRobotTypes(generator).ConfigureAwait(false);
+            var (stream, name) = await generator.GenerateAsync(format, "All-Lists");
             return Tuple.Create(stream, name);
         }
 
@@ -32,8 +32,8 @@
             {
                 ReportFormat.Excel => true,
                 ReportFormat.Pdf => true,
-                ReportFormat.Csv => true,
                 ReportFormat.Text => true,
+                ReportFormat.Csv => true,
                 _ => false,
             };
         }

@@ -9,4 +9,16 @@
             </div>
         </mat-card-content>
     </mat-card>
+    <mat-card>
+        <mat-card-title>Configuration</mat-card-title>
+        <mat-card-subtitle>These exports will extract configuration settings.</mat-card-subtitle>
+        <mat-card-content>
+            <div class="button-container">
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadStudents()">Students</button>
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobots()">Robots</button>
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobotTypes()" *ngIf="isAdmin()">Robot Types</button>
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadAllConfig()">All</button>
+            </div>
+        </mat-card-content>
+    </mat-card>
 </div>

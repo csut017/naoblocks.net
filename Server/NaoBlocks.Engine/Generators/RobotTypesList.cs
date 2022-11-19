@@ -1,13 +1,10 @@
-﻿using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
-
-namespace NaoBlocks.Engine.Generators
+﻿namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
     /// Generates the robot types list export.
     /// </summary>
     public class RobotTypesList
-        : ReportGenerator
+        : ListReportGenerator
     {
         /// <summary>
         /// Generates the robot types list report.
@@ -17,28 +14,7 @@ namespace NaoBlocks.Engine.Generators
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
             var generator = new Generator();
-            var table = generator.AddTable("Robot Types");
-            table.AddRow(
-                TableRowType.Header,
-                "Name",
-                "Is Default",
-                "# Toolboxes",
-                "When Added");
-
-            var types = await this.Session.Query<RobotType>()
-                .OrderBy(r => r.Name)
-                .ToListAsync()
-                .ConfigureAwait(false);
-            foreach (var robotType in types)
-            {
-                table.AddRow(
-                    robotType.Name,
-                    robotType.IsDefault,
-                    robotType.Toolboxes.Count(),
-                    robotType.WhenAdded);
-            }
-
-            table.EnsureAllRowsSameLength();
+            await PopulateRobotTypes(generator).ConfigureAwait(false);
             var (stream, name) = await generator.GenerateAsync(format, "Robot-Type-List");
             return Tuple.Create(stream, name);
         }

@@ -4,15 +4,16 @@ using System.Collections.Generic;
 
 namespace NaoBlocks.Web.Tests
 {
-    internal class FakeLogger<T>: ILogger<T>
+    internal class FakeLogger<T> : ILogger<T>
     {
-        public IList<string> Messages { get; } = new List<string>();
-
         public FakeLogger()
         {
         }
 
+        public IList<string> Messages { get; } = new List<string>();
+
         public IDisposable BeginScope<TState>(TState state)
+            where TState : notnull
         {
             throw new NotImplementedException();
         }

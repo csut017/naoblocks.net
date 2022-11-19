@@ -1,13 +1,10 @@
-﻿using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
-
-namespace NaoBlocks.Engine.Generators
+﻿namespace NaoBlocks.Engine.Generators
 {
     /// <summary>
     /// Generates the robots list export.
     /// </summary>
     public class RobotsList
-        : ReportGenerator
+        : ListReportGenerator
     {
         /// <summary>
         /// Generates the robots list report.
@@ -17,58 +14,7 @@ namespace NaoBlocks.Engine.Generators
         public override async Task<Tuple<Stream, string>> GenerateAsync(ReportFormat format)
         {
             var generator = new Generator();
-            var table = generator.AddTable("Robots");
-            var useImportFormat = GetArgumentOrDefault("import", "no") == "yes";
-            if (useImportFormat)
-            {
-                table.AddRow(
-                    TableRowType.Header,
-                    "Machine Name",
-                    "Friendly Name",
-                    "Type",
-                    "Password");
-            }
-            else
-            {
-                table.AddRow(
-                    TableRowType.Header,
-                    "Machine Name",
-                    "Friendly Name",
-                    "Type",
-                    "When Added",
-                    "Initialized");
-            }
-
-            var robots = await this.Session.Query<Robot>()
-                .Include(r => r.RobotTypeId)
-                .OrderBy(r => r.MachineName)
-                .ToListAsync()
-                .ConfigureAwait(false);
-            foreach (var robot in robots)
-            {
-                var type = await this.Session
-                    .LoadAsync<RobotType>(robot.RobotTypeId)
-                    .ConfigureAwait(false);
-                if (useImportFormat)
-                {
-                    table.AddRow(
-                        robot.MachineName,
-                        robot.FriendlyName,
-                        type?.Name,
-                        string.Empty);
-                }
-                else
-                {
-                    table.AddRow(
-                        robot.MachineName,
-                        robot.FriendlyName,
-                        type?.Name,
-                        robot.WhenAdded,
-                        robot.IsInitialised);
-                }
-            }
-
-            table.EnsureAllRowsSameLength();
+            await PopulateRobots(generator).ConfigureAwait(false);
             var (stream, name) = await generator.GenerateAsync(format, "Robot-List");
             return Tuple.Create(stream, name);
         }
