@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { MatStepper } from '@angular/material/stepper';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { Student } from 'src/app/data/student';
 import { User } from 'src/app/data/user';
 import { UserImportSettings } from 'src/app/data/user-import-settings';

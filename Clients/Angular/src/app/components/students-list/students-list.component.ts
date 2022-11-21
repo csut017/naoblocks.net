@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Observable } from 'rxjs';
 import { ReportSettingsComponent } from '../components/report-settings/report-settings.component';
 import { ReportDialogSettings } from '../data/report-dialog-settings';

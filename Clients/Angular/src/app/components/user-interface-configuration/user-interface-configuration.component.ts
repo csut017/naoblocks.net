@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { forkJoin } from 'rxjs';
 import { ExecutionResult } from 'src/app/data/execution-result';
 import { ImportSettings } from 'src/app/data/import-settings';
