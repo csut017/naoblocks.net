@@ -1,23 +1,33 @@
 <div class="main-panel">
     <mat-card appearance="outlined">
-        <mat-card-title>System Exports</mat-card-title>
-        <mat-card-subtitle>These exports will extract data across the whole system.</mat-card-subtitle>
+        <mat-card-header>
+            <mat-card-title>System Exports</mat-card-title>
+            <mat-card-subtitle>These exports will extract data across the whole system.</mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
             <div class="button-container">
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadPrograms()">Programs</button>
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobotLogs()">Robot Logs</button>
+                <button mat-raised-button color="accent" class="export-botton"
+                    (click)="downloadPrograms()">Programs</button>
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobotLogs()">Robot
+                    Logs</button>
             </div>
         </mat-card-content>
     </mat-card>
     <mat-card appearance="outlined">
-        <mat-card-title>Configuration</mat-card-title>
-        <mat-card-subtitle>These exports will extract configuration settings.</mat-card-subtitle>
+        <mat-card-header>
+            <mat-card-title>Configuration</mat-card-title>
+            <mat-card-subtitle>These exports will extract configuration settings.</mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
             <div class="button-container">
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadStudents()">Students</button>
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobots()">Robots</button>
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobotTypes()" *ngIf="isAdmin()">Robot Types</button>
-                <button mat-raised-button color="accent" class="export-botton" (click)="downloadAllConfig()">All</button>
+                <button mat-raised-button color="accent" class="export-botton"
+                    (click)="downloadStudents()">Students</button>
+                <button mat-raised-button color="accent" class="export-botton"
+                    (click)="downloadRobots()">Robots</button>
+                <button mat-raised-button color="accent" class="export-botton" (click)="downloadRobotTypes()"
+                    *ngIf="isAdmin()">Robot Types</button>
+                <button mat-raised-button color="accent" class="export-botton"
+                    (click)="downloadAllConfig()">All</button>
             </div>
         </mat-card-content>
     </mat-card>

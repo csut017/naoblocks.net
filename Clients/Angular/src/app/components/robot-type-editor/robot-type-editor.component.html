@@ -9,7 +9,9 @@
         </button>
     </div>
     <mat-card appearance="outlined">
-        <mat-card-title>Details</mat-card-title>
+        <mat-card-header>
+            <mat-card-title>Details</mat-card-title>
+        </mat-card-header>
         <mat-card-content>
             <mat-form-field class="fill-width">
                 <mat-label>Robot Type Name</mat-label>
@@ -31,13 +33,15 @@
         </mat-card-content>
     </mat-card>
     <mat-card appearance="outlined" style="margin-top: 1rem;" *ngIf="!item?.isNew">
-        <mat-card-title>Toolboxes</mat-card-title>
+        <mat-card-header>
+            <mat-card-title>Toolboxes</mat-card-title>
+        </mat-card-header>
         <mat-card-content>
             <mat-selection-list [multiple]="false">
                 <mat-list-option *ngFor="let toolbox of toolboxes" [value]="toolbox">
-                  {{toolbox.name}}
+                    {{toolbox.name}}
                 </mat-list-option>
-              </mat-selection-list>
+            </mat-selection-list>
         </mat-card-content>
     </mat-card>
 </form>

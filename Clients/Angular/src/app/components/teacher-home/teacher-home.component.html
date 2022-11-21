@@ -69,17 +69,22 @@
         </mat-toolbar>
 
         <div *ngIf="hasAccess" [ngSwitch]="currentView">
-            <app-system-dashboard *ngSwitchCase="'Dashboard'" (currentItemChanged)="onItemChanged($event)"></app-system-dashboard>
+            <app-system-dashboard *ngSwitchCase="'Dashboard'" (currentItemChanged)="onItemChanged($event)">
+            </app-system-dashboard>
             <app-robots-list *ngSwitchCase="'Robots'" (currentItemChanged)="onItemChanged($event)"></app-robots-list>
-            <app-students-list *ngSwitchCase="'Students'" (currentItemChanged)="onItemChanged($event)"></app-students-list>
+            <app-students-list *ngSwitchCase="'Students'" (currentItemChanged)="onItemChanged($event)">
+            </app-students-list>
             <app-export-data *ngSwitchCase="'Data'"></app-export-data>
-            <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)"></app-system-configuration>
+            <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)">
+            </app-system-configuration>
             <div *ngSwitchDefault class="unknown-view">
                 <mat-card appearance="outlined">
-                    <mat-card-title>
-                        <mat-icon color="warn">device_unknown</mat-icon>
-                        Unknown view
-                    </mat-card-title>
+                    <mat-card-header>
+                        <mat-card-title>
+                            <mat-icon color="warn">device_unknown</mat-icon>
+                            Unknown view
+                        </mat-card-title>
+                    </mat-card-header>
                     <mat-card-content>
                         <div>
                             The view '{{currentView}}' is not a valid teacher view.
