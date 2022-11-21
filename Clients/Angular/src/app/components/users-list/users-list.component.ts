@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/data/user';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { UserService } from 'src/app/services/user.service';

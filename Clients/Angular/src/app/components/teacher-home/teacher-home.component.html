@@ -75,7 +75,7 @@
             <app-export-data *ngSwitchCase="'Data'"></app-export-data>
             <app-system-configuration *ngSwitchCase="'Configuration'" (currentItemChanged)="onItemChanged($event)"></app-system-configuration>
             <div *ngSwitchDefault class="unknown-view">
-                <mat-card>
+                <mat-card appearance="outlined">
                     <mat-card-title>
                         <mat-icon color="warn">device_unknown</mat-icon>
                         Unknown view

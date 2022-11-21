@@ -8,7 +8,7 @@
             Save
         </button>
     </div>
-    <mat-card>
+    <mat-card appearance="outlined">
         <mat-card-title>Details</mat-card-title>
         <mat-card-content>
             <mat-form-field class="fill-width">
@@ -30,7 +30,7 @@
             </mat-error>
         </mat-card-content>
     </mat-card>
-    <mat-card style="margin-top: 1rem;" *ngIf="!item?.isNew">
+    <mat-card appearance="outlined" style="margin-top: 1rem;" *ngIf="!item?.isNew">
         <mat-card-title>Toolboxes</mat-card-title>
         <mat-card-content>
             <mat-selection-list [multiple]="false">

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { DeletionConfirmationComponent } from '../components/deletion-confirmation/deletion-confirmation.component';
 import { DeletionItems } from '../data/deletion-items';

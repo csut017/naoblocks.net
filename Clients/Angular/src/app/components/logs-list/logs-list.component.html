@@ -6,7 +6,7 @@
                 Loading, please wait...
             </div>
         </div>
-        <mat-card *ngIf="!isLoading" class="scrollable-list">
+        <mat-card appearance="outlined" *ngIf="!isLoading" class="scrollable-list">
             <mat-card-content>
                 <div>
                     <mat-checkbox [(ngModel)]="includeInitialisation" (change)="applyFilter()" class="space-right">Show initialisations</mat-checkbox>    
@@ -44,7 +44,7 @@
                 Loading, please wait...
             </div>
         </div>
-        <mat-card *ngIf="!isLogLoading">
+        <mat-card appearance="outlined" *ngIf="!isLogLoading">
             <mat-card-content>
                 <div>
                 <mat-checkbox [(ngModel)]="includeDebug" (change)="refreshLogs()" class="space-right">Show debug

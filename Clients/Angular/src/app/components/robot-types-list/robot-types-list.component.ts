@@ -1,11 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { RobotType } from 'src/app/data/robot-type';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { FileDownloaderService } from 'src/app/services/file-downloader.service';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeletionConfirmationService } from 'src/app/services/deletion-confirmation.service';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { forkJoin } from 'rxjs';

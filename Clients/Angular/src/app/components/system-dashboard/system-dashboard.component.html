@@ -4,7 +4,7 @@
             <mat-icon class="dashboard-error">error_outline</mat-icon>
             There are no robots connected
         </div>
-        <mat-card *ngFor="let robot of processor.robots" class="item-card">
+        <mat-card appearance="outlined" *ngFor="let robot of processor.robots" class="item-card">
             <mat-card-title>
                 <mat-icon class="item-icon">lan</mat-icon>
                 {{robot.name}}
@@ -29,7 +29,7 @@
             <mat-icon class="dashboard-error">error_outline</mat-icon>
             There are no users connected
         </div>
-        <mat-card *ngFor="let user of processor.users" class="item-card">
+        <mat-card appearance="outlined" *ngFor="let user of processor.users" class="item-card">
             <mat-card-title>
                 <mat-icon class="item-icon">{{user.student ? 'person' : 'supervisor_account'}}</mat-icon>
                 {{user.name}}
