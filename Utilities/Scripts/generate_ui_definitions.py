@@ -16,10 +16,10 @@ There are the following optional arguments:
 * --user   : a username and password pair for logging onto the server. Seperate the two components with a colon.
 
 Example command line (basic):
-    py -3 generate_ui_definitions.py ../../Data/unified-ballet.json ../../Data/From_Unified
+    py -3 generate_ui_definitions.py ../../Data/unified-all.json ../../Data/From_Unified
 
 Example command line (basic):
-    py -3 generate_ui_definitions.py ../../Data/unified-ballet.json ../../Data/From_Unified --server http://192.168.0.5:5000 --user user:password
+    py -3 generate_ui_definitions.py ../../Data/unified-all.json ../../Data/From_Unified --server http://localhost:5000 --user user:password
 
 """
 
@@ -227,7 +227,9 @@ def upload_definition(server, type, headers, output, definition):
         json_definition = json.load(input_file)
     
     resp = requests.post(f'{server}api/v1/ui/{type}?replace=yes', headers=headers, json=json_definition)
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        print(resp.text)
+        resp.raise_for_status()
     print('-> ...done')
 
 def upload_to_server(server, user, output):
