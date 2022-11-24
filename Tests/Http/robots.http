@@ -6,7 +6,7 @@ Content-Type: application/json; charset=utf-8
 
 {
   "name": "admin",
-  "password": "let-me-in"
+  "password": "letmein1"
 }
 
 ###

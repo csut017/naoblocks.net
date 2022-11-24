@@ -24,5 +24,10 @@
         /// The conversation is a user-triggered signal (e.g. for changing a session.)
         /// </summary>
         Signal,
+
+        /// <summary>
+        /// The conversation is a logging conversation (e.g. a robot-initialised logging.)
+        /// </summary>
+        Logging,
     }
 }

@@ -17,7 +17,8 @@ namespace NaoBlocks.Web.Helpers
         /// <returns>A <see cref="ExecutionResult"/> instance containing the outcome of executing the command.</returns>
         public static async Task<ActionResult<ExecutionResult>> ExecuteForHttp(this IExecutionEngine engine, CommandBase command)
         {
-            engine.Logger.LogDebug($"Validating {command.GetType().Name} command");
+            var commandName = command.GetType().Name;
+            engine.Logger.LogDebug("Validating {command} command", commandName);
             var errors = await engine.ValidateAsync(command);
             if (errors.Any())
             {
@@ -28,7 +29,7 @@ namespace NaoBlocks.Web.Helpers
                 });
             }
 
-            engine.Logger.LogDebug($"Executing {command.GetType().Name} command");
+            engine.Logger.LogDebug("Executing {command} command", commandName);
             var result = await engine.ExecuteAsync(command);
             if (!result.WasSuccessful)
             {
@@ -43,7 +44,7 @@ namespace NaoBlocks.Web.Helpers
             }
 
             await engine.CommitAsync();
-            engine.Logger.LogInformation($"Executed {command.GetType().Name} successfully");
+            engine.Logger.LogInformation("Executed {command} successfully", commandName);
             return new ExecutionResult();
         }
 
@@ -59,7 +60,8 @@ namespace NaoBlocks.Web.Helpers
         public static async Task<ActionResult<ExecutionResult<TOut>>> ExecuteForHttp<TIn, TOut>(this IExecutionEngine engine, CommandBase command, Func<TIn, TOut> mapper)
             where TIn : class
         {
-            engine.Logger.LogDebug($"Validating {command.GetType().Name} command");
+            var commandName = command.GetType().Name;
+            engine.Logger.LogDebug("Validating {command} command", commandName);
             var errors = await engine.ValidateAsync(command);
             if (errors.Any())
             {
@@ -70,8 +72,8 @@ namespace NaoBlocks.Web.Helpers
                 });
             }
 
-            engine.Logger.LogDebug($"Executing {command.GetType().Name} command");
-            var rawResult = (await engine.ExecuteAsync(command));
+            engine.Logger.LogDebug("Executing {command} command", commandName);
+            var rawResult = await engine.ExecuteAsync(command);
             if (!rawResult.WasSuccessful)
             {
                 LogExecutionFailure(engine, command, rawResult);
@@ -85,27 +87,39 @@ namespace NaoBlocks.Web.Helpers
             }
 
             await engine.CommitAsync();
-            engine.Logger.LogInformation($"Executed {command.GetType().Name} successfully");
+            engine.Logger.LogInformation("Executed {command} successfully", commandName);
 
-            engine.Logger.LogDebug($"Mapping from {typeof(TIn).Name} to {typeof(TOut).Name}");
+            engine.Logger.LogDebug("Mapping from {input} to {output}", typeof(TIn).Name, typeof(TOut).Name);
             var result = rawResult.As<TIn>();
             if (result.Output == null) return new ExecutionResult<TOut>();
             var output = mapper(result.Output);
             return ExecutionResult.New(output);
         }
 
-        private static void LogExecutionFailure(IExecutionEngine engine, CommandBase command, CommandResult? result)
+        /// <summary>
+        /// Logs all validation errors.
+        /// </summary>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="command">The command raising the errors.</param>
+        /// <param name="result">The result containing the errors.</param>
+        public static void LogExecutionFailure(this IExecutionEngine engine, CommandBase command, CommandResult? result)
         {
-            engine.Logger.LogError($"Execution for {command.GetType().Name} failed execution");
+            engine.Logger.LogError("Execution for {command} failed execution", command.GetType().Name);
             if ((result != null) && !string.IsNullOrEmpty(result.Error))
             {
                 engine.Logger.LogError(result.Error);
             }
         }
 
-        private static void LogValidationFailure(IExecutionEngine engine, CommandBase command, IEnumerable<CommandError> errors)
+        /// <summary>
+        /// Logs all validation errors.
+        /// </summary>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="command">The command raising the errors.</param>
+        /// <param name="errors">The errors to log.</param>
+        public static void LogValidationFailure(this IExecutionEngine engine, CommandBase command, IEnumerable<CommandError> errors)
         {
-            engine.Logger.LogWarning($"Execution for {command.GetType().Name} failed validation");
+            engine.Logger.LogWarning("Execution for {command} failed validation", command.GetType().Name);
             foreach (var error in errors)
             {
                 engine.Logger.LogWarning(error.Error);
