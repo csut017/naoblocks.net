@@ -23,12 +23,14 @@ export class RobotTypeEditorComponent implements OnInit, OnChanges {
     this.form = new UntypedFormGroup({
       name: new UntypedFormControl('', [Validators.required]),
       type: new UntypedFormControl('', []),
+      allowDirectLogging: new UntypedFormControl(false),
     });
   }
   ngOnChanges(_: SimpleChanges): void {
     this.form.setValue({
       name: this.item?.name || '',
       type: this.item?.isDefault ? 'System default' : 'User selected',
+      allowDirectLogging: !!this.item?.allowDirectLogging
     });
   }
 
@@ -38,6 +40,7 @@ export class RobotTypeEditorComponent implements OnInit, OnChanges {
   doSave() {
     if (!this.item) return;
     this.item.name = this.form.get('name')?.value;
+    this.item.allowDirectLogging = !!this.form.get('allowDirectLogging')?.value;
     this.robotTypeService.save(this.item)
       .subscribe(result => {
         if (result.successful) {

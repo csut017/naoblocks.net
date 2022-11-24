@@ -113,6 +113,22 @@ namespace NaoBlocks.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Dtos.LogResult>> Post(string robotId, Dtos.LogRequest request)
         {
+            this.logger.LogDebug("Retrieving robot: id {robotId}", robotId);
+            var robot = await this.executionEngine
+                .Query<RobotData>()
+                .RetrieveByNameAsync(robotId, true)
+                .ConfigureAwait(false);
+            if (robot == null)
+            {
+                return NotFound();
+            }
+
+            if (!robot.Type?.AllowDirectLogging ?? false)
+            {
+                this.logger.LogWarning("Robot type {name} does not allow direct logging", robot.Type?.Name);
+                return Forbid();
+            }
+
             switch (request.Action?.ToLowerInvariant() ?? "none")
             {
                 case "init":

@@ -8,6 +8,11 @@ namespace NaoBlocks.Engine.Data
     public class Robot
     {
         /// <summary>
+        /// Gets the current custom values.
+        /// </summary>
+        public IList<NamedValue> CustomValues { get; } = new List<NamedValue>();
+
+        /// <summary>
         /// Gets or sets the human-friendly name of the robot.
         /// </summary>
         public string FriendlyName { get; set; } = string.Empty;

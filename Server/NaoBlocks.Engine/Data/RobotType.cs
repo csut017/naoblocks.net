@@ -6,6 +6,16 @@
     public class RobotType
     {
         /// <summary>
+        /// Gets or sets whether this robot type allows direct logging.
+        /// </summary>
+        public bool AllowDirectLogging { get; set; }
+
+        /// <summary>
+        /// Gets the allowed custom values.
+        /// </summary>
+        public IList<NamedValue> CustomValues { get; } = new List<NamedValue>();
+
+        /// <summary>
         /// Gets or sets the id of the robot type.
         /// </summary>
         public string Id { get; set; } = string.Empty;

@@ -11,6 +11,11 @@ namespace NaoBlocks.Engine.Commands
         : CommandBase
     {
         /// <summary>
+        /// Gets or sets whether this robot type allows direct logging.
+        /// </summary>
+        public bool? AllowDirectLogging { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the robot type.
         /// </summary>
         public string? Name { get; set; }
@@ -48,6 +53,7 @@ namespace NaoBlocks.Engine.Commands
             var robot = new RobotType
             {
                 Name = this.Name!.Trim(),
+                AllowDirectLogging = this.AllowDirectLogging ?? false,
                 IsDefault = false,
                 WhenAdded = this.WhenExecuted
             };

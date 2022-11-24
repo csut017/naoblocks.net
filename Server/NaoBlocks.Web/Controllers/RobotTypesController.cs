@@ -419,7 +419,8 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogInformation($"Adding new robot type '{robotType.Name}'");
             var command = new AddRobotType
             {
-                Name = robotType.Name
+                Name = robotType.Name,
+                AllowDirectLogging = robotType.AllowDirectLogging
             };
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
@@ -449,7 +450,8 @@ namespace NaoBlocks.Web.Controllers
             var command = new UpdateRobotType
             {
                 CurrentName = id,
-                Name = robotType.Name
+                Name = robotType.Name,
+                AllowDirectLogging = robotType.AllowDirectLogging
             };
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(

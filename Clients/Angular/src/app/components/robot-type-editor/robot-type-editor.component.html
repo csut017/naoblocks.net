@@ -24,6 +24,9 @@
                 <mat-label>Type</mat-label>
                 <input matInput placeholder="Type" formControlName="type" readonly>
             </mat-form-field>
+            <div class="fill-width">
+                <mat-slide-toggle formControlName="allowDirectLogging">Allow Direct Logging</mat-slide-toggle>
+            </div>
             <mat-error *ngIf="errors.length > 0" class="lower-1">
                 There were some errors saving the robot type:
                 <ul>

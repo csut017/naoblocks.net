@@ -4,6 +4,7 @@ export class RobotType {
     id?: string;
     name?: string;
     isDefault: boolean = false;
+    allowDirectLogging: boolean = false;
     hasToolbox: boolean = false;
     isNew: boolean;
     toolboxes?: Toolbox[];

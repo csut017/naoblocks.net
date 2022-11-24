@@ -8,6 +8,11 @@ namespace NaoBlocks.Web.Dtos
     public class RobotType
     {
         /// <summary>
+        /// Gets or sets whether this robot type allows direct logging.
+        /// </summary>
+        public bool? AllowDirectLogging { get; set; }
+
+        /// <summary>
         /// Gets or sets whether this type has a toolbox.
         /// </summary>
         public bool? HasToolbox { get; set; }
@@ -39,6 +44,7 @@ namespace NaoBlocks.Web.Dtos
             {
                 Name = value.Name,
                 IsDefault = value.IsDefault,
+                AllowDirectLogging = value.AllowDirectLogging,
                 HasToolbox = value.Toolboxes.Any()
             };
 
