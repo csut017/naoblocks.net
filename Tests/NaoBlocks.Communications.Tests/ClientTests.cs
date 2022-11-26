@@ -51,14 +51,7 @@ namespace NaoBlocks.Communications.Tests
             {
                 ConversationId = conversation
             };
-            if (data != null)
-            {
-                foreach (var pair in data.Split(","))
-                {
-                    var parts = pair.Split('=');
-                    message.Values[parts[0]] = parts[1];
-                }
-            }
+            message.PopulateMessageData(data);
 
             // Act
             var result = await client.SendMessageAsync(message, TimeSpan.FromSeconds(5));

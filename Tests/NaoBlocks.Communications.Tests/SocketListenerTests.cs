@@ -109,8 +109,11 @@ namespace NaoBlocks.Communications.Tests
             socket.Close();
         }
 
-        [Fact]
-        public async Task SocketListenerHandlesIncomingMessage()
+        [Theory]
+        [InlineData(ClientMessageType.Authenticate, 8, null)]
+        [InlineData(ClientMessageType.RobotDebugMessage, 800, null)]
+        [InlineData(ClientMessageType.NoRobotsAvailable, 80, "one=1")]
+        public async Task SocketListenerHandlesIncomingMessage(ClientMessageType messageType, int conversation, string? data)
         {
             // Arrange
             var endPoint = new IPEndPoint(IPAddress.Loopback, 5000);
@@ -135,10 +138,11 @@ namespace NaoBlocks.Communications.Tests
 
             // Act
             var client = new Client(SocketWrapper.Wrap(socket));
-            var message = new ClientMessage(ClientMessageType.RequestRobot)
+            var message = new ClientMessage(messageType)
             {
-                ConversationId = 7
+                ConversationId = conversation
             };
+            message.PopulateMessageData(data);
             manualEvent.Reset();
             await client.SendMessageAsync(message, TimeSpan.FromSeconds(5));
             manualEvent.WaitOne();
@@ -146,6 +150,7 @@ namespace NaoBlocks.Communications.Tests
             // Assert
             Assert.Equal(message.Type, receivedMessage?.Type);
             Assert.Equal(message.ConversationId, receivedMessage?.ConversationId);
+            Assert.Equal(data ?? string.Empty, message.GenerateDataString());
 
             // Clean-up
             socket.Close();
@@ -153,7 +158,7 @@ namespace NaoBlocks.Communications.Tests
 
         private static void WaitForStartUp(SocketListener listener)
         {
-            var count = 10;
+            var count = 30;
             while (!listener.IsListening && (count-- > 0))
             {
                 Thread.Sleep(TimeSpan.FromSeconds(0.1));

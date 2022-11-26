@@ -20,6 +20,11 @@ namespace NaoBlocks.Engine.Commands
         public Stream? Data { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating whether validation should be skipped or not.
+        /// </summary>
+        public bool SkipValidation { get; set; }
+
+        /// <summary>
         /// Validates the robot details.
         /// </summary>
         /// <param name="session">The database session to use.</param>
@@ -51,7 +56,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
-                        await this.ValidateRobots(session).ConfigureAwait(false);
+                        if (!this.SkipValidation) await this.ValidateRobots(session).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -71,7 +76,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            return Task.FromResult(CommandResult.New(this.Number, this.robots.AsReadOnly()));
+            return Task.FromResult(CommandResult.New(this.Number, this.robots.AsReadOnly() as IEnumerable<Robot>));
         }
 
         /// <summary>
@@ -81,6 +86,8 @@ namespace NaoBlocks.Engine.Commands
         private void ParseExcel(ExcelWorkbook workbook)
         {
             var worksheet = workbook.Worksheets.First();
+            if (worksheet.Dimension?.End == null) throw new Exception("No data");
+
             var columns = worksheet.Dimension.End.Column;
             var rows = worksheet.Dimension.End.Row;
             var mappings = new Dictionary<int, Action<Robot, string>>();

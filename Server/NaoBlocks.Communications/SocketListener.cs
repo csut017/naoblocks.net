@@ -197,7 +197,7 @@ namespace NaoBlocks.Communications
                     state.SequenceNumber = state.MessageData[3];
                     state.SequenceNumber = state.MessageData[2] + (state.SequenceNumber << 8);
                     state.Conversation = state.MessageData[5];
-                    state.Conversation = state.MessageData[4] + (state.SequenceNumber << 8);
+                    state.Conversation = state.MessageData[4] + (state.Conversation << 8);
                     state.IsInDataSegment = true;
                     state.DataPosition = 0;
                 }
