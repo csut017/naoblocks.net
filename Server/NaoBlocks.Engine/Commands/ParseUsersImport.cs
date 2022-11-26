@@ -12,7 +12,7 @@ namespace NaoBlocks.Engine.Commands
     public class ParseUsersImport
         : CommandBase
     {
-        private readonly List<User> users = new();
+        private readonly List<ParseRecord<User>> users = new();
 
         /// <summary>
         /// Gets or sets the  data.
@@ -26,6 +26,11 @@ namespace NaoBlocks.Engine.Commands
         /// If this value is set, it will override any incoming values.
         /// </remarks>
         public UserRole? Role { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether validation should be skipped or not.
+        /// </summary>
+        public bool SkipValidation { get; set; }
 
         /// <summary>
         /// Validates the user details.
@@ -59,7 +64,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
-                        await this.ValidateUsers(session).ConfigureAwait(false);
+                        if (!this.SkipValidation) await this.ValidateUsers(session, errors).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -79,7 +84,10 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            return Task.FromResult(CommandResult.New(this.Number, this.users.AsReadOnly()));
+            return Task.FromResult(
+                CommandResult.New(
+                    this.Number,
+                    this.users.Select(r => r.Value).ToArray().AsEnumerable()));
         }
 
         /// <summary>
@@ -89,6 +97,8 @@ namespace NaoBlocks.Engine.Commands
         private void ParseExcel(ExcelWorkbook workbook)
         {
             var worksheet = workbook.Worksheets.First();
+            if (worksheet.Dimension?.End == null) throw new Exception("No data");
+
             var columns = worksheet.Dimension.End.Column;
             var rows = worksheet.Dimension.End.Row;
             var mappings = new Dictionary<int, Action<User, string>>();
@@ -147,6 +157,7 @@ namespace NaoBlocks.Engine.Commands
                         break;
 
                     case "robot type":
+                    case "type":
                         mappings.Add(column, (user, value) =>
                         {
                             if (string.IsNullOrEmpty(value)) return;
@@ -201,28 +212,28 @@ namespace NaoBlocks.Engine.Commands
 
                 if (!hasData) continue;
                 if (this.Role != null) user.Role = this.Role.Value;
-                this.users.Add(user);
+                this.users.Add(ParseRecord.New(user, row));
             }
         }
 
-        private async Task ValidateUsers(IDatabaseSession session)
+        private async Task ValidateUsers(IDatabaseSession session, List<CommandError> errors)
         {
             // Validate all the users
             var robotTypes = new Dictionary<string, bool>();
             var robots = new Dictionary<string, bool>();
-            foreach (var user in this.users)
+            foreach (var record in this.users)
             {
-                var errors = new List<string>();
+                var user = record.Value;
                 if (string.IsNullOrEmpty(user.Name))
                 {
-                    errors.Add("Name is required");
+                    errors.Add(this.GenerateError($"Name is required [row {record.Row}]"));
                 }
                 else
                 {
                     var userExists = await session.Query<User>()
                         .AnyAsync(r => r.Name == user.Name)
                         .ConfigureAwait(false);
-                    if (userExists) errors.Add($"User '{user.Name}' already exists");
+                    if (userExists) errors.Add(this.GenerateError($"User '{user.Name}' already exists [row {record.Row}]"));
                 }
 
                 if (!string.IsNullOrEmpty(user.Settings.RobotType))
@@ -235,7 +246,7 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(user.Settings.RobotType, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add($"Unknown robot type '{user.Settings.RobotTypeId}'");
+                    if (!isTypeValid) errors.Add(this.GenerateError($"Unknown robot type '{user.Settings.RobotType}' [row {record.Row}]"));
                 }
 
                 if (!string.IsNullOrEmpty(user.Settings.RobotId))
@@ -248,7 +259,7 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(user.Settings.RobotId, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add($"Unknown robot '{user.Settings.RobotId}'");
+                    if (!isTypeValid) errors.Add(this.GenerateError($"Unknown robot '{user.Settings.RobotId}' [row {record.Row}]"));
                 }
 
                 if (errors.Any())
