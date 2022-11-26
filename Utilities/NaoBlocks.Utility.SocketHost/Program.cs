@@ -21,7 +21,7 @@ namespace NaoBlocks.Utility.SocketHost
             var endpoint = new IPEndPoint(
                 address,
                 5010);
-            var server = new SocketListener(endpoint);
+            var server = new SocketListener(endpoint, new DefaultSocketFactory());
             server.ClientConnected += (o, e) =>
             {
                 Console.WriteLine($"[Client connected: {e.RemoteEndPoint}]");

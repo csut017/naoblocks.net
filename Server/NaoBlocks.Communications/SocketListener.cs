@@ -14,7 +14,7 @@ namespace NaoBlocks.Communications
         private const int BUFFER_SIZE = 1024;
         private readonly ManualResetEvent allDone = new(false);
         private readonly IPEndPoint endPoint;
-        private readonly Socket listener;
+        private readonly ISocket listener;
         private bool disposedValue;
         private bool isOpen;
 
@@ -22,12 +22,10 @@ namespace NaoBlocks.Communications
         /// Initialises a new <see cref="SocketListener"/> instance.
         /// </summary>
         /// <param name="endPoint">The end point to listen on.</param>
-        public SocketListener(IPEndPoint endPoint)
+        /// <param name="socketFactory">The <see cref="ISocketFactory"/> to use.</param>
+        public SocketListener(IPEndPoint endPoint, ISocketFactory socketFactory)
         {
-            this.listener = new(
-                endPoint.AddressFamily,
-                SocketType.Stream,
-                ProtocolType.Tcp);
+            this.listener = socketFactory.New(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             this.endPoint = endPoint;
         }
 
@@ -45,6 +43,11 @@ namespace NaoBlocks.Communications
         /// Fired whenever a message is received.
         /// </summary>
         public event EventHandler<ReceivedMessage>? MessageReceived;
+
+        /// <summary>
+        /// Gets whether the listener has been started and is listening.
+        /// </summary>
+        public bool IsListening { get => this.isOpen; }
 
         /// <summary>
         /// Closes the socket.
@@ -107,7 +110,7 @@ namespace NaoBlocks.Communications
             this.allDone.Set();
             if (!this.isOpen) return;
 
-            var listener = (Socket)result.AsyncState!;
+            var listener = (ISocket)result.AsyncState!;
             var handler = listener.EndAccept(result);
             Client client = new(SocketWrapper.Wrap(handler));
             var state = new SocketState(handler, client);
@@ -211,7 +214,7 @@ namespace NaoBlocks.Communications
 
         private class SocketState
         {
-            public SocketState(Socket socket, Client client)
+            public SocketState(ISocket socket, Client client)
             {
                 this.Socket = socket;
                 this.Client = client;
@@ -233,7 +236,7 @@ namespace NaoBlocks.Communications
 
             public int SequenceNumber { get; set; }
 
-            public Socket Socket { get; }
+            public ISocket Socket { get; }
         }
     }
 }

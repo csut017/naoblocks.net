@@ -408,7 +408,7 @@ namespace NaoBlocks.Web.Communications
             try
             {
                 this.logger.LogInformation($"Starting to listen on {endpoint}");
-                this.socketListener = new SocketListener(endpoint);
+                this.socketListener = new SocketListener(endpoint, new DefaultSocketFactory());
                 var connections = new Dictionary<int, SocketClientConnection>();
                 var nextClient = 0;
                 this.socketListener.ClientConnected += (_, c) =>
