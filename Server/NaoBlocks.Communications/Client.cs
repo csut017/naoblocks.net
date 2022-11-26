@@ -11,14 +11,14 @@ namespace NaoBlocks.Communications
     public class Client
     {
         private readonly byte[] buffer = new byte[1024];
-        private readonly Socket handler;
+        private readonly ISocket handler;
         private int sequence;
 
         /// <summary>
         /// Initialises a new <see cref="Client"/> instance.
         /// </summary>
         /// <param name="handler">The socket to the client.</param>
-        public Client(Socket handler)
+        public Client(ISocket handler)
         {
             this.handler = handler;
             this.RemoteEndPoint = handler.RemoteEndPoint;
@@ -36,7 +36,7 @@ namespace NaoBlocks.Communications
         {
             get => string.IsNullOrEmpty(this.Name)
                 ? $"#{this.Index}"
-                : $"{this.Name} [#${this.Index}]";
+                : $"{this.Name} [#{this.Index}]";
         }
 
         /// <summary>
@@ -55,10 +55,19 @@ namespace NaoBlocks.Communications
         public EndPoint? RemoteEndPoint { get; }
 
         /// <summary>
+        /// Restarts the internal sequence number.
+        /// </summary>
+        public void RestartSequence()
+        {
+            this.sequence = 0;
+        }
+
+        /// <summary>
         /// Sends a message to the client.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="timeout">The timeout duration.</param>
+        /// <returns>The outcome of the send.</returns>
         public async Task<Result<int>> SendMessageAsync(ClientMessage message, TimeSpan timeout)
         {
             int messageType = (int)message.Type;
@@ -81,22 +90,8 @@ namespace NaoBlocks.Communications
 
             try
             {
-                var result = this.handler.BeginSend(
-                    this.buffer,
-                    0,
-                    size + 1,
-                    SocketFlags.None,
-                    null,
-                    null);
-                var sendTask = Task<int>.Factory.FromAsync(
-                    result,
-                    _ => this.handler.EndSend(result));
-                if (sendTask != await Task.WhenAny(sendTask, Task.Delay(timeout)).ConfigureAwait(false))
-                {
-                    throw new TimeoutException();
-                }
-
-                return Result.Ok(sendTask.Result);
+                var result = await this.handler.SendAync(buffer, 0, size + 1, SocketFlags.None, timeout);
+                return Result.Ok(result);
             }
             catch (SocketException ex)
             {

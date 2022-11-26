@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NaoBlocks.Client.Common
 {
     /// <summary>
     /// Internal wrapper for a <see cref="ClientWebSocket"/> instance.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ClientWebSocketWrapper
         : IWebSocket
     {
@@ -33,25 +30,6 @@ namespace NaoBlocks.Client.Common
         }
 
         /// <summary>
-        /// Connect to a WebSocket server.
-        /// </summary>
-        /// <param name="uri">The URI of the websocket server.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> instance.</param>
-        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
-        {
-            await this.inner.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Disposes any resources used by the socket client.
-        /// </summary>
-        public void Dispose()
-        {
-            this.inner.Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
         /// Close the websocket.
         /// </summary>
         /// <param name="closeStatus">The WebSocket close status.</param>
@@ -71,6 +49,25 @@ namespace NaoBlocks.Client.Common
         public async Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
         {
             await this.inner.CloseOutputAsync(closeStatus, statusDescription, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Connect to a WebSocket server.
+        /// </summary>
+        /// <param name="uri">The URI of the websocket server.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> instance.</param>
+        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+        {
+            await this.inner.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Disposes any resources used by the socket client.
+        /// </summary>
+        public void Dispose()
+        {
+            this.inner.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

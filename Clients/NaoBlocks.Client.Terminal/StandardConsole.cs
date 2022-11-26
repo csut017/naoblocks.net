@@ -1,8 +1,11 @@
-﻿namespace NaoBlocks.Client.Terminal
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace NaoBlocks.Client.Terminal
 {
     /// <summary>
     /// The standard console.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class StandardConsole
         : IConsole
     {

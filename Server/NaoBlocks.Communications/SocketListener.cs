@@ -109,7 +109,7 @@ namespace NaoBlocks.Communications
 
             var listener = (Socket)result.AsyncState!;
             var handler = listener.EndAccept(result);
-            Client client = new(handler);
+            Client client = new(SocketWrapper.Wrap(handler));
             var state = new SocketState(handler, client);
             this.ClientConnected?.Invoke(this, client);
             handler.BeginReceive(
@@ -232,6 +232,7 @@ namespace NaoBlocks.Communications
             public int MessageType { get; set; }
 
             public int SequenceNumber { get; set; }
+
             public Socket Socket { get; }
         }
     }
