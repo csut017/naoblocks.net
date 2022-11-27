@@ -273,7 +273,42 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostLogHandlesErrors()
+        public async Task PostLogHandlesExecutionErrors()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<Batch>(new CommandResult(1, "Fake error"));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "log",
+                Messages = new[] { "Testing" }
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Equal("Command failed: Fake error", result.Error);
+        }
+
+        [Fact]
+        public async Task PostLogHandlesValidationErrors()
         {
             // Arrange
             var logger = new FakeLogger<LogsController>();
@@ -470,7 +505,41 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostsInitialiseHandlesError()
+        public async Task PostsInitialiseHandlesExecutionError()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartRobotConversation>(new CommandResult(1, "Fake error"));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "init"
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Equal("Command failed: Fake error", result.Error);
+        }
+
+        [Fact]
+        public async Task PostsInitialiseHandlesValidationError()
         {
             // Arrange
             var logger = new FakeLogger<LogsController>();
