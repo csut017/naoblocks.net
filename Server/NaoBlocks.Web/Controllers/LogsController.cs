@@ -154,7 +154,12 @@ namespace NaoBlocks.Web.Controllers
             var now = DateTime.UtcNow
                               .AddSeconds(-request.Time.GetValueOrDefault(0.0));
 
-            foreach (var message in request.Messages ?? Array.Empty<string>())
+            if ((request.Messages == null) || !request.Messages.Any())
+            {
+                return new Dtos.LogResult();
+            }
+
+            foreach (var message in request.Messages!)
             {
                 var addLog = new AddToRobotLog
                 {

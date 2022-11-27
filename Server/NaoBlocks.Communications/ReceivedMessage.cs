@@ -13,7 +13,7 @@ namespace NaoBlocks.Communications
         /// </summary>
         /// <param name="client">The client that received the message.</param>
         /// <param name="type">The message type.</param>
-        public ReceivedMessage(Client client, ClientMessageType type)
+        public ReceivedMessage(IClient client, ClientMessageType type)
             : base(type)
         {
             this.Client = client;
@@ -22,6 +22,6 @@ namespace NaoBlocks.Communications
         /// <summary>
         /// Gets the client that received the message.
         /// </summary>
-        public Client Client { get; }
+        public IClient Client { get; }
     }
 }

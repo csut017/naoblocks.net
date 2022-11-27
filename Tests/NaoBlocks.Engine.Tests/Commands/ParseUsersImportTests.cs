@@ -4,6 +4,7 @@ using OfficeOpenXml;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,13 +24,16 @@ namespace NaoBlocks.Engine.Tests.Commands
             var package = new ExcelPackage();
             package.Workbook.Worksheets.Add("Data").GenerateData(new[]
             {
-                new[] { "name", "friendly name", "type", "password"},
-                new[] { "Mihīni-1", "Karetao-1", "Nao", "One" },
-                new[] { "Mihīni-2", "", "Nao", "Two" },
+                new[] { "Name", "Age", "Gender", "Password", "Role", "Type", "Toolbox", "View", "Allocation", "Robot"},
+                new[] { "Tane", "", "Male", "One", "Student", "Nao", "Default", "Blocks", "Any", "" },
+                new[] { "Wahine", "10", "Female", "Two", "Student", "Nao", "Default", "Tangibles", "Require", "Mihīni" },
+                new[] { "Rangatahi", "15", "", "Three", "Teacher", "Nao", "Default", "Tangibles", "Prefer", "Mihīni" },
             });
             var command = new ParseUsersImport();
             AddExcelDataToCommand(package, command);
-            using var store = InitialiseDatabase(new RobotType { Name = "Nao" });
+            using var store = InitialiseDatabase(
+                new RobotType { Name = "Nao" },
+                new Robot { MachineName = "Mihīni" });
             using var session = store.OpenAsyncSession();
             var engine = new FakeEngine(session);
 
@@ -40,12 +44,17 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            //Assert.Equal(
-            //    new[] {
-            //        "Mihīni-1,Karetao-1,Nao,One",
-            //        "Mihīni-2,Mihīni-2,Nao,Two",
-            //    },
-            //    result.As<IEnumerable<User>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
+            var actual = result.As<IEnumerable<User>>()
+                                .Output?
+                                .Select(u => $"{u.Name},{u.StudentDetails?.Age},{u.StudentDetails?.Gender},{u.Role},{u.PlainPassword},{u.Settings.RobotType},{u.Settings.Toolbox},{u.Settings.ViewMode},{u.Settings.AllocationMode},{u.Settings.RobotId}")
+                                .ToArray();
+            Assert.Equal<string[]>(
+                new[] {
+                    "Tane,,Male,Student,One,Nao,Default,0,0,",
+                    "Wahine,10,Female,Student,Two,Nao,Default,1,1,Mihīni",
+                    "Rangatahi,15,,Teacher,Three,Nao,Default,1,2,Mihīni",
+                },
+                actual);
         }
 
         [Fact]
@@ -133,39 +142,6 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Equal(
                 new[] { 0 },
                 result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.AllocationMode).ToArray());
-        }
-
-        [Fact]
-        public async Task ExecuteAsyncParsesAllValues()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "machine name", "friendly name", "type", "password"},
-                new[] { "Mihīni", "Karetao-1", "Nao", "One" },
-                new[] { "Mihīni", "Karetao-2", "Nao", "Two" },
-            });
-            var command = new ParseUsersImport
-            {
-                SkipValidation = true
-            };
-            AddExcelDataToCommand(package, command);
-            var engine = new FakeEngine();
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-            Assert.Empty(errors);
-            var result = await engine.ExecuteAsync(command);
-
-            // Assert
-            Assert.True(result.WasSuccessful, "Command failed");
-            //Assert.Equal(
-            //    new[] {
-            //        "Mihīni,Karetao-1,Nao,One",
-            //        "Mihīni,Karetao-2,Nao,Two",
-            //    },
-            //    result.As<IEnumerable<User>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
         }
 
         [Fact]
@@ -282,37 +258,6 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Equal(
                 new[] { "Student" },
                 result.As<IEnumerable<User>>().Output?.Select(r => r.Role.ToString()).ToArray());
-        }
-
-        [Fact]
-        public async Task ExecuteAsyncParsesShortNames()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "machine", "friendly", "type", "password"},
-                new[] { "Mihīni", "Karetao", "Nao", "One" },
-            });
-            var command = new ParseUsersImport
-            {
-                SkipValidation = true
-            };
-            AddExcelDataToCommand(package, command);
-            var engine = new FakeEngine();
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-            Assert.Empty(errors);
-            var result = await engine.ExecuteAsync(command);
-
-            // Assert
-            Assert.True(result.WasSuccessful, "Command failed");
-            //Assert.Equal(
-            //    new[] {
-            //        "Mihīni,Karetao,Nao,One",
-            //    },
-            //    result.As<IEnumerable<User>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
         }
 
         [Fact]
@@ -440,7 +385,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             var package = new ExcelPackage();
             package.Workbook.Worksheets.Add("Data").GenerateData(new[]
             {
-                new[] { "Name", "Robot"},
+                new[] { "Name", "Type"},
                 new[] { "Tane", "Nao" }
             });
             var command = new ParseUsersImport();
@@ -482,6 +427,54 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ValidateAsyncChecksRobotExists()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Name", "Type", "Robot"},
+                new[] { "Tane", "Nao", "Mihīni" },
+            });
+            var command = new ParseUsersImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase(new RobotType { Name = "Nao" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+
+            // Assert
+            Assert.Equal(new[] { "Unknown robot 'Mihīni' [row 2]" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task ValidateAsyncChecksRobotExistsHandlesFriendlyName()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Name", "Type", "Robot"},
+                new[] { "Tane", "Nao", "Mihīni" },
+            });
+            var command = new ParseUsersImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase(
+                new RobotType { Name = "Nao" },
+                new Robot { MachineName = "Karetao", FriendlyName = "Mihīni" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+
+            // Assert
+            Assert.Empty(errors);
+        }
+
+        [Fact]
         public async Task ValidateAsyncChecksRobotTypeExists()
         {
             // Arrange
@@ -502,6 +495,22 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.Equal(new[] { "Unknown robot type 'Nao' [row 2]" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task ValidateAsyncHandlesNonExcel()
+        {
+            // Arrange
+            var command = new ParseUsersImport();
+            command.Data = new MemoryStream(Encoding.UTF8.GetBytes("This is a text file"));
+
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+
+            // Assert
+            Assert.Equal(new[] { "Unable to open file: The file is not a valid Package file. If the file is encrypted, please supply the password in the constructor." }, FakeEngine.GetErrors(errors));
         }
 
         private static void AddExcelDataToCommand(ExcelPackage package, ParseUsersImport command)

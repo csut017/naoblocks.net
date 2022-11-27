@@ -8,7 +8,7 @@ namespace NaoBlocks.Communications
     /// <summary>
     /// A client connection.
     /// </summary>
-    public class Client
+    public class Client : IClient
     {
         private readonly byte[] buffer = new byte[1024];
         private readonly ISocket handler;

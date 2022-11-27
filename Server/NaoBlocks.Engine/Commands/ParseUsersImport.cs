@@ -174,6 +174,7 @@ namespace NaoBlocks.Engine.Commands
                         break;
 
                     case "view mode":
+                    case "view":
                         mappings.Add(column, (user, value) =>
                         {
                             if (viewModes.TryGetValue(value.ToLowerInvariant(), out int mode)) user.Settings.ViewMode = mode;
@@ -181,6 +182,7 @@ namespace NaoBlocks.Engine.Commands
                         break;
 
                     case "allocation mode":
+                    case "allocation":
                         mappings.Add(column, (user, value) =>
                         {
                             if (allocationModes.TryGetValue(value.ToLowerInvariant(), out int mode)) user.Settings.AllocationMode = mode;
@@ -188,6 +190,7 @@ namespace NaoBlocks.Engine.Commands
                         break;
 
                     case "allocated robot":
+                    case "robot":
                         mappings.Add(column, (user, value) =>
                         {
                             if (string.IsNullOrEmpty(value)) return;
@@ -254,7 +257,7 @@ namespace NaoBlocks.Engine.Commands
                     if (!robotTypes.TryGetValue(user.Settings.RobotId, out var isTypeValid))
                     {
                         isTypeValid = await session.Query<Robot>()
-                            .AnyAsync(rt => rt.MachineName == user.Settings.RobotId)
+                            .AnyAsync(rt => rt.MachineName == user.Settings.RobotId || rt.FriendlyName == user.Settings.RobotId)
                             .ConfigureAwait(false);
                         robotTypes.Add(user.Settings.RobotId, isTypeValid);
                     }

@@ -9,7 +9,7 @@ namespace NaoBlocks.Web.Communications
     public class SocketClientConnection
         : ClientConnectionBase, IClientConnection
     {
-        private readonly Client client;
+        private readonly IClient client;
         private readonly ILogger<SocketClientConnection> logger;
         private readonly IMessageProcessor messageProcessor;
 
@@ -20,7 +20,7 @@ namespace NaoBlocks.Web.Communications
         /// <param name="type">The type of client.</param>
         /// <param name="messageProcessor">The processor to use for handling incoming messages.</param>
         /// <param name="logger">The logger to use.</param>
-        public SocketClientConnection(Client client, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<SocketClientConnection> logger)
+        public SocketClientConnection(IClient client, ClientConnectionType type, IMessageProcessor messageProcessor, ILogger<SocketClientConnection> logger)
         {
             this.Type = type;
             this.client = client;

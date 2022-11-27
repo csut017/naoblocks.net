@@ -4,6 +4,7 @@ using OfficeOpenXml;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -351,6 +352,22 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.Equal(new[] { "Robot type is required [row 2]" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task ValidateAsyncHandlesNonExcel()
+        {
+            // Arrange
+            var command = new ParseRobotsImport();
+            command.Data = new MemoryStream(Encoding.UTF8.GetBytes("This is a text file"));
+
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+
+            // Assert
+            Assert.Equal(new[] { "Unable to open file: The file is not a valid Package file. If the file is encrypted, please supply the password in the constructor." }, FakeEngine.GetErrors(errors));
         }
 
         private static void AddExcelDataToCommand(ExcelPackage package, ParseRobotsImport command)
