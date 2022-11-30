@@ -1,4 +1,6 @@
-﻿using Data = NaoBlocks.Engine.Data;
+﻿using NaoBlocks.Engine.Data;
+
+using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -11,6 +13,11 @@ namespace NaoBlocks.Web.Dtos
         /// Gets or sets whether this robot type allows direct logging.
         /// </summary>
         public bool? AllowDirectLogging { get; set; }
+
+        /// <summary>
+        /// Gets the allowed custom values.
+        /// </summary>
+        public IList<NamedValue>? CustomValues { get; private set; }
 
         /// <summary>
         /// Gets or sets whether this type has a toolbox.
@@ -51,6 +58,7 @@ namespace NaoBlocks.Web.Dtos
             if (includeDetails)
             {
                 output.Toolboxes = value.Toolboxes.Select(t => Toolbox.FromModel(t)).ToList();
+                output.CustomValues = value.CustomValues.ToList();
             }
 
             return output;

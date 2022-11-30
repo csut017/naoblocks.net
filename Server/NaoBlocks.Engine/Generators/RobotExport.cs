@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Engine.Data;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Generators
 {
@@ -39,6 +40,7 @@ namespace NaoBlocks.Engine.Generators
                 ReportFormat.Pdf => true,
                 ReportFormat.Text => true,
                 ReportFormat.Csv => true,
+                ReportFormat.Xml => true,
                 _ => false,
             };
         }
@@ -46,6 +48,13 @@ namespace NaoBlocks.Engine.Generators
         private async Task GenerateRobotDetails(Generator generator)
         {
             var page = generator.AddPage("Details");
+            if (this.Robot.Type == null)
+            {
+                this.Robot.Type = await this.Session
+                    .Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Id == this.Robot.RobotTypeId);
+            }
+
             page.AddParagraph(
                 new PageBlock("Machine Name", true),
                 new PageBlock(this.Robot.MachineName));
