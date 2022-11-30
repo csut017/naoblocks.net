@@ -63,7 +63,7 @@ namespace NaoBlocks.Engine.Generators
             {
                 var line = string.Join(
                     separator,
-                    row.Values.Select(v => v?.ToString() ?? string.Empty));
+                    row.Values.Select(v => EncodeCellValue(v?.ToString() ?? string.Empty, separator)));
                 writer.WriteLine(line);
                 writer.Flush();
             }
@@ -112,6 +112,13 @@ namespace NaoBlocks.Engine.Generators
                 builder.Append($"</tr> ");
             }
             builder.Append("</table>");
+        }
+
+        private static string EncodeCellValue(string value, string seperator)
+        {
+            return !value.Contains(seperator)
+                ? value
+                : $"\"{value}\"";
         }
     }
 }

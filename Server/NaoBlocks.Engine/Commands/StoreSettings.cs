@@ -17,19 +17,44 @@ namespace NaoBlocks.Engine.Commands
         /// </summary>
         public UserSettings? Settings { get; set; }
 
-
         /// <summary>
         /// Gets or sets the name of the user to associate the program with.
         /// </summary>
         public string? UserName { get; set; }
 
         /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.user = await this.ValidateAndRetrieveUser(session, this.UserName, UserRole.User, errors).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(this.Settings?.RobotType))
+            {
+                var robotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.Settings.RobotType)
+                    .ConfigureAwait(false);
+                if (robotType == null)
+                {
+                    errors.Add(this.GenerateError($"Unknown robot type {this.Settings.RobotType}"));
+                }
+                else
+                {
+                    this.Settings.RobotTypeId = robotType.Id;
+                }
+            }
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Validates the program settings.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
-        /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (this.Settings == null)
@@ -73,39 +98,13 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
-        /// <param name="engine"></param>
+        /// <param name="engine">The <see cref="IExecutionEngine"/> to use.</param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.user);
             var settingsToStore = this.Settings!;
             this.user!.Settings = settingsToStore;
             return Task.FromResult(CommandResult.New(this.Number, settingsToStore));
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.user = await this.ValidateAndRetrieveUser(session, this.UserName, UserRole.User, errors).ConfigureAwait(false);
-            if (!string.IsNullOrEmpty(this.Settings?.RobotType))
-            {
-                var robotType = await session.Query<RobotType>()
-                    .FirstOrDefaultAsync(rt => rt.Name == this.Settings.RobotType)
-                    .ConfigureAwait(false);
-                if (robotType == null)
-                {
-                    errors.Add(this.GenerateError($"Unknown robot type {this.Settings.RobotType}"));
-                }
-                else
-                {
-                    this.Settings.RobotTypeId = robotType.Id;
-                }
-            }
-            return errors.AsEnumerable();
         }
     }
 }

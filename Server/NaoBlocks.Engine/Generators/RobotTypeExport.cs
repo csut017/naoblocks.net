@@ -44,6 +44,18 @@ namespace NaoBlocks.Engine.Generators
                     toolbox.ExportToXml(Toolbox.Format.Toolbox));
             }
 
+            table = generator.AddTable("Values");
+            table.AddRow(
+                TableRowType.Header,
+                "Name",
+                "Default Value");
+            foreach (var value in this.RobotType.CustomValues)
+            {
+                table.AddRow(
+                    value.Name,
+                    value.Value);
+            }
+
             table = generator.AddTable("Robots");
             table.AddRow(
                 TableRowType.Header,
@@ -84,6 +96,7 @@ namespace NaoBlocks.Engine.Generators
                 ReportFormat.Pdf => true,
                 ReportFormat.Text => true,
                 ReportFormat.Csv => true,
+                ReportFormat.Xml => true,
                 _ => false,
             };
         }

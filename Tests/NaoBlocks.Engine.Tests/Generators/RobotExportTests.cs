@@ -46,8 +46,8 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Equal("Robot-Export-Mihīni.txt", output.Item2);
             using var reader = new StreamReader(output.Item1);
             var text = await reader.ReadToEndAsync();
-            var formattedDate = logTime.ToString("yyyy-MM-dd");
-            var formattedTime = logTime.ToString("HH:mm:ss");
+            var formattedDate = logTime.ToLocalTime().ToString("yyyy-MM-dd");
+            var formattedTime = logTime.ToLocalTime().ToString("HH:mm:ss");
             Assert.Equal(
                     @$"Details
 =======
@@ -57,11 +57,11 @@ Type: <Unknown>
 Logs
 ====
 Robot,Date,Conversation,Time,Type,Description,info,debug,error,warn
-Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,wha,tekau,tekau mā tahi,,
-Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,rima,,,,
-Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,tahi,ono,,whitu,
-Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,rua,iwa,,,waru
+Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,tahi,ono,whitu,,
+Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,rua,iwa,,waru,
 Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,toru,,,,
+Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,wha,tekau,,,tekau mā tahi
+Mihīni,{formattedDate},1124,{formattedTime},RobotDebugMessage,rima,,,,
 ",
                 text);
         }
