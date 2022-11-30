@@ -1,9 +1,7 @@
-﻿using Transfer = NaoBlocks.Web.Dtos;
-using Data = NaoBlocks.Engine.Data;
+﻿using System;
 using Xunit;
-using System;
-using System.Linq;
-using NaoBlocks.Common;
+using Data = NaoBlocks.Engine.Data;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Dtos
 {
@@ -28,25 +26,21 @@ namespace NaoBlocks.Web.Tests.Dtos
         }
 
         [Fact]
-        public void FromModelWithConversation()
+        public void FromModelConvertsEntityWithLines()
         {
             var now = DateTime.Now;
             var entity = new Data.RobotLog
             {
                 WhenLastUpdated = now,
-                WhenAdded = now,
-                Conversation = new Data.Conversation
-                {
-                    ConversationId = 10,
-                    SourceName = "Moana"
-                }
+                WhenAdded = now
             };
-            var dto = Transfer.RobotLog.FromModel(entity, false, null);
+            entity.Lines.Add(new Data.RobotLogLine());
+            var dto = Transfer.RobotLog.FromModel(entity, true, null);
             Assert.Equal(now, dto.WhenLastUpdated);
             Assert.Equal(now, dto.WhenAdded);
-            Assert.Null(dto.Lines);
-            Assert.Equal("Moana", dto.UserName);
-            Assert.Equal(10, dto.ConversationId);
+            Assert.NotEmpty(dto.Lines ?? Array.Empty<Transfer.RobotLogLine>());
+            Assert.Null(dto.UserName);
+            Assert.Equal(-1, dto.ConversationId);
         }
 
         [Fact]
@@ -99,21 +93,25 @@ namespace NaoBlocks.Web.Tests.Dtos
         }
 
         [Fact]
-        public void FromModelConvertsEntityWithLines()
+        public void FromModelWithConversation()
         {
             var now = DateTime.Now;
             var entity = new Data.RobotLog
             {
                 WhenLastUpdated = now,
-                WhenAdded = now
+                WhenAdded = now,
+                Conversation = new Data.Conversation
+                {
+                    ConversationId = 10,
+                    SourceName = "Moana"
+                }
             };
-            entity.Lines.Add(new Data.RobotLogLine());
-            var dto = Transfer.RobotLog.FromModel(entity, true, null);
+            var dto = Transfer.RobotLog.FromModel(entity, false, null);
             Assert.Equal(now, dto.WhenLastUpdated);
             Assert.Equal(now, dto.WhenAdded);
-            Assert.NotEmpty(dto.Lines);
-            Assert.Null(dto.UserName);
-            Assert.Equal(-1, dto.ConversationId);
+            Assert.Null(dto.Lines);
+            Assert.Equal("Moana", dto.UserName);
+            Assert.Equal(10, dto.ConversationId);
         }
     }
 }

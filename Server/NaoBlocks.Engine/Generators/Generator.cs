@@ -68,7 +68,7 @@ namespace NaoBlocks.Engine.Generators
                 ReportFormat.Csv => this.GenerateText(baseName, "csv", false, ",", ","),
                 ReportFormat.Pdf => await this.GeneratePdf(baseName),
                 ReportFormat.Text => this.GenerateText(baseName, "txt", true, ",", ": "),
-                _ => throw new ApplicationException($"Unable to generate: unhandled {format}"),
+                _ => throw new ApplicationException($"Unable to generate report: format '{format}' has not been implemented"),
             };
         }
 

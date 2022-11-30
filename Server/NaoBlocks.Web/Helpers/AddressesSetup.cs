@@ -1,4 +1,5 @@
 ﻿using NaoBlocks.Communications;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace NaoBlocks.Web.Helpers
@@ -12,6 +13,7 @@ namespace NaoBlocks.Web.Helpers
         /// Configures the endpoints to listen on using the available addresses.
         /// </summary>
         /// <param name="builder">The builder to add the endpoints to.</param>
+        [ExcludeFromCodeCoverage(Justification = "This is an internal method for configuring the web server. It is impossible(?) to check if the addresses have actually been configured.")]
         public static void UseLocalAddresses(this WebApplicationBuilder builder)
         {
             var settings = builder.Configuration

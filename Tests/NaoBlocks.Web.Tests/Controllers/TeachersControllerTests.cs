@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -155,7 +156,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(1, response.Count);
             Assert.Equal(0, response.Page);
-            Assert.NotEmpty(response.Items);
+            Assert.NotEmpty(response.Items ?? Array.Empty<Transfer.Teacher>());
         }
 
         [Fact]

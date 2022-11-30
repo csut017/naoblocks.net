@@ -201,7 +201,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(1, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.NotEmpty(response.Value?.Items);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.Robot>());
         }
 
         [Fact]
@@ -247,7 +247,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(1, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.NotEmpty(response.Value?.Items);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.Robot>());
         }
 
         [Fact]

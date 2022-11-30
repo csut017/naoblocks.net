@@ -31,7 +31,7 @@ namespace NaoBlocks.RobotState.Tests.Functions
             var func = new Go();
             var engine = new Mock<IEngine>();
             engine.Setup(e => e.FindFunction("start"))
-                .Returns((EngineFunction)null);
+                .Returns((EngineFunction?)null);
 
             var result = await func.ExecuteAsync(engine.Object, Common.EmptyNode);
             Assert.False(result.WasSuccessful);

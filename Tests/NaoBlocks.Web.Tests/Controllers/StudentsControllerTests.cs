@@ -689,7 +689,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(1, response.Count);
             Assert.Equal(0, response.Page);
-            Assert.NotEmpty(response.Items);
+            Assert.NotEmpty(response.Items ?? Array.Empty<Transfer.Student>());
         }
 
         [Fact]

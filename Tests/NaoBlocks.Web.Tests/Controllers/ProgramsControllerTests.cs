@@ -5,6 +5,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +17,62 @@ namespace NaoBlocks.Web.Tests.Controllers
     public class ProgramsControllerTests
     {
         [Fact]
-        public async Task GetRetrievesUserViaQuery()
+        public async Task DeleteCallsDelete()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<DeleteProgram>();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Delete("3", "Mia");
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task DeleteHandlesInvalidData()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Delete("Bad", "Mia");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetHandlesBadData()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.Get("Bad", "Moana");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task GetHandlesMissingProgam()
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
@@ -29,16 +85,14 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
             var codeQuery = new Mock<CodeData>();
             codeQuery.Setup(q => q.RetrieveCodeAsync("Moana", 3))
-                .Returns(Task.FromResult((Data.CodeProgram?)new Data.CodeProgram { Name = "hōtaka", Code = "go()" }));
+                .Returns(Task.FromResult((Data.CodeProgram?)null));
             engine.RegisterQuery(codeQuery.Object);
 
             // Act
             var response = await controller.Get("3", "Moana");
 
             // Assert
-            Assert.NotNull(response.Value);
-            Assert.Equal("hōtaka", response.Value?.Name);
-            Assert.Equal("go()", response.Value?.Code);
+            Assert.IsType<NotFoundResult>(response.Result);
         }
 
         [Fact]
@@ -88,30 +142,6 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetHandlesMissingProgam()
-        {
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
-                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
-            var codeQuery = new Mock<CodeData>();
-            codeQuery.Setup(q => q.RetrieveCodeAsync("Moana", 3))
-                .Returns(Task.FromResult((Data.CodeProgram?)null));
-            engine.RegisterQuery(codeQuery.Object);
-
-            // Act
-            var response = await controller.Get("3", "Moana");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
-        }
-
-        [Fact]
         public async Task GetHandlesUnknownUser()
         {
             // Arrange
@@ -130,7 +160,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetHandlesBadData()
+        public async Task GetRetrievesUserViaQuery()
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
@@ -138,13 +168,21 @@ namespace NaoBlocks.Web.Tests.Controllers
             var controller = new ProgramsController(
                 logger,
                 engine);
-            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
+                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
+            var codeQuery = new Mock<CodeData>();
+            codeQuery.Setup(q => q.RetrieveCodeAsync("Moana", 3))
+                .Returns(Task.FromResult((Data.CodeProgram?)new Data.CodeProgram { Name = "hōtaka", Code = "go()" }));
+            engine.RegisterQuery(codeQuery.Object);
 
             // Act
-            var response = await controller.Get("Bad", "Moana");
+            var response = await controller.Get("3", "Moana");
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
+            Assert.NotNull(response.Value);
+            Assert.Equal("hōtaka", response.Value?.Name);
+            Assert.Equal("go()", response.Value?.Code);
         }
 
         [Fact]
@@ -162,170 +200,6 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<UnauthorizedResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task DeleteCallsDelete()
-        {
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            engine.ExpectCommand<DeleteProgram>();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-
-            // Act
-            var response = await controller.Delete("3", "Mia");
-
-            // Assert
-            var result = Assert.IsType<ExecutionResult>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            engine.Verify();
-        }
-
-        [Fact]
-        public async Task DeleteHandlesInvalidData()
-        {
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-
-            // Act
-            var response = await controller.Delete("Bad", "Mia");
-
-            // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListHandlesUnknownUser()
-        {
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-
-            // Act
-            var response = await controller.List(0, 2, "Moana", null);
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListUnhandlesRequestWithoutUser()
-        {
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-
-            // Act
-            var response = await controller.List(0, 2, "Moana", null);
-
-            // Assert
-            Assert.IsType<UnauthorizedResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListRetrievesPrograms()
-        {
-            var programs = ListResult.New(new[]
-            {
-                new Data.CodeProgram(),
-                new Data.CodeProgram()
-            });
-
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
-                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
-            var codeQuery = new Mock<CodeData>();
-            codeQuery.Setup(q => q.RetrieveForUserAsync("Moana", 0, 2, false))
-                .Returns(Task.FromResult(programs));
-            engine.RegisterQuery(codeQuery.Object);
-
-            // Act
-            var response = await controller.List(0, 2, "Moana", null);
-
-            // Assert
-            Assert.Equal(0, response.Value?.Page);
-            Assert.Equal(2, response.Value?.Count);
-            Assert.NotEmpty(response.Value?.Items);
-        }
-
-        [Fact]
-        public async Task ListHandlesStudentRequest()
-        {
-            var programs = ListResult.New(new[]
-            {
-                new Data.CodeProgram(),
-                new Data.CodeProgram()
-            });
-
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-            engine.ConfigureUser(controller, "Mia", Data.UserRole.Student);
-            var codeQuery = new Mock<CodeData>();
-            codeQuery.Setup(q => q.RetrieveForUserAsync("Mia", 0, 2, false))
-                .Returns(Task.FromResult(programs));
-            engine.RegisterQuery(codeQuery.Object);
-
-            // Act
-            var response = await controller.List(0, 2, "Moana", null);
-
-            // Assert
-            Assert.Equal(0, response.Value?.Page);
-            Assert.Equal(2, response.Value?.Count);
-            Assert.NotEmpty(response.Value?.Items);
-        }
-
-        [Fact]
-        public async Task ListHandlesMissingUser()
-        {
-            var programs = ListResult.New(new[]
-            {
-                new Data.CodeProgram(),
-                new Data.CodeProgram()
-            });
-
-            // Arrange
-            var logger = new FakeLogger<ProgramsController>();
-            var engine = new FakeEngine();
-            var controller = new ProgramsController(
-                logger,
-                engine);
-            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-            var codeQuery = new Mock<CodeData>();
-            codeQuery.Setup(q => q.RetrieveForUserAsync("Mia", 0, 2, false))
-                .Returns(Task.FromResult(programs));
-            engine.RegisterQuery(codeQuery.Object);
-
-            // Act
-            var response = await controller.List(0, 2, null, null);
-
-            // Assert
-            Assert.Equal(0, response.Value?.Page);
-            Assert.Equal(2, response.Value?.Count);
-            Assert.NotEmpty(response.Value?.Items);
         }
 
         [Fact]
@@ -355,7 +229,37 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(0, response.Value?.Page);
             Assert.Equal(2, response.Value?.Count);
-            Assert.NotEmpty(response.Value?.Items);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.CodeProgram>());
+        }
+
+        [Fact]
+        public async Task ListHandlesMissingUser()
+        {
+            var programs = ListResult.New(new[]
+            {
+                new Data.CodeProgram(),
+                new Data.CodeProgram()
+            });
+
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            var codeQuery = new Mock<CodeData>();
+            codeQuery.Setup(q => q.RetrieveForUserAsync("Mia", 0, 2, false))
+                .Returns(Task.FromResult(programs));
+            engine.RegisterQuery(codeQuery.Object);
+
+            // Act
+            var response = await controller.List(0, 2, null, null);
+
+            // Assert
+            Assert.Equal(0, response.Value?.Page);
+            Assert.Equal(2, response.Value?.Count);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.CodeProgram>());
         }
 
         [Fact]
@@ -389,24 +293,37 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostHandlesRequestWithoutUser()
+        public async Task ListHandlesStudentRequest()
         {
+            var programs = ListResult.New(new[]
+            {
+                new Data.CodeProgram(),
+                new Data.CodeProgram()
+            });
+
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
             var engine = new FakeEngine();
             var controller = new ProgramsController(
                 logger,
                 engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Student);
+            var codeQuery = new Mock<CodeData>();
+            codeQuery.Setup(q => q.RetrieveForUserAsync("Mia", 0, 2, false))
+                .Returns(Task.FromResult(programs));
+            engine.RegisterQuery(codeQuery.Object);
 
             // Act
-            var response = await controller.Post(null, "Mia");
+            var response = await controller.List(0, 2, "Moana", null);
 
             // Assert
-            Assert.IsType<UnauthorizedResult>(response.Result);
+            Assert.Equal(0, response.Value?.Page);
+            Assert.Equal(2, response.Value?.Count);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.CodeProgram>());
         }
 
         [Fact]
-        public async Task PostHandlesMissingData()
+        public async Task ListHandlesUnknownUser()
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
@@ -417,10 +334,59 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
 
             // Act
-            var response = await controller.Post(null, "Mia");
+            var response = await controller.List(0, 2, "Moana", null);
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(response.Result);
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ListRetrievesPrograms()
+        {
+            var programs = ListResult.New(new[]
+            {
+                new Data.CodeProgram(),
+                new Data.CodeProgram()
+            });
+
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
+                .Returns(Task.FromResult((Data.User?)new Data.User { Name = "Moana" }));
+            var codeQuery = new Mock<CodeData>();
+            codeQuery.Setup(q => q.RetrieveForUserAsync("Moana", 0, 2, false))
+                .Returns(Task.FromResult(programs));
+            engine.RegisterQuery(codeQuery.Object);
+
+            // Act
+            var response = await controller.List(0, 2, "Moana", null);
+
+            // Assert
+            Assert.Equal(0, response.Value?.Page);
+            Assert.Equal(2, response.Value?.Count);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Transfer.CodeProgram>());
+        }
+
+        [Fact]
+        public async Task ListUnhandlesRequestWithoutUser()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.List(0, 2, "Moana", null);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(response.Result);
         }
 
         [Fact]
@@ -456,17 +422,35 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostHandlesStudent()
+        public async Task PostHandlesMissingData()
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
             var engine = new FakeEngine();
-            engine.ExpectCommand<StoreProgram>(
-                CommandResult.New(2, new Data.CodeProgram { }));
             var controller = new ProgramsController(
                 logger,
                 engine);
-            engine.ConfigureUser(controller, "Mia", Data.UserRole.Student);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+
+            // Act
+            var response = await controller.Post(null, "Mia");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PostHandlesMissingUser()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
+            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
+                .Returns(Task.FromResult((Data.User?)null));
 
             // Act
             var code = new Transfer.CodeProgram
@@ -477,14 +461,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(code, "Moana");
 
             // Assert
-            var result = Assert.IsType<ExecutionResult<Transfer.CodeProgram>>(response.Value);
-            Assert.True(result.Successful, "Expected result to be successful");
-            var command = Assert.IsType<StoreProgram>(engine.LastCommand);
-            Assert.Equal("go()", command.Code);
-            Assert.Equal("hōtaka", command.Name);
-            Assert.Equal("Mia", command.UserName);
-            Assert.True(command.RequireName);
-            engine.Verify();
+            Assert.IsType<NotFoundResult>(response.Result);
         }
 
         [Fact]
@@ -522,7 +499,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task PostHandlesMissingUser()
+        public async Task PostHandlesRequestWithoutUser()
         {
             // Arrange
             var logger = new FakeLogger<ProgramsController>();
@@ -530,9 +507,26 @@ namespace NaoBlocks.Web.Tests.Controllers
             var controller = new ProgramsController(
                 logger,
                 engine);
-            (_, var userQuery) = engine.ConfigureUser(controller, "Mia", Data.UserRole.Teacher);
-            userQuery.Setup(q => q.RetrieveByNameAsync("Moana"))
-                .Returns(Task.FromResult((Data.User?)null));
+
+            // Act
+            var response = await controller.Post(null, "Mia");
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PostHandlesStudent()
+        {
+            // Arrange
+            var logger = new FakeLogger<ProgramsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StoreProgram>(
+                CommandResult.New(2, new Data.CodeProgram { }));
+            var controller = new ProgramsController(
+                logger,
+                engine);
+            engine.ConfigureUser(controller, "Mia", Data.UserRole.Student);
 
             // Act
             var code = new Transfer.CodeProgram
@@ -543,7 +537,14 @@ namespace NaoBlocks.Web.Tests.Controllers
             var response = await controller.Post(code, "Moana");
 
             // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
+            var result = Assert.IsType<ExecutionResult<Transfer.CodeProgram>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            var command = Assert.IsType<StoreProgram>(engine.LastCommand);
+            Assert.Equal("go()", command.Code);
+            Assert.Equal("hōtaka", command.Name);
+            Assert.Equal("Mia", command.UserName);
+            Assert.True(command.RequireName);
+            engine.Verify();
         }
     }
 }

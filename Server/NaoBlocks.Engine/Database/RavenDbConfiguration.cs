@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Engine.Database
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace NaoBlocks.Engine.Database
 {
     /// <summary>
     /// Defines the configuration settings for a database connection.
@@ -8,6 +10,7 @@
         /// <summary>
         /// Gets or sets the certificate to use when connecting to a non-embedded database.
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public string? Certificate { get; set; }
 
         /// <summary>
@@ -16,18 +19,14 @@
         public string? DataDirectory { get; set; }
 
         /// <summary>
-        /// Gets or sets the path to the .Net framework.
+        /// Gets or sets an optional server URL.
         /// </summary>
-        public string? DotNetPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the .Net framework to use.
-        /// </summary>
-        public string? FrameworkVersion { get; set; }
+        public string? EmbeddedServerUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the database name.
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public string? Name { get; set; }
 
         /// <summary>

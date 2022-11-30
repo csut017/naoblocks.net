@@ -1,5 +1,3 @@
-using Moq;
-using Moq.Protected;
 using NaoBlocks.Common;
 using Newtonsoft.Json;
 using System;
@@ -374,7 +372,7 @@ namespace NaoBlocks.Client.Common.Tests
             var version = await connection.RetrieveServerVersion();
 
             // Assert
-            Assert.Equal(version?.Version, "1.2.3.4");
+            Assert.Equal("1.2.3.4", version?.Version);
         }
 
         [Fact]

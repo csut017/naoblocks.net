@@ -82,7 +82,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<ListResult<string>>(response.Value);
             string[] expectedItems = expected.Split('\n');
             Assert.Equal(expectedItems.Length, result.Count);
-            Assert.Equal(expectedItems, result.Items);
+            Assert.Equal(expectedItems, result.Items ?? Array.Empty<string>());
         }
 
         [Theory]

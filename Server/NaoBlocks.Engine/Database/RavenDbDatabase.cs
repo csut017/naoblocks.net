@@ -4,6 +4,7 @@ using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Embedded;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 
 namespace NaoBlocks.Engine.Database
@@ -90,21 +91,11 @@ namespace NaoBlocks.Engine.Database
             IDocumentStore store;
             var options = new ServerOptions
             {
-                ServerUrl = "http://127.0.0.1:8090"
+                ServerUrl = configuration?.EmbeddedServerUrl ?? "http://127.0.0.1:8090"
             };
             if (configuration != null)
             {
                 logger.LogInformation("Setting database options");
-                if (!string.IsNullOrWhiteSpace(configuration.DotNetPath))
-                {
-                    options.DotNetPath = configuration.DotNetPath;
-                    logger.LogInformation("=> DotNetPath={path}", options.DotNetPath);
-                }
-                if (!string.IsNullOrWhiteSpace(configuration.FrameworkVersion))
-                {
-                    options.FrameworkVersion = configuration.FrameworkVersion;
-                    logger.LogInformation("=> FrameworkVersion={version}", options.FrameworkVersion);
-                }
                 if (!string.IsNullOrWhiteSpace(configuration.DataDirectory))
                 {
                     options.DataDirectory = configuration.DataDirectory;
@@ -127,6 +118,7 @@ namespace NaoBlocks.Engine.Database
             return store;
         }
 
+        [ExcludeFromCodeCoverage(Justification = "This method requires connecting to an external database server")]
         private static async Task<IDocumentStore> InitialiseRemoteDatabase(ILogger<RavenDbDatabase> logger, RavenDbConfiguration? configuration, string certificatePath)
         {
             IDocumentStore store;

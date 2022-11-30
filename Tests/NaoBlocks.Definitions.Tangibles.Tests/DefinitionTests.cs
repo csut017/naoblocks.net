@@ -1,6 +1,8 @@
 using Moq;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Data;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,7 +42,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
 
             // Assert
             var child = description.SingleOrDefault(c => c.Name == "Blocks");
-            Assert.NotEmpty(child?.Children);
+            Assert.NotEmpty(child?.Children ?? new List<UIDefinitionItem>());
         }
 
         [Fact]
@@ -55,7 +57,7 @@ namespace NaoBlocks.Definitions.Tangibles.Tests
 
             // Assert
             var child = description.SingleOrDefault(c => c.Name == "Images");
-            Assert.NotEmpty(child?.Children);
+            Assert.NotEmpty(child?.Children ?? new List<UIDefinitionItem>());
         }
 
         [Fact]

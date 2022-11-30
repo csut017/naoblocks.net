@@ -1,6 +1,4 @@
-﻿using NaoBlocks.Client.Common;
-
-namespace NaoBlocks.Client.Terminal
+﻿namespace NaoBlocks.Client.Terminal
 {
     /// <summary>
     /// The base class for all user instructions.
@@ -64,8 +62,8 @@ namespace NaoBlocks.Client.Terminal
                     var value = string.Empty;
                     if (pos > 0)
                     {
-                        name = arg[2..(pos - 1)];
-                        value = arg[pos..];
+                        name = arg[2..pos];
+                        value = arg[(pos + 1)..];
                     }
 
                     if (namedArgs.TryGetValue(name, out var existing))

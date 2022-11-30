@@ -3,6 +3,7 @@ using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Controllers;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.WebSockets;
@@ -13,6 +14,25 @@ namespace NaoBlocks.Web.Tests.Controllers
 {
     public class ClientsControllerTests
     {
+        [Fact]
+        public async Task GetLogHandlesMissingConnection()
+        {
+            // Arrange
+            var logger = new FakeLogger<ClientsController>();
+            var hub = new Mock<IHub>();
+            hub.Setup(h => h.GetClient(1))
+                .Returns((IClientConnection?)null);
+            var controller = new ClientsController(
+                logger,
+                hub.Object);
+
+            // Act
+            var response = await controller.GetLog("1");
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
         [Fact]
         public async Task GetLogRetrievesLogs()
         {
@@ -39,26 +59,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.NotNull(response.Value);
             Assert.Equal(2, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.NotEmpty(response.Value?.Items);
-        }
-
-        [Fact]
-        public async Task GetLogHandlesMissingConnection()
-        {
-            // Arrange
-            var logger = new FakeLogger<ClientsController>();
-            var hub = new Mock<IHub>();
-            hub.Setup(h => h.GetClient(1))
-                .Returns((IClientConnection?)null);
-            var controller = new ClientsController(
-                logger,
-                hub.Object);
-
-            // Act
-            var response = await controller.GetLog("1");
-
-            // Assert
-            Assert.IsType<NotFoundResult>(response.Result);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<ClientMessage>());
         }
 
         [Fact]
@@ -79,33 +80,6 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
-        public void ListRetrievesViaQuery()
-        {
-            // Arrange
-            var logger = new FakeLogger<ClientsController>();
-            var hub = new Mock<IHub>();
-            hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
-                .Returns(new[] {
-                    new WebSocketClientConnection(
-                        new Mock<WebSocket>().Object,
-                        ClientConnectionType.Robot,
-                        new Mock<IMessageProcessor>().Object, 
-                        new FakeLogger<WebSocketClientConnection>())
-                });
-            var controller = new ClientsController(
-                logger,
-                hub.Object);
-
-            // Act
-            var response = controller.List(ClientConnectionType.Robot, null, null);
-
-            // Assert
-            Assert.Equal(1, response.Value?.Count);
-            Assert.Equal(0, response.Value?.Page);
-            Assert.NotEmpty(response.Value?.Items);
-        }
-
-        [Fact]
         public void ListHandlesNullData()
         {
             // Arrange
@@ -122,7 +96,34 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Assert
             Assert.Equal(0, response.Value?.Count);
             Assert.Equal(0, response.Value?.Page);
-            Assert.Empty(response.Value?.Items);
+            Assert.Empty(response.Value?.Items ?? Array.Empty<Web.Dtos.CommunicationsClient>());
+        }
+
+        [Fact]
+        public void ListRetrievesViaQuery()
+        {
+            // Arrange
+            var logger = new FakeLogger<ClientsController>();
+            var hub = new Mock<IHub>();
+            hub.Setup(h => h.GetClients(ClientConnectionType.Robot))
+                .Returns(new[] {
+                    new WebSocketClientConnection(
+                        new Mock<WebSocket>().Object,
+                        ClientConnectionType.Robot,
+                        new Mock<IMessageProcessor>().Object,
+                        new FakeLogger<WebSocketClientConnection>())
+                });
+            var controller = new ClientsController(
+                logger,
+                hub.Object);
+
+            // Act
+            var response = controller.List(ClientConnectionType.Robot, null, null);
+
+            // Assert
+            Assert.Equal(1, response.Value?.Count);
+            Assert.Equal(0, response.Value?.Page);
+            Assert.NotEmpty(response.Value?.Items ?? Array.Empty<Web.Dtos.CommunicationsClient>());
         }
     }
 }
