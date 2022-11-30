@@ -1,3 +1,4 @@
+import { NamedValue } from "./named-value";
 import { Toolbox } from "./toolbox";
 
 export class RobotType {
@@ -7,6 +8,8 @@ export class RobotType {
     allowDirectLogging: boolean = false;
     hasToolbox: boolean = false;
     isNew: boolean;
+    
+    customValues?: NamedValue[];
     toolboxes?: Toolbox[];
 
     constructor(isNew: boolean = false) {

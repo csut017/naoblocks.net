@@ -53,7 +53,8 @@ import { ExportDataComponent } from './components/export-data/export-data.compon
 import { RobotImportDialogComponent } from './components/robot-import-dialog/robot-import-dialog.component';
 import { DragAndDropDirective } from './drag-and-drop.directive';
 import { UserImportDialogComponent } from './components/user-import-dialog/user-import-dialog.component';
-
+import { RobotTypeAllowedValuesListComponent } from './components/robot-type-allowed-values-list/robot-type-allowed-values-list.component';
+import { NamedValueEditorComponent } from './components/named-value-editor/named-value-editor.component';
 
 @NgModule({
   declarations: [
@@ -99,7 +100,9 @@ import { UserImportDialogComponent } from './components/user-import-dialog/user-
     ReportSettingsComponent,
     ExportDataComponent,
     RobotImportDialogComponent,
-    UserImportDialogComponent
+    UserImportDialogComponent,
+    RobotTypeAllowedValuesListComponent,
+    NamedValueEditorComponent
   ],
   imports: [
     BrowserModule,

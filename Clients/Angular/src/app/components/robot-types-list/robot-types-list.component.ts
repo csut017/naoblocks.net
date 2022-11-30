@@ -223,6 +223,12 @@ export class RobotTypesListComponent implements OnInit {
     this.currentItemChanged.emit(`${this.currentItem.name} [Toolboxes]`);
   }
 
+  viewAllowedValues(): void {
+    this.view = 'allowedValues';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(`${this.currentItem.name} [Allowed Values]`);
+  }
+
   exportList(): void {
     console.log('[RobotTypesList] Showing export settings for robot list');
     let settings = new ReportDialogSettings('Export robot List', false);

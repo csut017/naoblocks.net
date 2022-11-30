@@ -36,6 +36,7 @@
                         <mat-icon>arrow_drop_down</mat-icon>
                     </button>
                     <mat-menu #viewMenu="matMenu">
+                        <button mat-menu-item (click)="viewAllowedValues()">Allowed Values</button>
                         <button mat-menu-item (click)="viewToolboxes()">Toolboxes</button>
                     </mat-menu>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
@@ -107,5 +108,8 @@
     </div>
     <div *ngSwitchCase="'toolboxes'">
         <app-toolbox-list [item]="currentItem" (closed)="onClosed($event)"></app-toolbox-list>
+    </div>
+    <div *ngSwitchCase="'allowedValues'">
+        <app-robot-type-allowed-values-list [item]="currentItem" (closed)="onClosed($event)"></app-robot-type-allowed-values-list>
     </div>
 </div>
