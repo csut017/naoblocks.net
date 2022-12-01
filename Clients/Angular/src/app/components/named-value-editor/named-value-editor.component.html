@@ -1,10 +1,22 @@
-<h1 mat-dialog-title>
+<form [formGroup]="form" class="editor lower-3" (ngSubmit)="doSave()">
+  <h1 mat-dialog-title>
     {{data.title}}
-</h1>
-<div mat-dialog-content>
-  TODO
-</div>
-<div mat-dialog-actions>
-  <button mat-button (click)="doCancel()">Cancel</button>
-  <button mat-button [mat-dialog-close]="true" cdkFocusInitial color="primary">{{data.action}}</button>
-</div>
+  </h1>
+  <div mat-dialog-content>
+    <mat-form-field class="fill-width">
+      <mat-label>Name</mat-label>
+      <input matInput placeholder="Name" formControlName="name" required cdkFocusInitial>
+      <mat-error>
+        Please provide a name
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field class="fill-width">
+      <mat-label>Value</mat-label>
+      <input matInput placeholder="Value" formControlName="value">
+    </mat-form-field>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="doCancel()">Cancel</button>
+    <button mat-button (click)="doSave()" color="primary">{{data.action}}</button>
+  </div>
+</form>

@@ -1,5 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { NamedValue } from 'src/app/data/named-value';
@@ -25,16 +26,16 @@ export class RobotTypeAllowedValuesListComponent implements OnChanges {
   selection = new SelectionModel<NamedValue>(true, []);
 
   constructor(private robotTypeService: RobotTypeService,
+    private snackBar: MatSnackBar,
     private authenticationService: AuthenticationService,
     private deleteConfirm: DeletionConfirmationService,
-    private editorService: NamedValueEditorService)
-     {  }
+    private editorService: NamedValueEditorService) { }
 
   ngOnChanges(_: SimpleChanges): void {
-    this.loadTemplateList();
+    this.loadValues();
   }
 
-  private loadTemplateList(): void {
+  private loadValues(): void {
     if (!this.item) return;
     this.isLoading = true;
     this.robotTypeService.get(this.item.id!)
@@ -48,10 +49,31 @@ export class RobotTypeAllowedValuesListComponent implements OnChanges {
   }
 
   add() {
+    console.groupCollapsed('[RobotTypeAllowedValuesListComponent] Adding new value');
     let settings = new NamedValueEdit('Add Allowed Value', new NamedValue('', ''));
     this.editorService.show(settings)
       .subscribe(result => {
-        // TODO
+        if (!result) {
+          console.log('Cancelling');
+          console.groupEnd();
+          return;
+        }
+
+        console.log('Updating');
+        console.log(result);
+        let newValues = [...this.dataSource.data];
+        newValues.push(result);
+        this.robotTypeService.updateAllowedValues(this.item!, newValues)
+          .subscribe(res => {
+            if (res.successful) {
+              this.dataSource = new MatTableDataSource(newValues);
+              this.snackBar.open(`Added value ${result.name}`);
+              this.selection.clear();
+            } else {
+              this.snackBar.open(`ERROR: Unable to add value ${result.name}`);
+            }
+            console.groupEnd();
+          });
       });
   }
 
@@ -78,9 +100,38 @@ export class RobotTypeAllowedValuesListComponent implements OnChanges {
     this.closed.emit(false);
   }
 
-
   edit(): void {
-    // TODO
+    console.groupCollapsed('[RobotTypeAllowedValuesListComponent] Editing value');
+    let value: NamedValue = this.selection.selected[0];
+    let settings = new NamedValueEdit('Edit Allowed Value', new NamedValue(value.name, value.value));
+    this.editorService.show(settings)
+      .subscribe(result => {
+        if (!result) {
+          console.log('Cancelling');
+          console.groupEnd();
+          return;
+        }
+
+        console.log('Updating');
+        console.log(result);
+        let newValues = [...this.dataSource.data].filter(v => v.name != value.name);
+        newValues.push(result);
+        this.robotTypeService.updateAllowedValues(this.item!, newValues)
+          .subscribe(res => {
+            if (res.successful) {
+              this.dataSource = new MatTableDataSource(newValues);
+              if (value.name == result.name){
+                this.snackBar.open(`Updated value ${value.name}`);
+              }else {
+                this.snackBar.open(`Updated value ${value.name} to ${result.name}`);
+              }
+              this.selection.clear();
+            } else {
+              this.snackBar.open(`ERROR: Unable to update value ${value.name}`);
+            }
+            console.groupEnd();
+          });
+      });
   }
 
   isAllSelected() {

@@ -1,8 +1,11 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using System.Diagnostics;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// A named value.
     /// </summary>
+    [DebuggerDisplay("{Name}->{Value}")]
     public class NamedValue
     {
         /// <summary>

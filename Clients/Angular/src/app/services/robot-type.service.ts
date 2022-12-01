@@ -10,6 +10,7 @@ import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
 import { Toolbox } from '../data/toolbox';
+import { NamedValue } from '../data/named-value';
 
 @Injectable({
   providedIn: 'root'
@@ -185,6 +186,22 @@ export class RobotTypeService extends ClientService {
           result.output = robotType;
         }),
         catchError(this.handleError('uploadBlockSet', msg => new ExecutionResult<RobotType>(undefined, msg)))
+      );
+  }
+
+  updateAllowedValues(robotType: RobotType, values: NamedValue[]): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/values`;
+    this.log(`Updating values for robot type ${robotType.id}`);
+    const data = {
+      items: values,
+    };
+    return this.http.post<ExecutionResult<any>>(url, data)
+      .pipe(
+        tap(result => {
+          this.log('Updated values');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('updateAllowedValues', msg => new ExecutionResult<RobotType>(undefined, msg)))
       );
   }
 }

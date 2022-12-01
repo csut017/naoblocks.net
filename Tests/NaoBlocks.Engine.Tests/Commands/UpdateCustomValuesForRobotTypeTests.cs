@@ -89,6 +89,39 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ExecuteIgnoresNullValues()
+        {
+            var command = new UpdateCustomValuesForRobotType
+            {
+                Name = "Mihīni",
+                Values = new[]
+                {
+                    new NamedValue {Name = "One", Value = "Tahi"},
+                    null
+                }
+            };
+            var databaseRobotType = new RobotType { Name = "Mihīni" };
+            databaseRobotType.CustomValues.Add(new NamedValue { Name = "One", Value = "Tahi" });
+            using var store = InitialiseDatabase(
+                databaseRobotType);
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful, "Command was not successful");
+                await engine.CommitAsync();
+            }
+
+            using var verifySession = store.OpenSession();
+            var loadedRobotType = verifySession.Query<RobotType>().FirstOrDefault();
+            Assert.Equal(
+                new[] { "One=Tahi" },
+                loadedRobotType?.CustomValues.Select(nv => $"{nv.Name}={nv.Value}").ToArray());
+        }
+
+        [Fact]
         public async Task ExecuteSavesSettings()
         {
             var command = new UpdateCustomValuesForRobotType
@@ -187,6 +220,27 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ValidateChecksForDuplicateNameInData()
+        {
+            var command = new UpdateCustomValuesForRobotType
+            {
+                Name = "Mihīni",
+                Values = new[]
+                {
+                    NamedValue.New("Exists", string.Empty),
+                    NamedValue.New("Exists", string.Empty),
+                }
+            };
+            var robotType = new RobotType { Name = "Mihīni" };
+            using var store = InitialiseDatabase(
+                robotType);
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "Value 'Exists' is a duplicated name" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
         public async Task ValidateChecksForExistingRobotType()
         {
             var command = new UpdateCustomValuesForRobotType
@@ -201,11 +255,35 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ValidateIgnoresNullValues()
+        {
+            var command = new UpdateCustomValuesForRobotType
+            {
+                Name = "Mihīni",
+                Values = new[]
+                {
+                    NamedValue.New("Exists", string.Empty),
+                    null,
+                }
+            };
+            using var store = InitialiseDatabase(
+                new RobotType { Name = "Mihīni" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+        }
+
+        [Fact]
         public async Task ValidatePassesChecks()
         {
             var command = new UpdateCustomValuesForRobotType
             {
-                Name = "Mihīni"
+                Name = "Mihīni",
+                Values = new[]
+                {
+                    NamedValue.New("Exists", string.Empty),
+                }
             };
             using var store = InitialiseDatabase(
                 new RobotType { Name = "Mihīni" });

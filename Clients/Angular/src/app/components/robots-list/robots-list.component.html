@@ -48,7 +48,8 @@
             </div>
         </div>
 
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
+        <div class="table-container">
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 data-list">
 
             <ng-container matColumnDef="machineName">
                 <th mat-header-cell *matHeaderCellDef> Machine Name </th>
@@ -87,6 +88,7 @@
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         </table>
+        </div>
     </div>
     <div *ngSwitchCase="'editor'">
         <app-robot-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-editor>

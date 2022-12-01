@@ -20,7 +20,7 @@ namespace NaoBlocks.Engine.Commands
         /// <summary>
         /// Gets or sets the custom values.
         /// </summary>
-        public IEnumerable<NamedValue> Values { get; set; } = Array.Empty<NamedValue>();
+        public IEnumerable<NamedValue?> Values { get; set; } = Array.Empty<NamedValue?>();
 
         /// <summary>
         /// Attempts to restore the command from the database.
@@ -66,6 +66,23 @@ namespace NaoBlocks.Engine.Commands
                 }
             }
 
+            if (!errors.Any())
+            {
+                // The existing names should be unique
+                var names = new HashSet<string>();
+                foreach (var value in this.Values.Where(v => v != null))
+                {
+                    if (names.Contains(value!.Name))
+                    {
+                        errors.Add(this.GenerateError($"Value '{value.Name}' is a duplicated name"));
+                    }
+                    else
+                    {
+                        names.Add(value.Name);
+                    }
+                }
+            }
+
             return errors.AsEnumerable();
         }
 
@@ -81,9 +98,9 @@ namespace NaoBlocks.Engine.Commands
             ValidateExecutionState(this.robot);
             var robotType = this.robot!;
             robotType.CustomValues.Clear();
-            foreach (var value in this.Values)
+            foreach (var value in this.Values.Where(v => v != null))
             {
-                robotType.CustomValues.Add(value);
+                robotType.CustomValues.Add(value!);
             }
 
             return Task.FromResult(CommandResult.New(this.Number, robotType));

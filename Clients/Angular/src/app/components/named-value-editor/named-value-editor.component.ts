@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NamedValueEdit } from 'src/app/data/named-value-edit';
 
@@ -9,12 +10,26 @@ import { NamedValueEdit } from 'src/app/data/named-value-edit';
 })
 export class NamedValueEditorComponent {
 
+  form: UntypedFormGroup;
+
   constructor(
     public dialogRef: MatDialogRef<NamedValueEditorComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: NamedValueEdit) { }
+    @Inject(MAT_DIALOG_DATA) public data: NamedValueEdit) {
+      this.form = new UntypedFormGroup({
+        name: new UntypedFormControl(data.value.name, [Validators.required]),
+        value: new UntypedFormControl(data.value.value, []),
+      });
+     }
 
   doCancel(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(null);
+  }
+
+  doSave() {
+    if (!this.form.valid) return;
+    this.data.value.name = this.form.get('name')?.value;
+    this.data.value.value = this.form.get('value')?.value || '';
+    this.dialogRef.close(this.data.value);
   }
 
 }
