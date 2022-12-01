@@ -139,7 +139,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug("Retrieved robot");
-            return Transfer.Robot.FromModel(robot);
+            return Transfer.Robot.FromModel(robot, true);
         }
 
         /// <summary>

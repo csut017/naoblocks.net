@@ -42,7 +42,7 @@ export class RobotValuesListComponent {
       .subscribe(data => {
         if (!this.authenticationService.checkHttpResponse(data))
           return;
-        let values = data.output?.customValues || [];
+        let values = data.output?.values || [];
         this.dataSource = new MatTableDataSource(values);
         this.isLoading = false;
       });
@@ -93,7 +93,20 @@ export class RobotValuesListComponent {
   }
 
   doDelete(): void {
-    // TODO
+    console.groupCollapsed('[RobotValuesListComponent] Delete value(s)');
+    const count = this.selection.selected.length;
+    let newValues = [...this.dataSource.data].filter(v => !this.selection.isSelected(v));
+    this.robotService.updateValues(this.item!, newValues)
+      .subscribe(res => {
+        if (res.successful) {
+          this.dataSource = new MatTableDataSource(newValues);
+          this.snackBar.open(`Deleted ${count} values`);
+          this.selection.clear();
+        } else {
+          this.snackBar.open(`ERROR: Unable to delete value(s)`);
+        }
+        console.groupEnd();
+      });
   }
 
   doClose() {
@@ -120,9 +133,9 @@ export class RobotValuesListComponent {
           .subscribe(res => {
             if (res.successful) {
               this.dataSource = new MatTableDataSource(newValues);
-              if (value.name == result.name){
+              if (value.name == result.name) {
                 this.snackBar.open(`Updated value ${value.name}`);
-              }else {
+              } else {
                 this.snackBar.open(`Updated value ${value.name} to ${result.name}`);
               }
               this.selection.clear();

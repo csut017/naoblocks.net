@@ -93,7 +93,20 @@ export class RobotTypeAllowedValuesListComponent implements OnChanges {
   }
 
   doDelete(): void {
-    // TODO
+    console.groupCollapsed('[RobotTypeAllowedValuesListComponent] Delete allowed value(s)');
+    const count = this.selection.selected.length;
+    let newValues = [...this.dataSource.data].filter(v => !this.selection.isSelected(v));
+    this.robotTypeService.updateAllowedValues(this.item!, newValues)
+      .subscribe(res => {
+        if (res.successful) {
+          this.dataSource = new MatTableDataSource(newValues);
+          this.snackBar.open(`Deleted ${count} values`);
+          this.selection.clear();
+        } else {
+          this.snackBar.open(`ERROR: Unable to delete value(s)`);
+        }
+        console.groupEnd();
+      });
   }
 
   doClose() {

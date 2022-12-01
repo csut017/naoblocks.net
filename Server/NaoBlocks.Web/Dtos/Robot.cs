@@ -1,4 +1,6 @@
-﻿using Data = NaoBlocks.Engine.Data;
+﻿using NaoBlocks.Engine.Data;
+
+using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -38,6 +40,11 @@ namespace NaoBlocks.Web.Dtos
         public string? Type { get; set; }
 
         /// <summary>
+        /// Gets the allowed custom values.
+        /// </summary>
+        public IList<NamedValue>? Values { get; private set; }
+
+        /// <summary>
         /// Gets or sets when the robot was added.
         /// </summary>
         public DateTime? WhenAdded { get; set; }
@@ -46,11 +53,12 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
+        /// <param name="includeDetails">Whether to include the details or not.</param>
         /// <returns>A new <see cref="Robot"/> instance containing the required properties.</returns>
-        public static Robot FromModel(Data.Robot value)
+        public static Robot FromModel(Data.Robot value, bool includeDetails = false)
         {
             var type = value.Type?.Name ?? value.RobotTypeId;
-            return new Robot
+            var output = new Robot
             {
                 FriendlyName = value.FriendlyName,
                 IsInitialised = value.IsInitialised,
@@ -60,6 +68,12 @@ namespace NaoBlocks.Web.Dtos
                 Type = string.IsNullOrEmpty(type) ? null : type,
                 WhenAdded = value.WhenAdded,
             };
+            if (includeDetails)
+            {
+                output.Values = value.CustomValues.ToList();
+            }
+
+            return output;
         }
     }
 }

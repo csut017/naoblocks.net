@@ -15,7 +15,7 @@ export class Robot {
     logs: RobotLog[] = [];
     filteredLogs: RobotLog[] = [];
 
-    customValues?: NamedValue[];
+    values?: NamedValue[];
 
     constructor(isNew: boolean = false) {
         this.isNew = isNew;
