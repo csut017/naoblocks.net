@@ -15,12 +15,7 @@
 
         /// <summary>
         /// Gets or sets the map to use.
-        /// </summary>
-        public int? Map { get; set; }
-
-        /// <summary>
-        /// Gets or sets the mode to use.
-        /// </summary>
-        public int? Mode { get; set; }
+        /// </summary>]
+        public Dictionary<string, string>? Values { get; set; }
     }
 }

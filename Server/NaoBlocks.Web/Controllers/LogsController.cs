@@ -132,10 +132,10 @@ namespace NaoBlocks.Web.Controllers
             switch (request.Action?.ToLowerInvariant() ?? "none")
             {
                 case "init":
-                    return await this.InitialiseRobotLog(robotId, request);
+                    return await this.InitialiseRobotLog(robot, request);
 
                 case "log":
-                    return await this.AddLogMessages(robotId, request);
+                    return await this.AddLogMessages(robot, request);
 
                 default:
                     return new Dtos.LogResult { Error = $"Unknown action '{request.Action}'" };
@@ -145,10 +145,10 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Adds a batch of messages.
         /// </summary>
-        /// <param name="robotId">The identifier of the robot.</param>
+        /// <param name="robot">The <see cref="Robot"/> to add the messages for.</param>
         /// <param name="request">The <see cref="Dtos.LogRequest"/> containing the messages.</param>
         /// <returns>A <see cref="Dtos.LogResult"/> containing the outcome.</returns>
-        private async Task<ActionResult<Dtos.LogResult>> AddLogMessages(string robotId, Dtos.LogRequest request)
+        private async Task<ActionResult<Dtos.LogResult>> AddLogMessages(Robot robot, Dtos.LogRequest request)
         {
             var batch = new Batch();
             var now = DateTime.UtcNow
@@ -164,7 +164,7 @@ namespace NaoBlocks.Web.Controllers
                 var addLog = new AddToRobotLog
                 {
                     Description = message,
-                    MachineName = robotId,
+                    MachineName = robot.MachineName,
                     UseLastConversationId = true,
                     SourceMessageType = ClientMessageType.RobotDebugMessage
                 };
@@ -219,14 +219,14 @@ namespace NaoBlocks.Web.Controllers
         /// <summary>
         /// Initialises a robot for logging.
         /// </summary>
-        /// <param name="robotId">The identifier of the robot.</param>
+        /// <param name="robot">The <see cref="Robot"/> to initialise the conversation for.</param>
         /// <param name="request">The <see cref="Dtos.LogRequest"/> containing the robot details.</param>
         /// <returns>A <see cref="Dtos.LogResult"/> containing the outcome.</returns>
-        private async Task<ActionResult<Dtos.LogResult>> InitialiseRobotLog(string robotId, Dtos.LogRequest request)
+        private async Task<ActionResult<Dtos.LogResult>> InitialiseRobotLog(Robot robot, Dtos.LogRequest request)
         {
             var startConversation = new StartRobotConversation
             {
-                Name = robotId,
+                Name = robot.MachineName,
                 Type = ConversationType.Logging
             };
 
@@ -241,12 +241,31 @@ namespace NaoBlocks.Web.Controllers
             var addLog = new AddToRobotLog
             {
                 Description = "Started new session",
-                MachineName = robotId,
+                MachineName = robot.MachineName,
                 Conversation = conversation,
                 SourceMessageType = ClientMessageType.StartProgram
             };
             if (!string.IsNullOrEmpty(request.Version)) addLog.Values.Add(new NamedValue { Name = "Version", Value = request.Version });
             result = await ExecuteCommand(addLog);
+            if (string.IsNullOrEmpty(result.Item1?.Error))
+            {
+                var values = new Dictionary<string, string>();
+                foreach (var value in robot.Type!.CustomValues)
+                {
+                    values[value!.Name] = value?.Value ?? string.Empty;
+                }
+
+                foreach (var value in robot.CustomValues)
+                {
+                    if (values.ContainsKey(value.Name))
+                    {
+                        values[value!.Name] = value?.Value ?? string.Empty;
+                    }
+                }
+
+                result.Item1!.Values = values;
+            }
+
             return result.Item1;
         }
     }

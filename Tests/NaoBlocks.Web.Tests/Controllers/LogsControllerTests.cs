@@ -573,5 +573,86 @@ namespace NaoBlocks.Web.Tests.Controllers
             var result = Assert.IsType<LogResult>(response.Value);
             Assert.Equal("Command is invalid: Testing", result.Error);
         }
+
+        [Fact]
+        public async Task PostsInitialiseIgnoresValuesNotOnType()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartRobotConversation>(CommandResult.New(1, new Data.Conversation { ConversationId = 2 }));
+            engine.ExpectCommand<AddToRobotLog>(CommandResult.New(2));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+            robot.CustomValues.Add(Data.NamedValue.New("Ignored", "1"));
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "init"
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Equal(
+                Array.Empty<string>(),
+                result.Values?.Select(kvp => $"{kvp.Key}={kvp.Value}").ToArray());
+        }
+
+        [Fact]
+        public async Task PostsInitialiseIncludesValues()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<StartRobotConversation>(CommandResult.New(1, new Data.Conversation { ConversationId = 2 }));
+            engine.ExpectCommand<AddToRobotLog>(CommandResult.New(2));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+            robot.CustomValues.Add(Data.NamedValue.New("Map", "1"));
+            robot.Type.CustomValues.Add(Data.NamedValue.New("Map", "2"));
+            robot.Type.CustomValues.Add(Data.NamedValue.New("Mode", "2"));
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "init"
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Equal(
+                new[] {
+                    "Map=1",
+                    "Mode=2"
+                },
+                result.Values?.Select(kvp => $"{kvp.Key}={kvp.Value}").ToArray());
+        }
     }
 }
