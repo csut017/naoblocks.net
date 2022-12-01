@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using NaoBlocks.Common;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,29 @@ namespace NaoBlocks.Web.Tests.Controllers
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(body ?? string.Empty));
             httpContext.Request.Body = stream;
             httpContext.Request.ContentLength = stream.Length;
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+        }
+
+        internal static void SetRequestFiles(this ControllerBase controller, params string[] files)
+        {
+            var httpContext = new DefaultHttpContext();
+            var formCollection = new Mock<IFormCollection>();
+            formCollection.Setup(f => f.Count).Returns(files.Length);
+            formCollection.Setup(f => f.Files.Count).Returns(files.Length);
+            for (var loop = 0; loop < files.Length; loop++)
+            {
+                var formFile = new Mock<IFormFile>();
+                var stream = new MemoryStream(Encoding.UTF8.GetBytes(files[loop]));
+                formCollection.Setup(f => f.Files[loop])
+                    .Returns(formFile.Object);
+                formFile.Setup(f => f.OpenReadStream())
+                    .Returns(stream);
+            }
+
+            httpContext.Request.Form = formCollection.Object;
             controller.ControllerContext = new ControllerContext
             {
                 HttpContext = httpContext

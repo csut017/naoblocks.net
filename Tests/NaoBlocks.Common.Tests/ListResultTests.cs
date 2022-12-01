@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using Xunit;
 
 namespace NaoBlocks.Common.Tests
@@ -10,9 +10,9 @@ namespace NaoBlocks.Common.Tests
         {
             var data = new string[] { "1", "Two", "Toru" };
             var result = ListResult.New(data);
-            Assert.Equal(data, result.Items);
-            Assert.Equal(3, result.Count);
-            Assert.Equal(0, result.Page);
+            Assert.Equal(data, result?.Items ?? Array.Empty<string>());
+            Assert.Equal(3, result?.Count);
+            Assert.Equal(0, result?.Page);
         }
 
         [Fact]
@@ -20,9 +20,9 @@ namespace NaoBlocks.Common.Tests
         {
             var data = new string[] { "1", "Two", "Toru" };
             var result = ListResult.New(data, 5, 2);
-            Assert.Equal(data, result.Items);
-            Assert.Equal(5, result.Count);
-            Assert.Equal(2, result.Page);
+            Assert.Equal(data, result?.Items ?? Array.Empty<string>());
+            Assert.Equal(5, result?.Count);
+            Assert.Equal(2, result?.Page);
         }
     }
 }

@@ -3,12 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
+using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
 using System.Net;
 using System.Text;
+
 using Data = NaoBlocks.Engine.Data;
+
 using Generators = NaoBlocks.Engine.Generators;
+
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -426,6 +431,32 @@ namespace NaoBlocks.Web.Controllers
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
                 command,
                 t => Transfer.RobotType.FromModel(t!));
+        }
+
+        /// <summary>
+        /// Updates the values on a robot type.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="values">The values to update.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{id}/values")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult>> PostValues(string id, Set<NamedValue> values)
+        {
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null) return NotFound();
+
+            this.logger.LogInformation($"Updating values for robot '{robotType?.Name}'");
+            var command = new UpdateCustomValuesForRobotType
+            {
+                Name = id,
+                Values = values?.Items ?? Array.Empty<NamedValue>()
+            };
+            return await this.executionEngine
+                .ExecuteForHttp(command);
         }
 
         /// <summary>

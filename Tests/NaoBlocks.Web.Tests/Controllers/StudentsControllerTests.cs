@@ -6,6 +6,7 @@ using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Controllers;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -690,6 +691,98 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.Equal(1, response.Count);
             Assert.Equal(0, response.Page);
             Assert.NotEmpty(response.Items ?? Array.Empty<Transfer.Student>());
+        }
+
+        [Fact]
+        public async Task ImportCallsCommand()
+        {
+            // Arrange
+            var students = new List<Data.User>();
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ParseUsersImport>(
+                CommandResult.New(1, students.AsReadOnly()));
+            var controller = new StudentsController(
+                logger,
+                engine);
+            controller.SetRequestFiles("first");
+
+            // Act
+            var response = await controller.Import("parse");
+
+            // Assert
+            Assert.IsType<ExecutionResult<ListResult<Transfer.User>>>(response.Value);
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task ImportChecksAction()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Import("unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportChecksForAnyFiles()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+            controller.SetRequestFiles();
+
+            // Act
+            var response = await controller.Import("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportChecksForFormInput()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+
+            // Act
+            var response = await controller.Import("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportChecksForOnlyOneFile()
+        {
+            // Arrange
+            var logger = new FakeLogger<StudentsController>();
+            var engine = new FakeEngine();
+            var controller = new StudentsController(
+                logger,
+                engine);
+            controller.SetRequestFiles("first", "second");
+
+            // Act
+            var response = await controller.Import("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
         }
 
         [Fact]

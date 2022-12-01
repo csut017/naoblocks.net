@@ -244,7 +244,15 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<ListResult<Transfer.User>>>> Import([FromQuery] string? action)
         {
-            var files = this.Request.Form.Files;
+            if (!"parse".Equals(action))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Action {action} is invalid"
+                });
+            }
+
+            var files = this.Request?.Form?.Files;
             if (files == null)
             {
                 return this.BadRequest(new
@@ -261,16 +269,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            if (!"parse".Equals(action))
-            {
-                return this.BadRequest(new
-                {
-                    Error = $"Action {action} is invalid"
-                });
-            }
-
             this.logger.LogInformation("Parsing students import");
-            using var inputStream = files.First().OpenReadStream();
+            using var inputStream = files[0].OpenReadStream();
             var command = new ParseUsersImport
             {
                 Data = inputStream,

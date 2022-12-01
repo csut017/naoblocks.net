@@ -3,11 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
+using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
 using System.Collections.ObjectModel;
+
 using Data = NaoBlocks.Engine.Data;
+
 using Generators = NaoBlocks.Engine.Generators;
+
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -146,7 +151,15 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<ListResult<Transfer.Robot>>>> Import([FromQuery] string? action)
         {
-            var files = this.Request.Form.Files;
+            if (!"parse".Equals(action))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Action {action} is invalid"
+                });
+            }
+
+            var files = this.Request?.Form?.Files;
             if (files == null)
             {
                 return this.BadRequest(new
@@ -163,16 +176,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            if (!"parse".Equals(action))
-            {
-                return this.BadRequest(new
-                {
-                    Error = $"Action {action} is invalid"
-                });
-            }
-
             this.logger.LogInformation("Parsing robots import");
-            using var inputStream = files.First().OpenReadStream();
+            using var inputStream = files[0].OpenReadStream();
             var command = new ParseRobotsImport
             {
                 Data = inputStream
@@ -255,6 +260,32 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<Data.Robot, Transfer.Robot>
                 (command, r => Transfer.Robot.FromModel(r!));
+        }
+
+        /// <summary>
+        /// Updates the values on a robot.
+        /// </summary>
+        /// <param name="id">The id of the robot.</param>
+        /// <param name="values">The values to update.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{id}/values")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult>> PostValues(string id, Set<NamedValue> values)
+        {
+            var robot = await this.executionEngine
+                .Query<RobotData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robot == null) return NotFound();
+
+            this.logger.LogInformation($"Updating values for robot '{robot?.MachineName}'");
+            var command = new UpdateCustomValuesForRobot
+            {
+                MachineName = id,
+                Values = values?.Items ?? Array.Empty<NamedValue>()
+            };
+            return await this.executionEngine
+                .ExecuteForHttp(command);
         }
 
         /// <summary>
