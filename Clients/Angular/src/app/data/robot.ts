@@ -1,3 +1,4 @@
+import { NamedValue } from './named-value';
 import { RobotLog } from './robot-log';
 
 export class Robot {
@@ -13,6 +14,8 @@ export class Robot {
     isInitialised: boolean = false;
     logs: RobotLog[] = [];
     filteredLogs: RobotLog[] = [];
+
+    customValues?: NamedValue[];
 
     constructor(isNew: boolean = false) {
         this.isNew = isNew;

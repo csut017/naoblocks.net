@@ -162,6 +162,12 @@ export class RobotsListComponent implements OnInit {
       });
   }
 
+  viewValues(): void {
+    this.view = 'values';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(`${this.currentItem?.machineName} [Values]`);
+  }
+
   exportDetails(): void {
     console.log('[RobotsListComponent] Showing export settings for details');
     let settings = new ReportDialogSettings('Export Details', true);

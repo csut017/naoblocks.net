@@ -220,13 +220,13 @@ export class RobotTypesListComponent implements OnInit {
   viewToolboxes(): void {
     this.view = 'toolboxes';
     this.currentItem = this.selection.selected[0];
-    this.currentItemChanged.emit(`${this.currentItem.name} [Toolboxes]`);
+    this.currentItemChanged.emit(`${this.currentItem?.name} [Toolboxes]`);
   }
 
   viewAllowedValues(): void {
     this.view = 'allowedValues';
     this.currentItem = this.selection.selected[0];
-    this.currentItemChanged.emit(`${this.currentItem.name} [Allowed Values]`);
+    this.currentItemChanged.emit(`${this.currentItem?.name} [Allowed Values]`);
   }
 
   exportList(): void {

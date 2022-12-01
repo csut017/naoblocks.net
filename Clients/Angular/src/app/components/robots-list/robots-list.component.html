@@ -31,6 +31,14 @@
                 </div>
                 <div>
                     <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
+                        [matMenuTriggerFor]="viewMenu">
+                        View
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </button>
+                    <mat-menu #viewMenu="matMenu">
+                        <button mat-menu-item (click)="viewValues()">Values</button>
+                    </mat-menu>
+                    <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
                         (click)="edit()">Edit</button>
                     <button mat-raised-button class="command-button" [disabled]="selection.isEmpty()"
                         (click)="delete()">Delete</button>
@@ -92,5 +100,8 @@
     </div>
     <div *ngSwitchCase="'editor'">
         <app-robot-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-editor>
+    </div>
+    <div *ngSwitchCase="'values'">
+        <app-robot-values-list [item]="currentItem" (closed)="onClosed($event)"></app-robot-values-list>
     </div>
 </div>

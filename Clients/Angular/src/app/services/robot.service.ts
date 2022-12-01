@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { Robot } from '../data/robot';
+import { NamedValue } from '../data/named-value';
 
 @Injectable({
   providedIn: 'root'
@@ -108,6 +109,22 @@ export class RobotService extends ClientService {
           }
         }),
         catchError(this.handleError('parseImportFile', msg => new ExecutionResult<ResultSet<Robot>>(new ResultSet<Robot>(), msg))),
+      );
+  }
+
+  updateValues(robotType: Robot, values: NamedValue[]): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/${robotType.id}/values`;
+    this.log(`Updating values for robot ${robotType.id}`);
+    const data = {
+      items: values,
+    };
+    return this.http.post<ExecutionResult<any>>(url, data)
+      .pipe(
+        tap(result => {
+          this.log('Updated values');
+          result.output = robotType;
+        }),
+        catchError(this.handleError('updateAllowedValues', msg => new ExecutionResult<Robot>(undefined, msg)))
       );
   }
 }
