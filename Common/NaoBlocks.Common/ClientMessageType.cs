@@ -101,6 +101,11 @@
         RobotError = 503,
 
         /// <summary>
+        /// The robot performed an action.
+        /// </summary>
+        RobotAction = 504,
+
+        /// <summary>
         /// A general error (e.g. message type not recognised).
         /// </summary>
         Error = 1000,

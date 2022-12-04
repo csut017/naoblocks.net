@@ -415,6 +415,134 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task PostsAddsLogLinesWithSubValues()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var commands = new List<CommandBase>();
+            var engine = new FakeEngine
+            {
+                OnValidate = c =>
+                {
+                    commands.AddRange(((Batch)c).Commands);
+                    return Array.Empty<CommandError>();
+                }
+            };
+            engine.ExpectCommand<Batch>(CommandResult.New(1));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "log",
+                Messages = new[] { "Testing", "5:Multi:Part:Message" }
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Null(result.Error);
+            engine.Verify();
+            var lines = commands.OfType<AddToRobotLog>()
+                .Select(c => c.Description)
+                .ToArray();
+            Assert.Equal(
+                new[]
+                {
+                    "Testing",
+                    "Multi:Part:Message"
+                },
+                lines);
+        }
+
+        [Fact]
+        public async Task PostsAddsLogLinesWithTemplate()
+        {
+            // Arrange
+            var logger = new FakeLogger<LogsController>();
+            var commands = new List<CommandBase>();
+            var engine = new FakeEngine
+            {
+                OnValidate = c =>
+                {
+                    commands.AddRange(((Batch)c).Commands);
+                    return Array.Empty<CommandError>();
+                }
+            };
+            engine.ExpectCommand<Batch>(CommandResult.New(1));
+            var query = new Mock<RobotData>();
+            var robot = new Data.Robot
+            {
+                Type = new Data.RobotType
+                {
+                    AllowDirectLogging = true
+                }
+            };
+
+            robot.Type.LoggingTemplates.Add(Data.NamedValue.New("status", "Status change:501:Status"));
+            engine.RegisterQuery(query.Object);
+            query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
+                .Returns(Task.FromResult<Data.Robot?>(robot));
+            var controller = new LogsController(
+                logger,
+                engine);
+
+            // Act
+            var request = new LogRequest
+            {
+                Action = "log",
+                Messages = new[] { "3:unknown", "4:status", "5:status:Stopped" }
+            };
+            var response = await controller.Post("Mihīni", request);
+
+            // Assert
+            var result = Assert.IsType<LogResult>(response.Value);
+            Assert.Null(result.Error);
+            engine.Verify();
+            var lines = commands.OfType<AddToRobotLog>()
+                .ToArray();
+            Assert.Equal(
+                new[]
+                {
+                    "unknown",
+                    "Status change",
+                    "Status change"
+                },
+                lines.Select(c => c.Description).ToArray());
+            Assert.Equal(
+                new[]
+                {
+                    ClientMessageType.Unknown,
+                    ClientMessageType.RobotStateUpdate,
+                    ClientMessageType.RobotStateUpdate,
+                },
+                lines.Select(c => c.SourceMessageType).ToArray());
+            var values = lines.SelectMany(l => l.Values.Select(v => $"{v.Name}->{v.Value}"))
+                .Where(v => !v.StartsWith("RobotTime"))
+                .ToArray();
+            Assert.Equal(
+                new[]
+                {
+                    "Status->",
+                    "Status->Stopped",
+                },
+                values);
+        }
+
+        [Fact]
         public async Task PostsAddsLogLinesWithTimeStamps()
         {
             // Arrange

@@ -26,6 +26,11 @@
         public bool IsDefault { get; set; }
 
         /// <summary>
+        /// Gets the logging templates.
+        /// </summary>
+        public IList<NamedValue> LoggingTemplates { get; private set; } = new List<NamedValue>();
+
+        /// <summary>
         /// Gets or sets the name of the robot type.
         /// </summary>
         public string Name { get; set; } = string.Empty;
