@@ -85,6 +85,25 @@ namespace NaoBlocks.Engine.Commands
                     this.robotType!));
         }
 
+        private void ParseArray(JsonElement definition, string propertyName, Action<JsonElement, int> parser)
+        {
+            if (definition.TryGetProperty(propertyName, out var toolboxes))
+            {
+                if (toolboxes.ValueKind == JsonValueKind.Array)
+                {
+                    var index = 0;
+                    foreach (var element in toolboxes.EnumerateArray())
+                    {
+                        parser(element, index++);
+                    }
+                }
+                else
+                {
+                    this.errors.Add($"Property '{propertyName}' is not a valid array");
+                }
+            }
+        }
+
         private void ParseBoolean(JsonElement element, string propertyName, Action<bool> setter)
         {
             if (element.TryGetProperty(propertyName, out var property))
@@ -112,22 +131,46 @@ namespace NaoBlocks.Engine.Commands
             this.ParseString(definition, "name", v => this.robotType.Name = v, true);
             this.ParseBoolean(definition, "isDefault", v => this.robotType.IsDefault = v);
             this.ParseBoolean(definition, "directLogging", v => this.robotType.AllowDirectLogging = v);
+            this.ParseArray(definition, "toolboxes", (element, index) =>
+            {
+                var toolbox = new Toolbox();
+                var name = $"toolbox #{index + 1}";
+                this.ParseString(element, "name", v => toolbox.Name = v, true, name);
+                this.robotType.Toolboxes.Add(toolbox);
+            });
+            this.ParseArray(definition, "values", (element, index) =>
+            {
+            });
+            this.ParseArray(definition, "templates", (element, index) =>
+            {
+            });
+
             if (this.errors.Any())
             {
                 this.robotType.Message = string.Join(",", this.errors);
             }
         }
 
-        private void ParseString(JsonElement element, string propertyName, Action<string> setter, bool isRequired = false)
+        private bool ParseString(JsonElement element, string propertyName, Action<string> setter, bool isRequired = false, string? name = null)
         {
             if (element.TryGetProperty(propertyName, out var property))
             {
                 setter(property.GetString() ?? string.Empty);
+                return true;
             }
-            else
+
+            if (isRequired)
             {
-                if (isRequired) this.errors.Add($"Property '{propertyName}' not set");
+                if (string.IsNullOrEmpty(name))
+                {
+                    this.errors.Add($"Property '{propertyName}' not set");
+                }
+                else
+                {
+                    this.errors.Add($"Property '{propertyName}' not set for {name}");
+                }
             }
+            return false;
         }
 
         private async Task ValidateRobotType(IDatabaseSession session, List<CommandError> errors)

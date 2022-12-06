@@ -1,6 +1,7 @@
 ﻿using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,7 +11,31 @@ namespace NaoBlocks.Engine.Tests.Commands
     public class ParseRobotTypeImportTests : DatabaseHelper
     {
         [Fact]
-        public async Task ExecuteAsyncChecksForDusplicateName()
+        public async Task ExecuteAsyncAddsToolbox()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"toolboxes\":[{\"name\":\"First\"}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Equal(
+                new[] { "First" },
+                output?.Toolboxes.Select(tb => tb.Name).ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksForDuplicateName()
         {
             // Arrange
             var command = new ParseRobotTypeImport();
@@ -51,6 +76,102 @@ namespace NaoBlocks.Engine.Tests.Commands
             var output = result.As<RobotType>().Output;
             Assert.Contains(
                 "Property 'name' not set",
+                output?.Message);
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksForToolboxName()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"toolboxes\":[{}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Contains(
+                "Property 'name' not set for toolbox #1",
+                output?.Message);
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksTemplatesIsArray()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"templates\":{}}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Contains(
+                "Property 'templates' is not a valid array",
+                output?.Message);
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksToolboxesIsArray()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"toolboxes\":{}}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Contains(
+                "Property 'toolboxes' is not a valid array",
+                output?.Message);
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksValuesIsArray()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"values\":{}}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Contains(
+                "Property 'values' is not a valid array",
                 output?.Message);
         }
 
