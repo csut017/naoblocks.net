@@ -28,7 +28,7 @@
         /// <summary>
         /// Gets the logging templates.
         /// </summary>
-        public IList<NamedValue> LoggingTemplates { get; private set; } = new List<NamedValue>();
+        public IList<LoggingTemplate> LoggingTemplates { get; private set; } = new List<LoggingTemplate>();
 
         /// <summary>
         /// Gets or sets the name of the robot type.

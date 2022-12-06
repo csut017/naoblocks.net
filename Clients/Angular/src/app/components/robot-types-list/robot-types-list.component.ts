@@ -269,12 +269,32 @@ export class RobotTypesListComponent implements OnInit {
           console.log(result);
           console.groupEnd();
 
-          const fromDate = result.dateFrom?.toISODate() || '',
-            toDate = result.dateTo?.toISODate() || '';
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/robots/types/${t.name}/export.${result.selectedFormat}`,
+              `${t.name}-details.${result.selectedFormat}`));
+        } else {
+          console.log('[RobotTypesList] Export cancelled');
+        }
+      });
+  }
+
+  exportDefinition(): void {
+    console.log('[RobotTypesList] Showing export settings for definition');
+    let settings = new ReportDialogSettings('Export Definition', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Json,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[RobotTypesList] Generating definition export');
+          console.log(result);
+          console.groupEnd();
 
           this.selection.selected.forEach(t =>
             this.downloaderService.download(
-              `v1/robots/types/${t.name}/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
+              `v1/robots/types/${t.name}/definition.${result.selectedFormat}`,
               `${t.name}-details.${result.selectedFormat}`));
         } else {
           console.log('[RobotTypesList] Export cancelled');
@@ -309,10 +329,6 @@ export class RobotTypesListComponent implements OnInit {
           console.log('[RobotTypesList] Export cancelled');
         }
       });
-  }
-
-  exportPackage(): void {
-
   }
 
   private loadList(): void {

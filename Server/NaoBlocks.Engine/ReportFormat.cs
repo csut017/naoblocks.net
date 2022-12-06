@@ -45,5 +45,11 @@
         /// </summary>
         [ReportFormat("application/xml", "xml")]
         Xml,
+
+        /// <summary>
+        /// Generate a JSON definition
+        /// </summary>
+        [ReportFormat("application/json", "json")]
+        Json,
     }
 }

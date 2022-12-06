@@ -159,17 +159,9 @@ namespace NaoBlocks.Web.Controllers
                 return new Dtos.LogResult();
             }
 
-            var templates = new Dictionary<string, string[]>();
-            var loggingTemplates = robot.Type?.LoggingTemplates;
-            if (loggingTemplates?.Any() ?? false)
-            {
-                foreach (var template in loggingTemplates.Where(t => t != null && t.Value != null))
-                {
-                    var parts = template.Value!.Split(":");
-                    templates.Add(template.Name.ToLowerInvariant(), parts);
-                }
-            }
-
+            var templates = robot.Type?
+                .LoggingTemplates
+                .ToDictionary(t => t.Category.ToLowerInvariant()) ?? new Dictionary<string, LoggingTemplate>();
             foreach (var message in request.Messages!)
             {
                 var addLog = new AddToRobotLog
@@ -186,16 +178,17 @@ namespace NaoBlocks.Web.Controllers
                     var messageTime = now.AddSeconds(timeOffset);
                     addLog.Values.Add(new NamedValue { Name = "RobotTime", Value = messageTime.ToString("O") });
                     var key = parts[1].ToLowerInvariant();
-                    if (templates.TryGetValue(key, out var names))
+                    if (templates.TryGetValue(key, out var template))
                     {
-                        addLog.Description = names[0];
-                        if (int.TryParse(names[1], out int code)) addLog.SourceMessageType = (ClientMessageType)code;
-                        for (var loop = 2; loop < names.Length; loop++)
+                        addLog.Description = template.Text;
+                        addLog.SourceMessageType = template.MessageType;
+                        for (var loop = 0; loop < template.ValueNames.Length; loop++)
                         {
+                            var index = loop + 2;
                             addLog.Values.Add(
                                 NamedValue.New(
-                                    names[loop],
-                                    parts.Length > loop ? parts[loop] : string.Empty));
+                                    template.ValueNames[loop],
+                                    parts.Length > index ? parts[index] : string.Empty));
                         }
                     }
                     else

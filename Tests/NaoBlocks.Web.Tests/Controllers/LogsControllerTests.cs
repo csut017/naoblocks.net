@@ -492,7 +492,14 @@ namespace NaoBlocks.Web.Tests.Controllers
                 }
             };
 
-            robot.Type.LoggingTemplates.Add(Data.NamedValue.New("status", "Status change:501:Status"));
+            robot.Type.LoggingTemplates.Add(
+                new Data.LoggingTemplate
+                {
+                    Category = "status",
+                    Text = "Status change",
+                    MessageType = ClientMessageType.RobotStateUpdate,
+                    ValueNames = new[] { "Status" }
+                });
             engine.RegisterQuery(query.Object);
             query.Setup(q => q.RetrieveByNameAsync("Mihīni", true))
                 .Returns(Task.FromResult<Data.Robot?>(robot));
