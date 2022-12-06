@@ -56,6 +56,7 @@ import { UserImportDialogComponent } from './components/user-import-dialog/user-
 import { RobotTypeAllowedValuesListComponent } from './components/robot-type-allowed-values-list/robot-type-allowed-values-list.component';
 import { NamedValueEditorComponent } from './components/named-value-editor/named-value-editor.component';
 import { RobotValuesListComponent } from './components/robot-values-list/robot-values-list.component';
+import { RobotTypeDefinitionImportComponent } from './components/robot-type-definition-import/robot-type-definition-import.component';
 
 @NgModule({
   declarations: [
@@ -104,7 +105,8 @@ import { RobotValuesListComponent } from './components/robot-values-list/robot-v
     UserImportDialogComponent,
     RobotTypeAllowedValuesListComponent,
     NamedValueEditorComponent,
-    RobotValuesListComponent
+    RobotValuesListComponent,
+    RobotTypeDefinitionImportComponent
   ],
   imports: [
     BrowserModule,

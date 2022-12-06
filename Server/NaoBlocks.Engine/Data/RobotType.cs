@@ -26,9 +26,19 @@
         public bool IsDefault { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this type is a duplicate.
+        /// </summary>
+        public bool IsDuplicate { get; set; }
+
+        /// <summary>
         /// Gets the logging templates.
         /// </summary>
         public IList<LoggingTemplate> LoggingTemplates { get; private set; } = new List<LoggingTemplate>();
+
+        /// <summary>
+        /// Gets or sets a message associated with the robot.
+        /// </summary>
+        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the robot type.

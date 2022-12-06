@@ -14,10 +14,10 @@ import { ImportService } from 'src/app/services/import.service';
 import { ImportSettings } from 'src/app/data/import-settings';
 import { ImportStatus } from 'src/app/data/import-status';
 import { ReportSettingsService } from 'src/app/services/report-settings.service';
-import { ReportSettings } from 'src/app/data/report-settings';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
-import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
 import { RobotImportSettings } from 'src/app/data/robot-import-settings';
+import { RobotTypeDefinitionService } from 'src/app/services/robot-type-definition.service';
+import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -45,6 +45,7 @@ export class RobotTypesListComponent implements OnInit {
     private importService: ImportService,
     private exportSettings: ReportSettingsService,
     private importRobotService: RobotImportDialogService,
+    private importRobotTypeService: RobotTypeDefinitionService,
     private downloaderService: FileDownloaderService) { }
 
   ngOnInit(): void {
@@ -130,6 +131,14 @@ export class RobotTypesListComponent implements OnInit {
     this.importService.start(settings)
       .subscribe(result => {
 
+      });
+  }
+
+  importDefinition(): void {
+    let settings = new RobotImportSettings();
+    this.importRobotTypeService.start(settings)
+      .subscribe(result => {
+        if (result) this.multilineMessage.show(['Import finished']);
       });
   }
 

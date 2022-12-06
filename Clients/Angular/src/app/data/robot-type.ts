@@ -11,6 +11,7 @@ export class RobotType {
     
     customValues?: NamedValue[];
     toolboxes?: Toolbox[];
+    message?: string;
 
     constructor(isNew: boolean = false) {
         this.isNew = isNew;

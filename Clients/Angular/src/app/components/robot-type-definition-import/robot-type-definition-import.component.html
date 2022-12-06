@@ -1,0 +1,99 @@
+<h2 mat-dialog-title>Import Robot Type Definitions</h2>
+<mat-dialog-content>
+    <mat-stepper #stepper linear>
+        <mat-step label="Select Input Source" [stepControl]="controlFile">
+            <div class="panel-content">
+                <div class="dropzone" appDragAndDrop (fileDropped)="fileBrowseHandler($event)">
+                    <input type="file" #packageDropRef id="packageDropRef" multiple
+                        (change)="fileBrowseHandler($event)" />
+                    <mat-icon>cloud_upload</mat-icon>
+                    <h3>Drag file for upload here</h3>
+                    <h3>or</h3>
+                    <label for="packageDropRef" class="btn btn-success">Browse for files</label>
+                </div>
+            </div>
+            <div class="panel-commands">
+                <span *ngIf="errorMessage" class="error-message">
+                    <mat-icon>error</mat-icon>
+                    {{errorMessage}}
+                </span>
+            </div>
+        </mat-step>
+        <mat-step label="Verify Data" [stepControl]="controlVerification">
+            <div class="panel-content">
+                <div class="data-list">
+                    <table mat-table [dataSource]="dataSource">
+
+                        <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef> Name </th>
+                            <td mat-cell *matCellDef="let record"> {{record.name}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="message">
+                            <th mat-header-cell *matHeaderCellDef> </th>
+                            <td mat-cell *matCellDef="let record"> {{record.message}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="select">
+                            <th mat-header-cell *matHeaderCellDef>
+                                <mat-checkbox (change)="$event ? masterToggle() : null"
+                                    [checked]="selection.hasValue() && isAllSelected()"
+                                    [indeterminate]="selection.hasValue() && !isAllSelected()"
+                                    [aria-label]="checkboxLabel()">
+                                </mat-checkbox>
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                <mat-checkbox (click)="$event.stopPropagation()"
+                                    (change)="$event ? selection.toggle(row) : null"
+                                    [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                                </mat-checkbox>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="panel-commands">
+                <button mat-stroked-button matStepperPrevious>Back</button>
+                <button mat-stroked-button matStepperNext class="pull-right"
+                    *ngIf="selection.selected.length">Next</button>
+            </div>
+        </mat-step>
+        <mat-step label="Import Robot Types">
+            <div class="panel-content">
+                <div *ngIf="!isImporting">
+                    <div>
+                        This action will import <b>{{selection.selected.length}}</b> robot types.
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <b>Warning:</b> this action cannot be reversed.
+                    </div>
+                    <div>
+                        <button mat-raised-button color="primary" (click)="startImport()">Continue with Import</button>
+                    </div>
+                </div>
+                <div *ngIf="isImporting">
+                    <div *ngIf="!isFinished">
+                        Importing <b>{{currentIndex}}</b> of <b>{{selection.selected.length}}</b> robots.
+                    </div>
+                    <div *ngIf="isFinished">
+                        Imported finished: <b>{{successful}}</b> successful, <b>{{selection.selected.length -
+                            successful}}</b> failed.
+                    </div>
+                    <mat-progress-bar mode="determinate" [value]="currentIndex * 100 / selection.selected.length">
+                    </mat-progress-bar>
+                    <div *ngFor="let result of results">
+                        {{result}}
+                    </div>
+                </div>
+            </div>
+            <div class="panel-commands">
+                <button mat-stroked-button matStepperPrevious *ngIf="!isImporting">Back</button>
+            </div>
+        </mat-step>
+    </mat-stepper>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-stroked-button *ngIf="!isFinished && !isImporting" [mat-dialog-close]="false">Cancel</button>
+    <button mat-stroked-button *ngIf="isFinished" [mat-dialog-close]="true">Close</button>
+</mat-dialog-actions>
