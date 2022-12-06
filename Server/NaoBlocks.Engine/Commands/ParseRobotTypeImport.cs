@@ -85,6 +85,18 @@ namespace NaoBlocks.Engine.Commands
                     this.robotType!));
         }
 
+        private void AddError(string message, string? name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                this.errors.Add(message);
+            }
+            else
+            {
+                this.errors.Add($"{message} for {name}");
+            }
+        }
+
         private void ParseArray(JsonElement definition, string propertyName, Action<JsonElement, int> parser)
         {
             if (definition.TryGetProperty(propertyName, out var toolboxes))
@@ -104,7 +116,7 @@ namespace NaoBlocks.Engine.Commands
             }
         }
 
-        private void ParseBoolean(JsonElement element, string propertyName, Action<bool> setter)
+        private void ParseBoolean(JsonElement element, string propertyName, Action<bool> setter, string? name = null)
         {
             if (element.TryGetProperty(propertyName, out var property))
             {
@@ -115,6 +127,24 @@ namespace NaoBlocks.Engine.Commands
                 catch (Exception)
                 {
                     this.errors.Add($"Property '{propertyName}' is not a valid boolean (true or false)");
+                    AddError($"Property '{propertyName}' is not a valid boolean value", name);
+                }
+            }
+        }
+
+        private void ParseEnum<TEnum>(JsonElement element, string propertyName, Action<TEnum> setter, string? name = null)
+                    where TEnum : struct
+        {
+            if (element.TryGetProperty(propertyName, out var property))
+            {
+                var text = property.GetString();
+                if (Enum.TryParse<TEnum>(text, out var value))
+                {
+                    setter(value);
+                }
+                else
+                {
+                    AddError($"Property '{propertyName}' is not a valid {typeof(TEnum).Name} value", name);
                 }
             }
         }
@@ -128,21 +158,35 @@ namespace NaoBlocks.Engine.Commands
             if (definition.ValueKind != JsonValueKind.Object) throw new Exception("Root level definition should be a single definition");
 
             this.robotType = new RobotType();
-            this.ParseString(definition, "name", v => this.robotType.Name = v, true);
+            this.ParseString(definition, "name", v => this.robotType.Name = v, isRequired: true);
             this.ParseBoolean(definition, "isDefault", v => this.robotType.IsDefault = v);
             this.ParseBoolean(definition, "directLogging", v => this.robotType.AllowDirectLogging = v);
             this.ParseArray(definition, "toolboxes", (element, index) =>
             {
                 var toolbox = new Toolbox();
                 var name = $"toolbox #{index + 1}";
-                this.ParseString(element, "name", v => toolbox.Name = v, true, name);
+                this.ParseString(element, "name", v => toolbox.Name = v, name, true);
+                this.ParseBoolean(element, "default", v => toolbox.IsDefault = v, name);
+                this.ParseString(element, "definition", v => toolbox.RawXml = v, name, true);
                 this.robotType.Toolboxes.Add(toolbox);
             });
             this.ParseArray(definition, "values", (element, index) =>
             {
+                var value = new NamedValue();
+                var name = $"value #{index + 1}";
+                this.ParseString(element, "name", v => value.Name = v, name, true);
+                this.ParseString(element, "value", v => value.Value = v);
+                this.robotType.CustomValues.Add(value);
             });
             this.ParseArray(definition, "templates", (element, index) =>
             {
+                var template = new LoggingTemplate();
+                this.robotType.LoggingTemplates.Add(template);
+                var name = $"template #{index + 1}";
+                this.ParseString(element, "category", v => template.Category = v, name, true);
+                this.ParseString(element, "text", v => template.Text = v, name, true);
+                this.ParseEnum<ClientMessageType>(element, "type", v => template.MessageType = v, name);
+                this.ParseString(element, "values", v => template.ValueNames = v.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
             });
 
             if (this.errors.Any())
@@ -151,7 +195,7 @@ namespace NaoBlocks.Engine.Commands
             }
         }
 
-        private bool ParseString(JsonElement element, string propertyName, Action<string> setter, bool isRequired = false, string? name = null)
+        private bool ParseString(JsonElement element, string propertyName, Action<string> setter, string? name = null, bool isRequired = false)
         {
             if (element.TryGetProperty(propertyName, out var property))
             {
@@ -161,14 +205,7 @@ namespace NaoBlocks.Engine.Commands
 
             if (isRequired)
             {
-                if (string.IsNullOrEmpty(name))
-                {
-                    this.errors.Add($"Property '{propertyName}' not set");
-                }
-                else
-                {
-                    this.errors.Add($"Property '{propertyName}' not set for {name}");
-                }
+                AddError($"Property '{propertyName}' not set", name);
             }
             return false;
         }

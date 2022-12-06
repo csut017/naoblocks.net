@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Engine.Commands;
+﻿using NaoBlocks.Common;
+using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,39 @@ namespace NaoBlocks.Engine.Tests.Commands
     public class ParseRobotTypeImportTests : DatabaseHelper
     {
         [Fact]
+        public async Task ExecuteAsyncAddsTemplate()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"templates\":[{\"category\":\"First\",\"text\":\"Tahi\",\"type\":\"RobotAction\",\"values\":\"One,Two\"}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Equal(
+                new[] { "First" },
+                output?.LoggingTemplates.Select(lt => lt.Category).ToArray());
+            Assert.Equal(
+                new[] { "Tahi" },
+                output?.LoggingTemplates.Select(lt => lt.Text).ToArray());
+            Assert.Equal(
+                new[] { ClientMessageType.RobotAction },
+                output?.LoggingTemplates.Select(lt => lt.MessageType).ToArray());
+            Assert.Equal(
+                new[] { "One", "Two" },
+                output?.LoggingTemplates.SelectMany(lt => lt.ValueNames).ToArray());
+        }
+
+        [Fact]
         public async Task ExecuteAsyncAddsToolbox()
         {
             // Arrange
@@ -18,7 +52,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 SkipValidation = true
             };
-            PopulateData(command, "{\"toolboxes\":[{\"name\":\"First\"}]}");
+            PopulateData(command, "{\"toolboxes\":[{\"name\":\"First\",\"default\":true,\"definition\":\"\\u003Ctoolbox\\u003E\u003C/toolbox\u003E\"}]}");
             var engine = new FakeEngine();
 
             // Act
@@ -32,6 +66,39 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.Equal(
                 new[] { "First" },
                 output?.Toolboxes.Select(tb => tb.Name).ToArray());
+            Assert.Equal(
+                new[] { true },
+                output?.Toolboxes.Select(tb => tb.IsDefault).ToArray());
+            Assert.Equal(
+                new[] { "<toolbox></toolbox>" },
+                output?.Toolboxes.Select(tb => tb.RawXml).ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncAddsValue()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"values\":[{\"name\":\"First\",\"value\":\"Tahi\"}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Equal(
+                new[] { "First" },
+                output?.CustomValues.Select(cv => cv.Name).ToArray());
+            Assert.Equal(
+                new[] { "Tahi" },
+                output?.CustomValues.Select(cv => cv.Value).ToArray());
         }
 
         [Fact]
@@ -124,6 +191,42 @@ namespace NaoBlocks.Engine.Tests.Commands
             var output = result.As<RobotType>().Output;
             Assert.Contains(
                 "Property 'templates' is not a valid array",
+                output?.Message);
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksTemplateType()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"templates\":[{\"category\":\"First\",\"text\":\"Tahi\",\"type\":\"Rubbish\",\"values\":\"One,Two\"}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotType>().Output;
+            Assert.Equal(
+                new[] { "First" },
+                output?.LoggingTemplates.Select(lt => lt.Category).ToArray());
+            Assert.Equal(
+                new[] { "Tahi" },
+                output?.LoggingTemplates.Select(lt => lt.Text).ToArray());
+            Assert.Equal(
+                new[] { ClientMessageType.Unknown },
+                output?.LoggingTemplates.Select(lt => lt.MessageType).ToArray());
+            Assert.Equal(
+                new[] { "One", "Two" },
+                output?.LoggingTemplates.SelectMany(lt => lt.ValueNames).ToArray());
+            Assert.Contains(
+                "Property 'type' is not a valid ClientMessageType value for template #1",
                 output?.Message);
         }
 

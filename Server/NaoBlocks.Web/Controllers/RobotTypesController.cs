@@ -354,6 +354,53 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Imports a robot type definition.
+        /// </summary>
+        /// <param name="action">The action to perform. Options are "parse".</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("import")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportDefinition([FromQuery] string? action)
+        {
+            if (!"parse".Equals(action))
+            {
+                return this.BadRequest(new
+                {
+                    Error = $"Action {action} is invalid"
+                });
+            }
+
+            var files = this.Request?.Form?.Files;
+            if (files == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Expected a file to process"
+                });
+            }
+
+            if (files.Count != 1)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Invalid number of files, can only handle one file at a time"
+                });
+            }
+
+            this.logger.LogInformation("Parsing robots import");
+            using var inputStream = files[0].OpenReadStream();
+            var command = new ParseRobotTypeImport
+            {
+                Data = inputStream
+            };
+
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>
+                (command,
+                type => Transfer.RobotType.FromModel(type!));
+        }
+
+        /// <summary>
         /// Imports a toolbox for a robot type.
         /// </summary>
         /// <param name="id">The name of the robot type.</param>

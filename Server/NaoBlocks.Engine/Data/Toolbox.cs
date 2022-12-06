@@ -44,6 +44,11 @@ namespace NaoBlocks.Engine.Data
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the raw XML definition of the toolbox.
+        /// </summary>
+        public string? RawXml { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets whether this toolbox uses events.
         /// </summary>
         public bool UseEvents { get; set; }

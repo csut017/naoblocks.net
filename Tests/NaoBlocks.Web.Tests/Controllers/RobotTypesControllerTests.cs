@@ -815,6 +815,78 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task ImportDefinitionCallsCommand()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ParseRobotTypeImport>(
+                CommandResult.New(1, new Data.RobotType()));
+            var controller = InitialiseController(engine);
+            controller.SetRequestFiles("first");
+
+            // Act
+            var response = await controller.ImportDefinition("parse");
+
+            // Assert
+            Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            engine.Verify();
+        }
+
+        [Fact]
+        public async Task ImportDefinitionChecksAction()
+        {
+            // Arrange
+            var controller = InitialiseController();
+
+            // Act
+            var response = await controller.ImportDefinition("unknown");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportDefinitionChecksForAnyFiles()
+        {
+            // Arrange
+            var controller = InitialiseController();
+            controller.SetRequestFiles();
+
+            // Act
+            var response = await controller.ImportDefinition("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportDefinitionChecksForFormInput()
+        {
+            // Arrange
+            var controller = InitialiseController();
+
+            // Act
+            var response = await controller.ImportDefinition("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportDefinitionChecksForOnlyOneFile()
+        {
+            // Arrange
+            var controller = InitialiseController();
+            controller.SetRequestFiles("first", "second");
+
+            // Act
+            var response = await controller.ImportDefinition("parse");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
         public async Task ImportToolboxCallsCommand()
         {
             // Arrange
@@ -882,27 +954,6 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);
-        }
-
-        [Fact]
-        public async Task ListHandlesNullData()
-        {
-            // Arrange
-            var engine = new FakeEngine();
-            var query = new Mock<RobotTypeData>();
-            var result = new ListResult<Data.RobotType>();
-            engine.RegisterQuery(query.Object);
-            query.Setup(q => q.RetrievePageAsync(0, 25))
-                .Returns(Task.FromResult(result));
-            var controller = InitialiseController(engine);
-
-            // Act
-            var response = await controller.List(null, null);
-
-            // Assert
-            Assert.Equal(0, response.Count);
-            Assert.Equal(0, response.Page);
-            Assert.Null(response.Items);
         }
 
         [Fact]
