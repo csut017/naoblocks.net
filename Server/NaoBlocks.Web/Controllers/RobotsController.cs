@@ -184,7 +184,7 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this.executionEngine
-                .ExecuteForHttp<ReadOnlyCollection<Data.Robot>, ListResult<Transfer.Robot>>
+                .ExecuteForHttp<IEnumerable<Data.Robot>, ListResult<Transfer.Robot>>
                 (command,
                 robots => ListResult.New(robots.Select(r => Transfer.Robot.FromModel(r!, DetailsType.Parse))));
         }

@@ -44,7 +44,7 @@ export class RobotTypeDefinitionImportComponent {
         let robots = result.output?.items || [];
         this.selection.clear();
         this.dataSource = new MatTableDataSource(robots.map(r => {
-          if (!r.message) this.selection.select(r);
+          if (!r.parse?.message) this.selection.select(r);
           return r;
         }));
 

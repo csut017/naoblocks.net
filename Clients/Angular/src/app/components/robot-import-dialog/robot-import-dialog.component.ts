@@ -47,7 +47,7 @@ export class RobotImportDialogComponent implements OnInit {
         let robots = result.output?.items || [];
         this.selection.clear();
         this.dataSource = new MatTableDataSource(robots.map(r => {
-          if (!r.message) this.selection.select(r);
+          if (!r.parse?.message) this.selection.select(r);
           if (this.settings.robotType) {
             r.type = this.settings.robotType;
           }

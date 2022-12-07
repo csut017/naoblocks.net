@@ -1,4 +1,5 @@
 import { NamedValue } from './named-value';
+import { ParseResult } from './parse-result';
 import { RobotLog } from './robot-log';
 
 export class Robot {
@@ -7,7 +8,6 @@ export class Robot {
     machineName?: string;
     type?: string;
     password?: string;
-    message?: string;
     whenAdded?: Date;
     isNew: boolean;
     isLoading: boolean = false;
@@ -15,6 +15,7 @@ export class Robot {
     logs: RobotLog[] = [];
     filteredLogs: RobotLog[] = [];
 
+    parse?: ParseResult;
     values?: NamedValue[];
 
     constructor(isNew: boolean = false) {

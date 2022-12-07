@@ -323,7 +323,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
             engine.ExpectCommand<ParseRobotsImport>(
-                CommandResult.New(1, robots.AsReadOnly()));
+                CommandResult.New(1, robots.AsEnumerable()));
             var controller = new RobotsController(
                 logger,
                 engine);
@@ -418,7 +418,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
             engine.ExpectCommand<ParseRobotsImport>(
-                CommandResult.New(1, robots.AsReadOnly()));
+                CommandResult.New(1, robots.AsEnumerable()));
             var controller = new RobotsController(
                 logger,
                 engine);
