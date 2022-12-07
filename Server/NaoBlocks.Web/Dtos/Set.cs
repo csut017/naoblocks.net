@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines a set of records.
     /// </summary>
-    public class Set
+    public static class Set
     {
         /// <summary>
         /// Generates a new <see cref="Set{TItem}"/> from an enumerable.

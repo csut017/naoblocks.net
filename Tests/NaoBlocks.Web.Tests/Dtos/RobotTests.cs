@@ -1,7 +1,8 @@
-﻿using Transfer = NaoBlocks.Web.Dtos;
-using Data = NaoBlocks.Engine.Data;
+﻿using System;
+using System.Linq;
 using Xunit;
-using System;
+using Data = NaoBlocks.Engine.Data;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Dtos
 {
@@ -41,6 +42,61 @@ namespace NaoBlocks.Web.Tests.Dtos
             Assert.Equal("karetao", dto.MachineName);
             Assert.Null(dto.Type);
             Assert.True(dto.IsInitialised);
+        }
+
+        [Fact]
+        public void FromModelIncludesFullDetails()
+        {
+            var now = DateTime.Now;
+            var entity = new Data.Robot
+            {
+                FriendlyName = "Moana",
+                MachineName = "karetao",
+                WhenAdded = now,
+                Message = "This is a test message"
+            };
+            entity.CustomValues.Add(Data.NamedValue.New("One", "Tahi"));
+            var dto = Transfer.Robot.FromModel(entity, Transfer.DetailsType.Parse | Transfer.DetailsType.Standard);
+            Assert.Equal(
+                "This is a test message",
+                dto?.Parse?.Message);
+            Assert.Equal(
+                new[] { "One->Tahi" },
+                dto?.Values?.Select(nv => $"{nv.Name}->{nv.Value}").ToArray());
+        }
+
+        [Fact]
+        public void FromModelIncludesParseMessage()
+        {
+            var now = DateTime.Now;
+            var entity = new Data.Robot
+            {
+                FriendlyName = "Moana",
+                MachineName = "karetao",
+                WhenAdded = now,
+                Message = "This is a test message"
+            };
+            var dto = Transfer.Robot.FromModel(entity, Transfer.DetailsType.Parse);
+            Assert.Equal(
+                "This is a test message",
+                dto?.Parse?.Message);
+        }
+
+        [Fact]
+        public void FromModelIncludesValues()
+        {
+            var now = DateTime.Now;
+            var entity = new Data.Robot
+            {
+                FriendlyName = "Moana",
+                MachineName = "karetao",
+                WhenAdded = now
+            };
+            entity.CustomValues.Add(Data.NamedValue.New("One", "Tahi"));
+            var dto = Transfer.Robot.FromModel(entity, Transfer.DetailsType.Standard);
+            Assert.Equal(
+                new[] { "One->Tahi" },
+                dto?.Values?.Select(nv => $"{nv.Name}->{nv.Value}").ToArray());
         }
     }
 }

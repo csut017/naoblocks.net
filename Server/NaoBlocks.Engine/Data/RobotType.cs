@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// Defines a robot type.
@@ -28,6 +30,7 @@
         /// <summary>
         /// Gets or sets whether this type is a duplicate.
         /// </summary>
+        [JsonIgnore]
         public bool IsDuplicate { get; set; }
 
         /// <summary>
@@ -38,6 +41,7 @@
         /// <summary>
         /// Gets or sets a message associated with the robot.
         /// </summary>
+        [JsonIgnore]
         public string? Message { get; set; }
 
         /// <summary>

@@ -25,14 +25,14 @@ namespace NaoBlocks.Web.Dtos
         public string MachineName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a message associated with the robot.
+        /// Gets or sets the parse results.
         /// </summary>
-        public string? Message { get; set; }
+        public ParseResults? Parse { get; set; }
 
         /// <summary>
         /// Gets or sets the robot's password.
         /// </summary>
-        public string? Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the robot type.
@@ -53,9 +53,9 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
         /// <returns>A new <see cref="Robot"/> instance containing the required properties.</returns>
-        public static Robot FromModel(Data.Robot value, bool includeDetails = false)
+        public static Robot FromModel(Data.Robot value, DetailsType includeDetails = DetailsType.None)
         {
             var type = value.Type?.Name ?? value.RobotTypeId;
             var output = new Robot
@@ -63,14 +63,19 @@ namespace NaoBlocks.Web.Dtos
                 FriendlyName = value.FriendlyName,
                 IsInitialised = value.IsInitialised,
                 MachineName = value.MachineName,
-                Message = value.Message,
-                Password = value.PlainPassword,
                 Type = string.IsNullOrEmpty(type) ? null : type,
                 WhenAdded = value.WhenAdded,
             };
-            if (includeDetails)
+
+            if (includeDetails.HasFlag(DetailsType.Standard))
             {
                 output.Values = value.CustomValues.ToList();
+            }
+
+            if (includeDetails.HasFlag(DetailsType.Parse) && (value != null))
+            {
+                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
+                output.Password = value.PlainPassword ?? string.Empty;
             }
 
             return output;

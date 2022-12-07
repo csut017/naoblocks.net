@@ -1,6 +1,4 @@
-﻿using NaoBlocks.Engine.Data;
-
-using Data = NaoBlocks.Engine.Data;
+﻿using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Dtos
 {
@@ -17,7 +15,7 @@ namespace NaoBlocks.Web.Dtos
         /// <summary>
         /// Gets the allowed custom values.
         /// </summary>
-        public IList<NamedValue>? CustomValues { get; private set; }
+        public IList<Data.NamedValue>? CustomValues { get; private set; }
 
         /// <summary>
         /// Gets or sets whether this type has a toolbox.
@@ -35,6 +33,16 @@ namespace NaoBlocks.Web.Dtos
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the parse results.
+        /// </summary>
+        public ParseResults? Parse { get; set; }
+
+        /// <summary>
+        /// Gets the templates.
+        /// </summary>
+        public IList<Data.LoggingTemplate>? Templates { get; private set; }
+
+        /// <summary>
         /// Gets the toolboxes.
         /// </summary>
         public IList<Toolbox>? Toolboxes { get; private set; }
@@ -43,9 +51,9 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
         /// <returns>A new <see cref="RobotType"/> instance containing the required properties.</returns>
-        public static RobotType FromModel(Data.RobotType value, bool includeDetails = false)
+        public static RobotType FromModel(Data.RobotType value, DetailsType includeDetails = DetailsType.None)
         {
             var output = new RobotType
             {
@@ -55,10 +63,17 @@ namespace NaoBlocks.Web.Dtos
                 HasToolbox = value.Toolboxes.Any()
             };
 
-            if (includeDetails)
+            if (includeDetails.HasFlag(DetailsType.Standard))
             {
                 output.Toolboxes = value.Toolboxes.Select(t => Toolbox.FromModel(t)).ToList();
                 output.CustomValues = value.CustomValues.ToList();
+                output.Templates = value.LoggingTemplates.ToList();
+            }
+
+            if (includeDetails.HasFlag(DetailsType.Parse))
+            {
+                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
+                output.Parse.Details["duplicate"] = value.IsDuplicate;
             }
 
             return output;

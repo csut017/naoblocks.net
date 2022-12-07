@@ -887,6 +887,27 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task ImportIncludesParseDetails()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ParseRobotTypeImport>(
+                CommandResult.New(1, new Data.RobotType { Message = "Parsed" }));
+            var controller = InitialiseController(engine);
+            controller.SetRequestFiles("first");
+
+            // Act
+            var response = await controller.ImportDefinition("parse");
+
+            // Assert
+            var output = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            engine.Verify();
+            Assert.Equal(
+                "Parsed",
+                output?.Output?.Parse?.Message);
+        }
+
+        [Fact]
         public async Task ImportToolboxCallsCommand()
         {
             // Arrange

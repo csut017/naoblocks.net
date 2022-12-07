@@ -8,6 +8,7 @@ using NaoBlocks.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -67,7 +68,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.ExportDetails("karetao", format);
+            var response = await controller.ExportDetails("karetao", format ?? string.Empty);
 
             // Assert
             var streamResult = Assert.IsType<FileStreamResult>(response);
@@ -404,6 +405,34 @@ namespace NaoBlocks.Web.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task ImportIncudesParseDetails()
+        {
+            // Arrange
+            var robots = new List<Data.Robot>
+            {
+                new Data.Robot { Message = "Parsed"}
+            };
+            var logger = new FakeLogger<RobotsController>();
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ParseRobotsImport>(
+                CommandResult.New(1, robots.AsReadOnly()));
+            var controller = new RobotsController(
+                logger,
+                engine);
+            controller.SetRequestFiles("first");
+
+            // Act
+            var response = await controller.Import("parse");
+
+            // Assert
+            var output = Assert.IsType<ExecutionResult<ListResult<Transfer.Robot>>>(response.Value);
+            engine.Verify();
+            Assert.Equal(
+                new[] { "Parsed" },
+                output?.Output?.Items?.Select(r => r.Parse?.Message).ToArray());
         }
 
         [Fact]

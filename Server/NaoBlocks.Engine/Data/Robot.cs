@@ -35,6 +35,7 @@ namespace NaoBlocks.Engine.Data
         /// <summary>
         /// Gets or sets a message associated with the robot.
         /// </summary>
+        [JsonIgnore]
         public string? Message { get; set; }
 
         /// <summary>

@@ -139,7 +139,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug("Retrieved robot");
-            return Transfer.Robot.FromModel(robot, true);
+            return Transfer.Robot.FromModel(robot, DetailsType.Standard);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<ReadOnlyCollection<Data.Robot>, ListResult<Transfer.Robot>>
                 (command,
-                robots => ListResult.New(robots.Select(r => Transfer.Robot.FromModel(r!))));
+                robots => ListResult.New(robots.Select(r => Transfer.Robot.FromModel(r!, DetailsType.Parse))));
         }
 
         /// <summary>

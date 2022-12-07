@@ -237,7 +237,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
-            return Transfer.RobotType.FromModel(robotType, true);
+            return Transfer.RobotType.FromModel(robotType, Transfer.DetailsType.Standard);
         }
 
         /// <summary>
@@ -397,7 +397,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>
                 (command,
-                type => Transfer.RobotType.FromModel(type!));
+                type => Transfer.RobotType.FromModel(type!, DetailsType.Standard | DetailsType.Parse));
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<Data.RobotType, Transfer.RobotType>
                 (command,
-                rt => Transfer.RobotType.FromModel(rt!, true));
+                rt => Transfer.RobotType.FromModel(rt!, Transfer.DetailsType.Standard));
         }
 
         /// <summary>
