@@ -68,7 +68,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}/export")]
         [HttpGet("{name}/export{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDetails(string name, string format = ".xlsx", string? from = null, string? to = null)
+        public async Task<ActionResult> ExportDetails(string name, string? format = ".xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating robot details export");
             var args = this.MakeArgs($"from={from}", $"to={to}");

@@ -68,7 +68,7 @@ namespace NaoBlocks.Web.Tests.Controllers
                 engine);
 
             // Act
-            var response = await controller.ExportDetails("karetao", format ?? string.Empty);
+            var response = await controller.ExportDetails("karetao", format);
 
             // Assert
             var streamResult = Assert.IsType<FileStreamResult>(response);

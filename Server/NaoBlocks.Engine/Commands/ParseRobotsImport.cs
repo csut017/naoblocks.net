@@ -56,7 +56,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
-                        if (!this.SkipValidation) await this.ValidateRobots(session, errors).ConfigureAwait(false);
+                        if (!this.SkipValidation) await this.ValidateRobots(session).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -139,12 +139,13 @@ namespace NaoBlocks.Engine.Commands
             }
         }
 
-        private async Task ValidateRobots(IDatabaseSession session, List<CommandError> errors)
+        private async Task ValidateRobots(IDatabaseSession session)
         {
             // Validate all the robots
             var robotTypes = new Dictionary<string, bool>();
             foreach (var record in this.robots)
             {
+                var errors = new List<string>();
                 var robot = record.Value;
                 if (!string.IsNullOrEmpty(robot.RobotTypeId))
                 {
@@ -156,24 +157,24 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(robot.RobotTypeId, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add(this.GenerateError($"Unknown robot type '{robot.RobotTypeId}' [row {record.Row}]"));
+                    if (!isTypeValid) errors.Add($"Unknown robot type '{robot.RobotTypeId}'");
                 }
                 else
                 {
-                    errors.Add(this.GenerateError($"Robot type is required [row {record.Row}]"));
+                    errors.Add($"Robot type is required");
                 }
 
                 if (string.IsNullOrEmpty(robot.FriendlyName)) robot.FriendlyName = robot.MachineName;
                 if (string.IsNullOrEmpty(robot.MachineName))
                 {
-                    errors.Add(this.GenerateError($"Machine name is required [row {record.Row}]"));
+                    errors.Add($"Machine name is required");
                 }
                 else
                 {
                     var robotExists = await session.Query<Robot>()
                         .AnyAsync(r => r.MachineName == robot.MachineName)
                         .ConfigureAwait(false);
-                    if (robotExists) errors.Add(this.GenerateError($"Robot '{robot.MachineName}' already exists [row {record.Row}]"));
+                    if (robotExists) errors.Add($"Robot '{robot.MachineName}' already exists");
                 }
 
                 if (errors.Any())

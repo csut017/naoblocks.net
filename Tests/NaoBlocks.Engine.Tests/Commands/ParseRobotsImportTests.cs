@@ -18,6 +18,120 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
+        public async Task ExecuteAsyncChecksForDuplicateRobots()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Machine name", "Type"},
+                new[] { "Karetao", "Nao" }
+            });
+            var command = new ParseRobotsImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase(
+                new RobotType { Name = "Nao" },
+                new Robot { MachineName = "Karetao" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            Assert.Equal(
+                new[] { "Robot 'Karetao' already exists" },
+                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksMachineName()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Machine name", "Type"},
+                new[] { "", "Nao" }
+            });
+            var command = new ParseRobotsImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase(new RobotType { Name = "Nao" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            Assert.Equal(
+                new[] { "Machine name is required" },
+                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksRobotTypeExists()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Machine name", "Type"},
+                new[] { "Karetao", "Nao" }
+            });
+            var command = new ParseRobotsImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            Assert.Equal(
+                new[] { "Unknown robot type 'Nao'" },
+                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncChecksRobotTypeIsSet()
+        {
+            // Arrange
+            var package = new ExcelPackage();
+            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
+            {
+                new[] { "Machine name", "Type"},
+                new[] { "Karetao", "" }
+            });
+            var command = new ParseRobotsImport();
+            AddExcelDataToCommand(package, command);
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            Assert.Equal(
+                new[] { "Robot type is required" },
+                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+        }
+
+        [Fact]
         public async Task ExecuteAsyncHandlesMultipleRows()
         {
             // Arrange
@@ -258,100 +372,6 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.Equal(new[] { "Data is required" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidateAsyncChecksForDuplicateRobots()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "Machine name", "Type"},
-                new[] { "Karetao", "Nao" }
-            });
-            var command = new ParseRobotsImport();
-            AddExcelDataToCommand(package, command);
-            using var store = InitialiseDatabase(
-                new RobotType { Name = "Nao" },
-                new Robot { MachineName = "Karetao" });
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-
-            // Assert
-            Assert.Equal(new[] { "Robot 'Karetao' already exists [row 2]" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidateAsyncChecksMachineName()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "Machine name", "Type"},
-                new[] { "", "Nao" }
-            });
-            var command = new ParseRobotsImport();
-            AddExcelDataToCommand(package, command);
-            using var store = InitialiseDatabase(new RobotType { Name = "Nao" });
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-
-            // Assert
-            Assert.Equal(new[] { "Machine name is required [row 2]" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidateAsyncChecksRobotTypeExists()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "Machine name", "Type"},
-                new[] { "Karetao", "Nao" }
-            });
-            var command = new ParseRobotsImport();
-            AddExcelDataToCommand(package, command);
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-
-            // Assert
-            Assert.Equal(new[] { "Unknown robot type 'Nao' [row 2]" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidateAsyncChecksRobotTypeIsSet()
-        {
-            // Arrange
-            var package = new ExcelPackage();
-            package.Workbook.Worksheets.Add("Data").GenerateData(new[]
-            {
-                new[] { "Machine name", "Type"},
-                new[] { "Karetao", "" }
-            });
-            var command = new ParseRobotsImport();
-            AddExcelDataToCommand(package, command);
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-
-            // Act
-            var errors = await engine.ValidateAsync(command);
-
-            // Assert
-            Assert.Equal(new[] { "Robot type is required [row 2]" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
