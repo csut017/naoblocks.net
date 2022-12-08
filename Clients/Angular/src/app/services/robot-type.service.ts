@@ -189,21 +189,21 @@ export class RobotTypeService extends ClientService {
       );
   }
 
-  parseImportFile(file: File): Observable<ExecutionResult<ResultSet<RobotType>>> {
+  parseImportFile(file: File): Observable<ExecutionResult<RobotType>> {
     const url = `${environment.apiURL}v1/robots/types/import?action=parse`;
     this.log('Parsing import file');
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<ExecutionResult<ResultSet<RobotType>>>(url, formData)
+    return this.http.post<ExecutionResult<RobotType>>(url, formData)
       .pipe(
         tap(result => {
           if (!result.successful) {
             this.log(`Failed to parse input file`);
           } else {
-            this.log(`Parsed import file: found ${result.output?.count} robots`);
+            this.log(`Parsed import file: found definition for ${result.output?.name}`);
           }
         }),
-        catchError(this.handleError('parseImportFile', msg => new ExecutionResult<ResultSet<RobotType>>(new ResultSet<RobotType>(), msg))),
+        catchError(this.handleError('parseImportFile', msg => new ExecutionResult<RobotType>(new RobotType(), msg))),
       );
   }
 

@@ -40,6 +40,7 @@
 .panel-content {
     height: 16rem;
     overflow-y: auto;
+    margin: 0.5rem 0;
 }
 
 .panel-commands {
@@ -54,11 +55,29 @@
     color: red;
 }
 
-.data-list {
-    height: 15rem;
-    overflow-y: auto;
+.definition-outline{
+    height: 100%;
 }
 
-table.mat-mdc-table {
-    width: 100%;
+.definition-part{
+    font-weight: bold;
+    display: inline-block;
+    width: 10rem;
+}
+
+.definition-details{
+    font-weight: normal;
+}
+
+.definition-title {
+    font-weight: bold;
+}
+
+.definition-line {
+    margin-left: 1rem;
+}
+
+.definition-none {
+    margin-left: 1rem;
+    font-style: italic;
 }

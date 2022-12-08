@@ -1,3 +1,4 @@
+import { LoggingTemplate } from "./logging-template";
 import { NamedValue } from "./named-value";
 import { ParseResult } from "./parse-result";
 import { Toolbox } from "./toolbox";
@@ -12,6 +13,7 @@ export class RobotType {
     
     customValues?: NamedValue[];
     toolboxes?: Toolbox[];
+    templates?: LoggingTemplate[];
     parse?: ParseResult;
 
     constructor(isNew: boolean = false) {

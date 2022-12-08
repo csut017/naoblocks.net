@@ -21,7 +21,7 @@
                             Import <mat-icon>arrow_drop_down</mat-icon>
                         </button>
                         <mat-menu #importMenu="matMenu">
-                            <button mat-menu-item (click)="importDefinition()">Definitions</button>
+                            <button mat-menu-item (click)="importDefinition()">Definition</button>
                             <button mat-menu-item (click)="importPackage()"
                                 [disabled]="selection.selected.length != 1">Package Files</button>
                             <button mat-menu-item (click)="importRobots()"

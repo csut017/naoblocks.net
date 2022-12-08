@@ -21,49 +21,67 @@
         </mat-step>
         <mat-step label="Verify Data" [stepControl]="controlVerification">
             <div class="panel-content">
-                <div class="data-list">
-                    <table mat-table [dataSource]="dataSource">
-
-                        <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef> Name </th>
-                            <td mat-cell *matCellDef="let record"> {{record.name}} </td>
-                        </ng-container>
-                        <ng-container matColumnDef="message">
-                            <th mat-header-cell *matHeaderCellDef> </th>
-                            <td mat-cell *matCellDef="let record"> {{record.message}} </td>
-                        </ng-container>
-                        <ng-container matColumnDef="select">
-                            <th mat-header-cell *matHeaderCellDef>
-                                <mat-checkbox (change)="$event ? masterToggle() : null"
-                                    [checked]="selection.hasValue() && isAllSelected()"
-                                    [indeterminate]="selection.hasValue() && !isAllSelected()"
-                                    [aria-label]="checkboxLabel()">
-                                </mat-checkbox>
-                            </th>
-                            <td mat-cell *matCellDef="let row">
-                                <mat-checkbox (click)="$event.stopPropagation()"
-                                    (change)="$event ? selection.toggle(row) : null"
-                                    [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
-                                </mat-checkbox>
-                            </td>
-                        </ng-container>
-
-                        <tr mat-header-row *matHeaderRowDef="columns"></tr>
-                        <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-                    </table>
+                <div class="definition-outline">
+                    <div *ngIf="definition?.parse?.details?.duplicate">
+                        <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the existing definition.
+                    </div>
+                    <div *ngIf="definition?.parse?.message">
+                        <mat-icon>error</mat-icon> {{definition?.parse?.message}}
+                    </div>
+                    <div>
+                        <span class="definition-part">Name:</span>
+                        <span class="definition-details">{{definition?.name}}</span>
+                    </div>
+                    <div>
+                        <span class="definition-part">Is Default:</span>
+                        <span class="definition-details">{{definition?.isDefault ? "Yes" : "No"}}</span>
+                    </div>
+                    <div>
+                        <span class="definition-part">Allow Logging:</span>
+                        <span class="definition-details">{{definition?.allowDirectLogging ? "Yes" : "No"}}</span>
+                    </div>
+                    <div>
+                        <span class="definition-title">Toolboxes</span>
+                        <div class="definition-line" *ngFor="let toolbox of definition?.toolboxes">
+                            {{toolbox.name}} <span *ngIf="toolbox.isDefault"></span>
+                        </div>
+                        <div class="definition-none" *ngIf="(definition?.toolboxes?.length || 0) == 0">
+                            None
+                        </div>
+                    </div>
+                    <div>
+                        <span class="definition-title">Custom Values</span>
+                        <div class="definition-line" *ngFor="let value of definition?.customValues">
+                            {{value.name}} = {{value.value}}
+                        </div>
+                        <div class="definition-none" *ngIf="(definition?.customValues?.length || 0) == 0">
+                            None
+                        </div>
+                    </div>
+                    <div>
+                        <span class="definition-title">Logging Templates</span>
+                        <div class="definition-line" *ngFor="let template of definition?.templates">
+                            {{template.category}} => {{template.text}} [{{template.messageType}}]
+                        </div>
+                        <div class="definition-none" *ngIf="(definition?.templates?.length || 0) == 0">
+                            None
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="panel-commands">
                 <button mat-stroked-button matStepperPrevious>Back</button>
-                <button mat-stroked-button matStepperNext class="pull-right"
-                    *ngIf="selection.selected.length">Next</button>
+                <button mat-stroked-button matStepperNext class="pull-right">Next</button>
             </div>
         </mat-step>
-        <mat-step label="Import Robot Types">
+        <mat-step label="Import Robot Type">
             <div class="panel-content">
                 <div *ngIf="!isImporting">
+                    <div *ngIf="definition?.parse?.details?.duplicate">
+                        <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the existing definition.
+                    </div>
                     <div>
-                        This action will import <b>{{selection.selected.length}}</b> robot types.
+                        This action will import the definition for <b>{{definition?.name}}</b>.
                     </div>
                     <div style="margin-bottom: 1rem;">
                         <b>Warning:</b> this action cannot be reversed.
@@ -74,14 +92,11 @@
                 </div>
                 <div *ngIf="isImporting">
                     <div *ngIf="!isFinished">
-                        Importing <b>{{currentIndex}}</b> of <b>{{selection.selected.length}}</b> robots.
+                        Import in progress...
                     </div>
                     <div *ngIf="isFinished">
-                        Imported finished: <b>{{successful}}</b> successful, <b>{{selection.selected.length -
-                            successful}}</b> failed.
+                        Imported finished: <b>{{successful ? "successful" : "failed"}}</b>.
                     </div>
-                    <mat-progress-bar mode="determinate" [value]="currentIndex * 100 / selection.selected.length">
-                    </mat-progress-bar>
                     <div *ngFor="let result of results">
                         {{result}}
                     </div>
