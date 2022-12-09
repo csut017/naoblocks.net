@@ -1021,6 +1021,71 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task PostLoggingTemplateCallsCommand()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<AddLoggingTemplateToRobotType>(
+                CommandResult.New(1, new Data.RobotType()));
+            var robotQuery = new Mock<RobotTypeData>();
+            robotQuery.Setup(q => q.RetrieveByNameAsync("karetao"))
+                .Returns(Task.FromResult<Data.RobotType?>(new Data.RobotType()));
+            engine.RegisterQuery(robotQuery.Object);
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.PostLoggingTemplate(
+                "karetao",
+                new Data.LoggingTemplate
+                {
+                    Category = "Tahi",
+                    MessageType = ClientMessageType.Authenticate,
+                    Text = "testing",
+                    ValueNames = new[] { "Rua", "Toru" }
+                });
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult<Transfer.RobotType>>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+
+            var command = Assert.IsType<AddLoggingTemplateToRobotType>(engine.LastCommand);
+            Assert.Equal("karetao", command.RobotTypeName);
+            Assert.Equal("Tahi", command.Category);
+            Assert.Equal("testing", command.Text);
+            Assert.Equal(new[] { "Rua", "Toru" }, command.ValueNames);
+        }
+
+        [Fact]
+        public async Task PostLoggingTemplateValidatesIncomingData()
+        {
+            // Arrange
+            var controller = InitialiseController();
+
+            // Act
+            var response = await controller.PostLoggingTemplate("karetao", null);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(response.Result);
+        }
+
+        [Fact]
+        public async Task PostLoggingTemplateValidatesRobotTypeExists()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            var robotQuery = new Mock<RobotTypeData>();
+            engine.RegisterQuery(robotQuery.Object);
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.PostLoggingTemplate("karetao", new Data.LoggingTemplate());
+
+            // Assert
+            Assert.IsType<NotFoundResult>(response.Result);
+        }
+
+        [Fact]
         public async Task PostValidatesIncomingData()
         {
             // Arrange

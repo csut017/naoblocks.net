@@ -500,6 +500,45 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Adds a logging template to a robot type.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="template">The template to add.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpPost("{id}/loggingTemplates")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> PostLoggingTemplate(string id, LoggingTemplate? template)
+        {
+            if (template == null)
+            {
+                return this.BadRequest(new
+                {
+                    Error = "Missing robot type details"
+                });
+            }
+
+            var robotType = await this.executionEngine
+                .Query<RobotTypeData>()
+                .RetrieveByNameAsync(id)
+                .ConfigureAwait(false);
+            if (robotType == null) return NotFound();
+
+            this.logger.LogInformation($"Adding new logging template to robot type '{id}'");
+            var command = new AddLoggingTemplateToRobotType
+            {
+                Category = template.Category,
+                Text = template.Text,
+                ValueNames = template.ValueNames,
+                MessageType = template.MessageType,
+                RobotTypeName = id,
+            };
+            return await this.executionEngine
+                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>(
+                command,
+                t => Transfer.RobotType.FromModel(t!));
+        }
+
+        /// <summary>
         /// Updates the values on a robot type.
         /// </summary>
         /// <param name="id">The id of the robot type.</param>
