@@ -31,7 +31,7 @@ export class RobotTypeService extends ClientService {
           this.log('Fetched robot types');
           if (data.items) data.items.forEach(s => s.id = s.name);
         }),
-        catchError(this.handleError('list', msg => new ResultSet<RobotType>(msg)))
+        catchError(this.handleError('list', error => new ResultSet<RobotType>(error)))
       );
   }
 
@@ -45,7 +45,7 @@ export class RobotTypeService extends ClientService {
           this.log(`Retrieved robot type ${id}`)
         }),
         map(data => new ExecutionResult<RobotType>(data)),
-        catchError(this.handleError('list', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('list', error => new ExecutionResult<RobotType>(undefined, error)))
       );
   }
 
@@ -59,7 +59,7 @@ export class RobotTypeService extends ClientService {
           this.log(`Retrieved toolbox ${name} for robot type ${id}`)
         }),
         map(data => new ExecutionResult<Toolbox>(data)),
-        catchError(this.handleError('list', msg => new ExecutionResult<Toolbox>(undefined, msg)))
+        catchError(this.handleError('list', error => new ExecutionResult<Toolbox>(undefined, error)))
       );
   }
 
@@ -70,7 +70,7 @@ export class RobotTypeService extends ClientService {
       return this.http.post<any>(url, robotType)
         .pipe(
           tap(_ => this.log('Added new robot type')),
-          catchError(this.handleError('saveNew', msg => new ExecutionResult<RobotType>(new RobotType(), msg)))
+          catchError(this.handleError('saveNew', error => new ExecutionResult<RobotType>(new RobotType(), error)))
         );
     } else {
       const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;
@@ -78,18 +78,21 @@ export class RobotTypeService extends ClientService {
       return this.http.put<any>(url, robotType)
         .pipe(
           tap(_ => this.log('Updated robot type')),
-          catchError(this.handleError('saveExisting', msg => new ExecutionResult<RobotType>(new RobotType(), msg)))
+          catchError(this.handleError('saveExisting', error => new ExecutionResult<RobotType>(new RobotType(), error)))
         );
     }
   }
 
-  setSystemDefault(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
+  setSystemDefault(robotType: RobotType, message?: string): Observable<ExecutionResult<RobotType>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/default`;
     this.log(`Setting '${robotType.name}' as the system default`);
-    return this.http.put<any>(url, robotType)
+    return this.http.put<ExecutionResult<RobotType>>(url, robotType)
       .pipe(
-        tap(_ => this.log(`Set '${robotType.name}' as the system default`)),
-        catchError(this.handleError('setSystemDefault', msg => new ExecutionResult<RobotType>(robotType, msg)))
+        tap(res => {
+          this.log(`Set '${robotType.name}' as the system default`);
+          res.message = message;
+        }),
+        catchError(this.handleError('setSystemDefault', error => new ExecutionResult<RobotType>(robotType, error, message)))
       );
   }
 
@@ -102,7 +105,7 @@ export class RobotTypeService extends ClientService {
           this.log('Deleted robot type');
           result.output = robotType;
         }),
-        catchError(this.handleError('delete', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('delete', error => new ExecutionResult<RobotType>(undefined, error)))
       );
   }
 
@@ -115,11 +118,11 @@ export class RobotTypeService extends ClientService {
           this.log('Deleted toolbox');
           result.output = result.output;
         }),
-        catchError(this.handleError('deleteToolbox', msg => new ExecutionResult<Toolbox>(undefined, msg)))
+        catchError(this.handleError('deleteToolbox', error => new ExecutionResult<Toolbox>(undefined, error)))
       );
   }
 
-  importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean, useEvents: boolean): Observable<ExecutionResult<Toolbox>> {
+  importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean, useEvents: boolean, message?: string): Observable<ExecutionResult<Toolbox>> {
     const defaultOption = isDefault ? 'yes' : 'no',
           eventsOption = useEvents ? 'yes' : 'no';
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${name}?default=${defaultOption}&events=${eventsOption}`;
@@ -128,9 +131,10 @@ export class RobotTypeService extends ClientService {
       .pipe(
         tap(result => {
           this.log('Stored toolbox');
+          result.message = message;
           result.output = robotType.toolboxes?.find(t => t.name == name);
         }),
-        catchError(this.handleError('storeToolbox', msg => new ExecutionResult<Toolbox>(undefined, msg)))
+        catchError(this.handleError('storeToolbox', error => new ExecutionResult<Toolbox>(undefined, error, message)))
       );
   }
 
@@ -142,7 +146,7 @@ export class RobotTypeService extends ClientService {
         tap(_ => {
           this.log(`Fetched package list for robot type ${robotType.id}`);
         }),
-        catchError(this.handleError('listPackageFiles', msg => new ResultSet<PackageFile>(msg)))
+        catchError(this.handleError('listPackageFiles', error => new ResultSet<PackageFile>(error)))
       );
   }
 
@@ -155,7 +159,7 @@ export class RobotTypeService extends ClientService {
           this.log(`Generated package list for robot type ${robotType.id}`);
           result.output = robotType;
         }),
-        catchError(this.handleError('generatePackageList', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('generatePackageList', error => new ExecutionResult<RobotType>(undefined, error)))
       );
   }
 
@@ -168,7 +172,7 @@ export class RobotTypeService extends ClientService {
           this.log('Uploaded package file');
           result.output = robotType;
         }),
-        catchError(this.handleError('uploadPackageFile', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('uploadPackageFile', error => new ExecutionResult<RobotType>(undefined, error)))
       );
   }
 
@@ -185,7 +189,7 @@ export class RobotTypeService extends ClientService {
           this.log('Uploaded blockset');
           result.output = robotType;
         }),
-        catchError(this.handleError('uploadBlockSet', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('uploadBlockSet', error => new ExecutionResult<RobotType>(undefined, error)))
       );
   }
 
@@ -203,11 +207,11 @@ export class RobotTypeService extends ClientService {
             this.log(`Parsed import file: found definition for ${result.output?.name}`);
           }
         }),
-        catchError(this.handleError('parseImportFile', msg => new ExecutionResult<RobotType>(new RobotType(), msg))),
+        catchError(this.handleError('parseImportFile', error => new ExecutionResult<RobotType>(new RobotType(), error))),
       );
   }
 
-  updateAllowedValues(robotType: RobotType, values: NamedValue[]): Observable<ExecutionResult<any>> {
+  updateAllowedValues(robotType: RobotType, values: NamedValue[], message?: string): Observable<ExecutionResult<any>> {
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/values`;
     this.log(`Updating values for robot type ${robotType.id}`);
     const data = {
@@ -217,9 +221,10 @@ export class RobotTypeService extends ClientService {
       .pipe(
         tap(result => {
           this.log('Updated values');
+          result.message = message;
           result.output = robotType;
         }),
-        catchError(this.handleError('updateAllowedValues', msg => new ExecutionResult<RobotType>(undefined, msg)))
+        catchError(this.handleError('updateAllowedValues', error => new ExecutionResult<RobotType>(undefined, error, message)))
       );
   }
 }

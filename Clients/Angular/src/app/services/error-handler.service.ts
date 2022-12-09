@@ -14,6 +14,7 @@ export class ErrorHandlerService {
     }
     if (data.validationErrors) return data.validationErrors.map((e: any) => e.error || e).join()
     if (data.executionErrors) return data.executionErrors.map((e: any) => e.error || e).join()
+    if (!!data.error?.error) return data.error.error;
     return data.message;
   }
 }

@@ -350,7 +350,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug($"Found toolbox ${toolbox.Name}");
-            return Transfer.Toolbox.FromModel(toolbox, true, format);
+            return Transfer.Toolbox.FromModel(toolbox, DetailsType.Standard, format);
         }
 
         /// <summary>
@@ -362,7 +362,8 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> ImportDefinition([FromQuery] string? action)
         {
-            if (!"parse".Equals(action))
+            var allowedActions = new[] { "parse" };
+            if (!allowedActions.Contains(action))
             {
                 return this.BadRequest(new
                 {

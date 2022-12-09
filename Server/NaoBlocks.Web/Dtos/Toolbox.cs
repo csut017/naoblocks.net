@@ -31,13 +31,13 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
         /// <param name="format">
         /// The format to use for the definition. Options are "toolbox" for the toolbox format or "blockly" for use in a blockly editor.
         /// The default format is "toolbox".
         /// </param>
         /// <returns>A new <see cref="Toolbox"/> instance containing the required properties.</returns>
-        public static Toolbox FromModel(Data.Toolbox value, bool includeDetails = false, string? format = null)
+        public static Toolbox FromModel(Data.Toolbox value, DetailsType includeDetails = DetailsType.None, string? format = null)
         {
             var output = new Toolbox
             {
@@ -46,7 +46,7 @@ namespace NaoBlocks.Web.Dtos
                 UseEvents = value.UseEvents
             };
 
-            if (includeDetails)
+            if (includeDetails.HasFlag(DetailsType.Standard))
             {
                 if (!Enum.TryParse<Data.Toolbox.Format>(format, true, out var formatType))
                 {
@@ -54,6 +54,11 @@ namespace NaoBlocks.Web.Dtos
                 }
 
                 output.Definition = value.ExportToXml(formatType);
+            }
+
+            if (includeDetails.HasFlag(DetailsType.Parse))
+            {
+                if (!string.IsNullOrEmpty(value.RawXml)) output.Definition = value.RawXml;
             }
 
             return output;

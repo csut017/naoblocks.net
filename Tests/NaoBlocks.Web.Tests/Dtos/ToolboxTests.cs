@@ -1,5 +1,4 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 using Data = NaoBlocks.Engine.Data;
 using Transfer = NaoBlocks.Web.Dtos;
 
@@ -21,6 +20,21 @@ namespace NaoBlocks.Web.Tests.Dtos
         }
 
         [Fact]
+        public void FromModelConvertsEntityAndRawXml()
+        {
+            var entity = new Data.Toolbox
+            {
+                Name = "karetao",
+                IsDefault = true,
+                RawXml = "<test/>"
+            };
+            var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Parse);
+            Assert.Equal(
+                "<test/>",
+                dto.Definition);
+        }
+
+        [Fact]
         public void FromModelConvertsEntityAndXml()
         {
             var entity = new Data.Toolbox
@@ -30,7 +44,7 @@ namespace NaoBlocks.Web.Tests.Dtos
             };
             entity.Categories.Add(
                 new Data.ToolboxCategory { Name = "testing" });
-            var dto = Transfer.Toolbox.FromModel(entity, true);
+            var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Equal(
                 "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
                 dto.Definition);
@@ -46,9 +60,42 @@ namespace NaoBlocks.Web.Tests.Dtos
             };
             entity.Categories.Add(
                 new Data.ToolboxCategory { Name = "testing" });
-            var dto = Transfer.Toolbox.FromModel(entity, true, "toolbox");
+            var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard, "toolbox");
             Assert.Equal(
                 "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                dto.Definition);
+        }
+
+        [Fact]
+        public void FromModelConvertsEntityIgnoresRawXmlIfUnset()
+        {
+            var entity = new Data.Toolbox
+            {
+                Name = "karetao",
+                IsDefault = true
+            };
+            entity.Categories.Add(
+                new Data.ToolboxCategory { Name = "testing" });
+            var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard | Transfer.DetailsType.Parse);
+            Assert.Equal(
+                "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                dto.Definition);
+        }
+
+        [Fact]
+        public void FromModelConvertsEntityUsesRawXmlIfSet()
+        {
+            var entity = new Data.Toolbox
+            {
+                Name = "karetao",
+                IsDefault = true,
+                RawXml = "<test/>"
+            };
+            entity.Categories.Add(
+                new Data.ToolboxCategory { Name = "testing" });
+            var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard | Transfer.DetailsType.Parse);
+            Assert.Equal(
+                "<test/>",
                 dto.Definition);
         }
     }

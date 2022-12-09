@@ -65,7 +65,7 @@ namespace NaoBlocks.Web.Dtos
 
             if (includeDetails.HasFlag(DetailsType.Standard))
             {
-                output.Toolboxes = value.Toolboxes.Select(t => Toolbox.FromModel(t)).ToList();
+                output.Toolboxes = value.Toolboxes.Select(t => Toolbox.FromModel(t, includeDetails)).ToList();
                 output.CustomValues = value.CustomValues.ToList();
                 output.Templates = value.LoggingTemplates.ToList();
             }

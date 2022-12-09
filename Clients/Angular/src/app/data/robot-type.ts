@@ -19,4 +19,9 @@ export class RobotType {
     constructor(isNew: boolean = false) {
         this.isNew = isNew;
     }
-}
+
+    static setNewStatus(type: RobotType, isNew: boolean) {
+        type.isNew = isNew;
+        if (!type.isNew) type.id = type.name;
+      }
+  }

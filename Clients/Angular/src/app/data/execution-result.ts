@@ -1,6 +1,7 @@
 import { SessionChecker } from "./session-checker";
 
 export class ExecutionResult<T> implements SessionChecker {
+    message?: string;
     successful: boolean;
     validationErrors: string[] = [];
     executionErrors: string[] = [];
@@ -8,8 +9,9 @@ export class ExecutionResult<T> implements SessionChecker {
 
     hasSessionExpired: boolean = false;
 
-    constructor(data?: T, error?: string) {
+    constructor(data?: T, error?: string, message?: string) {
         this.output = data;
+        this.message = message;
         if (error) {
             this.executionErrors = [error];
             this.successful = false;

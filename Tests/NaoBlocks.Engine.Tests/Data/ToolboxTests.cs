@@ -17,7 +17,7 @@ namespace NaoBlocks.Engine.Tests.Data
 
             // Assert
             Assert.Equal(
-                "<toolbox />",
+                "<toolbox useEvents=\"no\" />",
                 xml);
         }
 
@@ -40,7 +40,7 @@ namespace NaoBlocks.Engine.Tests.Data
 
             // Assert
             Assert.Equal(
-                "<toolbox>" +
+                "<toolbox useEvents=\"no\">" +
                     "<category name=\"first\" colour=\"red\" optional=\"yes\"><block name=\"tahi\"></block><block name=\"rua\"></block></category>" +
                     "<category name=\"second\" colour=\"blue\" optional=\"no\"><block name=\"toru\"></block></category>" +
                     "<category name=\"third\" colour=\"orange\" optional=\"yes\" custom=\"custom\" />" +
@@ -116,7 +116,7 @@ namespace NaoBlocks.Engine.Tests.Data
 
             // Assert
             Assert.Equal(
-                "<toolbox><category name=\"testing\" colour=\"red\" optional=\"yes\"><block name=\"tahi\"></block><block name=\"rua\"></block></category></toolbox>",
+                "<toolbox useEvents=\"no\"><category name=\"testing\" colour=\"red\" optional=\"yes\"><block name=\"tahi\"></block><block name=\"rua\"></block></category></toolbox>",
                 xml);
         }
 
@@ -148,6 +148,21 @@ namespace NaoBlocks.Engine.Tests.Data
                         "</statement>" +
                     "</block>" +
                 "</xml>",
+                xml);
+        }
+
+        [Fact]
+        public void ToXmlGeneratesAnXmlStringWithUsesEvents()
+        {
+            // Arrange
+            var toolbox = new Toolbox { UseEvents = true };
+
+            // Act
+            var xml = toolbox.ExportToXml(Toolbox.Format.Toolbox);
+
+            // Assert
+            Assert.Equal(
+                "<toolbox useEvents=\"yes\" />",
                 xml);
         }
 

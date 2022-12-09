@@ -130,7 +130,7 @@ export class RobotTypesListComponent implements OnInit {
     settings.allowMultiple = true;
     this.importService.start(settings)
       .subscribe(result => {
-
+        if (result) this.multilineMessage.show(['Import finished']);
       });
   }
 
@@ -138,7 +138,7 @@ export class RobotTypesListComponent implements OnInit {
     let settings = new RobotImportSettings();
     this.importRobotTypeService.start(settings)
       .subscribe(result => {
-        if (result) this.multilineMessage.show(['Import finished']);
+        if (result) this.loadList();
       });
   }
 
@@ -173,7 +173,7 @@ export class RobotTypesListComponent implements OnInit {
           console.log('[RobotTypesList] Read file for package');
           const data = e.target.result;
           forkJoin(settings.items.map(rt => settings.owner.robotTypeService.uploadPackageFile(rt, file.name, data)))
-            .subscribe(results => {
+            .subscribe(_ => {
               emitter.emit(pos + 1);
             });
 
@@ -184,7 +184,7 @@ export class RobotTypesListComponent implements OnInit {
         status.uploadStatus = `Generating package list...`;
         status.uploadState = 1;
         forkJoin(settings.items.map(rt => settings.owner.robotTypeService.generatePackageList(rt)))
-          .subscribe(results => {
+          .subscribe(_ => {
             status.uploadStatus = `Imported robot type package files`;
             status.uploadState = 2;
             status.isUploading = false;

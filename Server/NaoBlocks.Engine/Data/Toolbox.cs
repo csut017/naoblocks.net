@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace NaoBlocks.Engine.Data
 {
@@ -46,6 +47,7 @@ namespace NaoBlocks.Engine.Data
         /// <summary>
         /// Gets or sets the raw XML definition of the toolbox.
         /// </summary>
+        [JsonIgnore]
         public string? RawXml { get; set; } = string.Empty;
 
         /// <summary>
@@ -129,7 +131,8 @@ namespace NaoBlocks.Engine.Data
 
         private string ExportToToolboxXml()
         {
-            var root = new XElement("toolbox");
+            var root = new XElement("toolbox",
+                    new XAttribute("useEvents", this.UseEvents ? "yes" : "no"));
             foreach (var category in Categories)
             {
                 var categoryEl = new XElement(
