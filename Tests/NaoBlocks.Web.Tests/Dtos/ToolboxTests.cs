@@ -40,13 +40,14 @@ namespace NaoBlocks.Web.Tests.Dtos
             var entity = new Data.Toolbox
             {
                 Name = "karetao",
-                IsDefault = true
+                IsDefault = true,
+                UseEvents = true
             };
             entity.Categories.Add(
                 new Data.ToolboxCategory { Name = "testing" });
             var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Equal(
-                "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                "<toolbox useEvents=\"yes\"><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
                 dto.Definition);
         }
 
@@ -62,7 +63,7 @@ namespace NaoBlocks.Web.Tests.Dtos
                 new Data.ToolboxCategory { Name = "testing" });
             var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard, "toolbox");
             Assert.Equal(
-                "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                "<toolbox useEvents=\"no\"><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
                 dto.Definition);
         }
 
@@ -78,7 +79,7 @@ namespace NaoBlocks.Web.Tests.Dtos
                 new Data.ToolboxCategory { Name = "testing" });
             var dto = Transfer.Toolbox.FromModel(entity, Transfer.DetailsType.Standard | Transfer.DetailsType.Parse);
             Assert.Equal(
-                "<toolbox><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
+                "<toolbox useEvents=\"no\"><category name=\"testing\" colour=\"0\" optional=\"no\" /></toolbox>",
                 dto.Definition);
         }
 

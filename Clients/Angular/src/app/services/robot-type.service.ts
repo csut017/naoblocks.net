@@ -63,22 +63,28 @@ export class RobotTypeService extends ClientService {
       );
   }
 
-  save(robotType: RobotType): Observable<ExecutionResult<RobotType>> {
+  save(robotType: RobotType, message?: string): Observable<ExecutionResult<RobotType>> {
     if (robotType.isNew) {
       const url = `${environment.apiURL}v1/robots/types`;
       this.log('Adding new robot type');
       return this.http.post<any>(url, robotType)
         .pipe(
-          tap(_ => this.log('Added new robot type')),
-          catchError(this.handleError('saveNew', error => new ExecutionResult<RobotType>(new RobotType(), error)))
+          tap(res => {
+            this.log('Added new robot type');
+            res.message = message;
+          }),
+          catchError(this.handleError('saveNew', error => new ExecutionResult<RobotType>(new RobotType(), error, message)))
         );
     } else {
       const url = `${environment.apiURL}v1/robots/types/${robotType.id}`;
       this.log('Updating robot type');
       return this.http.put<any>(url, robotType)
         .pipe(
-          tap(_ => this.log('Updated robot type')),
-          catchError(this.handleError('saveExisting', error => new ExecutionResult<RobotType>(new RobotType(), error)))
+          tap(res => {
+            this.log('Updated robot type');
+            res.message = message;
+          }),
+          catchError(this.handleError('saveExisting', error => new ExecutionResult<RobotType>(new RobotType(), error, message)))
         );
     }
   }
@@ -124,7 +130,7 @@ export class RobotTypeService extends ClientService {
 
   importToolbox(robotType: RobotType, name: string, definition: string, isDefault: boolean, useEvents: boolean, message?: string): Observable<ExecutionResult<Toolbox>> {
     const defaultOption = isDefault ? 'yes' : 'no',
-          eventsOption = useEvents ? 'yes' : 'no';
+      eventsOption = useEvents ? 'yes' : 'no';
     const url = `${environment.apiURL}v1/robots/types/${robotType.id}/toolbox/${name}?default=${defaultOption}&events=${eventsOption}`;
     this.log(`Importing toolbox ${name} to ${robotType.name}`);
     return this.http.post<ExecutionResult<Toolbox>>(url, definition)

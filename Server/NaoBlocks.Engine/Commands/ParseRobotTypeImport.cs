@@ -166,7 +166,7 @@ namespace NaoBlocks.Engine.Commands
                 var toolbox = new Toolbox();
                 var name = $"toolbox #{index + 1}";
                 this.ParseString(element, "name", v => toolbox.Name = v, name, true);
-                this.ParseBoolean(element, "default", v => toolbox.IsDefault = v, name);
+                this.ParseBoolean(element, "isDefault", v => toolbox.IsDefault = v, name);
                 this.ParseString(element, "definition", v => toolbox.RawXml = v, name, true);
                 this.robotType.Toolboxes.Add(toolbox);
             });

@@ -24,7 +24,7 @@ namespace NaoBlocks.Engine.Generators
                 toolboxes = this.RobotType.Toolboxes.Select(tb => new
                 {
                     name = tb.Name,
-                    @default = tb.IsDefault,
+                    isDefault = tb.IsDefault,
                     definition = tb.ExportToXml(Toolbox.Format.Toolbox)
                 }),
                 values = this.RobotType.CustomValues.Select(v => new

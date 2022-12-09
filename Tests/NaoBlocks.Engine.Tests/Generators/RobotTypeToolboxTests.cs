@@ -73,7 +73,7 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Equal("Karetao-toolbox.xml", output.Item2);
             using var reader = new StreamReader(output.Item1);
             var text = await reader.ReadToEndAsync();
-            Assert.Equal("<toolbox />", text);
+            Assert.Equal("<toolbox useEvents=\"no\" />", text);
         }
 
         [Theory]

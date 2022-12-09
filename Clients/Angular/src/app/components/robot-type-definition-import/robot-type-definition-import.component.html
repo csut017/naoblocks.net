@@ -20,11 +20,12 @@
             </div>
         </mat-step>
         <mat-step label="Verify Data" [stepControl]="controlVerification">
+            <div *ngIf="isDuplicate" class="error-message">
+                <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the
+                existing definition.
+            </div>
             <div class="panel-content">
                 <div class="definition-outline">
-                    <div *ngIf="isDuplicate">
-                        <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the existing definition.
-                    </div>
                     <div *ngIf="definition?.parse?.message">
                         <mat-icon>error</mat-icon> {{definition?.parse?.message}}
                     </div>
@@ -77,8 +78,9 @@
         <mat-step label="Import Robot Type">
             <div class="panel-content">
                 <div *ngIf="!isImporting">
-                    <div *ngIf="isDuplicate">
-                        <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the existing definition.
+                    <div *ngIf="isDuplicate" class="error-message">
+                        <mat-icon>difference</mat-icon> This robot type already exists: importing will overwrite the
+                        existing definition.
                     </div>
                     <div>
                         This action will import the definition for <b>{{definition?.name}}</b>.

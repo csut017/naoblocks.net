@@ -48,8 +48,8 @@ Allow Direct Logging: False
 Toolboxes
 =========
 Name,Is Default,Uses Events,Categories,Definition
-Default,Yes,No,""Category #1,Category #2"",<toolbox><category name=""Category #1"" colour=""0"" optional=""no"" /><category name=""Category #2"" colour=""0"" optional=""no"" /></toolbox>
-Secondary,No,No,,<toolbox />
+Default,Yes,No,""Category #1,Category #2"",<toolbox useEvents=""no""><category name=""Category #1"" colour=""0"" optional=""no"" /><category name=""Category #2"" colour=""0"" optional=""no"" /></toolbox>
+Secondary,No,No,,<toolbox useEvents=""no"" />
 Values
 ======
 Name,Default Value

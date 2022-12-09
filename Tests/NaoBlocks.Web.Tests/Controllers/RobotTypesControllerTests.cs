@@ -810,7 +810,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             Assert.NotNull(response.Value);
             Assert.Equal("toolbox", response.Value?.Name);
             Assert.Equal(
-                "<toolbox />",
+                "<toolbox useEvents=\"no\" />",
                 response.Value?.Definition);
         }
 

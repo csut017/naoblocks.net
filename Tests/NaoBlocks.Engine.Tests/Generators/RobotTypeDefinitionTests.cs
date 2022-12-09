@@ -45,8 +45,8 @@ namespace NaoBlocks.Engine.Tests.Generators
             var expected = "{" +
                 "\"name\":\"Nao\",\"isDefault\":false,\"directLogging\":true," +
                 "\"toolboxes\":[" + "" +
-                    "{\"name\":\"Default\",\"default\":true,\"definition\":\"" + toolboxXml + "\"}," +
-                    "{\"name\":\"Secondary\",\"default\":false,\"definition\":\"\\u003Ctoolbox /\\u003E\"}" +
+                    "{\"name\":\"Default\",\"isDefault\":true,\"definition\":\"" + toolboxXml + "\"}," +
+                    "{\"name\":\"Secondary\",\"isDefault\":false,\"definition\":\"\\u003Ctoolbox useEvents=\\u0022no\\u0022 /\\u003E\"}" +
                 "]," +
                 "\"values\":[{\"name\":\"One\",\"value\":\"Tahi\"},{\"name\":\"Two\",\"value\":\"Rua\"}]," +
                 "\"templates\":[" +

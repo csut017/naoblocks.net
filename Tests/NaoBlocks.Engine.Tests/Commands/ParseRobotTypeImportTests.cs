@@ -52,7 +52,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             {
                 SkipValidation = true
             };
-            PopulateData(command, "{\"toolboxes\":[{\"name\":\"First\",\"default\":true,\"definition\":\"\\u003Ctoolbox\\u003E\u003C/toolbox\u003E\"}]}");
+            PopulateData(command, "{\"toolboxes\":[{\"name\":\"First\",\"isDefault\":true,\"definition\":\"\\u003Ctoolbox\\u003E\u003C/toolbox\u003E\"}]}");
             var engine = new FakeEngine();
 
             // Act
