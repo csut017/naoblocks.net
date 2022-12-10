@@ -127,17 +127,21 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="id">The name of the robot type.</param>
         /// <param name="format">The export format.</param>
+        /// <param name="flags">Additional options flags.</param>
         /// <returns>The logs for the robot type.</returns>
         [HttpGet("{id}/definition")]
         [HttpGet("{id}/definition{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDefinition(string id, string? format = ".xlsx")
+        public async Task<ActionResult> ExportDefinition(string id, string? format = ".xlsx", [FromQuery] string? flags = null)
         {
+            var args = (flags ?? string.Empty).Split(',')
+                .ToDictionary(v => v, _ => "yes");
             return await this.GenerateRobotTypeReport<Generators.RobotTypeDefinition>(
                 this.executionEngine,
                 format,
                 id,
-                defaultFormat: ReportFormat.Json);
+                defaultFormat: ReportFormat.Json,
+                args: args);
         }
 
         /// <summary>

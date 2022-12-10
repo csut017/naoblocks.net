@@ -1,0 +1,14 @@
+{
+    "name": "Nao",
+    "isDefault": true,
+    "directLogging": false,
+    "toolboxes": [
+        {
+            "name": "Default",
+            "isDefault": true,
+            "definition": "\u003Ctoolbox useEvents=\u0022yes\u0022\u003E\u003Ccategory name=\u0022Control\u0022 colour=\u002220\u0022 optional=\u0022no\u0022\u003E\u003Cblock type=\u0022robot_on_program_start\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_loop_start\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022quantifier_two\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022quantifier_three\u0022\u003E\u003C/block\u003E\u003C/category\u003E\u003Ccategory name=\u0022Postures\u0022 colour=\u0022330\u0022 optional=\u0022no\u0022\u003E\u003Cblock type=\u0022robot_posture_lie_on_back\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_posture_sit_back\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_posture_sit_forwards\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_posture_stand\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_action_look\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022quantifier_left\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022quantifier_right\u0022\u003E\u003C/block\u003E\u003C/category\u003E\u003Ccategory name=\u0022Ballet\u0022 colour=\u0022260\u0022 optional=\u0022no\u0022\u003E\u003Cblock type=\u0022robot_arm_left_out\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_arm_right_out\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_arabasque\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_arabasque_right\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_enavont\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_first_position\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_second_position\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_third_position\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_fly\u0022\u003E\u003C/block\u003E\u003Cblock type=\u0022robot_ballet_plie\u0022\u003E\u003C/block\u003E\u003C/category\u003E\u003C/toolbox\u003E"
+        }
+    ],
+    "values": [],
+    "templates": []
+}

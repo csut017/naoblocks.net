@@ -18,6 +18,7 @@ import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
 import { RobotImportSettings } from 'src/app/data/robot-import-settings';
 import { RobotTypeDefinitionService } from 'src/app/services/robot-type-definition.service';
 import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
+import { ReportFlag } from 'src/app/data/report-flag';
 
 @Component({
   selector: 'app-robot-types-list',
@@ -254,7 +255,7 @@ export class RobotTypesListComponent implements OnInit {
           console.log(result);
           console.groupEnd();
           this.downloaderService.download(
-            `v1/robots/types/export.${result.selectedFormat}`, 
+            `v1/robots/types/export.${result.selectedFormat}`,
             `robots-types.${result.selectedFormat}`);
         } else {
           console.log('[RobotTypesList] Export cancelled');
@@ -291,6 +292,9 @@ export class RobotTypesListComponent implements OnInit {
   exportDefinition(): void {
     console.log('[RobotTypesList] Showing export settings for definition');
     let settings = new ReportDialogSettings('Export Definition', false);
+    settings.flags = [
+      new ReportFlag('robots', 'Include Robots', false)
+    ];
     settings.allowedFormats = [
       ReportDialogSettings.Json,
     ]
@@ -301,9 +305,13 @@ export class RobotTypesListComponent implements OnInit {
           console.log(result);
           console.groupEnd();
 
+          let flags = '';
+          if (!!result.flags?.length) {
+            flags = '?flags=' + encodeURIComponent(result.flags.join(','));
+          }
           this.selection.selected.forEach(t =>
             this.downloaderService.download(
-              `v1/robots/types/${t.name}/definition.${result.selectedFormat}`,
+              `v1/robots/types/${t.name}/definition.${result.selectedFormat}${flags}`,
               `${t.name}-details.${result.selectedFormat}`));
         } else {
           console.log('[RobotTypesList] Export cancelled');
@@ -332,7 +340,7 @@ export class RobotTypesListComponent implements OnInit {
 
           this.selection.selected.forEach(t =>
             this.downloaderService.download(
-              `v1/robots/types/${t.name}/export/logs.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `v1/robots/types/${t.name}/export/logs.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
               `${t.name}_${fromDate}_${toDate}-logs.${result.selectedFormat}`));
         } else {
           console.log('[RobotTypesList] Export cancelled');
