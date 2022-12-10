@@ -425,7 +425,7 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this.executionEngine
-                .ExecuteForHttp<Data.RobotType, Transfer.RobotType>
+                .ExecuteForHttp<Data.RobotTypeImport, Transfer.RobotType>
                 (command,
                 type => Transfer.RobotType.FromModel(type!, DetailsType.Standard | DetailsType.Parse));
         }

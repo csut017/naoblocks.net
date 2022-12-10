@@ -70,9 +70,36 @@ namespace NaoBlocks.Web.Dtos
                 output.Templates = value.LoggingTemplates.ToList();
             }
 
+            return output;
+        }
+
+        /// <summary>
+        /// Converts a database entity to a Data Transfer Object.
+        /// </summary>
+        /// <param name="value">The database entity.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
+        /// <returns>A new <see cref="RobotType"/> instance containing the required properties.</returns>
+        public static RobotType FromModel(Data.RobotTypeImport value, DetailsType includeDetails = DetailsType.None)
+        {
+            if (value.RobotType == null) throw new ArgumentNullException(nameof(value), "RobotType cannot be null");
+            var output = new RobotType
+            {
+                Name = value.RobotType.Name,
+                IsDefault = value.RobotType.IsDefault,
+                AllowDirectLogging = value.RobotType.AllowDirectLogging,
+                HasToolbox = value.RobotType.Toolboxes.Any()
+            };
+
+            if (includeDetails.HasFlag(DetailsType.Standard))
+            {
+                output.Toolboxes = value.RobotType.Toolboxes.Select(t => Toolbox.FromModel(t, includeDetails)).ToList();
+                output.CustomValues = value.RobotType.CustomValues.ToList();
+                output.Templates = value.RobotType.LoggingTemplates.ToList();
+            }
+
             if (includeDetails.HasFlag(DetailsType.Parse))
             {
-                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
+                output.Parse = new ParseResults { Message = value.RobotType.Message ?? string.Empty };
                 output.Parse.Details["duplicate"] = value.IsDuplicate;
             }
 

@@ -13,9 +13,8 @@ namespace NaoBlocks.Engine.Commands
     public class ParseRobotTypeImport
         : CommandBase
     {
+        private readonly RobotTypeImport definition = new();
         private readonly List<string> errors = new();
-
-        private RobotType? robotType = null;
 
         /// <summary>
         /// Gets or sets the  data.
@@ -78,11 +77,11 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.robotType);
+            ValidateExecutionState(this.definition.RobotType);
             return Task.FromResult(
                 CommandResult.New(
                     this.Number,
-                    this.robotType!));
+                    this.definition));
         }
 
         private void AddError(string message, string? name)
@@ -157,10 +156,10 @@ namespace NaoBlocks.Engine.Commands
         {
             if (definition.ValueKind != JsonValueKind.Object) throw new Exception("Root level definition should be a single definition");
 
-            this.robotType = new RobotType();
-            this.ParseString(definition, "name", v => this.robotType.Name = v, isRequired: true);
-            this.ParseBoolean(definition, "isDefault", v => this.robotType.IsDefault = v);
-            this.ParseBoolean(definition, "directLogging", v => this.robotType.AllowDirectLogging = v);
+            this.definition.RobotType = new RobotType();
+            this.ParseString(definition, "name", v => this.definition.RobotType.Name = v, isRequired: true);
+            this.ParseBoolean(definition, "isDefault", v => this.definition.RobotType.IsDefault = v);
+            this.ParseBoolean(definition, "directLogging", v => this.definition.RobotType.AllowDirectLogging = v);
             this.ParseArray(definition, "toolboxes", (element, index) =>
             {
                 var toolbox = new Toolbox();
@@ -168,7 +167,7 @@ namespace NaoBlocks.Engine.Commands
                 this.ParseString(element, "name", v => toolbox.Name = v, name, true);
                 this.ParseBoolean(element, "isDefault", v => toolbox.IsDefault = v, name);
                 this.ParseString(element, "definition", v => toolbox.RawXml = v, name, true);
-                this.robotType.Toolboxes.Add(toolbox);
+                this.definition.RobotType.Toolboxes.Add(toolbox);
             });
             this.ParseArray(definition, "values", (element, index) =>
             {
@@ -176,12 +175,12 @@ namespace NaoBlocks.Engine.Commands
                 var name = $"value #{index + 1}";
                 this.ParseString(element, "name", v => value.Name = v, name, true);
                 this.ParseString(element, "value", v => value.Value = v);
-                this.robotType.CustomValues.Add(value);
+                this.definition.RobotType.CustomValues.Add(value);
             });
             this.ParseArray(definition, "templates", (element, index) =>
             {
                 var template = new LoggingTemplate();
-                this.robotType.LoggingTemplates.Add(template);
+                this.definition.RobotType.LoggingTemplates.Add(template);
                 var name = $"template #{index + 1}";
                 this.ParseString(element, "category", v => template.Category = v, name, true);
                 this.ParseString(element, "text", v => template.Text = v, name, true);
@@ -191,7 +190,7 @@ namespace NaoBlocks.Engine.Commands
 
             if (this.errors.Any())
             {
-                this.robotType.Message = string.Join(",", this.errors);
+                this.definition.RobotType.Message = string.Join(",", this.errors);
             }
         }
 
@@ -212,13 +211,13 @@ namespace NaoBlocks.Engine.Commands
 
         private async Task ValidateRobotType(IDatabaseSession session, List<CommandError> errors)
         {
-            if (this.robotType == null) throw new UnreachableException("Should not be able to get null here");
-            if (!string.IsNullOrEmpty(this.robotType.Name))
+            if (this.definition.RobotType == null) throw new UnreachableException("Should not be able to get null here");
+            if (!string.IsNullOrEmpty(this.definition.RobotType.Name))
             {
                 var robotTypeExists = await session.Query<RobotType>()
-                    .AnyAsync(r => r.Name == robotType.Name)
+                    .AnyAsync(r => r.Name == this.definition.RobotType.Name)
                     .ConfigureAwait(false);
-                if (robotTypeExists) this.robotType.IsDuplicate = true;
+                if (robotTypeExists) this.definition.IsDuplicate = true;
             }
         }
     }

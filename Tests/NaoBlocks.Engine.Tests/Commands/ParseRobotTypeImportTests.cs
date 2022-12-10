@@ -12,6 +12,33 @@ namespace NaoBlocks.Engine.Tests.Commands
     public class ParseRobotTypeImportTests : DatabaseHelper
     {
         [Fact]
+        public async Task ExecuteAsyncAddsRobot()
+        {
+            // Arrange
+            var command = new ParseRobotTypeImport
+            {
+                SkipValidation = true
+            };
+            PopulateData(command, "{\"robots\":[{\"machineName\": \"Kiwikiwi\",\"friendlyName\": \"Grey\"}]}");
+            var engine = new FakeEngine();
+
+            // Act
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+            var result = await engine.ExecuteAsync(command);
+
+            // Assert
+            Assert.True(result.WasSuccessful, "Command failed");
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
+            Assert.Equal(
+                new[] { "First" },
+                output?.CustomValues.Select(cv => cv.Name).ToArray());
+            Assert.Equal(
+                new[] { "Tahi" },
+                output?.CustomValues.Select(cv => cv.Value).ToArray());
+        }
+
+        [Fact]
         public async Task ExecuteAsyncAddsTemplate()
         {
             // Arrange
@@ -29,7 +56,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Equal(
                 new[] { "First" },
                 output?.LoggingTemplates.Select(lt => lt.Category).ToArray());
@@ -62,7 +89,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Equal(
                 new[] { "First" },
                 output?.Toolboxes.Select(tb => tb.Name).ToArray());
@@ -92,7 +119,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Equal(
                 new[] { "First" },
                 output?.CustomValues.Select(cv => cv.Name).ToArray());
@@ -118,7 +145,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output;
             Assert.True(output?.IsDuplicate, "IsDuplicate not set");
         }
 
@@ -140,7 +167,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'name' not set",
                 output?.Message);
@@ -164,7 +191,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'name' not set for toolbox #1",
                 output?.Message);
@@ -188,7 +215,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'templates' is not a valid array",
                 output?.Message);
@@ -212,7 +239,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Equal(
                 new[] { "First" },
                 output?.LoggingTemplates.Select(lt => lt.Category).ToArray());
@@ -248,7 +275,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'toolboxes' is not a valid array",
                 output?.Message);
@@ -272,7 +299,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'values' is not a valid array",
                 output?.Message);
@@ -296,7 +323,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'directLogging' is not a valid boolean (true or false)",
                 output?.Message);
@@ -320,7 +347,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotType>().Output;
+            var output = result.As<RobotTypeImport>().Output?.RobotType;
             Assert.Contains(
                 "Property 'isDefault' is not a valid boolean (true or false)",
                 output?.Message);
@@ -344,7 +371,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            Assert.True(result.As<RobotType>().Output?.AllowDirectLogging, "AllowDirectLogging not set");
+            Assert.True(result.As<RobotTypeImport>().Output?.RobotType?.AllowDirectLogging, "AllowDirectLogging not set");
         }
 
         [Fact]
@@ -365,7 +392,7 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            Assert.True(result.As<RobotType>().Output?.IsDefault, "IsDefault not set");
+            Assert.True(result.As<RobotTypeImport>().Output?.RobotType?.IsDefault, "IsDefault not set");
         }
 
         [Fact]
@@ -388,7 +415,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 "New robot type",
-                result.As<RobotType>().Output?.Name);
+                result.As<RobotTypeImport>().Output?.RobotType?.Name);
         }
 
         [Fact]
