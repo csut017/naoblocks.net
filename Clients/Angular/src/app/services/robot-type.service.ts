@@ -1,6 +1,6 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { ClientService } from './client.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ErrorHandlerService } from './error-handler.service';
 import { RobotType } from '../data/robot-type';
 import { Observable } from 'rxjs';
@@ -11,6 +11,8 @@ import { ExecutionResult } from '../data/execution-result';
 import { PackageFile } from '../data/package-file';
 import { Toolbox } from '../data/toolbox';
 import { NamedValue } from '../data/named-value';
+import { LoggingTemplate } from '../data/logging-template';
+import { RobotTypeItems } from '../data/robot-type-items';
 
 @Injectable({
   providedIn: 'root'
@@ -112,6 +114,32 @@ export class RobotTypeService extends ClientService {
           result.output = robotType;
         }),
         catchError(this.handleError('delete', error => new ExecutionResult<RobotType>(undefined, error)))
+      );
+  }
+
+  clearData(robotType: RobotType, items: RobotTypeItems, message?: string): Observable<ExecutionResult<RobotType>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/data`;
+    this.log('Clearing robot type data');
+    let itemsToWipe: string[] = [];
+    if (items.toolboxes) itemsToWipe.push('toolboxes');
+    if (items.values) itemsToWipe.push('customValues');
+    if (items.templates) itemsToWipe.push('loggingTemplates');
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: {
+        items: itemsToWipe,
+      },
+    };
+    return this.http.delete<ExecutionResult<RobotType>>(url, options)
+      .pipe(
+        tap(result => {
+          this.log('Deleted robot type');
+          result.output = robotType;
+          result.message = message;
+        }),
+        catchError(this.handleError('delete', error => new ExecutionResult<RobotType>(undefined, error, message)))
       );
   }
 
@@ -231,6 +259,20 @@ export class RobotTypeService extends ClientService {
           result.output = robotType;
         }),
         catchError(this.handleError('updateAllowedValues', error => new ExecutionResult<RobotType>(undefined, error, message)))
+      );
+  }
+
+  addLoggingTemplate(robotType: RobotType, template: LoggingTemplate, message?: string): Observable<ExecutionResult<any>> {
+    const url = `${environment.apiURL}v1/robots/types/${robotType.id}/loggingTemplates`;
+    this.log(`Adding logging template for robot type ${robotType.id}`);
+    return this.http.post<ExecutionResult<any>>(url, template)
+      .pipe(
+        tap(result => {
+          this.log(`Added template to ${robotType.id}`);
+          result.message = message;
+          result.output = robotType;
+        }),
+        catchError(this.handleError('addLoggingTemplate', error => new ExecutionResult<RobotType>(undefined, error, message)))
       );
   }
 }

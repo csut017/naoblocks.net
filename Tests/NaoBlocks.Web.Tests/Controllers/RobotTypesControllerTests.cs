@@ -44,6 +44,47 @@ namespace NaoBlocks.Web.Tests.Controllers
         }
 
         [Fact]
+        public async Task DeleteDataCallsCommand()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ClearRobotType>();
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.DeleteData("karetao", new Transfer.Set<string>());
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = (ClearRobotType)engine.LastCommand!;
+            Assert.Equal("karetao", command.Name);
+        }
+
+        [Fact]
+        public async Task DeleteDataSetsFlags()
+        {
+            // Arrange
+            var engine = new FakeEngine();
+            engine.ExpectCommand<ClearRobotType>();
+            var controller = InitialiseController(engine);
+
+            // Act
+            var response = await controller.DeleteData("karetao", Transfer.Set.New("toolboxes", "customValues", "loggingTemplates"));
+
+            // Assert
+            var result = Assert.IsType<ExecutionResult>(response.Value);
+            Assert.True(result.Successful, "Expected result to be successful");
+            engine.Verify();
+            var command = (ClearRobotType)engine.LastCommand!;
+            Assert.Equal("karetao", command.Name);
+            Assert.True(command.IncludeCustomValues, "Custom values not set");
+            Assert.True(command.IncludeLoggingTemplates, "Logging templates not set");
+            Assert.True(command.IncludeToolboxes, "Toolboxes not set");
+        }
+
+        [Fact]
         public async Task DeleteToolboxCallsDelete()
         {
             // Arrange

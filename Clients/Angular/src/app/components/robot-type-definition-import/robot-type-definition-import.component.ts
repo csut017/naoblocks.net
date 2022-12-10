@@ -6,6 +6,7 @@ import { concat, concatMap, from, Observable, tap } from 'rxjs';
 import { ExecutionResult } from 'src/app/data/execution-result';
 import { RobotImportSettings } from 'src/app/data/robot-import-settings';
 import { RobotType } from 'src/app/data/robot-type';
+import { RobotTypeItems } from 'src/app/data/robot-type-items';
 import { RobotTypeService } from 'src/app/services/robot-type.service';
 
 @Component({
@@ -63,6 +64,14 @@ export class RobotTypeDefinitionImportComponent {
 
         RobotType.setNewStatus(this.definition!, false);
         let updates: Observable<ExecutionResult<any>>[] = [];
+        if (this.isDuplicate) {
+          updates.push(
+            this.robotTypeService.clearData(
+              this.definition!, 
+              new RobotTypeItems(true, true, false),
+              'Clear existing data'));
+        }
+
         if (this.definition?.isDefault) {
           updates.push(
             this.robotTypeService.setSystemDefault(
@@ -88,6 +97,15 @@ export class RobotTypeDefinitionImportComponent {
               this.definition!,
               this.definition!.customValues!,
               'Import allowed values'));
+        }
+
+        if (!!this.definition?.templates?.length) {
+          updates.push(
+            ...this.definition.templates.map(
+              template => this.robotTypeService.addLoggingTemplate(
+                this.definition!,
+                template,
+                `Add logging template '${template.category}'`)));
         }
 
         this.successful = true;

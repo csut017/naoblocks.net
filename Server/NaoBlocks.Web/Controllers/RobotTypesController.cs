@@ -53,11 +53,36 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this.logger.LogInformation($"Deleting robot type '{id}'");
+            this.logger.LogInformation("Deleting robot type '{id}'", id);
             var command = new DeleteRobotType
             {
                 Name = id
             };
+            return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Deletes data from a robot type.
+        /// </summary>
+        /// <param name="id">The id of the robot type.</param>
+        /// <param name="items">The items to delete.</param>
+        /// <returns>The result of execution.</returns>
+        [HttpDelete("{id}/data")]
+        [Authorize(Policy = "Teacher")]
+        public async Task<ActionResult<ExecutionResult>> DeleteData(string id, Set<string> items)
+        {
+            this.logger.LogInformation("Deleting data from robot type '{id}'", id);
+            var command = new ClearRobotType
+            {
+                Name = id
+            };
+            if (items?.Items != null)
+            {
+                command.IncludeCustomValues = items.Items.Contains("customValues");
+                command.IncludeLoggingTemplates = items.Items.Contains("loggingTemplates");
+                command.IncludeToolboxes = items.Items.Contains("toolboxes");
+            }
+
             return await this.executionEngine.ExecuteForHttp(command);
         }
 
@@ -71,7 +96,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> DeleteToolbox(string? id, string name)
         {
-            this.logger.LogInformation($"Deleting toolbox '{name}' from robot type '{id}'");
+            this.logger.LogInformation("Deleting toolbox '{name}' from robot type '{id}'", name, id);
             var command = new DeleteToolbox
             {
                 RobotTypeName = id,
@@ -201,18 +226,18 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Administrator")]
         public async Task<ActionResult> GeneratePackageFileList(string id)
         {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug("Retrieving robot type: {id}", id);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${id}");
+                this.logger.LogDebug("Unknown robot type ${id}", id);
                 return NotFound();
             }
 
-            this.logger.LogInformation($"Generating file list for robot type '{id}'");
+            this.logger.LogInformation("Generating file list for robot type '{id}'", id);
             var fileList = await RobotTypeFilePackage.GenerateListAsync(robotType, this.rootFolder);
             return File(fileList, ContentTypes.FromReportFormat(ReportFormat.Text), "filelist.txt");
         }
@@ -225,18 +250,18 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Transfer.RobotType>> Get(string name)
         {
-            this.logger.LogDebug($"Retrieving robot type: {name}");
+            this.logger.LogDebug("Retrieving robot type: {name}", name);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(name)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${name}");
+                this.logger.LogDebug("Unknown robot type ${name}", name);
                 return NotFound();
             }
 
-            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            this.logger.LogDebug("Retrieved robot type ${name}", robotType.Name);
             return Transfer.RobotType.FromModel(robotType, Transfer.DetailsType.Standard);
         }
 
@@ -250,14 +275,14 @@ namespace NaoBlocks.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetPackageFile(string id, string filename)
         {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug("Retrieving robot type: {id}", id);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${id}");
+                this.logger.LogDebug("Unknown robot type ${id}", id);
                 return NotFound();
             }
 
@@ -271,7 +296,7 @@ namespace NaoBlocks.Web.Controllers
                 }
             }
 
-            this.logger.LogInformation($"Retrieving file '{filename}' for robot type '{id}'");
+            this.logger.LogInformation("Retrieving file '{filename}' for robot type '{id}'", filename, id);
             var details = await RobotTypeFilePackage.RetrieveFileAsync(robotType, this.rootFolder, filename, etag);
             if (details.StatusCode != HttpStatusCode.OK) return StatusCode((int)details.StatusCode);
             return File(details.DataStream!, ContentTypes.FromReportFormat(ReportFormat.Text), filename);
@@ -288,18 +313,18 @@ namespace NaoBlocks.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetPackageFileList(string id, string? format = ".json")
         {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug("Retrieving robot type: {id}", id);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${id}");
+                this.logger.LogDebug("Unknown robot type ${id}", id);
                 return NotFound();
             }
 
-            this.logger.LogInformation($"Retrieving file list for robot type '{id}'");
+            this.logger.LogInformation("Retrieving file list for robot type '{id}'", id);
             var fileList = await RobotTypeFilePackage.RetrieveListAsync(robotType, this.rootFolder);
             if (format == ".txt")
             {
@@ -330,26 +355,26 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{id}/toolbox/{name}")]
         public async Task<ActionResult<Transfer.Toolbox>> GetToolbox(string id, string name, [FromQuery] string? format = null)
         {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug("Retrieving robot type: {id}", id);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${id}");
+                this.logger.LogDebug("Unknown robot type ${id}", id);
                 return NotFound();
             }
 
-            this.logger.LogDebug($"Retrieved robot type ${robotType.Name}");
+            this.logger.LogDebug("Retrieved robot type ${name}", robotType.Name);
             var toolbox = robotType.Toolboxes.FirstOrDefault(t => t.Name == name);
             if (toolbox == null)
             {
-                this.logger.LogDebug($"Unknown toolbox ${name}");
+                this.logger.LogDebug("Unknown toolbox ${name}", name);
                 return NotFound();
             }
 
-            this.logger.LogDebug($"Found toolbox ${toolbox.Name}");
+            this.logger.LogDebug("Found toolbox ${name}", toolbox.Name);
             return Transfer.Toolbox.FromModel(toolbox, DetailsType.Standard, format);
         }
 
@@ -427,7 +452,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Importing toolbox to robot type '{id}'");
+            this.logger.LogInformation("Importing toolbox to robot type '{id}'", id);
             var command = new ImportToolbox
             {
                 RobotTypeName = id,
@@ -454,13 +479,13 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ListResult<Transfer.RobotType>> List(int? page, int? size)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
-            this.logger.LogDebug($"Retrieving robot types: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug("Retrieving robot types: page {pageNum} with size {pageSize}", pageNum, pageSize);
             var robotTypes = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrievePageAsync(pageNum, pageSize)
                 .ConfigureAwait(false);
             var count = robotTypes.Items?.Count() ?? 0;
-            this.logger.LogDebug($"Retrieved {count} robot types");
+            this.logger.LogDebug("Retrieved {count} robot types", count);
             var result = new ListResult<Transfer.RobotType>
             {
                 Count = robotTypes.Count,
@@ -487,7 +512,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Adding new robot type '{robotType.Name}'");
+            this.logger.LogInformation("Adding new robot type '{name}'", robotType.Name);
             var command = new AddRobotType
             {
                 Name = robotType.Name,
@@ -523,7 +548,7 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             if (robotType == null) return NotFound();
 
-            this.logger.LogInformation($"Adding new logging template to robot type '{id}'");
+            this.logger.LogInformation("Adding new logging template to robot type '{id}'", id);
             var command = new AddLoggingTemplateToRobotType
             {
                 Category = template.Category,
@@ -554,7 +579,7 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             if (robotType == null) return NotFound();
 
-            this.logger.LogInformation($"Updating values for robot '{robotType?.Name}'");
+            this.logger.LogInformation("Updating values for robot '{name}'", robotType?.Name);
             var command = new UpdateCustomValuesForRobotType
             {
                 Name = id,
@@ -582,7 +607,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation("Updating robot type '{id}'", id);
             var command = new UpdateRobotType
             {
                 CurrentName = id,
@@ -604,7 +629,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult<Transfer.RobotType>>> SetAsDefault(string? id)
         {
-            this.logger.LogInformation($"Updating robot type '{id}'");
+            this.logger.LogInformation("Updating robot type '{id}'", id);
             var command = new SetDefaultRobotType
             {
                 Name = id
@@ -625,19 +650,19 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Administrator")]
         public async Task<ActionResult<ExecutionResult>> UploadPackageFile(string id, string filename)
         {
-            this.logger.LogDebug($"Retrieving robot type: {id}");
+            this.logger.LogDebug("Retrieving robot type: {id}", id);
             var robotType = await this.executionEngine
                 .Query<RobotTypeData>()
                 .RetrieveByNameAsync(id)
                 .ConfigureAwait(false);
             if (robotType == null)
             {
-                this.logger.LogDebug($"Unknown robot type ${id}");
+                this.logger.LogDebug("Unknown robot type ${id}", id);
                 return NotFound();
             }
 
-            this.logger.LogInformation($"Uploading package file for robot type '{id}'");
-            this.logger.LogInformation($"Uploading '{filename}'");
+            this.logger.LogInformation("Uploading package file for robot type '{id}'", id);
+            this.logger.LogInformation("Uploading '{filename}'", filename);
             await RobotTypeFilePackage.StorePackageFileAsync(robotType, this.rootFolder, filename, this.Request.Body);
             return new ExecutionResult();
         }
