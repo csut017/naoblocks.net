@@ -442,7 +442,24 @@
             "category": "Robot Dances",
             "topCodes": {
                 "numbers": [
-                    55
+                    301
+                ]
+            },
+            "angular": {
+                "definition": "{\"message0\":\"Gangnam (music %1)\",\"args0\":[{\"type\":\"field_dropdown\",\"name\":\"MUSIC\",\"options\":[[\"on\",\"TRUE\"],[\"off\",\"FALSE\"]]}],\"colour\":230,\"tooltip\":\"Performs the gangnam dance.\"}",
+                "generator": "var music = block.getFieldValue('MUSIC'),code = 'dance(\\'gangnam\\', ' + music + ')\\n';return Blockly.NaoLang.generatePrefix() + code;"
+            }
+        },
+        {
+            "group": "Nao Movements",
+            "name": "robot_dance_single_ladies",
+            "text": "Single Ladies Dance",
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACGklEQVR4nO2Yu6riUBSG/8gINiKS9GKjBAQvaWwEC7G1FmxMkTewiTcs7SzF17ASLMVK8gYWooXgfgT1n+oIM+foGJPMVsgHq0iyd7K+ZK2EHYUkPpmI7AS8EgrIJhSQTSggm48X+OV2wmw2IwBUKhXouq48GiuE4H6/R7FYfDjOEyRdhaIoBMDpdMpH49rtNgEQAE3TfDjWS7iekE6nCYCdTuduUo7j3JL/CsdxApFw3QP5fB4AsNlsfKsCT7g1Ho1GBMBYLMbtdnv3rpqm+Z4ldDwemUgkCIDlcpnn8/lucqfTKbDSeVmAJCaTye3u1mo1Hg6HQJN8FArpfj1Ako1GA/P5HAAQjUbRbDZRrVaRy+UQidxvrVKpBEVR/Hutvmp+uVxo2za/XqvPRjwe53g89u2JeT7BarWiaZqMx+OuRIbDoS8SvtXi9XqlruuuJAaDgWcJXxvKMIx/Jp3JZJjNZm/b/X7fk8R/FzAMg0IIFgqF275er/eyhBQBkvBLQprATxLdbte1hFSBnyRs23YlIV3gb4lkMkkhxNMSb7EiU1VVWS6XqNfrWK/XUFX16S+16xVZUKiqqiwWC9fzAhHQNA2pVOqPfbvdDkII/y8WRA9YlvWthi3LutsDXuItesALoYBsQgHZhAKy+XgBX7/Etm1DCAFd178da7VaMAwDmqb5ecnXfqu8Ex9fQqGAbEIB2YQCsvl4gd+x7pdk+xZNzAAAAABJRU5ErkJggg==",
+            "generator": "var code = 'single()\\n';return ##PREFIX##code;",
+            "category": "Robot Dances",
+            "topCodes": {
+                "numbers": [
+                    307
                 ]
             },
             "angular": {
