@@ -861,7 +861,7 @@ namespace NaoBlocks.Web.Tests.Controllers
             // Arrange
             var engine = new FakeEngine();
             engine.ExpectCommand<ParseRobotTypeImport>(
-                CommandResult.New(1, new Data.RobotType()));
+                CommandResult.New(1, new Data.RobotTypeImport { RobotType = new Data.RobotType() }));
             var controller = InitialiseController(engine);
             controller.SetRequestFiles("first");
 

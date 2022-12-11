@@ -11,6 +11,11 @@
         public bool IsDuplicate { get; set; }
 
         /// <summary>
+        /// Gets or sets the associated robots.
+        /// </summary>
+        public List<Robot>? Robots { get; set; }
+
+        /// <summary>
         /// Gets or sets the robot type.
         /// </summary>
         public RobotType? RobotType { get; set; }

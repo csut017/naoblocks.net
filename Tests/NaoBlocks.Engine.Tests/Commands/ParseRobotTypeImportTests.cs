@@ -29,13 +29,10 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var output = result.As<RobotTypeImport>().Output?.RobotType;
+            var output = result.As<RobotTypeImport>().Output;
             Assert.Equal(
-                new[] { "First" },
-                output?.CustomValues.Select(cv => cv.Name).ToArray());
-            Assert.Equal(
-                new[] { "Tahi" },
-                output?.CustomValues.Select(cv => cv.Value).ToArray());
+                new[] { "Kiwikiwi=>Grey" },
+                output?.Robots?.Select(r => $"{r.MachineName}=>{r.FriendlyName}").ToArray());
         }
 
         [Fact]

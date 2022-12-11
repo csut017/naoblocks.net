@@ -187,6 +187,15 @@ namespace NaoBlocks.Engine.Commands
                 this.ParseEnum<ClientMessageType>(element, "type", v => template.MessageType = v, name);
                 this.ParseString(element, "values", v => template.ValueNames = v.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
             });
+            this.ParseArray(definition, "robots", (element, index) =>
+            {
+                var robot = new Robot();
+                var name = $"robot #{index + 1}";
+                this.definition.Robots ??= new List<Robot>();
+                this.definition.Robots.Add(robot);
+                this.ParseString(element, "machineName", v => robot.MachineName = v, name, true);
+                this.ParseString(element, "friendlyName", v => robot.FriendlyName = v, name, true);
+            });
 
             if (this.errors.Any())
             {

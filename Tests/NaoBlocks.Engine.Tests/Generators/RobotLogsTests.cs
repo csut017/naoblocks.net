@@ -179,7 +179,8 @@ Mihīni,2021-03-04,1124,18:16:27,RobotDebugMessage,toru,,,
                 robot2,
                 conversation,
                 log1,
-                log2);
+                log2,
+                robotType1);
             await this.InitialiseIndicesAsync(store, new RobotLogByRobotTypeId());
             using var session = store.OpenAsyncSession();
             var generator = InitialiseGenerator<RobotLogs>(session);
@@ -199,12 +200,12 @@ Mihīni,2021-03-04,1124,18:16:27,RobotDebugMessage,toru,,,
             Assert.Equal(
                     @"Logs
 ====
-Robot,Date,Conversation,Time,Type,Description,info,debug,error,warn
-Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,tahi,ono,whitu,,
-Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,rua,iwa,,waru,
-Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,toru,,,,
-Mihīni Rua,2021-03-04,1124,18:16:27,RobotDebugMessage,wha,tekau,,,tekau mā tahi
-Mihīni Rua,2021-03-04,1124,18:16:27,RobotDebugMessage,rima,,,,
+Robot Type,Robot,Date,Conversation,Time,Type,Description,info,debug,error,warn
+Nao,Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,tahi,ono,whitu,,
+Nao,Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,rua,iwa,,waru,
+Nao,Mihīni Tahi,2021-03-04,1124,18:16:27,RobotDebugMessage,toru,,,,
+<Unknown>,Mihīni Rua,2021-03-04,1124,18:16:27,RobotDebugMessage,wha,tekau,,,tekau mā tahi
+<Unknown>,Mihīni Rua,2021-03-04,1124,18:16:27,RobotDebugMessage,rima,,,,
 ",
                 text);
         }
