@@ -16,17 +16,22 @@ namespace NaoBlocks.Engine.Generators
         /// <param name="fromDate">The from date.</param>
         /// <param name="toDate">The to date.</param>
         /// <param name="generator">The generator to use.</param>
-        public static async Task GenerateLogsForRobotAsync(this ReportGenerator reportGenerator, Generator generator, DateTime fromDate, DateTime toDate)
+        /// <param name="includeRobotType">Whether to include the robot type or not.</param>
+        public static async Task GenerateLogsForRobotAsync(this ReportGenerator reportGenerator, Generator generator, DateTime fromDate, DateTime toDate, bool includeRobotType)
         {
             var table = generator.AddTable("Logs");
-            var header = table.AddRow(
-                TableRowType.Header,
+            var cells = new List<TableCell> {
                 "Robot",
                 "Date",
                 "Conversation",
                 "Time",
                 "Type",
-                "Description");
+                "Description"
+            };
+            if (includeRobotType) cells.Insert(0, "Robot Type");
+            var header = table.AddRow(
+                TableRowType.Header,
+                cells.ToArray());
             var columns = new Dictionary<string, int>();
 
             fromDate = fromDate.ToUniversalTime();
@@ -55,6 +60,7 @@ namespace NaoBlocks.Engine.Generators
                     .ToListAsync();
             }
 
+            var types = new Dictionary<string, string>();
             foreach (var log in logs)
             {
                 var robot = await reportGenerator.Session
@@ -62,13 +68,28 @@ namespace NaoBlocks.Engine.Generators
                     .ConfigureAwait(false);
                 foreach (var line in log.Lines)
                 {
-                    var row = table.AddRow(
+                    cells = new List<TableCell> {
                         robot?.FriendlyName,
                         log!.WhenAdded.ToLocalTime(),
                         log.Conversation.ConversationId,
                         new TableCell(line.WhenAdded.ToLocalTime(), "HH:mm:ss"),
                         line.SourceMessageType.ToString(),
-                        line.Description);
+                        line.Description
+                    };
+                    if (includeRobotType && !string.IsNullOrEmpty(robot?.RobotTypeId))
+                    {
+                        if (!types.TryGetValue(robot.RobotTypeId, out string? typeName))
+                        {
+                            var robotType = await reportGenerator.Session
+                                .LoadAsync<RobotType>(robot.RobotTypeId)
+                                .ConfigureAwait(false);
+                            typeName = robotType?.Name ?? "<Unknown>";
+                            types[robot.RobotTypeId] = typeName;
+                        }
+                        cells.Insert(0, typeName);
+                    }
+
+                    var row = table.AddRow(cells.ToArray());
                     foreach (var value in line.Values)
                     {
                         if (string.Equals("token", value.Name, StringComparison.InvariantCultureIgnoreCase))

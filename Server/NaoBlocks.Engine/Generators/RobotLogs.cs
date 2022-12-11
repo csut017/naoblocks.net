@@ -19,7 +19,7 @@
             var reportName = this.HasRobotType
                 ? this.RobotType.Name
                 : "All";
-            await this.GenerateLogsForRobotAsync(generator, fromDate, toDate);
+            await this.GenerateLogsForRobotAsync(generator, fromDate, toDate, !this.HasRobotType);
 
             var (stream, name) = await generator.GenerateAsync(format, $"{reportName}-logs");
             return Tuple.Create(stream, name);

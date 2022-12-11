@@ -20,7 +20,7 @@ namespace NaoBlocks.Engine.Generators
             var generator = new Generator();
             await GenerateRobotDetails(generator);
             var includeLogs = this.GetArgumentOrDefault("logs", "yes");
-            if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsForRobotAsync(generator, fromDate, toDate);
+            if ("yes".Equals(includeLogs) || "true".Equals(includeLogs)) await this.GenerateLogsForRobotAsync(generator, fromDate, toDate, false);
             generator.Title = "Robot Details";
             generator.IsLandScape = true;
             var (stream, name) = await generator.GenerateAsync(format, $"Robot-Export-{this.Robot.FriendlyName}");
