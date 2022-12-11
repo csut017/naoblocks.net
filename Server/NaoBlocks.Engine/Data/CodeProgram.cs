@@ -21,6 +21,11 @@
         public long? Number { get; set; }
 
         /// <summary>
+        /// Gets or sets the source of the code (e.g. Blockly, TopCodes, etc.)
+        /// </summary>
+        public string? Source { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifier of the user this program belongs to.
         /// </summary>
         public string UserId { get; set; } = string.Empty;

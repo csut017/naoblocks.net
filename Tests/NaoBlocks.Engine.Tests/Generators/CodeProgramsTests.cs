@@ -18,8 +18,8 @@ namespace NaoBlocks.Engine.Tests.Generators
             // Arrange
             var user = new User { Id = "users/1", Name = "Mia" };
             var program1 = new CodeProgram { Code = "go()", Name = "None", Number = 1, UserId = user.Id, WhenAdded = DateTime.Now.AddDays(-3) };
-            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user.Id, WhenAdded = DateTime.Now.AddDays(-2) };
-            var program3 = new CodeProgram { Code = "start()", Number = 3, UserId = user.Id, WhenAdded = DateTime.Now.AddDays(-1) };
+            var program2 = new CodeProgram { Code = "reset()", Number = 2, UserId = user.Id, WhenAdded = DateTime.Now.AddDays(-2), Source = "TopCodes" };
+            var program3 = new CodeProgram { Code = "start()", Number = 3, UserId = user.Id, WhenAdded = DateTime.Now.AddDays(-1), Source = "Blockly" };
             using var store = InitialiseDatabase(
                 user,
                 program1,
@@ -38,10 +38,10 @@ namespace NaoBlocks.Engine.Tests.Generators
             Assert.Matches(
                     @"Logs
 ====
-Number,Name,When Added,Code
-3,,\d{4}-\d{2}-\d{2},start\(\)
-2,,\d{4}-\d{2}-\d{2},reset\(\)
-1,None,\d{4}-\d{2}-\d{2},go\(\)
+Source,Number,Name,When Added,Code
+Blockly,3,,\d{4}-\d{2}-\d{2},start\(\)
+TopCodes,2,,\d{4}-\d{2}-\d{2},reset\(\)
+,1,None,\d{4}-\d{2}-\d{2},go\(\)
 ",
                 text);
         }
@@ -77,9 +77,9 @@ Number,Name,When Added,Code
             Assert.Equal(
                     @"Logs
 ====
-Number,Name,When Added,Code
-2,,2021-03-04,reset()
-1,None,2021-03-03,go()
+Source,Number,Name,When Added,Code
+,2,,2021-03-04,reset()
+,1,None,2021-03-03,go()
 ",
                 text);
         }
@@ -117,10 +117,10 @@ Number,Name,When Added,Code
             Assert.Equal(
                     @"Logs
 ====
-Person,Number,Name,When Added,Code
-Mia,2,,2021-03-04,reset()
-Mia,1,None,2021-03-03,go()
-Mateo,1,,2021-03-02,start()
+Person,Source,Number,Name,When Added,Code
+Mia,,2,,2021-03-04,reset()
+Mia,,1,None,2021-03-03,go()
+Mateo,,1,,2021-03-02,start()
 ",
                 text);
         }

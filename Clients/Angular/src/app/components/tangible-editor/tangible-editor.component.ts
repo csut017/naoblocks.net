@@ -155,7 +155,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     }
 
     this.controller!.isPlaying = true;
-    this.programService.compile(code)
+    this.programService.compile(code, true, 'topCodes')
       .subscribe(result => {
         if (!result.successful) {
           this.onStepFailed(0, 'Unable to compile code');

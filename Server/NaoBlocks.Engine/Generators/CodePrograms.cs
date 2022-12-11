@@ -58,6 +58,7 @@ namespace NaoBlocks.Engine.Generators
                     .ToListAsync();
                 table.AddRow(
                     TableRowType.Header,
+                    "Source",
                     "Number",
                     "Name",
                     "When Added",
@@ -74,6 +75,7 @@ namespace NaoBlocks.Engine.Generators
                 table.AddRow(
                     TableRowType.Header,
                     "Person",
+                    "Source",
                     "Number",
                     "Name",
                     "When Added",
@@ -89,6 +91,7 @@ namespace NaoBlocks.Engine.Generators
                         .ConfigureAwait(false);
                     table.AddRow(
                         user?.Name ?? string.Empty,
+                        program.Source ?? string.Empty,
                         program.Number,
                         program.Name ?? string.Empty,
                         program.WhenAdded.ToLocalTime(),
@@ -97,6 +100,7 @@ namespace NaoBlocks.Engine.Generators
                 else
                 {
                     table.AddRow(
+                        program.Source ?? string.Empty,
                         program.Number,
                         program.Name ?? string.Empty,
                         program.WhenAdded.ToLocalTime(),

@@ -23,6 +23,11 @@ namespace NaoBlocks.Web.Dtos
         public string? Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the source of the code (e.g. Blockly, TopCodes, etc.)
+        /// </summary>
+        public string? Source { get; set; }
+
+        /// <summary>
         /// Gets or sets whether the program should be stored or not.
         /// </summary>
         public bool? Store { get; set; }
@@ -51,6 +56,5 @@ namespace NaoBlocks.Web.Dtos
 
             return program;
         }
-
     }
 }

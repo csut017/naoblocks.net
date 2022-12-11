@@ -60,7 +60,8 @@ namespace NaoBlocks.Web.Controllers
             var storeCommand = new StoreProgram
             {
                 UserName = user.Name,
-                Code = codeToCompile.Code
+                Code = codeToCompile.Code,
+                Source = codeToCompile.Source,
             };
 
             var batchCommand = new Batch(compileCommand, storeCommand);

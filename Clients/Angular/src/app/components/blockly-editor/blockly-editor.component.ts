@@ -197,7 +197,7 @@ export class BlocklyEditorComponent implements OnInit, OnChanges, AfterViewInit,
     }
 
     this.controller!.isPlaying = true;
-    this.programService.compile(code)
+    this.programService.compile(code, true, 'Blockly')
       .subscribe(result => {
         if (!result.successful) {
           this.onStepFailed(0, 'Unable to compile code');

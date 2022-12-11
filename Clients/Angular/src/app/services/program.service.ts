@@ -21,12 +21,13 @@ export class ProgramService extends ClientService {
       this.serviceName = 'ProgramService';
   }
 
-  compile(code: string, store: boolean = true): Observable<ExecutionResult<Compilation>> {
+  compile(code: string, store: boolean = true, source: string = ''): Observable<ExecutionResult<Compilation>> {
     const url = `${environment.apiURL}v1/code/compile`;
     this.log('Compiling code');
     let request = {
       code: code,
-      store: store
+      store: store,
+      source: source,
     };
     return this.http.post<any>(url, request)
       .pipe(
