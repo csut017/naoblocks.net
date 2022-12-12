@@ -45,6 +45,8 @@
                             (click)="exportDetails()">Details</button>
                         <button mat-menu-item [disabled]="selection.selected.length != 1"
                             (click)="exportLogs()">Logs</button>
+                        <button mat-menu-item [disabled]="selection.selected.length != 1"
+                            (click)="exportQRCode()">QR Code Login</button>
                         <!-- <button mat-menu-item [disabled]="selection.selected.length != 1" (click)="exportSnapshots()">Snapshots</button> -->
                     </mat-menu>
                 </div>
