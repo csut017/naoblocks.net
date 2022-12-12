@@ -12,7 +12,7 @@ namespace NaoBlocks.Engine.Commands
     public class ParseUsersImport
         : CommandBase
     {
-        private readonly List<ParseRecord<User>> users = new();
+        private readonly List<ItemImport<User>> users = new();
 
         /// <summary>
         /// Gets or sets the  data.
@@ -87,7 +87,7 @@ namespace NaoBlocks.Engine.Commands
             return Task.FromResult(
                 CommandResult.New(
                     this.Number,
-                    this.users.Select(r => r.Value).ToArray().AsEnumerable()));
+                    this.users.AsEnumerable()));
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace NaoBlocks.Engine.Commands
 
                 if (!hasData) continue;
                 if (this.Role != null) user.Role = this.Role.Value;
-                this.users.Add(ParseRecord.New(user, row));
+                this.users.Add(ItemImport.New(user, row));
             }
         }
 
@@ -226,7 +226,7 @@ namespace NaoBlocks.Engine.Commands
             var robots = new Dictionary<string, bool>();
             foreach (var record in this.users)
             {
-                var user = record.Value;
+                var user = record.Item!;
                 if (string.IsNullOrEmpty(user.Name))
                 {
                     errors.Add(this.GenerateError($"Name is required [row {record.Row}]"));
@@ -267,7 +267,7 @@ namespace NaoBlocks.Engine.Commands
 
                 if (errors.Any())
                 {
-                    user.Message = string.Join(", ", errors);
+                    record.Message = string.Join(", ", errors);
                 }
             }
         }

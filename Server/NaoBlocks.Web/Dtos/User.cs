@@ -46,25 +46,42 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
-        /// <param name="includeDetails">Whether to include the details of the database entity.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
         /// <returns>A new <see cref="User"/> instance containing the required properties.</returns>
-        public static User FromModel(Data.User value, bool includeDetails = false)
+        public static User FromModel(Data.User value, DetailsType includeDetails = DetailsType.None)
         {
             var user = new User
             {
                 Name = value.Name,
                 Role = value.Role.ToString(),
-                Message = value.Message,
                 Password = value.PlainPassword,
                 WhenAdded = value.WhenAdded
             };
 
-            if (includeDetails)
+            if (includeDetails.HasFlag(DetailsType.Standard))
             {
                 user.Settings = value.Settings;
             }
 
             return user;
+        }
+
+        /// <summary>
+        /// Converts a database entity to a Data Transfer Object.
+        /// </summary>
+        /// <param name="value">The database entity.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
+        /// <returns>A new <see cref="User"/> instance containing the required properties.</returns>
+        public static User FromModel(Data.ItemImport<Data.User> value, DetailsType includeDetails = DetailsType.None)
+        {
+            if (value.Item == null) throw new ArgumentNullException(nameof(value), "Item in value has not been set");
+            var output = FromModel(value.Item, includeDetails);
+            if (includeDetails.HasFlag(DetailsType.Parse))
+            {
+                output.Message = value.Message;
+            }
+
+            return output;
         }
     }
 }

@@ -72,10 +72,24 @@ namespace NaoBlocks.Web.Dtos
                 output.Values = value.CustomValues.ToList();
             }
 
+            return output;
+        }
+
+        /// <summary>
+        /// Converts a database entity to a Data Transfer Object.
+        /// </summary>
+        /// <param name="value">The database entity.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
+        /// <returns>A new <see cref="Robot"/> instance containing the required properties.</returns>
+        public static Robot FromModel(Data.ItemImport<Data.Robot> value, DetailsType includeDetails = DetailsType.None)
+        {
+            if (value.Item == null) throw new ArgumentNullException(nameof(value), "Item in value has not been set");
+            var output = FromModel(value.Item, includeDetails);
             if (includeDetails.HasFlag(DetailsType.Parse) && (value != null))
             {
                 output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
-                output.Password = value.PlainPassword ?? string.Empty;
+                output.Parse.Details["duplicate"] = value.IsDuplicate;
+                output.Password = value.Item.PlainPassword ?? string.Empty;
             }
 
             return output;

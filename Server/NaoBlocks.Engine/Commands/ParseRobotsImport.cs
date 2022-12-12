@@ -12,7 +12,7 @@ namespace NaoBlocks.Engine.Commands
     public class ParseRobotsImport
         : CommandBase
     {
-        private readonly List<ParseRecord<Robot>> robots = new();
+        private readonly List<ItemImport<Robot>> robots = new();
 
         /// <summary>
         /// Gets or sets the  data.
@@ -79,7 +79,7 @@ namespace NaoBlocks.Engine.Commands
             return Task.FromResult(
                 CommandResult.New(
                     this.Number,
-                    this.robots.Select(r => r.Value).ToArray() as IEnumerable<Robot>));
+                    this.robots.AsEnumerable()));
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace NaoBlocks.Engine.Commands
                     mapping.Value(robot, value);
                 }
 
-                this.robots.Add(ParseRecord.New(robot, row));
+                this.robots.Add(ItemImport.New(robot, row));
             }
         }
 
@@ -146,7 +146,7 @@ namespace NaoBlocks.Engine.Commands
             foreach (var record in this.robots)
             {
                 var errors = new List<string>();
-                var robot = record.Value;
+                var robot = record.Item!;
                 if (!string.IsNullOrEmpty(robot.RobotTypeId))
                 {
                     if (!robotTypes.TryGetValue(robot.RobotTypeId, out var isTypeValid))
@@ -179,7 +179,7 @@ namespace NaoBlocks.Engine.Commands
 
                 if (errors.Any())
                 {
-                    robot.Message = string.Join(", ", errors);
+                    record.Message = string.Join(", ", errors);
                 }
             }
         }

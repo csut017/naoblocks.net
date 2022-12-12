@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace NaoBlocks.Engine.Data
+﻿namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// Defines a robot type.
@@ -31,12 +29,6 @@ namespace NaoBlocks.Engine.Data
         /// Gets the logging templates.
         /// </summary>
         public IList<LoggingTemplate> LoggingTemplates { get; private set; } = new List<LoggingTemplate>();
-
-        /// <summary>
-        /// Gets or sets a message associated with the robot.
-        /// </summary>
-        [JsonIgnore]
-        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the robot type.

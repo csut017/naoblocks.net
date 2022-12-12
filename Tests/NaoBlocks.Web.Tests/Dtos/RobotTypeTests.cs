@@ -1,5 +1,6 @@
 ﻿using NaoBlocks.Common;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Data = NaoBlocks.Engine.Data;
@@ -82,7 +83,7 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
@@ -100,14 +101,14 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
                     WhenAdded = now
                 }
             };
-            entity.RobotType.LoggingTemplates.Add(
+            entity.Item.LoggingTemplates.Add(
                 new Data.LoggingTemplate { Category = "action", Text = "Action", MessageType = ClientMessageType.RobotAction });
             var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Equal(
@@ -121,14 +122,14 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
                     WhenAdded = now
                 }
             };
-            entity.RobotType.Toolboxes.Add(new Data.Toolbox { Name = "blocks" });
+            entity.Item.Toolboxes.Add(new Data.Toolbox { Name = "blocks" });
             var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Equal(
                 new[] { "blocks" },
@@ -141,14 +142,14 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
                     WhenAdded = now
                 }
             };
-            entity.RobotType.CustomValues.Add(new Data.NamedValue { Name = "One", Value = "Tahi" });
+            entity.Item.CustomValues.Add(new Data.NamedValue { Name = "One", Value = "Tahi" });
             var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Equal(
                 new[] { "One->Tahi" },
@@ -161,18 +162,18 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
                     WhenAdded = now,
-                    Message = "This is a test message"
-                }
+                },
+                Message = "This is a test message"
             };
-            entity.RobotType.CustomValues.Add(new Data.NamedValue { Name = "One", Value = "Tahi" });
-            entity.RobotType.LoggingTemplates.Add(
+            entity.Item.CustomValues.Add(new Data.NamedValue { Name = "One", Value = "Tahi" });
+            entity.Item.LoggingTemplates.Add(
                new Data.LoggingTemplate { Category = "action", Text = "Action", MessageType = ClientMessageType.RobotAction });
-            entity.RobotType.Toolboxes.Add(new Data.Toolbox { Name = "blocks" });
+            entity.Item.Toolboxes.Add(new Data.Toolbox { Name = "blocks" });
             var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Parse | Transfer.DetailsType.Standard);
             Assert.Equal(
                 "This is a test message",
@@ -194,14 +195,14 @@ namespace NaoBlocks.Web.Tests.Dtos
             var now = DateTime.Now;
             var entity = new Data.RobotTypeImport
             {
-                RobotType = new Data.RobotType
+                Item = new Data.RobotType
                 {
                     Name = "karetao",
                     IsDefault = true,
                     WhenAdded = now,
-                    Message = "This is a test message"
                 },
                 IsDuplicate = true,
+                Message = "This is a test message"
             };
             var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Parse);
             Assert.Equal(
@@ -210,6 +211,34 @@ namespace NaoBlocks.Web.Tests.Dtos
             Assert.Equal(
                 true,
                 dto?.Parse?.Details["duplicate"]);
+        }
+
+        [Fact]
+        public void FromModelWithRobotTypeImportConvertsRobots()
+        {
+            var now = DateTime.Now;
+            var entity = new Data.RobotTypeImport
+            {
+                Item = new Data.RobotType
+                {
+                    Name = "karetao",
+                    IsDefault = true,
+                    WhenAdded = now,
+                },
+                IsDuplicate = true,
+                Message = "This is a test message",
+                Robots = new List<Data.ItemImport<Data.Robot>>
+                {
+                    Data.ItemImport.New(new Data.Robot { MachineName = "Nao-1"})
+                }
+            };
+            var dto = Transfer.RobotType.FromModel(entity, Transfer.DetailsType.Parse);
+            Assert.Equal(
+                "This is a test message",
+                dto.Parse?.Message);
+            Assert.Equal(
+                new[] { "Nao-1" },
+                dto?.Robots?.Select(r => r.MachineName).ToArray());
         }
     }
 }

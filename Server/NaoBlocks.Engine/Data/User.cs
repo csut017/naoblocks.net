@@ -18,11 +18,6 @@ namespace NaoBlocks.Engine.Data
         public string? LoginToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a message associated with the user.
-        /// </summary>
-        public string? Message { get; set; }
-
-        /// <summary>
         /// Gets or sets the user's name.
         /// </summary>
         public string Name { get; set; } = string.Empty;

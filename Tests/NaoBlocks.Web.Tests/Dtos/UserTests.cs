@@ -1,7 +1,7 @@
-﻿using Transfer = NaoBlocks.Web.Dtos;
-using Data = NaoBlocks.Engine.Data;
+﻿using System;
 using Xunit;
-using System;
+using Data = NaoBlocks.Engine.Data;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Dtos
 {
@@ -34,8 +34,24 @@ namespace NaoBlocks.Web.Tests.Dtos
                 WhenAdded = now,
                 Settings = new Data.UserSettings()
             };
-            var dto = Transfer.User.FromModel(entity, true);
+            var dto = Transfer.User.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Same(dto.Settings, entity.Settings);
+        }
+
+        [Fact]
+        public void FromModelConvertsEntityWithParseDetails()
+        {
+            var now = DateTime.Now;
+            var entity = Data.ItemImport.New(new Data.User
+            {
+                Name = "Moana",
+                Role = Data.UserRole.Teacher,
+                WhenAdded = now,
+                Settings = new Data.UserSettings()
+            }, message: "Some test details");
+            var dto = Transfer.User.FromModel(entity, Transfer.DetailsType.Parse);
+            Assert.Same("Moana", dto.Name);
+            Assert.Same("Some test details", dto.Message);
         }
     }
 }

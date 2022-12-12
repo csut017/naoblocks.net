@@ -44,9 +44,9 @@ namespace NaoBlocks.Engine.Tests.Commands
 
             // Assert
             Assert.True(result.WasSuccessful, "Command failed");
-            var actual = result.As<IEnumerable<User>>()
+            var actual = result.As<IEnumerable<ItemImport<User>>>()
                                 .Output?
-                                .Select(u => $"{u.Name},{u.StudentDetails?.Age},{u.StudentDetails?.Gender},{u.Role},{u.PlainPassword},{u.Settings.RobotType},{u.Settings.Toolbox},{u.Settings.ViewMode},{u.Settings.AllocationMode},{u.Settings.RobotId}")
+                                .Select(u => $"{u.Item?.Name},{u.Item?.StudentDetails?.Age},{u.Item?.StudentDetails?.Gender},{u.Item?.Role},{u.Item?.PlainPassword},{u.Item?.Settings.RobotType},{u.Item?.Settings.Toolbox},{u.Item?.Settings.ViewMode},{u.Item?.Settings.AllocationMode},{u.Item?.Settings.RobotId}")
                                 .ToArray();
             Assert.Equal<string[]>(
                 new[] {
@@ -83,7 +83,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { 5 },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.StudentDetails?.Age ?? 0).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.StudentDetails?.Age ?? 0).ToArray());
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Whero" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.RobotId).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Settings.RobotId).ToArray());
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { 0 },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.AllocationMode).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Settings.AllocationMode ?? -1).ToArray());
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Tahi" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Name).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Name).ToArray());
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "One" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.PlainPassword).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.PlainPassword).ToArray());
         }
 
         [Fact]
@@ -228,7 +228,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "One" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.RobotType).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Settings.RobotType).ToArray());
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Student" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Role.ToString()).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Role.ToString()).ToArray());
         }
 
         [Fact]
@@ -286,7 +286,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "One" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.Toolbox).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Settings.Toolbox).ToArray());
         }
 
         [Fact]
@@ -315,7 +315,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Tane" },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.StudentDetails?.Gender ?? string.Empty).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.StudentDetails?.Gender ?? string.Empty).ToArray());
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { 1 },
-                result.As<IEnumerable<User>>().Output?.Select(r => r.Settings.ViewMode).ToArray());
+                result.As<IEnumerable<ItemImport<User>>>().Output?.Select(u => u.Item?.Settings.ViewMode ?? -1).ToArray());
         }
 
         [Fact]

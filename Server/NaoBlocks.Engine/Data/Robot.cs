@@ -33,12 +33,6 @@ namespace NaoBlocks.Engine.Data
         public string MachineName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a message associated with the robot.
-        /// </summary>
-        [JsonIgnore]
-        public string? Message { get; set; }
-
-        /// <summary>
         /// Gets or sets the password the robot uses to connect.
         /// </summary>
         public Password Password { get; set; } = Password.Empty;

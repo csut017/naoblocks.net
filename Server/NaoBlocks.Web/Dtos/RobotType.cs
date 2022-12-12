@@ -38,6 +38,11 @@ namespace NaoBlocks.Web.Dtos
         public ParseResults? Parse { get; set; }
 
         /// <summary>
+        /// Gets the robots.
+        /// </summary>
+        public IList<Robot>? Robots { get; private set; }
+
+        /// <summary>
         /// Gets the templates.
         /// </summary>
         public IList<Data.LoggingTemplate>? Templates { get; private set; }
@@ -81,26 +86,16 @@ namespace NaoBlocks.Web.Dtos
         /// <returns>A new <see cref="RobotType"/> instance containing the required properties.</returns>
         public static RobotType FromModel(Data.RobotTypeImport value, DetailsType includeDetails = DetailsType.None)
         {
-            if (value.RobotType == null) throw new ArgumentNullException(nameof(value), "RobotType cannot be null");
-            var output = new RobotType
-            {
-                Name = value.RobotType.Name,
-                IsDefault = value.RobotType.IsDefault,
-                AllowDirectLogging = value.RobotType.AllowDirectLogging,
-                HasToolbox = value.RobotType.Toolboxes.Any()
-            };
-
-            if (includeDetails.HasFlag(DetailsType.Standard))
-            {
-                output.Toolboxes = value.RobotType.Toolboxes.Select(t => Toolbox.FromModel(t, includeDetails)).ToList();
-                output.CustomValues = value.RobotType.CustomValues.ToList();
-                output.Templates = value.RobotType.LoggingTemplates.ToList();
-            }
-
+            if (value.Item == null) throw new ArgumentNullException(nameof(value), "Item in value has not been set");
+            var output = FromModel(value.Item, includeDetails);
             if (includeDetails.HasFlag(DetailsType.Parse))
             {
-                output.Parse = new ParseResults { Message = value.RobotType.Message ?? string.Empty };
+                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
                 output.Parse.Details["duplicate"] = value.IsDuplicate;
+                if (value.Robots != null)
+                {
+                    output.Robots = value.Robots.Select(r => Robot.FromModel(r, includeDetails)).ToList();
+                }
             }
 
             return output;

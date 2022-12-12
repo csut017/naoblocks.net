@@ -44,7 +44,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Robot 'Karetao' already exists" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Message).ToArray());
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Machine name is required" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Message).ToArray());
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Unknown robot type 'Nao'" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Message).ToArray());
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Robot type is required" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.Message).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Message).ToArray());
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                     "Mihīni-1,Karetao-1,Nao,One",
                     "Mihīni-2,Mihīni-2,Nao,Two",
                 },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => $"{r.Item?.MachineName},{r.Item?.FriendlyName},{r.Item?.RobotTypeId},{r.Item?.PlainPassword}").ToArray());
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                     "Mihīni,Karetao-1,Nao,One",
                     "Mihīni,Karetao-2,Nao,Two",
                 },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => $"{r.Item?.MachineName},{r.Item?.FriendlyName},{r.Item?.RobotTypeId},{r.Item?.PlainPassword}").ToArray());
         }
 
         [Fact]
@@ -222,7 +222,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Mihīni" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.FriendlyName).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Item?.FriendlyName).ToArray());
         }
 
         [Fact]
@@ -251,7 +251,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Mihīni" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.MachineName).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Item?.MachineName).ToArray());
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "One" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.PlainPassword).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Item?.PlainPassword).ToArray());
         }
 
         [Fact]
@@ -311,7 +311,7 @@ namespace NaoBlocks.Engine.Tests.Commands
                 new[] {
                     "Mihīni,Karetao,Nao,One",
                 },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => $"{r.MachineName},{r.FriendlyName},{r.RobotTypeId},{r.PlainPassword}").ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => $"{r.Item?.MachineName},{r.Item?.FriendlyName},{r.Item?.RobotTypeId},{r.Item?.PlainPassword}").ToArray());
         }
 
         [Fact]
@@ -340,7 +340,7 @@ namespace NaoBlocks.Engine.Tests.Commands
             Assert.True(result.WasSuccessful, "Command failed");
             Assert.Equal(
                 new[] { "Mihīni" },
-                result.As<IEnumerable<Robot>>().Output?.Select(r => r.RobotTypeId).ToArray());
+                result.As<IEnumerable<ItemImport<Robot>>>().Output?.Select(r => r.Item?.RobotTypeId).ToArray());
         }
 
         [Fact]

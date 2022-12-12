@@ -68,7 +68,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this._logger.LogDebug("Retrieved user");
-            return Dtos.User.FromModel(user, true);
+            return Dtos.User.FromModel(user, Dtos.DetailsType.Standard);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet]
         public async Task<ListResult<Dtos.User>> List(int? page, int? size)
         {
-            (int pageNum, int pageSize)= this.ValidatePageArguments(page, size);
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
 
             this._logger.LogDebug($"Retrieving users: page {pageNum} with size {pageSize}");
 

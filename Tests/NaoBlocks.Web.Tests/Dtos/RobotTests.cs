@@ -48,14 +48,13 @@ namespace NaoBlocks.Web.Tests.Dtos
         public void FromModelIncludesFullDetails()
         {
             var now = DateTime.Now;
-            var entity = new Data.Robot
+            var entity = Data.ItemImport.New(new Data.Robot
             {
                 FriendlyName = "Moana",
                 MachineName = "karetao",
                 WhenAdded = now,
-                Message = "This is a test message"
-            };
-            entity.CustomValues.Add(Data.NamedValue.New("One", "Tahi"));
+            }, message: "This is a test message");
+            entity.Item!.CustomValues.Add(Data.NamedValue.New("One", "Tahi"));
             var dto = Transfer.Robot.FromModel(entity, Transfer.DetailsType.Parse | Transfer.DetailsType.Standard);
             Assert.Equal(
                 "This is a test message",
@@ -69,13 +68,12 @@ namespace NaoBlocks.Web.Tests.Dtos
         public void FromModelIncludesParseMessage()
         {
             var now = DateTime.Now;
-            var entity = new Data.Robot
+            var entity = Data.ItemImport.New(new Data.Robot
             {
                 FriendlyName = "Moana",
                 MachineName = "karetao",
                 WhenAdded = now,
-                Message = "This is a test message"
-            };
+            }, message: "This is a test message");
             var dto = Transfer.Robot.FromModel(entity, Transfer.DetailsType.Parse);
             Assert.Equal(
                 "This is a test message",

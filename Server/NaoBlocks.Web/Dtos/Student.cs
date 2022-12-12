@@ -21,9 +21,9 @@ namespace NaoBlocks.Web.Dtos
         /// Converts a database entity to a Data Transfer Object.
         /// </summary>
         /// <param name="value">The database entity.</param>
-        /// <param name="includeDetails">Whether to include the details or not.</param>
+        /// <param name="includeDetails">The types of details to include.</param>
         /// <returns>A new <see cref="Student"/> instance containing the required properties.</returns>
-        public new static Student FromModel(Data.User value, bool includeDetails = false)
+        public new static Student FromModel(Data.User value, DetailsType includeDetails = DetailsType.None)
         {
             var student = new Student
             {
@@ -32,7 +32,7 @@ namespace NaoBlocks.Web.Dtos
                 Age = value.StudentDetails?.Age,
                 Gender = value.StudentDetails?.Gender ?? "Unknown"
             };
-            if (includeDetails)
+            if (includeDetails.HasFlag(DetailsType.Standard))
             {
                 student.Settings = value.Settings;
             }

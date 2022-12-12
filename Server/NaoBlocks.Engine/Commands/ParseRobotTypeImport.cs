@@ -58,6 +58,7 @@ namespace NaoBlocks.Engine.Commands
                     {
                         ParseJson(definition!);
                         if (!this.SkipValidation) await this.ValidateRobotType(session, errors);
+                        if (!this.SkipValidation) await this.ValidateRobots(session, errors);
                     }
                     catch (Exception error)
                     {
@@ -77,7 +78,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.definition.RobotType);
+            ValidateExecutionState(this.definition.Item);
             return Task.FromResult(
                 CommandResult.New(
                     this.Number,
@@ -156,10 +157,10 @@ namespace NaoBlocks.Engine.Commands
         {
             if (definition.ValueKind != JsonValueKind.Object) throw new Exception("Root level definition should be a single definition");
 
-            this.definition.RobotType = new RobotType();
-            this.ParseString(definition, "name", v => this.definition.RobotType.Name = v, isRequired: true);
-            this.ParseBoolean(definition, "isDefault", v => this.definition.RobotType.IsDefault = v);
-            this.ParseBoolean(definition, "directLogging", v => this.definition.RobotType.AllowDirectLogging = v);
+            this.definition.Item = new RobotType();
+            this.ParseString(definition, "name", v => this.definition.Item.Name = v, isRequired: true);
+            this.ParseBoolean(definition, "isDefault", v => this.definition.Item.IsDefault = v);
+            this.ParseBoolean(definition, "directLogging", v => this.definition.Item.AllowDirectLogging = v);
             this.ParseArray(definition, "toolboxes", (element, index) =>
             {
                 var toolbox = new Toolbox();
@@ -167,7 +168,7 @@ namespace NaoBlocks.Engine.Commands
                 this.ParseString(element, "name", v => toolbox.Name = v, name, true);
                 this.ParseBoolean(element, "isDefault", v => toolbox.IsDefault = v, name);
                 this.ParseString(element, "definition", v => toolbox.RawXml = v, name, true);
-                this.definition.RobotType.Toolboxes.Add(toolbox);
+                this.definition.Item.Toolboxes.Add(toolbox);
             });
             this.ParseArray(definition, "values", (element, index) =>
             {
@@ -175,12 +176,12 @@ namespace NaoBlocks.Engine.Commands
                 var name = $"value #{index + 1}";
                 this.ParseString(element, "name", v => value.Name = v, name, true);
                 this.ParseString(element, "value", v => value.Value = v);
-                this.definition.RobotType.CustomValues.Add(value);
+                this.definition.Item.CustomValues.Add(value);
             });
             this.ParseArray(definition, "templates", (element, index) =>
             {
                 var template = new LoggingTemplate();
-                this.definition.RobotType.LoggingTemplates.Add(template);
+                this.definition.Item.LoggingTemplates.Add(template);
                 var name = $"template #{index + 1}";
                 this.ParseString(element, "category", v => template.Category = v, name, true);
                 this.ParseString(element, "text", v => template.Text = v, name, true);
@@ -191,15 +192,15 @@ namespace NaoBlocks.Engine.Commands
             {
                 var robot = new Robot();
                 var name = $"robot #{index + 1}";
-                this.definition.Robots ??= new List<Robot>();
-                this.definition.Robots.Add(robot);
+                this.definition.Robots ??= new List<ItemImport<Robot>>();
+                this.definition.Robots.Add(ItemImport.New(robot));
                 this.ParseString(element, "machineName", v => robot.MachineName = v, name, true);
                 this.ParseString(element, "friendlyName", v => robot.FriendlyName = v, name, true);
             });
 
             if (this.errors.Any())
             {
-                this.definition.RobotType.Message = string.Join(",", this.errors);
+                this.definition.Message = string.Join(",", this.errors);
             }
         }
 
@@ -218,13 +219,25 @@ namespace NaoBlocks.Engine.Commands
             return false;
         }
 
+        private async Task ValidateRobots(IDatabaseSession session, List<CommandError> errors)
+        {
+            if (this.definition.Robots == null) return;
+            foreach (var robot in this.definition.Robots)
+            {
+                var robotExists = await session.Query<Robot>()
+                    .AnyAsync(r => r.MachineName == robot.Item!.MachineName)
+                    .ConfigureAwait(false);
+                if (robotExists) robot.IsDuplicate = true;
+            }
+        }
+
         private async Task ValidateRobotType(IDatabaseSession session, List<CommandError> errors)
         {
-            if (this.definition.RobotType == null) throw new UnreachableException("Should not be able to get null here");
-            if (!string.IsNullOrEmpty(this.definition.RobotType.Name))
+            if (this.definition.Item == null) throw new UnreachableException("Should not be able to get null here");
+            if (!string.IsNullOrEmpty(this.definition.Item.Name))
             {
                 var robotTypeExists = await session.Query<RobotType>()
-                    .AnyAsync(r => r.Name == this.definition.RobotType.Name)
+                    .AnyAsync(r => r.Name == this.definition.Item.Name)
                     .ConfigureAwait(false);
                 if (robotTypeExists) this.definition.IsDuplicate = true;
             }

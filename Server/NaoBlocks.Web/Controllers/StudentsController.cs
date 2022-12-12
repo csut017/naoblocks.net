@@ -205,7 +205,7 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug("Retrieved student");
-            return Dtos.Student.FromModel(student, true);
+            return Dtos.Student.FromModel(student, Dtos.DetailsType.Standard);
         }
 
         /// <summary>
@@ -280,7 +280,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<ReadOnlyCollection<Data.User>, ListResult<Transfer.User>>
                 (command,
-                users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!, true))));
+                users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!, Transfer.DetailsType.Standard | Transfer.DetailsType.Parse))));
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace NaoBlocks.Web.Controllers
                 Gender = student.Gender
             };
             return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.Student>(
-                command, s => Dtos.Student.FromModel(s!, true));
+                command, s => Dtos.Student.FromModel(s!, Dtos.DetailsType.Standard));
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace NaoBlocks.Web.Controllers
                 Gender = student.Gender
             };
             return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.Student>(
-                command, s => Dtos.Student.FromModel(s!, true));
+                command, s => Dtos.Student.FromModel(s!, Dtos.DetailsType.Standard));
         }
 
         /*

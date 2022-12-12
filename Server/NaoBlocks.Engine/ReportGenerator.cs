@@ -139,6 +139,22 @@ namespace NaoBlocks.Engine
         }
 
         /// <summary>
+        /// Gets an argument value or the default value.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="defaultValue">The default value to use.</param>
+        /// <returns>The argument or default value.</returns>
+        public string? GetArgumentOrDefault(string name, string? defaultValue = null)
+        {
+            if (this.arguments.TryGetValue(name, out var value))
+            {
+                return value;
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Initialises the database session for this query.
         /// </summary>
         /// <param name="session">The session to use.</param>
@@ -164,22 +180,6 @@ namespace NaoBlocks.Engine
             {
                 this.arguments[pair.Key] = pair.Value;
             }
-        }
-
-        /// <summary>
-        /// Gets an argument value or the default value.
-        /// </summary>
-        /// <param name="name">The name of the parameter.</param>
-        /// <param name="defaultValue">The default value to use.</param>
-        /// <returns>The argument or default value.</returns>
-        protected string? GetArgumentOrDefault(string name, string? defaultValue = null)
-        {
-            if (this.arguments.TryGetValue(name, out var value))
-            {
-                return value;
-            }
-
-            return defaultValue;
         }
 
         /// <summary>

@@ -1,7 +1,7 @@
-﻿using Transfer = NaoBlocks.Web.Dtos;
-using Data = NaoBlocks.Engine.Data;
+﻿using System;
 using Xunit;
-using System;
+using Data = NaoBlocks.Engine.Data;
+using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Tests.Dtos
 {
@@ -24,28 +24,6 @@ namespace NaoBlocks.Web.Tests.Dtos
         }
 
         [Fact]
-        public void FromModelIncludesStudentDetails()
-        {
-            var now = DateTime.Now;
-            var entity = new Data.User
-            {
-                Name = "Moana",
-                Role = Data.UserRole.Student,
-                WhenAdded = now,
-                StudentDetails= new Data.StudentDetails
-                {
-                    Age = 6,
-                    Gender = "Male"
-                }
-            };
-            var dto = Transfer.Student.FromModel(entity);
-            Assert.Equal("Moana", dto.Name);
-            Assert.Equal(now, dto.WhenAdded);
-            Assert.Equal(6, dto.Age);
-            Assert.Equal("Male", dto.Gender);
-        }
-
-        [Fact]
         public void FromModelConvertsEntityWithDetails()
         {
             var now = DateTime.Now;
@@ -56,8 +34,30 @@ namespace NaoBlocks.Web.Tests.Dtos
                 WhenAdded = now,
                 Settings = new Data.UserSettings()
             };
-            var dto = Transfer.Student.FromModel(entity, true);
+            var dto = Transfer.Student.FromModel(entity, Transfer.DetailsType.Standard);
             Assert.Same(dto.Settings, entity.Settings);
+        }
+
+        [Fact]
+        public void FromModelIncludesStudentDetails()
+        {
+            var now = DateTime.Now;
+            var entity = new Data.User
+            {
+                Name = "Moana",
+                Role = Data.UserRole.Student,
+                WhenAdded = now,
+                StudentDetails = new Data.StudentDetails
+                {
+                    Age = 6,
+                    Gender = "Male"
+                }
+            };
+            var dto = Transfer.Student.FromModel(entity);
+            Assert.Equal("Moana", dto.Name);
+            Assert.Equal(now, dto.WhenAdded);
+            Assert.Equal(6, dto.Age);
+            Assert.Equal("Male", dto.Gender);
         }
     }
 }

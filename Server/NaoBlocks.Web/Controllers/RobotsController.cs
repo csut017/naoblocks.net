@@ -7,7 +7,6 @@ using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
-using System.Collections.ObjectModel;
 
 using Data = NaoBlocks.Engine.Data;
 
@@ -184,7 +183,7 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this.executionEngine
-                .ExecuteForHttp<IEnumerable<Data.Robot>, ListResult<Transfer.Robot>>
+                .ExecuteForHttp<IEnumerable<Data.ItemImport<Data.Robot>>, ListResult<Transfer.Robot>>
                 (command,
                 robots => ListResult.New(robots.Select(r => Transfer.Robot.FromModel(r!, DetailsType.Parse))));
         }

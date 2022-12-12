@@ -319,7 +319,7 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task ImportCallsCommand()
         {
             // Arrange
-            var robots = new List<Data.Robot>();
+            var robots = new List<Data.ItemImport<Data.Robot>>();
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
             engine.ExpectCommand<ParseRobotsImport>(
@@ -411,9 +411,9 @@ namespace NaoBlocks.Web.Tests.Controllers
         public async Task ImportIncudesParseDetails()
         {
             // Arrange
-            var robots = new List<Data.Robot>
+            var robots = new List<Data.ItemImport<Data.Robot>>
             {
-                new Data.Robot { Message = "Parsed"}
+                Data.ItemImport.New(new Data.Robot(), message: "Parsed")
             };
             var logger = new FakeLogger<RobotsController>();
             var engine = new FakeEngine();
