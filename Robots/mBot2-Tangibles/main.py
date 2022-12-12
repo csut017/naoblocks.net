@@ -22,7 +22,7 @@ SPEED = 15
 # Wifi settings - these will need to change to match the network
 SERVER_BASE_ADDRESS = 'http://192.168.0.151:5000/'
 LOGGING_URL = SERVER_BASE_ADDRESS + 'api/v1/robots/' + NAME + '/logs'
-WIFI_SSID= 'robotics'
+WIFI_SSID= 'NaoBlocks'
 WIFI_PASSWORD= 'letmein1'
 
 #Modes
@@ -331,12 +331,12 @@ class robot():
             return True
 
         try:
-            self.mode = values['mode']
+            self.mode = int(values['mode'])
         except:
             self.mode = MODE_CONTINUOUS
 
         try:
-            self.map = values['map']
+            self.map = int(values['map'])
         except:
             self.map = 0
             
