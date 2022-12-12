@@ -57,6 +57,8 @@ import { RobotTypeAllowedValuesListComponent } from './components/robot-type-all
 import { NamedValueEditorComponent } from './components/named-value-editor/named-value-editor.component';
 import { RobotValuesListComponent } from './components/robot-values-list/robot-values-list.component';
 import { RobotTypeDefinitionImportComponent } from './components/robot-type-definition-import/robot-type-definition-import.component';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
+import { QRCodeReaderComponent } from './components/qrcode-reader/qrcode-reader.component';
 
 @NgModule({
   declarations: [
@@ -106,7 +108,8 @@ import { RobotTypeDefinitionImportComponent } from './components/robot-type-defi
     RobotTypeAllowedValuesListComponent,
     NamedValueEditorComponent,
     RobotValuesListComponent,
-    RobotTypeDefinitionImportComponent
+    RobotTypeDefinitionImportComponent,
+    QRCodeReaderComponent
   ],
   imports: [
     BrowserModule,
@@ -118,6 +121,7 @@ import { RobotTypeDefinitionImportComponent } from './components/robot-type-defi
     MaterialModule,
     LayoutModule,
     MatLuxonDateModule,
+    ZXingScannerModule,
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
