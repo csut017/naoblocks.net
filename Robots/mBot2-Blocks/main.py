@@ -1,4 +1,4 @@
-""" mBot2 client
+""" mBot2 Blocks client
 
 This client runs directly on an mBot2 client. It handles communicates with the
 server and execution of the commands.

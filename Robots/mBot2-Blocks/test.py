@@ -1,4 +1,4 @@
-""" mBot2 test client
+""" mBot2 Blocks client - testing
 
 This client simulates running an mBot2 client.
 
