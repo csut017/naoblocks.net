@@ -1,0 +1,16 @@
+<mat-card appearance="outlined" class="reader-panel">
+    <button mat-stroked-button color="primary" (click)="qrCodesEnabled=!qrCodesEnabled">
+        Turn {{qrCodesEnabled ? 'off' : 'on'}} QR Codes
+    </button>
+    <zxing-scanner *ngIf="qrCodesEnabled" class="reader-space" [device]="deviceCurrent"
+        (deviceChange)="onDeviceChange($event)" (scanSuccess)="onCodeResult($event)"
+        (camerasFound)="onCamerasFound($event)">
+    </zxing-scanner>
+
+    <mat-form-field appearance="fill" *ngIf="qrCodesEnabled">
+        <mat-select [value]="deviceSelected" (valueChange)="onDeviceSelectChange($event)">
+            <mat-option value="">No Device Selected</mat-option>
+            <mat-option *ngFor="let device of availableDevices" [value]="device.deviceId">{{device.label}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</mat-card>

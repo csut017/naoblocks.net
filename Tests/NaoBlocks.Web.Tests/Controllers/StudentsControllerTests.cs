@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
@@ -28,7 +29,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<ClearProgramLogs>();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ClearLogs("Maia");
@@ -53,7 +55,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ClearLogs(name);
@@ -71,7 +74,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<ClearSnapshots>();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ClearSnapshots("Maia");
@@ -96,7 +100,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ClearSnapshots(name);
@@ -114,7 +119,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<DeleteUser>();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Delete("Mia");
@@ -152,7 +158,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("Mia", format);
@@ -177,7 +184,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("Mia", "garbage");
@@ -197,7 +205,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails(studentName, "Pdf");
@@ -217,7 +226,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             GenerateUserDataQuery(engine, null);
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("Mia", "Pdf");
@@ -241,7 +251,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("Mia", "Unknown");
@@ -272,7 +283,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterGenerator(generator.Object);
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList(format);
@@ -292,7 +304,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList("garbage");
@@ -311,7 +324,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterGenerator(generator.Object);
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList("unknown");
@@ -347,7 +361,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("Mia", format);
@@ -372,7 +387,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("Mia", "garbage");
@@ -392,7 +408,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs(studentName, "Pdf");
@@ -412,7 +429,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             GenerateUserDataQuery(engine, null);
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("Mia", "Pdf");
@@ -436,7 +454,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("Mia", "Unknown");
@@ -472,7 +491,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportSnapshots("Mia", format);
@@ -497,7 +517,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportSnapshots("Mia", "garbage");
@@ -517,7 +538,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportSnapshots(studentName, "Pdf");
@@ -537,7 +559,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             GenerateUserDataQuery(engine, null);
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportSnapshots("Mia", "Pdf");
@@ -561,7 +584,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             });
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportSnapshots("Mia", "Unknown");
@@ -582,7 +606,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult((Data.User?)null));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.GetStudent("Mia");
@@ -607,7 +632,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 }));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.GetStudent("Mia");
@@ -632,7 +658,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 }));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.GetStudent("Mia");
@@ -655,7 +682,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult(result));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.GetStudents(null, null);
@@ -682,7 +710,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult(result));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.GetStudents(null, null);
@@ -704,7 +733,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, students.AsReadOnly()));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles("first");
 
             // Act
@@ -723,7 +753,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Import("unknown");
@@ -740,7 +771,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles();
 
             // Act
@@ -758,7 +790,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Import("parse");
@@ -775,7 +808,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles("first", "second");
 
             // Act
@@ -795,7 +829,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, new Data.User()));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var Student = new Transfer.Student { Name = "Mia" };
@@ -818,7 +853,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<AddUser>();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Post(null);
@@ -837,7 +873,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, new Data.User()));
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var Student = new Transfer.Student { Name = "Mia", Role = "Student" };
@@ -860,7 +897,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new StudentsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Put("Maia", null);

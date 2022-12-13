@@ -231,6 +231,28 @@ export class StudentsListComponent implements OnInit {
       });
   }
 
+  exportQRCode(): void {
+    console.log('[StudentsListComponent] Showing export settings for QR Code');
+    let settings = new ReportDialogSettings('Export QR Code', false);
+    settings.allowedFormats = [
+      ReportDialogSettings.Png,
+    ]
+    this.exportSettings.show(settings)
+      .subscribe(result => {
+        if (!!result) {
+          console.groupCollapsed('[StudentsListComponent] Exporting QR Code');
+          console.log(result);
+          console.groupEnd();
+
+          this.selection.selected.forEach(t =>
+            this.downloaderService.download(
+              `v1/students/${t.name}/qrcode.${result.selectedFormat}`, 
+              `${t.name}-qrcode.${result.selectedFormat}`));
+        } else {
+          console.log('[StudentsListComponent] Export cancelled');
+        }
+      });
+  }
   exportSnapshots(): void {
     console.log('[StudentsListComponent] Showing export settings for snapshots');
     let settings = new ReportDialogSettings('Export Snapshots', true);

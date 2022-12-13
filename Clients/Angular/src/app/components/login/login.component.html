@@ -1,5 +1,5 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <mat-card appearance="outlined" class="login-panel">
+<mat-card appearance="outlined" class="login-panel">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <mat-card-header>
             <div mat-card-avatar class="app-icon"></div>
             <mat-card-title>Login</mat-card-title>
@@ -40,5 +40,6 @@
                 </span>
             </div>
         </mat-card-actions>
-    </mat-card>
-</form>
+    </form>
+</mat-card>
+<app-qrcode-reader (onKeyFound)="attemptQRLogin($event)"></app-qrcode-reader>

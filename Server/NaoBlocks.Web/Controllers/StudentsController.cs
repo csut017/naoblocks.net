@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NaoBlocks.Common;
+using NaoBlocks.Communications;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Configuration;
 using NaoBlocks.Web.Helpers;
-
-using Commands = NaoBlocks.Engine.Commands;
+using QRCoder;
+using System.Text;
+using System.Web;
 
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
@@ -23,6 +27,7 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class StudentsController : ControllerBase
     {
+        private readonly IOptions<Addresses> configuration;
         private readonly IExecutionEngine executionEngine;
         private readonly ILogger<StudentsController> logger;
 
@@ -31,10 +36,12 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="engine">The execution engine for processing commands and queries.</param>
-        public StudentsController(ILogger<StudentsController> logger, IExecutionEngine engine)
+        /// <param name="configuration">The address configuration.</param>
+        public StudentsController(ILogger<StudentsController> logger, IExecutionEngine engine, IOptions<Addresses> configuration)
         {
             this.logger = logger;
             this.executionEngine = engine;
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -53,8 +60,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Clearing logs for student '{name}'");
-            var command = new Commands.ClearProgramLogs
+            this.logger.LogInformation("Clearing logs for student '{name}'", name);
+            var command = new ClearProgramLogs
             {
                 UserName = name
             };
@@ -78,8 +85,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Clearing snapshots for student '{name}'");
-            var command = new Commands.ClearSnapshots
+            this.logger.LogInformation("Clearing snapshots for student '{name}'", name);
+            var command = new ClearSnapshots
             {
                 UserName = name
             };
@@ -94,8 +101,8 @@ namespace NaoBlocks.Web.Controllers
         [HttpDelete("{name}")]
         public async Task<ActionResult<ExecutionResult>> Delete(string name)
         {
-            this.logger.LogInformation($"Deleting student '{name}'");
-            var command = new Commands.DeleteUser
+            this.logger.LogInformation("Deleting student '{name}'", name);
+            var command = new DeleteUser
             {
                 Name = name,
                 Role = Data.UserRole.Student
@@ -193,7 +200,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Dtos.Student>> GetStudent(string name)
         {
-            this.logger.LogDebug($"Retrieving student: {name}");
+            this.logger.LogInformation("Retrieving student: {name}", name);
             var student = await this.executionEngine
                 .Query<UserData>()
                 .RetrieveByNameAsync(name)
@@ -203,8 +210,47 @@ namespace NaoBlocks.Web.Controllers
                 return NotFound();
             }
 
-            this.logger.LogDebug("Retrieved student");
+            this.logger.LogInformation("Retrieved student");
             return Dtos.Student.FromModel(student, Dtos.DetailsType.Standard);
+        }
+
+        /// <summary>
+        /// Generates a QR code for a student.
+        /// </summary>
+        /// <param name="name">The name of the student.</param>
+        /// <param name="format">The format to generate.</param>
+        /// <param name="force">Whether to generate </param>
+        /// <param name="view">The default view to use.</param>
+        /// <returns>Either a 404 (not found) or the user details.</returns>
+        [HttpGet("{name}/qrcode")]
+        [HttpGet("{name}/qrcode{format}")]
+        public async Task<ActionResult> GetStudentQRCode(string name, string? format = ".png", [FromQuery] string? force = null, [FromQuery] string? view = null)
+        {
+            this.logger.LogInformation("Generating login token for {name}", name);
+            var command = new GenerateLoginToken
+            {
+                Name = name,
+                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
+            };
+
+            var result = await this.executionEngine.ExecuteForHttp<Data.User>(command);
+            if (result?.Value?.Successful != true)
+            {
+                return result?.Result ?? BadRequest();
+            }
+
+            var student = result.Value.Output;
+            this.logger.LogInformation("Login token generated for {name}", name);
+            var address = ClientAddressList.RetrieveAddresses().First();
+            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{student?.LoginToken},view:{view}"));
+            var fullAddress = $"https://{address}:{this.configuration.Value.HttpsPort}/login?key={HttpUtility.UrlEncode(key)}";
+            this.logger.LogInformation("Loging URL is {url}", fullAddress);
+
+            using var generator = new QRCodeGenerator();
+            var codeData = generator.CreateQrCode(fullAddress, QRCodeGenerator.ECCLevel.Q);
+            using var code = new PngByteQRCode(codeData);
+            var image = code.GetGraphic(20);
+            return File(image, ContentTypes.Png, $"{name}{format}");
         }
 
         /// <summary>
@@ -218,13 +264,13 @@ namespace NaoBlocks.Web.Controllers
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
 
-            this.logger.LogDebug($"Retrieving students: page {pageNum} with size {pageSize}");
+            this.logger.LogInformation("Retrieving students: page {pageNum} with size {pageSize}", pageNum, pageSize);
             var dataPage = await this.executionEngine
                 .Query<UserData>()
                 .RetrievePageAsync(pageNum, pageSize, Data.UserRole.Student)
                 .ConfigureAwait(false);
             var count = dataPage.Items?.Count() ?? 0;
-            this.logger.LogDebug($"Retrieved {count} students");
+            this.logger.LogInformation("Retrieved {count} students", count);
             var result = new ListResult<Dtos.Student>
             {
                 Count = dataPage.Count,
@@ -298,8 +344,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Adding new student '{student.Name}'");
-            var command = new Commands.AddUser
+            this.logger.LogInformation("Adding new student '{name}'", student.Name);
+            var command = new AddUser
             {
                 Name = student.Name,
                 Password = student.Password,
@@ -329,8 +375,8 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Updating student '{name}'");
-            var command = new Commands.UpdateUser
+            this.logger.LogInformation("Updating student '{name}'", name);
+            var command = new UpdateUser
             {
                 CurrentName = name,
                 Name = student.Name,
@@ -343,48 +389,5 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp<Data.User, Dtos.Student>(
                 command, s => Dtos.Student.FromModel(s!, Dtos.DetailsType.Standard));
         }
-
-        /*
-        /// <summary>
-        /// Generates a student's QR code.
-        /// </summary>
-        /// <param name="name">The name of the student.</param>
-        /// <returns>Either a 404 (not found) or the user details.</returns>
-        [HttpGet("{name}/qrcode")]
-        [AllowAnonymous]
-        public async Task<ActionResult> GetStudentQRCode(string name, string? force)
-        {
-            this._logger.LogDebug($"Generating login token for {name}");
-            var command = new Commands.GenerateLoginToken
-            {
-                Name = name,
-                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
-            };
-            var result = await this.executionEngine.ExecuteForHttp(command, i => i);
-            if (result?.Value?.Successful != true)
-            {
-                return result.Result;
-            }
-
-            var student = result.Value.Output;
-            this._logger.LogDebug("Login token generated");
-
-            var config = await this.session.Query<SystemValues>()
-                .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
-            var address = config?.DefaultAddress ?? string.Empty;
-            this._logger.LogDebug("Retrieved system address");
-
-            var fullAddress = address + "/login?key=" + HttpUtility.UrlEncode(student.LoginToken);
-            this._logger.LogInformation($"Generating QR code for {fullAddress}");
-            using var generator = new QRCodeGenerator();
-            var codeData = generator.CreateQrCode(fullAddress, QRCodeGenerator.ECCLevel.Q);
-            using var code = new QRCode(codeData);
-            var image = code.GetGraphic(20);
-            using var stream = new MemoryStream();
-            image.Save(stream, ImageFormat.Png);
-            return File(stream.ToArray(), ContentTypes.Png);
-        }
-        */
     }
 }

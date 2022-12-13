@@ -65,6 +65,13 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  attemptQRLogin(key: string) {
+    console.log(`Validating login key: ${key}`);
+    this.loggingIn = true;
+    this.authenticationService.loginViaToken(key)
+      .subscribe(data => this.handleLogin(data));
+}
+
   private handleLogin(data: LoginResult) {
     this.loggingIn = false;
     if (data.successful) {

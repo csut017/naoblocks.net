@@ -10,6 +10,7 @@ using NaoBlocks.Web.Helpers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Web;
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -150,6 +151,7 @@ namespace NaoBlocks.Web.Controllers
 
             this._logger.LogInformation($"Starting new session for '{user.Name}'");
             CommandBase command;
+            int? defaultView = null;
             if (user.Role == "robot")
             {
                 command = new StartRobotSession
@@ -160,10 +162,28 @@ namespace NaoBlocks.Web.Controllers
             }
             else if (!string.IsNullOrEmpty(user.Token))
             {
+                var key = Encoding.UTF8.GetString(Convert.FromBase64String(HttpUtility.UrlDecode(user.Token)));
+                var parts = key.Split(',')
+                    .Select(part => part.Split(':'))
+                    .ToDictionary(part => part[0], part => part[1]);
                 command = new StartUserSessionViaToken
                 {
-                    Token = user.Token
+                    Token = parts["token"]
                 };
+                switch (parts["view"])
+                {
+                    case "blockly":
+                        defaultView = 0;
+                        break;
+
+                    case "tangibles":
+                        defaultView = 1;
+                        break;
+
+                    case "home":
+                        defaultView = 2;
+                        break;
+                }
             }
             else
             {
@@ -174,7 +194,7 @@ namespace NaoBlocks.Web.Controllers
                 };
             }
 
-            return await this.ApplyCommand(command)
+            return await this.ApplyCommand(command, defaultView)
                 .ConfigureAwait(false);
         }
 
@@ -231,7 +251,7 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine.ExecuteForHttp(command);
         }
 
-        private async Task<ActionResult<ExecutionResult<UserSessionResult>>> ApplyCommand(CommandBase command)
+        private async Task<ActionResult<ExecutionResult<UserSessionResult>>> ApplyCommand(CommandBase command, int? defaultView = null)
         {
             var errors = await executionEngine.ValidateAsync(command)
                 .ConfigureAwait(false);
@@ -286,12 +306,14 @@ namespace NaoBlocks.Web.Controllers
 
             await executionEngine.CommitAsync().ConfigureAwait(false);
             var remaining = expiry.Subtract(this.CurrentTimeFunc());
-            int? defaultView = null;
-            if ((role != Data.UserRole.Robot) && (result.Output?.UserId != null))
+            if (defaultView == null)
             {
-                var userDetails = await executionEngine.Query<UserData>()
-                    .RetrieveByIdAsync(result.Output.UserId);
-                defaultView = userDetails?.Settings?.ViewMode;
+                if ((role != Data.UserRole.Robot) && (result.Output?.UserId != null))
+                {
+                    var userDetails = await executionEngine.Query<UserData>()
+                        .RetrieveByIdAsync(result.Output.UserId);
+                    defaultView = userDetails?.Settings?.ViewMode;
+                }
             }
 
             return ExecutionResult.New(new UserSessionResult
