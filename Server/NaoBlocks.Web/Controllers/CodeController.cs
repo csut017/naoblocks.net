@@ -62,6 +62,7 @@ namespace NaoBlocks.Web.Controllers
                 UserName = user.Name,
                 Code = codeToCompile.Code,
                 Source = codeToCompile.Source,
+                Version = ControllerHelpers.GetVersion(),
             };
 
             var batchCommand = new Batch(compileCommand, storeCommand);

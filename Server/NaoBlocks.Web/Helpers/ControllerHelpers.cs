@@ -2,6 +2,7 @@
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
+using System.Reflection;
 
 namespace NaoBlocks.Web.Helpers
 {
@@ -10,6 +11,8 @@ namespace NaoBlocks.Web.Helpers
     /// </summary>
     public static class ControllerHelpers
     {
+        private static readonly Lazy<string> systemVersion = new Lazy<string>(() => LoadVersion());
+
         /// <summary>
         /// Attempts to generate a report.
         /// </summary>
@@ -224,6 +227,15 @@ namespace NaoBlocks.Web.Helpers
         }
 
         /// <summary>
+        /// Gets the current system version.
+        /// </summary>
+        /// <returns>The current system version.</returns>
+        public static string GetVersion()
+        {
+            return systemVersion.Value;
+        }
+
+        /// <summary>
         /// Retrieves the current user details.
         /// </summary>
         /// <param name="controller">The controller to use for retrieving the user.</param>
@@ -320,6 +332,14 @@ namespace NaoBlocks.Web.Helpers
             if (pageSize < 0) pageSize = 25;
 
             return (pageNum, pageSize);
+        }
+
+        private static string LoadVersion()
+        {
+            var version = Assembly.GetEntryAssembly()
+                    !.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    !.InformationalVersion;
+            return version ?? string.Empty;
         }
     }
 }

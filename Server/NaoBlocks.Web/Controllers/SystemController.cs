@@ -8,7 +8,6 @@ using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
-using System.Reflection;
 using System.Text;
 
 using Data = NaoBlocks.Engine.Data;
@@ -288,9 +287,7 @@ namespace NaoBlocks.Web.Controllers
             this.logger.LogInformation("Retrieving system version number");
             return new VersionInformation
             {
-                Version = Assembly.GetEntryAssembly()
-                    !.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                    !.InformationalVersion,
+                Version = ControllerHelpers.GetVersion(),
                 Status = isInitialised ? "ready" : "pending"
             };
         }

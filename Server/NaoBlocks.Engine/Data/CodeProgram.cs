@@ -31,6 +31,11 @@
         public string UserId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the version of the system.
+        /// </summary>
+        public string? Version { get; set; }
+
+        /// <summary>
         /// Gets or sets when this program was added.
         /// </summary>
         public DateTime WhenAdded { get; set; }

@@ -188,7 +188,8 @@ namespace NaoBlocks.Web.Controllers
                 Name = program.Name,
                 Code = program.Code,
                 UserName = currentUser.Name,
-                RequireName = true
+                Version = ControllerHelpers.GetVersion(),
+                RequireName = true,
             };
             return await this.executionEngine.ExecuteForHttp<Data.CodeProgram, Dtos.CodeProgram>
                 (command, p => Dtos.CodeProgram.FromModel(p!));

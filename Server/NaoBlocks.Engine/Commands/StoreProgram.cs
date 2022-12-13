@@ -38,6 +38,11 @@ namespace NaoBlocks.Engine.Commands
         public string? UserName { get; set; }
 
         /// <summary>
+        /// Gets or sets the version of the system.
+        /// </summary>
+        public string? Version { get; set; }
+
+        /// <summary>
         /// Attempts to restore the command from the database.
         /// </summary>
         /// <param name="session">The database session to use.</param>
@@ -115,6 +120,7 @@ namespace NaoBlocks.Engine.Commands
                     Number = this.user!.NextProgramNumber++,
                     UserId = this.user.Id!,
                     Source = this.Source,
+                    Version = this.Version,
                 };
                 await session.StoreAsync(program).ConfigureAwait(false);
             }
