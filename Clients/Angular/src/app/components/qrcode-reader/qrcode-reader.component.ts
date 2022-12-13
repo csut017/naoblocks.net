@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-qrcode-reader',
@@ -11,12 +11,21 @@ export class QRCodeReaderComponent {
   deviceSelected?: string = undefined;
   qrCodesEnabled: boolean = false;
 
+  @Output() onKeyFound = new EventEmitter<string>();
+
   onCamerasFound(devices: MediaDeviceInfo[]): void {
     this.availableDevices = devices;
   }
 
   onCodeResult(resultString: string) {
-    console.log(resultString);
+    let url = new URL(resultString);
+    console.log({
+      raw: resultString,
+      url: url
+    });
+    if ((url.pathname == '/login') && url.search.startsWith('?key=')) {
+      this.onKeyFound.emit(url.search.substring(5));
+    }
   }
 
   onDeviceChange(device: MediaDeviceInfo) {

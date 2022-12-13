@@ -49,6 +49,46 @@ namespace NaoBlocks.Web.Helpers
         }
 
         /// <summary>
+        /// Executes a command and returns the result as an <see cref="ExecutionResult"/> instance.
+        /// </summary>
+        /// <param name="engine">The engine to use.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>A <see cref="ExecutionResult"/> instance containing the outcome of executing the command.</returns>
+        public static async Task<ActionResult<ExecutionResult<TValue?>>> ExecuteForHttp<TValue>(this IExecutionEngine engine, CommandBase command)
+            where TValue : class
+        {
+            var commandName = command.GetType().Name;
+            engine.Logger.LogDebug("Validating {command} command", commandName);
+            var errors = await engine.ValidateAsync(command);
+            if (errors.Any())
+            {
+                LogValidationFailure(engine, command, errors);
+                return new BadRequestObjectResult(new ExecutionResult
+                {
+                    ValidationErrors = errors
+                });
+            }
+
+            engine.Logger.LogDebug("Executing {command} command", commandName);
+            var result = await engine.ExecuteAsync(command);
+            if (!result.WasSuccessful)
+            {
+                LogExecutionFailure(engine, command, result);
+                return new ObjectResult(new ExecutionResult
+                {
+                    ExecutionErrors = result.ToErrors() ?? Array.Empty<CommandError>()
+                })
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+
+            await engine.CommitAsync();
+            engine.Logger.LogInformation("Executed {command} successfully", commandName);
+            return ExecutionResult.New(result.As<TValue>().Output);
+        }
+
+        /// <summary>
         /// Executes a command and transforms the result before returning it in an <see cref="ExecutionResult"/> instance.
         /// </summary>
         /// <typeparam name="TIn">The input type.</typeparam>

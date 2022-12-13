@@ -234,16 +234,16 @@ namespace NaoBlocks.Web.Controllers
                 OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
             };
 
-            var result = await this.executionEngine.ExecuteForHttp(command);
+            var result = await this.executionEngine.ExecuteForHttp<Data.User>(command);
             if (result?.Value?.Successful != true)
             {
                 return result?.Result ?? BadRequest();
             }
 
-            var student = result.Value as ExecutionResult<Data.User?>;
+            var student = result.Value.Output;
             this.logger.LogInformation("Login token generated for {name}", name);
             var address = ClientAddressList.RetrieveAddresses().First();
-            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{student?.Output?.LoginToken},view:{view}"));
+            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{student?.LoginToken},view:{view}"));
             var fullAddress = $"https://{address}:{this.configuration.Value.HttpsPort}/login?key={HttpUtility.UrlEncode(key)}";
             this.logger.LogInformation("Loging URL is {url}", fullAddress);
 

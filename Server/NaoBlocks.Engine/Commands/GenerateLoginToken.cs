@@ -29,12 +29,24 @@ namespace NaoBlocks.Engine.Commands
         public string SecurityToken { get; set; } = string.Empty;
 
         /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.person = await this.ValidateAndRetrieveUser(session, this.Name, UserRole.User, errors).ConfigureAwait(false);
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Validates the user and generates the token.
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>Any valdiation errors.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             this.person = await this.ValidateAndRetrieveUser(session, this.Name, UserRole.User, errors);
@@ -72,19 +84,8 @@ namespace NaoBlocks.Engine.Commands
         {
             ValidateExecutionState(this.person);
             this.person!.LoginToken = this.SecurityToken;
-            return Task.FromResult(CommandResult.New(this.Number, this.person));
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.person = await this.ValidateAndRetrieveUser(session, this.Name, UserRole.User, errors).ConfigureAwait(false);
-            return errors.AsEnumerable();
+            var result = CommandResult.New(this.Number, this.person);
+            return Task.FromResult(result);
         }
     }
 }

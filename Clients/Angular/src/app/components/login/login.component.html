@@ -42,4 +42,4 @@
         </mat-card-actions>
     </form>
 </mat-card>
-<app-qrcode-reader></app-qrcode-reader>
+<app-qrcode-reader (onKeyFound)="attemptQRLogin($event)"></app-qrcode-reader>
