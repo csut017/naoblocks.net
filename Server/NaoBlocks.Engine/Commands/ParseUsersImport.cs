@@ -64,7 +64,7 @@ namespace NaoBlocks.Engine.Commands
                     try
                     {
                         this.ParseExcel(package.Workbook);
-                        if (!this.SkipValidation) await this.ValidateUsers(session, errors).ConfigureAwait(false);
+                        if (!this.SkipValidation) await this.ValidateUsers(session).ConfigureAwait(false);
                     }
                     catch (Exception error)
                     {
@@ -219,24 +219,30 @@ namespace NaoBlocks.Engine.Commands
             }
         }
 
-        private async Task ValidateUsers(IDatabaseSession session, List<CommandError> errors)
+        private async Task ValidateUsers(IDatabaseSession session)
         {
             // Validate all the users
             var robotTypes = new Dictionary<string, bool>();
             var robots = new Dictionary<string, bool>();
             foreach (var record in this.users)
             {
+                var errors = new List<string>();
                 var user = record.Item!;
                 if (string.IsNullOrEmpty(user.Name))
                 {
-                    errors.Add(this.GenerateError($"Name is required [row {record.Row}]"));
+                    errors.Add($"Name is required [row {record.Row}]");
+                    record.CanImport = false;
                 }
                 else
                 {
                     var userExists = await session.Query<User>()
                         .AnyAsync(r => r.Name == user.Name)
                         .ConfigureAwait(false);
-                    if (userExists) errors.Add(this.GenerateError($"User '{user.Name}' already exists [row {record.Row}]"));
+                    if (userExists)
+                    {
+                        errors.Add($"User '{user.Name}' already exists");
+                        record.IsDuplicate = true;
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(user.Settings.RobotType))
@@ -249,7 +255,7 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(user.Settings.RobotType, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add(this.GenerateError($"Unknown robot type '{user.Settings.RobotType}' [row {record.Row}]"));
+                    if (!isTypeValid) errors.Add($"Unknown robot type '{user.Settings.RobotType}' [row {record.Row}]");
                 }
 
                 if (!string.IsNullOrEmpty(user.Settings.RobotId))
@@ -262,7 +268,7 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(user.Settings.RobotId, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add(this.GenerateError($"Unknown robot '{user.Settings.RobotId}' [row {record.Row}]"));
+                    if (!isTypeValid) errors.Add($"Unknown robot '{user.Settings.RobotId}' [row {record.Row}]");
                 }
 
                 if (errors.Any())

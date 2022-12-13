@@ -157,17 +157,23 @@ namespace NaoBlocks.Engine.Commands
                         robotTypes.Add(robot.RobotTypeId, isTypeValid);
                     }
 
-                    if (!isTypeValid) errors.Add($"Unknown robot type '{robot.RobotTypeId}'");
+                    if (!isTypeValid)
+                    {
+                        errors.Add($"Unknown robot type '{robot.RobotTypeId}'");
+                        record.CanImport = false;
+                    }
                 }
                 else
                 {
                     errors.Add($"Robot type is required");
+                    record.CanImport = false;
                 }
 
                 if (string.IsNullOrEmpty(robot.FriendlyName)) robot.FriendlyName = robot.MachineName;
                 if (string.IsNullOrEmpty(robot.MachineName))
                 {
                     errors.Add($"Machine name is required");
+                    record.CanImport = false;
                 }
                 else
                 {

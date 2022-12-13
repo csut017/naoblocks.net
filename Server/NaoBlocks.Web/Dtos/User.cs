@@ -8,14 +8,14 @@ namespace NaoBlocks.Web.Dtos
     public class User
     {
         /// <summary>
-        /// Gets or sets a message associated with the user.
-        /// </summary>
-        public string? Message { get; set; }
-
-        /// <summary>
         /// Gets or sets the user name.
         /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parse results.
+        /// </summary>
+        public ParseResults? Parse { get; set; }
 
         /// <summary>
         /// Gets or sets the user's password.
@@ -78,7 +78,7 @@ namespace NaoBlocks.Web.Dtos
             var output = FromModel(value.Item, includeDetails);
             if (includeDetails.HasFlag(DetailsType.Parse))
             {
-                output.Message = value.Message;
+                output.Parse = ParseResults.FromModel(value);
             }
 
             return output;

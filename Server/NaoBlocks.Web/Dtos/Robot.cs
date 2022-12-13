@@ -87,8 +87,7 @@ namespace NaoBlocks.Web.Dtos
             var output = FromModel(value.Item, includeDetails);
             if (includeDetails.HasFlag(DetailsType.Parse) && (value != null))
             {
-                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
-                output.Parse.Details["duplicate"] = value.IsDuplicate;
+                output.Parse = ParseResults.FromModel(value);
                 output.Password = value.Item.PlainPassword ?? string.Empty;
             }
 

@@ -32,6 +32,11 @@
         where TItem : class
     {
         /// <summary>
+        /// Gets or sets whether this item can be imported.
+        /// </summary>
+        public bool CanImport { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets whether this item is a duplicate.
         /// </summary>
         public bool IsDuplicate { get; set; }

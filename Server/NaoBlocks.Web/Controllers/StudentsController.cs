@@ -5,7 +5,6 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
-using System.Collections.ObjectModel;
 
 using Commands = NaoBlocks.Engine.Commands;
 
@@ -278,7 +277,7 @@ namespace NaoBlocks.Web.Controllers
             };
 
             return await this.executionEngine
-                .ExecuteForHttp<ReadOnlyCollection<Data.User>, ListResult<Transfer.User>>
+                .ExecuteForHttp<IEnumerable<Data.ItemImport<Data.User>>, ListResult<Transfer.User>>
                 (command,
                 users => ListResult.New(users.Select(r => Transfer.User.FromModel(r!, Transfer.DetailsType.Standard | Transfer.DetailsType.Parse))));
         }

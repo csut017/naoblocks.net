@@ -90,8 +90,7 @@ namespace NaoBlocks.Web.Dtos
             var output = FromModel(value.Item, includeDetails);
             if (includeDetails.HasFlag(DetailsType.Parse))
             {
-                output.Parse = new ParseResults { Message = value.Message ?? string.Empty };
-                output.Parse.Details["duplicate"] = value.IsDuplicate;
+                output.Parse = ParseResults.FromModel(value);
                 if (value.Robots != null)
                 {
                     output.Robots = value.Robots.Select(r => Robot.FromModel(r, includeDetails)).ToList();

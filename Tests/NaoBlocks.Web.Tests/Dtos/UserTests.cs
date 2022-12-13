@@ -51,7 +51,7 @@ namespace NaoBlocks.Web.Tests.Dtos
             }, message: "Some test details");
             var dto = Transfer.User.FromModel(entity, Transfer.DetailsType.Parse);
             Assert.Same("Moana", dto.Name);
-            Assert.Same("Some test details", dto.Message);
+            Assert.Same("Some test details", dto.Parse?.Message);
         }
     }
 }
