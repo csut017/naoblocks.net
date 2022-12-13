@@ -51,3 +51,11 @@ button.mat-mdc-list-item.large-button {
         display: none;
     }
 }
+
+.current-user-name {
+    bottom: 0;
+    position: fixed;
+    margin: 2px;
+    width: 199px;
+    text-align: center;
+}

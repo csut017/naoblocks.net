@@ -13,7 +13,6 @@ import { ChangeViewService } from 'src/app/services/change-view.service';
 import { ConfirmService } from 'src/app/services/confirm.service';
 import { ProgramControllerService } from 'src/app/services/program-controller.service';
 import { SettingsService } from 'src/app/services/settings.service';
-import { BlocklyEditorComponent } from 'src/app/components/blockly-editor/blockly-editor.component';
 
 @Component({
   selector: 'app-student-home',
