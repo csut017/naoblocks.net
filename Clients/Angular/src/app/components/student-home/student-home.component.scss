@@ -46,10 +46,12 @@ button.mat-mdc-list-item.large-button {
     vertical-align: middle;
     padding: auto auto;
     height: calc(100vh - 100px);
+    text-align: center;
+    font-size: 3rem !important;
+}
 
-    .mat-icon {
-        display: none;
-    }
+span.large-button-text {
+    font-size: 2rem;
 }
 
 .current-user-name {

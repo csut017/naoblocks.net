@@ -1,4 +1,4 @@
-<div class="tangible-editor">
+<div class="tangible-editor" *ngIf="isCameraAvailable">
     <div class="video" [ngClass]="{'visible': showVideoInput}">
         <canvas #videoCanvas id="video-canvas" width="640" height="480">
         </canvas>
@@ -9,4 +9,17 @@
             <p>{{block.text}}</p>
         </div>
     </div>
+</div>
+<div class="camera-unavailable" *ngIf="!isCameraAvailable">
+    <h1>
+        <mat-icon>error</mat-icon>
+        Cannot start tangible editor
+    </h1>
+    <div>
+        Check:
+    </div>
+    <ul>
+        <li>Is there a camera connected and your browser has permission to use it.</li>
+        <li>You are using HTTP for connecting to the server.</li>
+    </ul>
 </div>

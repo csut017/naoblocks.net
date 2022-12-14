@@ -33,6 +33,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   cameraStarted: boolean = false;
   controllerSubscription?: Subscription;
   error: string = '';
+  isCameraAvailable: boolean = false;
   isExecuting: boolean = false;
   showVideoInput: boolean = true;
   isInFlippedMode: boolean = false;
@@ -201,8 +202,12 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
     if (this.cameraStarted) return;
 
     console.log('[TangibleEditor] Starting camera');
-    this.cameraStarted = true;
-    TopCodes.startStopVideoScan('video-canvas');
+    try {
+      TopCodes.startStopVideoScan('video-canvas');
+      this.cameraStarted = true;
+    } catch {
+      this.isCameraAvailable = false;
+    }
   }
 
   stopCamera(): void {

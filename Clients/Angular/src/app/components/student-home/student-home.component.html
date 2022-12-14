@@ -7,7 +7,8 @@
         </mat-toolbar>
         <mat-action-list *ngIf="showCommands">
             <button mat-list-item (click)="playProgram()" *ngIf="!controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
-                <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon> Play
+                <mat-icon matListIcon aria-label="Play current program">play_arrow</mat-icon>
+                <span  [ngClass]="{'large-button-text':editorView=='tangibles'}">Play</span>
             </button>
             <button mat-list-item (click)="stopProgram()" *ngIf="controller.isPlaying" [ngClass]="{'large-button':editorView=='tangibles'}">
                 <mat-icon matListIcon aria-label="Stop current program">stop</mat-icon> Stop
