@@ -33,7 +33,7 @@ export class TangibleEditorComponent implements OnInit, OnChanges, AfterViewInit
   cameraStarted: boolean = false;
   controllerSubscription?: Subscription;
   error: string = '';
-  isCameraAvailable: boolean = false;
+  isCameraAvailable: boolean = true;
   isExecuting: boolean = false;
   showVideoInput: boolean = true;
   isInFlippedMode: boolean = false;
