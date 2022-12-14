@@ -13,6 +13,7 @@ import { SystemService } from 'src/app/services/system.service';
 })
 export class LoginComponent implements OnInit {
   form: UntypedFormGroup;
+  showQRCodes: boolean = false;
   loginInvalid = false;
   version?: SystemVersion;
   loggingIn: boolean = false;
@@ -37,6 +38,9 @@ export class LoginComponent implements OnInit {
           break;
       }
     });
+    this.showQRCodes = document.location.protocol == 'https:'
+      || document.location.hostname == 'localhost'
+      || document.location.hostname == '127.0.0.1';
   }
 
   ngOnInit(): void {
