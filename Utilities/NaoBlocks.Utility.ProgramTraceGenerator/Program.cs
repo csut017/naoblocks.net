@@ -72,6 +72,15 @@ namespace NaoBlocks.Utility.ProgramTraceGenerator
                 WriteLine("-> Could not find 'Date' column", ConsoleColor.Red);
                 isValid = false;
             }
+            if (columns.TryGetValue("Time", out var timeColumn))
+            {
+                WriteLine($"-> 'Time' is in column {timeColumn}");
+            }
+            else
+            {
+                WriteLine("-> Could not find 'Time' column", ConsoleColor.Red);
+                isValid = false;
+            }
             if (columns.TryGetValue("Type", out var typeColumn))
             {
                 WriteLine($"-> 'Type' is in column {typeColumn}");
@@ -129,11 +138,13 @@ namespace NaoBlocks.Utility.ProgramTraceGenerator
                 if (string.IsNullOrEmpty(robot)) continue;
 
                 var timeText = inputWorksheet.Cells[row, robotTimeColumn]?.Value?.ToString();
-                if (!DateTime.TryParse(timeText, out var robotTime)) continue;
+                DateTime.TryParse(timeText, out var robotTime);
 
                 var dateValue = inputWorksheet.Cells[row, dateColumn]?.Value as double?;
-                if (dateValue == null) continue;
-                var logTime = DateTime.FromOADate(dateValue.Value);
+                var timeValue = inputWorksheet.Cells[row, timeColumn]?.Value as double?;
+                if ((dateValue == null) || (timeValue == null)) continue;
+                var logTime = DateTime.FromOADate(dateValue.Value).Date +
+                    DateTime.FromOADate(timeValue.Value).TimeOfDay;
 
                 var type = inputWorksheet.Cells[row, typeColumn]?.Value?.ToString();
                 if (string.IsNullOrEmpty(type)) continue;
@@ -147,7 +158,7 @@ namespace NaoBlocks.Utility.ProgramTraceGenerator
                     records[robot] = robotRecords;
                 }
 
-                robotRecords.Add(new(type, action, mode, (DateTime)logTime, robotTime));
+                robotRecords.Add(new(row, type, action, mode, (DateTime)logTime, robotTime == DateTime.MinValue ? null : robotTime));
                 count++;
             }
             WriteLine();
@@ -182,16 +193,16 @@ namespace NaoBlocks.Utility.ProgramTraceGenerator
                             {
                                 var duration = record.RobotTime - lastTime;
                                 var durationCell = outputWorksheet.Cells[row - 1, 4];
-                                durationCell.Value = duration.TotalSeconds;
+                                durationCell.Value = duration?.TotalSeconds;
                                 durationCell.Style.Numberformat.Format = "#,###0.00";
                             }
 
-                            lastTime = record.RobotTime;
+                            lastTime = record.RobotTime ?? DateTime.MinValue;
                             row++;
                             break;
 
                         case "RobotStateUpdate":
-                            mode = record.Mode;
+                            mode = record.Mode ?? mode;
                             lastTime = DateTime.MinValue;
                             break;
 
