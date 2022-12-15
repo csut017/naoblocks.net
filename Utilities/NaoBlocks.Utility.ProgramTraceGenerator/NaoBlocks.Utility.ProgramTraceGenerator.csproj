@@ -5,17 +5,11 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>LogParser</AssemblyName>
+    <AssemblyName>ProgramTraceGenerator</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="6.1.0" />
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Common\NaoBlocks.Common\NaoBlocks.Common.csproj" />
-    <ProjectReference Include="..\..\Common\NaoBlocks.Parser\NaoBlocks.Parser.csproj" />
   </ItemGroup>
 
 </Project>

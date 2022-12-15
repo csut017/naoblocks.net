@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NaoBlocks.Utility.ProgramTraceGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "c:\\temp\\All_2022-12-13_2022-12-15-logs.xlsx c:\\temp\\steam\\programs.xlsx mBot2"
+    }
+  }
+}
