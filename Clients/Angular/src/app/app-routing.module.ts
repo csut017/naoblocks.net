@@ -24,6 +24,7 @@ const routes: Routes = [
   { path: 'teacher/:view', component: TeacherHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator/:view', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'administrator/:view/:item', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: '**', component: PageNotFoundComponent },
 ];
 

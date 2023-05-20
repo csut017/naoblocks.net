@@ -2,6 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { DeletionItems } from 'src/app/data/deletion-items';
 import { ReportDialogSettings } from 'src/app/data/report-dialog-settings';
@@ -15,6 +16,7 @@ import { MultilineMessageService } from 'src/app/services/multiline-message.serv
 import { ReportSettingsService } from 'src/app/services/report-settings.service';
 import { RobotImportDialogService } from 'src/app/services/robot-import-dialog.service';
 import { RobotService } from 'src/app/services/robot.service';
+import { ViewFormatterService } from 'src/app/services/view-formatter.service';
 
 @Component({
   selector: 'app-robots-list',
@@ -34,13 +36,21 @@ export class RobotsListComponent implements OnInit {
   @Output() currentItemChanged = new EventEmitter<string>();
 
   constructor(private robotService: RobotService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private viewFormatter: ViewFormatterService,
     private authenticationService: AuthenticationService,
     private snackBar: MatSnackBar,
     private deleteConfirm: DeletionConfirmationService,
     private exportSettings: ReportSettingsService,
     private multilineMessage: MultilineMessageService,
     private importRobotService: RobotImportDialogService,
-    private downloaderService: FileDownloaderService) { }
+    private downloaderService: FileDownloaderService) {
+    this.route.paramMap.subscribe(params => {
+      let item = params.get('item');
+      if (!!item) this.findAndEdit(item);
+    });
+  }
 
   ngOnInit(): void {
     this.loadList();
@@ -106,11 +116,21 @@ export class RobotsListComponent implements OnInit {
 
   }
 
-  edit(): void {
+  findAndEdit(name: string): void {
+    this.robotService.get(name)
+      .subscribe(res => {
+        if (res.successful) this.edit(res.output);
+      });
+  }
+
+  edit(item: Robot | undefined = undefined): void {
     this.view = 'editor';
     this.isNew = false;
-    this.currentItem = this.selection.selected[0];
+    this.currentItem = item || this.selection.selected[0];
     this.currentItemChanged.emit(this.currentItem.machineName);
+    const viewUrl = this.viewFormatter.toUrl('robots');
+    const itemUrl = this.viewFormatter.toUrl(this.currentItem.machineName || 'unknown');
+    this.router.navigate(['administrator', viewUrl, itemUrl], {});
   }
 
   importRobots(): void {
@@ -133,6 +153,8 @@ export class RobotsListComponent implements OnInit {
       this.currentItem!.id = this.currentItem!.machineName;
     }
     this.currentItemChanged.emit('');
+    const viewUrl = this.viewFormatter.toUrl('robots');
+    this.router.navigate(['administrator', viewUrl], {});
   }
 
   exportList(): void {
@@ -154,7 +176,7 @@ export class RobotsListComponent implements OnInit {
           console.log(result);
           console.groupEnd();
           this.downloaderService.download(
-            `v1/robots/export.${result.selectedFormat}?flags=${result.encodeFlags()}`, 
+            `v1/robots/export.${result.selectedFormat}?flags=${result.encodeFlags()}`,
             `robots.${result.selectedFormat}`);
         } else {
           console.log('[RobotsListComponent] Export cancelled');
@@ -223,7 +245,7 @@ export class RobotsListComponent implements OnInit {
 
           this.selection.selected.forEach(t =>
             this.downloaderService.download(
-              `v1/robots/${t.machineName}/logs/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`, 
+              `v1/robots/${t.machineName}/logs/export.${result.selectedFormat}?from=${fromDate}&to=${toDate}`,
               `${t.friendlyName}_${fromDate}_${toDate}-logs.${result.selectedFormat}`));
         } else {
           console.log('[RobotsListComponent] Export cancelled');
