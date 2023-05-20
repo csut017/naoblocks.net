@@ -162,6 +162,12 @@ export class RobotsListComponent implements OnInit {
       });
   }
 
+  viewQuickLinks(): void {
+    this.view = 'quickLinks';
+    this.currentItem = this.selection.selected[0];
+    this.currentItemChanged.emit(`${this.currentItem?.machineName} [Quick Links]`);
+  }
+
   viewValues(): void {
     this.view = 'values';
     this.currentItem = this.selection.selected[0];

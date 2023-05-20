@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Moq;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
@@ -29,7 +30,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<DeleteRobot>();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Delete("karetao");
@@ -65,7 +67,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("karetao", format);
@@ -89,7 +92,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("karetao", "garbage");
@@ -112,7 +116,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportDetails("karetao", "unknown");
@@ -143,7 +148,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterGenerator(generator.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList(format);
@@ -163,7 +169,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList("garbage");
@@ -182,7 +189,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterGenerator(generator.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportList("unknown");
@@ -216,7 +224,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("karetao", format);
@@ -240,7 +249,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("karetao", "garbage");
@@ -263,7 +273,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(query.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.ExportLogs("karetao", "unknown");
@@ -280,7 +291,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             var query = new Mock<RobotData>();
             query.Setup(q => q.RetrieveByNameAsync("karetao", true))
                 .Returns(Task.FromResult((Data.Robot?)null));
@@ -301,7 +313,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             var query = new Mock<RobotData>();
             query.Setup(q => q.RetrieveByNameAsync("karetao", true))
                 .Returns(Task.FromResult((Data.Robot?)new Data.Robot { MachineName = "karetao" }));
@@ -326,7 +339,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, robots.AsEnumerable()));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles("first");
 
             // Act
@@ -345,7 +359,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Import("unknown");
@@ -362,7 +377,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles();
 
             // Act
@@ -380,7 +396,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Import("parse");
@@ -397,7 +414,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles("first", "second");
 
             // Act
@@ -421,7 +439,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, robots.AsEnumerable()));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
             controller.SetRequestFiles("first");
 
             // Act
@@ -448,7 +467,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult(result));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.List(null, null, null);
@@ -477,7 +497,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult((Data.RobotType?)new Data.RobotType { Name = "karetao", Id = "types/1" }));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.List(null, null, "karetao");
@@ -500,7 +521,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult((Data.RobotType?)null));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.List(null, null, "karetao");
@@ -523,7 +545,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 .Returns(Task.FromResult(result));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.List(null, null, null);
@@ -544,7 +567,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var robot = new Transfer.Robot { MachineName = "karetao" };
@@ -566,7 +590,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Post(null);
@@ -589,7 +614,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.ExpectCommand<UpdateCustomValuesForRobot>();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var values = Transfer.Set.New(
@@ -614,7 +640,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             engine.RegisterQuery(robotQuery.Object);
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var values = Transfer.Set.New(
@@ -635,7 +662,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var robot = new Transfer.Robot { FriendlyName = "Mihīni" };
@@ -659,7 +687,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Put("karetao", null);
@@ -678,7 +707,8 @@ namespace NaoBlocks.Web.Tests.Controllers
                 CommandResult.New(1, new Data.Robot()));
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var robot = new Transfer.Robot { MachineName = "karetao" };
@@ -700,7 +730,8 @@ namespace NaoBlocks.Web.Tests.Controllers
             var engine = new FakeEngine();
             var controller = new RobotsController(
                 logger,
-                engine);
+                engine,
+                new Mock<IOptions<Configuration.Addresses>>().Object);
 
             // Act
             var response = await controller.Register(null);

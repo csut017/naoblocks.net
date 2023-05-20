@@ -36,6 +36,7 @@
                         <mat-icon>arrow_drop_down</mat-icon>
                     </button>
                     <mat-menu #viewMenu="matMenu">
+                        <button mat-menu-item (click)="viewQuickLinks()">Quick Links</button>
                         <button mat-menu-item (click)="viewValues()">Values</button>
                     </mat-menu>
                     <button mat-raised-button class="command-button" [disabled]="selection.selected.length != 1"
@@ -100,6 +101,9 @@
     </div>
     <div *ngSwitchCase="'editor'">
         <app-robot-editor [item]="currentItem" (closed)="onClosed($event)"></app-robot-editor>
+    </div>
+    <div *ngSwitchCase="'quickLinks'">
+        <app-robot-quick-links [item]="currentItem" (closed)="onClosed($event)"></app-robot-quick-links>
     </div>
     <div *ngSwitchCase="'values'">
         <app-robot-values-list [item]="currentItem" (closed)="onClosed($event)"></app-robot-values-list>

@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NaoBlocks.Common;
+using NaoBlocks.Communications;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Configuration;
 using NaoBlocks.Web.Dtos;
 using NaoBlocks.Web.Helpers;
+using QRCoder;
+using System.Web;
 
 using Data = NaoBlocks.Engine.Data;
 
@@ -25,6 +30,7 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class RobotsController : ControllerBase
     {
+        private readonly IOptions<Addresses> configuration;
         private readonly IExecutionEngine executionEngine;
         private readonly ILogger<RobotsController> logger;
 
@@ -32,11 +38,13 @@ namespace NaoBlocks.Web.Controllers
         /// Initialises a new <see cref="RobotsController"/> instance.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
-        /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
-        public RobotsController(ILogger<RobotsController> logger, IExecutionEngine executionEngine)
+        /// <param name="engine">The execution engine for processing commands and queries.</param>
+        /// <param name="configuration">The address configuration.</param>
+        public RobotsController(ILogger<RobotsController> logger, IExecutionEngine engine, IOptions<Addresses> configuration)
         {
             this.logger = logger;
-            this.executionEngine = executionEngine;
+            this.executionEngine = engine;
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -65,9 +73,9 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="from">The start date.</param>
         /// <param name="to">The end date.</param>
         [HttpGet("{name}/export")]
-        [HttpGet("{name}/export{format}")]
+        [HttpGet("{name}/export.{format}")]
         [Authorize(Policy = "Teacher")]
-        public async Task<ActionResult> ExportDetails(string name, string? format = ".xlsx", string? from = null, string? to = null)
+        public async Task<ActionResult> ExportDetails(string name, string? format = "xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating robot details export");
             var args = this.MakeArgs($"from={from}", $"to={to}");
@@ -86,7 +94,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="flags">The optional export flags.</param>
         /// <returns>The generated robot list.</returns>
         [HttpGet("export")]
-        [HttpGet("export{format}")]
+        [HttpGet("export.{format}")]
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult> ExportList(string? format, [FromQuery] string? flags = null)
         {
@@ -106,8 +114,8 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="from">The start date.</param>
         /// <param name="to">The end date.</param>
         [HttpGet("{name}/logs/export")]
-        [HttpGet("{name}/logs/export{format}")]
-        public async Task<ActionResult> ExportLogs(string? name, string? format = ".xlsx", string? from = null, string? to = null)
+        [HttpGet("{name}/logs/export.{format}")]
+        public async Task<ActionResult> ExportLogs(string? name, string? format = "xlsx", string? from = null, string? to = null)
         {
             this.logger.LogInformation("Generating robot log export");
             var args = this.MakeArgs($"from={from}", $"to={to}");
@@ -127,7 +135,7 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Transfer.Robot>> Get(string name)
         {
-            this.logger.LogDebug($"Retrieving robot: id {name}");
+            this.logger.LogDebug("Retrieving robot: id {name}", name);
             var robot = await this.executionEngine
                 .Query<RobotData>()
                 .RetrieveByNameAsync(name, true)
@@ -139,6 +147,66 @@ namespace NaoBlocks.Web.Controllers
 
             this.logger.LogDebug("Retrieved robot");
             return Transfer.Robot.FromModel(robot, DetailsType.Standard);
+        }
+
+        /// <summary>
+        /// Generates a quick link for a robot.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <param name="type">The type of quick link to generate.</param>
+        /// <returns>Either a 404 (not found) or the quick link details.</returns>
+        [HttpGet("{name}/quicklink/{type}")]
+        [AllowAnonymous]
+        public ActionResult<object> GetQuickLink(string name, string type)
+        {
+            if (string.IsNullOrEmpty(type)) return BadRequest(new
+            {
+                error = "Type of quick link was not specified"
+            });
+
+            var fullAddress = GenerateQuickLinkUrl(name, type);
+            if (fullAddress == null) return BadRequest(new
+            {
+                error = $"Quick link {type} is not recognised"
+            });
+            this.logger.LogInformation("Quick link URL is {url}", fullAddress);
+
+            return new
+            {
+                link = fullAddress,
+            };
+        }
+
+        /// <summary>
+        /// Generates a quick link QR code for a robot.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <param name="type">The type of quick link to generate.</param>
+        /// <param name="format">The format to generate.</param>
+        /// <returns>Either a 404 (not found) or an image containing the QR code.</returns>
+        [HttpGet("{name}/qrcode/{type}")]
+        [HttpGet("{name}/qrcode/{type}.{format}")]
+        [AllowAnonymous]
+        public ActionResult GetQuickLinkQRCode(string name, string type, string? format = "png")
+        {
+            if (string.IsNullOrEmpty(type)) return BadRequest(new
+            {
+                error = "Type of quick link was not specified"
+            });
+
+            var fullAddress = GenerateQuickLinkUrl(name, type);
+            if (fullAddress == null) return BadRequest(new
+            {
+                error = $"Quick link {type} is not recognised"
+            });
+            this.logger.LogInformation("Quick link URL is {url}", fullAddress);
+
+            this.logger.LogDebug("Generating QR code for quick link {url}", fullAddress);
+            using var generator = new QRCodeGenerator();
+            var codeData = generator.CreateQrCode(fullAddress, QRCodeGenerator.ECCLevel.Q);
+            using var code = new PngByteQRCode(codeData);
+            var image = code.GetGraphic(20);
+            return File(image, ContentTypes.Png, $"{name}.{format}");
         }
 
         /// <summary>
@@ -199,7 +267,7 @@ namespace NaoBlocks.Web.Controllers
         public async Task<ActionResult<ListResult<Transfer.Robot>>> List(int? page, int? size, string? type)
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
-            this.logger.LogDebug($"Retrieving robots: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug("Retrieving robots: page {pageNum} with size {pageSize}", pageNum, pageSize);
             string? typeFilter = null;
 
             if (!string.IsNullOrEmpty(type))
@@ -221,7 +289,7 @@ namespace NaoBlocks.Web.Controllers
                 .RetrievePageAsync(pageNum, pageSize, typeFilter)
                 .ConfigureAwait(false);
             var count = robots.Items?.Count();
-            this.logger.LogDebug($"Retrieved {count} robots");
+            this.logger.LogDebug("Retrieved {count} robots", count);
             var result = new ListResult<Transfer.Robot>
             {
                 Count = robots.Count,
@@ -343,6 +411,26 @@ namespace NaoBlocks.Web.Controllers
             return await this.executionEngine
                 .ExecuteForHttp<Data.Robot, Transfer.Robot>
                 (command, r => Transfer.Robot.FromModel(r!));
+        }
+
+        /// <summary>
+        /// Generates a quick link URL.
+        /// </summary>
+        /// <param name="name">The name of the robot.</param>
+        /// <param name="type">The type of link to generate.</param>
+        /// <returns>A string containing the URL.</returns>
+        private string? GenerateQuickLinkUrl(string name, string type)
+        {
+            var address = ClientAddressList.RetrieveAddresses().First();
+            var typeAddress = type switch
+            {
+                "mobileview" => "mobile/robot",
+                "editor" => "administrator/robots",
+                _ => null,
+            };
+            return typeAddress == null
+                ? null
+                : $"https://{address}:{this.configuration.Value.HttpsPort}/{typeAddress}/{HttpUtility.UrlEncode(name)}";
         }
     }
 }

@@ -9,6 +9,7 @@ import { tap, catchError, map } from 'rxjs/operators';
 import { ExecutionResult } from '../data/execution-result';
 import { Robot } from '../data/robot';
 import { NamedValue } from '../data/named-value';
+import { QuickLink } from '../data/quick-link';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +44,7 @@ export class RobotService extends ClientService {
           this.log('Fetched robots');
           if (data.items) data.items.forEach(s => s.id = s.machineName);
         }),
-        catchError(this.handleError('list', msg => new ResultSet<Robot>(msg)))
+        catchError(this.handleError('listType', msg => new ResultSet<Robot>(msg)))
       );
   }
 
@@ -57,7 +58,20 @@ export class RobotService extends ClientService {
           this.log(`Retrieved robot ${id}`)
         }),
         map(data => new ExecutionResult<Robot>(data)),
-        catchError(this.handleError('list', msg => new ExecutionResult<Robot>(undefined, msg)))
+        catchError(this.handleError('get', msg => new ExecutionResult<Robot>(undefined, msg)))
+      );
+  }
+
+  getQuickLink(id: string, type: string): Observable<ExecutionResult<QuickLink>> {
+    const url = `${environment.apiURL}v1/robots/${id}/quicklink/${type}`;
+    this.log(`Retrieving ${type} quick link for robot ${id}`);
+    return this.http.get<QuickLink>(url)
+      .pipe(
+        tap(_ => {
+          this.log(`Retrieved ${type } quick link for robot ${id}`)
+        }),
+        map(data => new ExecutionResult<QuickLink>(data)),
+        catchError(this.handleError('getQuickLink', msg => new ExecutionResult<QuickLink>(undefined, msg)))
       );
   }
 

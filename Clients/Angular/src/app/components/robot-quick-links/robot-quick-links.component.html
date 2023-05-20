@@ -1,0 +1,40 @@
+<form [formGroup]="form" class="editor lower-3">
+    <div class="commands">
+        <button mat-raised-button color="accent" class="command-button" (click)="doClose()">
+            <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        <div class="spacer"></div>
+        <button mat-raised-button color="primary" type="button" (click)="doDownload()">
+            Download
+        </button>
+    </div>
+    <mat-card appearance="outlined">
+        <mat-card-content>
+            <mat-form-field class="fill-width">
+                <mat-label>Type</mat-label>
+                <select matNativeControl formControlName="type" required>
+                    <option *ngFor="let type of types" value="{{type}}">{{type}}</option>
+                </select>
+                <mat-error>
+                    Please select a quick link type
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="fill-width">
+                <mat-label>Format</mat-label>
+                <select matNativeControl formControlName="format" required>
+                    <option *ngFor="let format of formats" value="{{format}}">{{format}}</option>
+                </select>
+                <mat-error>
+                    Please select a quick link format
+                </mat-error>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+    <mat-card appearance="outlined">
+        <mat-card-content>
+            <img [src]="imageUrl" class="link-view" />
+            <a [href]="quickLinkUrl" class="link-preview" target="quick-link-preview">{{quickLinkUrl}}</a>
+        </mat-card-content>
+    </mat-card>
+</form>

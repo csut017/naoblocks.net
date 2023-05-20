@@ -1,0 +1,14 @@
+.mdc-card:not(:first-child) {
+    margin-top: 1rem;
+}
+
+.link-view {
+    width: 30rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.link-preview {
+    display: block;
+}

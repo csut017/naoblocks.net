@@ -59,6 +59,7 @@ import { RobotValuesListComponent } from './components/robot-values-list/robot-v
 import { RobotTypeDefinitionImportComponent } from './components/robot-type-definition-import/robot-type-definition-import.component';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { QRCodeReaderComponent } from './components/qrcode-reader/qrcode-reader.component';
+import { RobotQuickLinksComponent } from './components/robot-quick-links/robot-quick-links.component';
 
 @NgModule({
   declarations: [
@@ -109,7 +110,8 @@ import { QRCodeReaderComponent } from './components/qrcode-reader/qrcode-reader.
     NamedValueEditorComponent,
     RobotValuesListComponent,
     RobotTypeDefinitionImportComponent,
-    QRCodeReaderComponent
+    QRCodeReaderComponent,
+    RobotQuickLinksComponent
   ],
   imports: [
     BrowserModule,
