@@ -10,6 +10,7 @@ import { StudentHomeComponent } from './components/student-home/student-home.com
 import { TeacherHomeComponent } from './components/teacher-home/teacher-home.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { SystemInitialisationComponent } from './components/system-initialisation/system-initialisation.component';
+import { MobileHomeComponent } from './components/mobile-home/mobile-home.component';
 
 const routes: Routes = [
   // Public (no authentication) routes
@@ -25,6 +26,9 @@ const routes: Routes = [
   { path: 'administrator', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator/:view', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: 'administrator/:view/:item', component: AdministratorHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'mobile', component: MobileHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'mobile/:view', component: MobileHomeComponent, canActivate: [AuthenticationGuardService] },
+  { path: 'mobile/:view/:item', component: MobileHomeComponent, canActivate: [AuthenticationGuardService] },
   { path: '**', component: PageNotFoundComponent },
 ];
 

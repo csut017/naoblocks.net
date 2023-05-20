@@ -15,7 +15,7 @@ import { ViewFormatterService } from 'src/app/services/view-formatter.service';
 export class AdministratorHomeComponent extends HomeBase implements OnInit {
 
   currentItem: string ='';
-  currentView: string = 'Dashboard';
+  currentView: string = 'Robots';
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),

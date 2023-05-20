@@ -1,0 +1,80 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
+        <mat-toolbar color="primary">
+            <span mat-card-avatar class="app-icon"></span>
+            <span class="app-title">NaoBlocks</span>
+        </mat-toolbar>
+        <mat-nav-list>
+            <mat-selection-list #robotList role="listbox" class="tab-body" [multiple]="false"
+                (selectionChange)="onRobotSelected($event)">
+                <mat-list-option *ngFor="let robot of robots" class="robot-item" [value]="robot"
+                    [selected]="isSelected(robot)">
+                    {{robot.machineName}}
+                </mat-list-option>
+            </mat-selection-list>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar color="primary">
+            <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
+                *ngIf="isHandset$ | async">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            <span>
+                Mobile
+                <mat-icon class="breadcrumb">arrow_right_alt</mat-icon> {{currentView}}
+            </span>
+            <span class="example-spacer"></span>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="openAbout()">
+                    <mat-icon>help_outline</mat-icon>
+                    <span>About</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Log Out</span>
+                </button>
+            </mat-menu>
+        </mat-toolbar>
+
+        <mat-toolbar color="warn" *ngIf="!hasAccess">
+            <button mat-icon-button aria-label="Access error">
+                <mat-icon>error_outline</mat-icon>
+            </button>
+            <span>You do not have access to this role</span>
+        </mat-toolbar>
+
+        <div *ngIf="hasAccess" class="main-content">
+            <mat-card>
+                <mat-card-content>
+                    <mat-tab-group>
+                        <mat-tab label="Logs">
+                            <div class="tab-body">
+                                <mat-list>
+                                    <mat-list-item *ngFor="let log of logs">
+                                        {{log.whenAdded}}
+                                    </mat-list-item>
+                                </mat-list>
+                            </div>
+                        </mat-tab>
+                        <mat-tab label="Map">
+                            <div class="tab-body">
+                                TODO: Map
+                            </div>
+                        </mat-tab>
+                        <mat-tab label="Settings">
+                            <div class="tab-body">
+                                TODO: Settings
+                            </div>
+                        </mat-tab>
+                    </mat-tab-group>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>
