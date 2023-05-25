@@ -9,6 +9,7 @@ otherwise mBlock won't compile it correctly.
 
 import cyberpi
 import urequests as requests
+import random
 import time
 
 # Base settings
@@ -23,13 +24,6 @@ LOGGING_URL_PREFIX = 'http://'
 LOGGING_URL_SUFFIX = ':5000/api/v1/robots/' + NAME + '/logs'
 WIFI_SSID= 'NaoBlocks'
 WIFI_PASSWORD= 'letmein1'
-
-#Modes
-MODE_CONTINUOUS = 1
-MODE_DISCRETE = 2
-MODE_DISCRETE_NO_REPEAT = 3
-MODE_FIRST = MODE_CONTINUOUS
-MODE_LAST = MODE_DISCRETE_NO_REPEAT
 
 # ACTIONS
 ACTION_NONE = -1
@@ -86,7 +80,7 @@ class Dispatcher():
             self.robot.display_and_log(self.prefix + 'Repeat')
             self.executor.repeat()
 
-class Program:
+class Program():
     def __init__(self, executor, robot):
         self.actions = []
         self.executor = executor
@@ -110,15 +104,55 @@ class Program:
     def stop(self):
         pass
 
-class ContinuousActions:
-    def __init__(self, robot, speed = SPEED):
+class Actions():
+    def backward(self):        
+        pass
+
+    def can_perform(self, _):
+        return False
+
+    def curve_left(self):
+        pass
+
+    def curve_right(self):
+        pass
+
+    def forward(self):
+        pass
+
+    def play_a(self):
+        pass
+
+    def play_b(self):
+        pass
+
+    def record_a(self):
+        pass
+
+    def record_b(self):
+        pass
+
+    def repeat(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def turn_left(self):
+        pass
+
+    def turn_right(self):
+        pass
+
+class ContinuousActions(Actions):
+    def __init__(self, robot):
         # Identification details
         self.name = 'Continuous'
         self.code = 'C'
 
         # Configuration options
         self.robot = robot
-        self.speed = speed
+        self.speed = SPEED
 
         # Internal state
         self.last_action = ACTION_NONE
@@ -145,21 +179,6 @@ class ContinuousActions:
         cyberpi.mbot2.forward(self.speed)
         self.last_action = ACTION_FORWARD
 
-    def play_a(self):
-        pass
-
-    def play_b(self):
-        pass
-
-    def record_a(self):
-        pass
-
-    def record_b(self):
-        pass
-
-    def repeat(self):
-        pass
-
     def stop(self):
         self.last_action = ACTION_NONE
 
@@ -171,17 +190,17 @@ class ContinuousActions:
         cyberpi.mbot2.turn_right(self.speed)
         self.last_action = ACTION_TURN_RIGHT
 
-class DiscreteActions:
-    def __init__(self, robot, speed = SPEED, distance = 2, angle = 45):
+class DiscreteActions(Actions):
+    def __init__(self, robot):
         # Identification details
         self.name = 'Discrete'
         self.code = 'D'
 
         # Configuration options
         self.robot = robot
-        self.speed = speed
-        self.distance = distance
-        self.angle = angle
+        self.speed = SPEED
+        self.distance = 2
+        self.angle = 45
 
         # Programs
         self.recording_program = None
@@ -288,66 +307,34 @@ class DiscreteActions:
             cyberpi.mbot2.turn(self.angle, self.speed)
             self.last_action = ACTION_TURN_RIGHT
 
-class UniqueActions:
-    def __init__(self, robot, inner):
+class UniqueActions(DiscreteActions):
+    def __init__(self, robot):
+        super().__init__(robot)
+
         # Identification details
         self.name = 'Unique'
         self.code = 'U'
-
-        # Configuration options
-        self.robot = robot
-        self.inner = inner
-
-        # Internal state
-        self.last_action = ACTION_NONE
-
-    def backward(self):
-        self.last_action = ACTION_BACKWARD
-        self.inner.backward()
 
     def can_perform(self, action):
         if action in PROGRAM_ACTIONS:
             return False
 
-        return self.last_action != action
+        can_perform = self.last_action != action
+        return can_perform and super().can_perform(action)
 
-    def curve_left(self):
-        self.last_action = ACTION_CURVE_LEFT
-        self.inner.curve_left()
+class RandomValueActions(DiscreteActions):
+    def __init__(self, robot):
+        super().__init__(robot)
 
-    def curve_right(self):
-        self.last_action = ACTION_CURVE_RIGHT
-        self.inner.curve_right()
+        # Identification details
+        self.name = 'RandVal'
+        self.code = 'RV'
 
-    def forward(self):
-        self.last_action = ACTION_FORWARD
-        self.inner.forward()
-
-    def play_a(self):
-        pass
-
-    def play_b(self):
-        pass
-
-    def record_a(self):
-        pass
-
-    def record_b(self):
-        pass
-
-    def repeat(self):
-        pass
-
-    def stop(self):
-        self.last_action = ACTION_NONE
-
-    def turn_left(self):
-        self.last_action = ACTION_TURN_LEFT
-        self.inner.turn_left()
-
-    def turn_right(self):
-        self.last_action = ACTION_TURN_RIGHT
-        self.inner.turn_right()
+    def can_perform(self, action):
+        self.speed = random.randint(1, 5) * 5
+        self.distance = random.randint(1, 4)
+        self.angle = random.randint(2, 6) * 10 + 5
+        return super().can_perform(action)
 
 class Robot():
     def __init__(self):
@@ -355,7 +342,7 @@ class Robot():
         self.has_stopped = True
         self.lines = 100
         self.is_running = False
-        self.mode = MODE_CONTINUOUS
+        self.mode = 0
         self.is_connected = False
         self.is_sending = False
 
@@ -367,6 +354,14 @@ class Robot():
         # Update robot
         cyberpi.smart_camera.set_mode(mode = "line")
         cyberpi.quad_rgb_sensor.set_led('w')
+
+        # Modes
+        self.modes = [
+            ContinuousActions(self),
+            DiscreteActions(self),
+            RandomValueActions(self),
+            UniqueActions(self),
+        ]
 
     def display(self, message, clear_screen = False):
         self.lines += 1
@@ -577,20 +572,15 @@ class Robot():
 
     def toggle_mode(self, direction, is_change = True):
         self.mode += direction
-        if self.mode > MODE_LAST:
-            self.mode = MODE_FIRST
-        elif self.mode < MODE_FIRST:
-            self.mode = MODE_LAST
+        if self.mode >= len(self.modes):
+            self.mode = 0
+        elif self.mode < 0:
+            self.mode = len(self.modes) - 1
             
         if is_change:   
             self.display_and_log('Mode change', clear_screen=True)
-        if self.mode == MODE_CONTINUOUS:
-            self.actions = ContinuousActions(self)
-        elif self.mode == MODE_DISCRETE:
-            self.actions = DiscreteActions(self)
-        elif self.mode == MODE_DISCRETE_NO_REPEAT:
-            self.actions = UniqueActions(self, DiscreteActions(self))
 
+        self.actions = self.modes[self.mode]
         self.display_and_log(self.actions.name, 'mode')
 
 r = Robot()
