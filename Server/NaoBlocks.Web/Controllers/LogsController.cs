@@ -8,6 +8,8 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 using System.Diagnostics;
 
+using Dtos = NaoBlocks.Web.Dtos;
+
 namespace NaoBlocks.Web.Controllers
 {
     /// <summary>
@@ -113,17 +115,19 @@ namespace NaoBlocks.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Dtos.LogResult>> Post(string robotId, Dtos.LogRequest request)
         {
-            this.logger.LogDebug("Retrieving robot: id {robotId}", robotId);
+            this.logger.LogInformation("Retrieving robot: id {robotId}", robotId);
             var robot = await this.executionEngine
                 .Query<RobotData>()
                 .RetrieveByNameAsync(robotId, true)
                 .ConfigureAwait(false);
-            if (robot == null)
+            if (robot?.Type == null)
             {
+                this.logger.LogInformation("Robot not found: id {robotId}", robotId);
+                if (robot == null) await RegisterUnknownRobot(robotId);
                 return NotFound();
             }
 
-            if (!robot.Type?.AllowDirectLogging ?? false)
+            if (!(robot.Type?.AllowDirectLogging ?? false))
             {
                 this.logger.LogWarning("Robot type {name} does not allow direct logging", robot.Type?.Name);
                 return Forbid();
@@ -143,6 +147,22 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Registers an unknown robot.
+        /// </summary>
+        /// <param name="robotId">The machine name of the robot.</param>
+        private async Task RegisterUnknownRobot(string robotId)
+        {
+            this.logger.LogInformation("Registering new robot '{robot}'", robotId);
+            var command = new RegisterRobot
+            {
+                MachineName = robotId
+            };
+
+            await this.executionEngine.ExecuteAsync(command);
+            await this.executionEngine.CommitAsync();
+        }
+
+        /// <summary>
         /// Adds a batch of messages.
         /// </summary>
         /// <param name="robot">The <see cref="Robot"/> to add the messages for.</param>
@@ -156,9 +176,11 @@ namespace NaoBlocks.Web.Controllers
 
             if ((request.Messages == null) || !request.Messages.Any())
             {
+                logger.LogInformation("No new messages for robot {robot} - skipping", robot.MachineName);
                 return new Dtos.LogResult();
             }
 
+            logger.LogInformation("Adding {count} log(s) for robot {robot}", request.Messages.Length, robot.MachineName);
             var templates = robot.Type?
                 .LoggingTemplates
                 .ToDictionary(t => t.Category.ToLowerInvariant()) ?? new Dictionary<string, LoggingTemplate>();
@@ -244,6 +266,7 @@ namespace NaoBlocks.Web.Controllers
         /// <returns>A <see cref="Dtos.LogResult"/> containing the outcome.</returns>
         private async Task<ActionResult<Dtos.LogResult>> InitialiseRobotLog(Robot robot, Dtos.LogRequest request)
         {
+            logger.LogInformation("Initialising logs for robot {robot}", robot.MachineName);
             var startConversation = new StartRobotConversation
             {
                 Name = robot.MachineName,
