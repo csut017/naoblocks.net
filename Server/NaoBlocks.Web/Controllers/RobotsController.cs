@@ -56,7 +56,7 @@ namespace NaoBlocks.Web.Controllers
         [Authorize(Policy = "Teacher")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this.logger.LogInformation($"Deleting robot '{id}'");
+            this.logger.LogInformation("Deleting robot '{id}'", id);
             var command = new DeleteRobot
             {
                 Name = id
@@ -316,7 +316,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Adding new robot '{robot.MachineName}'");
+            this.logger.LogInformation("Adding new robot '{robot}'", robot.MachineName);
             var command = new AddRobot
             {
                 MachineName = robot.MachineName,
@@ -345,7 +345,7 @@ namespace NaoBlocks.Web.Controllers
                 .ConfigureAwait(false);
             if (robot == null) return NotFound();
 
-            this.logger.LogInformation($"Updating values for robot '{robot?.MachineName}'");
+            this.logger.LogInformation("Updating values for robot '{robot}'", robot?.MachineName);
             var command = new UpdateCustomValuesForRobot
             {
                 MachineName = id,
@@ -373,7 +373,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Updating robot '{id}'");
+            this.logger.LogInformation("Updating robot '{robot}'", id);
             var command = new UpdateRobot
             {
                 MachineName = id,
@@ -403,7 +403,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this.logger.LogInformation($"Registering new robot '{robot.MachineName}'");
+            this.logger.LogInformation("Registering new robot '{robot}'", robot.MachineName);
             var command = new RegisterRobot
             {
                 MachineName = robot.MachineName
