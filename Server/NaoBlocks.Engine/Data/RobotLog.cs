@@ -34,5 +34,10 @@
         /// Gets or sets when this log was last added to.
         /// </summary>
         public DateTime WhenLastUpdated { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the details about when this log was last synchronized.
+        /// </summary>
+        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
     }
 }

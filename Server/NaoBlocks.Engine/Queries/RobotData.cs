@@ -84,5 +84,29 @@ namespace NaoBlocks.Engine.Queries
             };
             return result;
         }
+
+        /// <summary>
+        /// Retrieves the last modified robot.
+        /// </summary>
+        /// <returns>The last changed robot or null.</returns>
+        public async Task<Robot?> RetrieveLastUpdatedAsync()
+        {
+            var robot = await this.Session.Query<Robot>()
+                .OrderByDescending(r => r.WhenLastUpdated)
+                .FirstOrDefaultAsync();
+            return robot;
+        }
+
+        /// <summary>
+        /// Retrieves the last robot log.
+        /// </summary>
+        /// <returns>The last robot log or null.</returns>
+        public async Task<RobotLog?> RetrieveLastLogAsync()
+        {
+            var robot = await this.Session.Query<RobotLog>()
+                .OrderByDescending(r => r.WhenLastUpdated)
+                .FirstOrDefaultAsync();
+            return robot;
+        }
     }
 }

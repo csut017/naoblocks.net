@@ -100,6 +100,7 @@ namespace NaoBlocks.Engine.Commands
                 this.robot!.RobotTypeId = this.robotType!.Id;
             }
 
+            this.robot!.WhenLastUpdated = DateTime.UtcNow;
             return Task.FromResult(CommandResult.New(this.Number, this.robot!));
         }
 

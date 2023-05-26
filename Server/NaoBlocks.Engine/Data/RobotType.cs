@@ -44,5 +44,15 @@
         /// Gets or sets when the robot type was added.
         /// </summary>
         public DateTime WhenAdded { get; set; }
+
+        /// <summary>
+        /// Gets or sets when this robot type was last updated.
+        /// </summary>
+        public DateTime WhenLastUpdated { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the details about when this robot type was last synchronized.
+        /// </summary>
+        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
     }
 }

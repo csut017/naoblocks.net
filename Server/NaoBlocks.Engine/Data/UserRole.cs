@@ -33,6 +33,11 @@
         /// <summary>
         /// A generic user (specific role unknown.)
         /// </summary>
-        User
+        User,
+
+        /// <summary>
+        /// The user can only participate in synchronization activities.
+        /// </summary>
+        Synchronization,
     }
 }

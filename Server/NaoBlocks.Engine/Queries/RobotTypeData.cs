@@ -51,6 +51,18 @@ namespace NaoBlocks.Engine.Queries
         }
 
         /// <summary>
+        /// Retrieves the last modified robot type.
+        /// </summary>
+        /// <returns>The last changed robot type or null.</returns>
+        public async Task<RobotType?> RetrieveLastUpdatedAsync()
+        {
+            var value = await this.Session.Query<RobotType>()
+                .OrderByDescending(r => r.WhenLastUpdated)
+                .FirstOrDefaultAsync();
+            return value;
+        }
+
+        /// <summary>
         /// Retrieves a page of robot types.
         /// </summary>
         /// <param name="pageNum">The page number to retrieve.</param>

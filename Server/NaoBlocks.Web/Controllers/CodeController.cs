@@ -4,6 +4,7 @@ using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
+using NaoBlocks.Web.Authorization;
 using NaoBlocks.Web.Helpers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -96,10 +97,10 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="program">The identifier of the program.</param>
         /// <returns>A <see cref="Transfer.CompiledCodeProgram"/> instance containing the compiled program.</returns>
         [HttpGet("{user}/{program}")]
-        [Authorize(Policy = "TeacherOrRobot")]
+        [RequireTeacherOrRobot]
         public async Task<ActionResult<ExecutionResult<Transfer.CompiledCodeProgram?>>> Get(string user, long program)
         {
-            this._logger.LogInformation($"Getting program {program} for {user}");
+            this._logger.LogInformation("Getting program {program} for {user}", program, user);
             var userDetails = await this.executionEngine
                 .Query<UserData>()
                 .RetrieveByNameAsync(user)
