@@ -26,17 +26,22 @@ WIFI_SSID= 'NaoBlocks'
 WIFI_PASSWORD= 'letmein1'
 
 # ACTIONS
+## WARNING: the following labels are mapped to each other when upside down
+## 4 <-> 10
+## 8 <-> 12
+## 2 <-> 6
+## All other labels are safe
 ACTION_NONE = -1
 ACTION_BACKWARD = 2
 ACTION_CURVE_LEFT = 5
-ACTION_CURVE_RIGHT = 6
+ACTION_CURVE_RIGHT = 13
 ACTION_FORWARD = 1
-ACTION_PLAY_A = 10
+ACTION_PLAY_A = 14
 ACTION_PLAY_B = 11
 ACTION_RECORD_A = 7
 ACTION_RECORD_B = 8
 ACTION_REPEAT = 9
-ACTION_STOP = 15
+ACTION_STOP = 15        # This label is identical when upsidedown
 ACTION_TURN_LEFT = 3
 ACTION_TURN_RIGHT = 4
 
