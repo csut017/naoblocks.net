@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using NaoBlocks.Common;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Raven.Client.Documents.Session;
-using NaoBlocks.Engine.Commands;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace NaoBlocks.Engine.Tests
 {
@@ -21,18 +20,18 @@ namespace NaoBlocks.Engine.Tests
             this.DatabaseSession = new MockingRavenDbWrapper(session);
         }
 
-        internal MockingRavenDbWrapper DatabaseSession { get; private set; }
-
         public ILogger Logger => throw new System.NotImplementedException();
+
+        internal MockingRavenDbWrapper DatabaseSession { get; private set; }
 
         public async Task CommitAsync()
         {
             await this.DatabaseSession.SaveChangesAsync();
         }
 
-        internal static string[] GetErrors(IEnumerable<CommandError> errors)
+        public IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
         {
-            return errors.Select(e => e.Error).ToArray();
+            throw new NotImplementedException();
         }
 
         public async Task<CommandResult> ExecuteAsync(CommandBase command)
@@ -41,14 +40,10 @@ namespace NaoBlocks.Engine.Tests
             return result;
         }
 
-        public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
         {
-            return await command.ValidateAsync(this.DatabaseSession, this);
-        }
-
-        public async Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)
-        {
-            return await command.RestoreAsync(this.DatabaseSession);
+            throw new NotImplementedException();
         }
 
         public TQuery Query<TQuery>()
@@ -57,10 +52,19 @@ namespace NaoBlocks.Engine.Tests
             throw new NotImplementedException();
         }
 
-        public TGenerator Generator<TGenerator>()
-            where TGenerator : ReportGenerator, new()
+        public async Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)
         {
-            throw new NotImplementedException();
+            return await command.RestoreAsync(this.DatabaseSession);
+        }
+
+        public async Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
+        {
+            return await command.ValidateAsync(this.DatabaseSession, this);
+        }
+
+        internal static string[] GetErrors(IEnumerable<CommandError> errors)
+        {
+            return errors.Select(e => e.Error).ToArray();
         }
     }
 }

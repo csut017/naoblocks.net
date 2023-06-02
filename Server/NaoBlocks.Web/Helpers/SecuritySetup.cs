@@ -26,7 +26,8 @@ namespace NaoBlocks.Web.Helpers
             }
 
             var key = Encoding.ASCII.GetBytes(settings.JwtSecret);
-            services.AddAuthentication(options => {
+            services.AddAuthentication(options =>
+            {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,7 +52,7 @@ namespace NaoBlocks.Web.Helpers
                 opts.AddPolicy("Administrator", policy => policy.RequireRole(UserRole.Administrator.ToString()));
                 opts.AddPolicy("Robot", policy => policy.RequireRole(UserRole.Robot.ToString()));
                 opts.AddPolicy("TeacherOrRobot", policy => policy.RequireRole(UserRole.Robot.ToString(), UserRole.Teacher.ToString(), UserRole.Administrator.ToString()));
-                opts.AddPolicy("Synchronization", policy => policy.RequireRole(UserRole.Synchronization.ToString()));
+                opts.AddPolicy("Synchronization", policy => policy.RequireRole(UserRole.Synchronization.ToString(), UserRole.Administrator.ToString()));
             });
         }
     }

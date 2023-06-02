@@ -14,6 +14,20 @@ namespace NaoBlocks.Engine
         ILogger Logger { get; }
 
         /// <summary>
+        /// Commits (saves) the results of the execution.
+        /// </summary>
+        Task CommitAsync();
+
+        /// <summary>
+        /// Dehydrates the command logs in a period of time for the specified target systems.
+        /// </summary>
+        /// <param name="fromTime">The starting date and time.</param>
+        /// <param name="toTime">The finishing date and time.</param>
+        /// <param name="targets">The sub-systems to include.</param>
+        /// <returns>A enumerable of strings containing the dehydrated command logs.</returns>
+        IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets);
+
+        /// <summary>
         /// Executes a command.
         /// </summary>
         /// <param name="command">The command to execute.</param>
@@ -21,9 +35,20 @@ namespace NaoBlocks.Engine
         Task<CommandResult> ExecuteAsync(CommandBase command);
 
         /// <summary>
-        /// Commits (saves) the results of the execution.
+        /// Retrieves a report generator.
         /// </summary>
-        Task CommitAsync();
+        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
+        /// <returns>An instance of the generator.</returns>
+        TGenerator Generator<TGenerator>()
+           where TGenerator : ReportGenerator, new();
+
+        /// <summary>
+        /// Retrieves a database query.
+        /// </summary>
+        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
+        /// <returns>An instance of the query.</returns>
+        TQuery Query<TQuery>()
+            where TQuery : DataQuery, new();
 
         /// <summary>
         /// Restores a command from the database.
@@ -44,21 +69,5 @@ namespace NaoBlocks.Engine
         /// If errors is empty, then the command is assumed to be validated.
         /// </remarks>
         Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command);
-
-        /// <summary>
-        /// Retrieves a database query.
-        /// </summary>
-        /// <typeparam name="TQuery">The type of query to retrieve.</typeparam>
-        /// <returns>An instance of the query.</returns>
-        TQuery Query<TQuery>()
-            where TQuery: DataQuery, new();
-
-        /// <summary>
-        /// Retrieves a report generator.
-        /// </summary>
-        /// <typeparam name="TGenerator">The type of generator to retrieve.</typeparam>
-        /// <returns>An instance of the generator.</returns>
-        TGenerator Generator<TGenerator>()
-           where TGenerator : ReportGenerator, new();
     }
 }

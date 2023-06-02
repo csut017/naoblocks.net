@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Authorization;
+using NaoBlocks.Web.Helpers;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -13,13 +13,13 @@ namespace NaoBlocks.Web.Controllers
     /// </summary>
     [Route("api/v1/[controller]")]
     [ApiController]
-    [Authorize]
+    [RequireSynchronization]
     [Produces("application/json")]
     public class SynchronizationController
         : ControllerBase
     {
-        private readonly ILogger<SynchronizationController> _logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<SynchronizationController> logger;
         private readonly Dictionary<string, Func<Task<DateTime>>> subSystems = new();
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
         public SynchronizationController(ILogger<SynchronizationController> logger, IExecutionEngine executionEngine)
         {
-            this._logger = logger;
+            this.logger = logger;
             this.executionEngine = executionEngine;
 
             this.subSystems.Add("robot", RetrieveLastRobotUpdate);
@@ -49,10 +49,11 @@ namespace NaoBlocks.Web.Controllers
             var results = new List<Transfer.SynchronizationStatus>();
             if (string.IsNullOrEmpty(system))
             {
-                this._logger.LogInformation("Getting system synchronization status");
+                this.logger.LogInformation("Getting system synchronization status");
                 foreach (var subSystem in this.subSystems)
                 {
-                    var status = new Transfer.SynchronizationStatus {
+                    var status = new Transfer.SynchronizationStatus
+                    {
                         Name = subSystem.Key,
                         WhenLastUpdated = await subSystem.Value(),
                     };
@@ -67,7 +68,7 @@ namespace NaoBlocks.Web.Controllers
                     return NotFound();
                 }
 
-                this._logger.LogInformation("Getting synchronization status for {system}", system);
+                this.logger.LogInformation("Getting synchronization status for {system}", system);
                 var status = new Transfer.SynchronizationStatus
                 {
                     Name = systemName,
@@ -79,11 +80,45 @@ namespace NaoBlocks.Web.Controllers
             return ListResult.New(results);
         }
 
-        private async Task<DateTime> RetrieveLastRobotUpdate()
+        /// <summary>
+        /// Retrieves the changes to a system since a point in time.
+        /// </summary>
+        /// <param name="system">The subsystem to query.</param>
+        /// <param name="from">The start date to retrieve logs from.</param>
+        /// <param name="to">An optional to date to stop retrieving logs.</param>
+        /// <param name="page">The page number.</param>
+        /// <param name="size">The number of records.</param>
+        /// <returns>A <see cref="ListResult{TData}"/> instance containing details.</returns>
+        [HttpGet("{system}/logs/{from}")]
+        public async Task<ActionResult<ListResult<string>>> ListChanges(string system, DateTime from, DateTime? to = null, int? page = null, int? size = null)
+        {
+            if (!Enum.TryParse<CommandTarget>(system, true, out var target))
+            {
+                return BadRequest(new
+                {
+                    error = $"System '{system}' is not a valid sub-system"
+                });
+            }
+
+            (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
+            this.logger.LogDebug("Retrieving change: page {pageNum} with size {pageSize}", pageNum, pageSize);
+
+            to ??= DateTime.MaxValue;
+            if ((to.Value - from).TotalDays > 90) to = from.AddDays(90);
+            var results = new List<string>();
+            await foreach (var log in executionEngine.DehydrateCommandLogsAsync(from, to.Value, target))
+            {
+                results.Add(log);
+            }
+
+            return ListResult.New(results.Skip(pageNum * pageSize).Take(pageSize), results.Count, pageNum);
+        }
+
+        private async Task<DateTime> RetrieveLastRobotLogUpdate()
         {
             var value = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveLastUpdatedAsync();
+                .RetrieveLastLogAsync();
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
 
@@ -95,11 +130,11 @@ namespace NaoBlocks.Web.Controllers
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
 
-        private async Task<DateTime> RetrieveLastRobotLogUpdate()
+        private async Task<DateTime> RetrieveLastRobotUpdate()
         {
             var value = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveLastLogAsync();
+                .RetrieveLastUpdatedAsync();
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
     }

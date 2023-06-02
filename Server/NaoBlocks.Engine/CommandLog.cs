@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Engine
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine
 {
     /// <summary>
     /// A log of how a command was executed.
@@ -11,8 +13,14 @@
         public CommandBase? Command { get; set; }
 
         /// <summary>
+        /// Gets or sets the id of the command log.
+        /// </summary>
+        public string? Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the result of execution.
         /// </summary>
+        [JsonIgnore]
         public CommandResult? Result { get; set; }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿
-using NaoBlocks.Common;
+﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
 using Raven.Client.Documents;
 
@@ -8,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command for adding a new robot.
     /// </summary>
+    [CommandTarget(CommandTarget.Robot)]
     public class AddRobot
         : CommandBase
     {
@@ -39,12 +39,30 @@ namespace NaoBlocks.Engine.Commands
         public string? Type { get; set; }
 
         /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.robotType = await session.Query<RobotType>()
+                .FirstOrDefaultAsync(rt => rt.Name == this.Type)
+                .ConfigureAwait(false);
+            if (this.robotType == null)
+            {
+                errors.Add(this.GenerateError($"Unknown robot type {this.Type}"));
+            }
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Validates the robot details.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
@@ -100,28 +118,11 @@ namespace NaoBlocks.Engine.Commands
                 Password = this.HashedPassword,
                 IsInitialised = true,
                 RobotTypeId = this.robotType!.Id,
-                WhenAdded = this.WhenExecuted
+                WhenAdded = this.WhenExecuted,
+                WhenLastUpdated = this.WhenExecuted,
             };
             await session.StoreAsync(robot).ConfigureAwait(false);
             return CommandResult.New(this.Number, robot);
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.robotType = await session.Query<RobotType>()
-                .FirstOrDefaultAsync(rt => rt.Name == this.Type)
-                .ConfigureAwait(false);
-            if (this.robotType == null)
-            {
-                errors.Add(this.GenerateError($"Unknown robot type {this.Type}"));
-            }
-            return errors.AsEnumerable();
         }
     }
 }

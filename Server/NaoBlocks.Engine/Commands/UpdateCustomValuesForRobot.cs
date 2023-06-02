@@ -7,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command to update the custom values for a robot.
     /// </summary>
+    [CommandTarget(CommandTarget.Robot)]
     public class UpdateCustomValuesForRobot
         : UserCommandBase
     {
@@ -96,15 +97,15 @@ namespace NaoBlocks.Engine.Commands
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.robot);
-            var robotType = this.robot!;
-            robotType.CustomValues.Clear();
+            var thisRobot = this.robot!;
+            thisRobot.CustomValues.Clear();
             foreach (var value in this.Values.Where(v => v != null))
             {
-                robotType.CustomValues.Add(value!);
+                thisRobot.CustomValues.Add(value!);
             }
 
-            this.robot!.WhenLastUpdated = DateTime.UtcNow;
-            return Task.FromResult(CommandResult.New(this.Number, robotType));
+            this.robot!.WhenLastUpdated = this.WhenExecuted;
+            return Task.FromResult(CommandResult.New(this.Number, thisRobot));
         }
     }
 }

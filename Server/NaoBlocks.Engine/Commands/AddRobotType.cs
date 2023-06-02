@@ -7,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// Command for adding a new robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class AddRobotType
         : CommandBase
     {
@@ -55,7 +56,8 @@ namespace NaoBlocks.Engine.Commands
                 Name = this.Name!.Trim(),
                 AllowDirectLogging = this.AllowDirectLogging ?? false,
                 IsDefault = false,
-                WhenAdded = this.WhenExecuted
+                WhenAdded = this.WhenExecuted,
+                WhenLastUpdated = this.WhenExecuted,
             };
 
             await session.StoreAsync(robot).ConfigureAwait(false);

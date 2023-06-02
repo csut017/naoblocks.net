@@ -1,8 +1,11 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// Defines the types of conversation.
     /// </summary>
+    [JsonConverter(typeof(TolerantEnumConverter))]
     public enum ConversationType
     {
         /// <summary>

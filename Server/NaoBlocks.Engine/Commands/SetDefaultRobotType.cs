@@ -7,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command to set the default robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class SetDefaultRobotType
         : RobotTypeCommandBase
     {
@@ -77,11 +78,13 @@ namespace NaoBlocks.Engine.Commands
                 if (existingDefaultRobotType != null)
                 {
                     existingDefaultRobotType.IsDefault = false;
+                    existingDefaultRobotType.WhenLastUpdated = this.WhenExecuted;
                 }
 
                 this.robotType!.IsDefault = true;
             }
 
+            this.robotType.WhenLastUpdated = this.WhenExecuted;
             return CommandResult.New(this.Number, this.robotType!);
         }
     }

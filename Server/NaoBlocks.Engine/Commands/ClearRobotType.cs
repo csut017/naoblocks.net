@@ -6,6 +6,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// Clears data related to a robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class ClearRobotType
         : RobotTypeCommandBase
     {
@@ -78,6 +79,7 @@ namespace NaoBlocks.Engine.Commands
             if (this.IncludeCustomValues) this.robotType!.CustomValues.Clear();
             if (this.IncludeLoggingTemplates) this.robotType!.LoggingTemplates.Clear();
             if (this.IncludeToolboxes) this.robotType!.Toolboxes.Clear();
+            this.robotType!.WhenLastUpdated = this.WhenExecuted;
             return Task.FromResult(CommandResult.New(this.Number, this.robotType!));
         }
     }

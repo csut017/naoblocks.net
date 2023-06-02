@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using NaoBlocks.Common;
+using Newtonsoft.Json;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine
 {
@@ -38,6 +40,40 @@ namespace NaoBlocks.Engine
         {
             await this.session.SaveChangesAsync().ConfigureAwait(false);
             this.Logger.LogTrace("Session saved");
+        }
+
+        /// <summary>
+        /// Dehydrates the command logs in a period of time for the specified target systems.
+        /// </summary>
+        /// <param name="fromTime">The starting date and time.</param>
+        /// <param name="toTime">The finishing date and time.</param>
+        /// <param name="targets">The sub-systems to include.</param>
+        /// <returns>A enumerable of strings containing the dehydrated command logs.</returns>
+        public async IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
+        {
+            var logs = await session.Query<CommandLog>()
+                .Where(l => (l.WhenApplied >= fromTime) && (l.WhenApplied <= toTime))
+                .OrderBy(l => l.WhenApplied)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            var settings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                ContractResolver = new DehydrationContractResolver(),
+            };
+            foreach (var log in logs)
+            {
+                foreach (var target in targets)
+                {
+                    if (log?.Command?.CheckForTarget(target) == false) continue;
+
+                    var json = JsonConvert.SerializeObject(log, settings);
+                    yield return json;
+                    break;
+                }
+            }
+
+            yield break;
         }
 
         /// <summary>

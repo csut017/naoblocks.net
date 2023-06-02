@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Common
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Common
 {
     /// <summary>
     /// Defines the type of token.
@@ -8,6 +10,7 @@
     /// This enumeration defines the token type, which will influence how the
     /// block is executed.
     /// </remarks>
+    [JsonConverter(typeof(TolerantEnumConverter))]
     public enum TokenType
     {
         /// <summary>

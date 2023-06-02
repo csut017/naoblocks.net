@@ -7,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command to update a robot.
     /// </summary>
+    [CommandTarget(CommandTarget.Robot)]
     public class UpdateRobot
         : RobotCommandBase
     {
@@ -40,12 +41,35 @@ namespace NaoBlocks.Engine.Commands
         public string? RobotType { get; set; }
 
         /// <summary>
+        /// Attempts to restore the command from the database.
+        /// </summary>
+        /// <param name="session">The database session to use.</param>
+        /// <returns>Any errors that occurred during restoration.</returns>
+        public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
+        {
+            var errors = new List<CommandError>();
+            this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(this.RobotType))
+            {
+                this.robotType = await session.Query<RobotType>()
+                    .FirstOrDefaultAsync(rt => rt.Name == this.RobotType)
+                    .ConfigureAwait(false);
+                if (this.robotType == null)
+                {
+                    errors.Add(this.GenerateError($"Robot type {this.RobotType} is missing"));
+                }
+            }
+            this.robot!.WhenLastUpdated = this.WhenExecuted;
+            return errors.AsEnumerable();
+        }
+
+        /// <summary>
         /// Validates that the robot exists.
         /// </summary>
         /// <param name="session">The database session.</param>
         /// <returns>Any valdiation errors.</returns>
         /// <param name="engine"></param>
-        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
@@ -100,30 +124,8 @@ namespace NaoBlocks.Engine.Commands
                 this.robot!.RobotTypeId = this.robotType!.Id;
             }
 
-            this.robot!.WhenLastUpdated = DateTime.UtcNow;
+            this.robot!.WhenLastUpdated = this.WhenExecuted;
             return Task.FromResult(CommandResult.New(this.Number, this.robot!));
-        }
-
-        /// <summary>
-        /// Attempts to restore the command from the database.
-        /// </summary>
-        /// <param name="session">The database session to use.</param>
-        /// <returns>Any errors that occurred during restoration.</returns>
-        public async override Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
-        {
-            var errors = new List<CommandError>();
-            this.robot = await this.ValidateAndRetrieveRobot(session, this.MachineName, errors).ConfigureAwait(false);
-            if (!string.IsNullOrEmpty(this.RobotType))
-            {
-                this.robotType = await session.Query<RobotType>()
-                    .FirstOrDefaultAsync(rt => rt.Name == this.RobotType)
-                    .ConfigureAwait(false);
-                if (this.robotType == null)
-                {
-                    errors.Add(this.GenerateError($"Robot type {this.RobotType} is missing"));
-                }
-            }
-            return errors.AsEnumerable();
         }
     }
 }

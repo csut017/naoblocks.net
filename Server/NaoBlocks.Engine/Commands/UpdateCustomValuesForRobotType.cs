@@ -7,6 +7,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command to update the custom values for a robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class UpdateCustomValuesForRobotType
         : UserCommandBase
     {
@@ -103,7 +104,7 @@ namespace NaoBlocks.Engine.Commands
                 robotType.CustomValues.Add(value!);
             }
 
-            this.robotType!.WhenLastUpdated = DateTime.UtcNow;
+            this.robotType!.WhenLastUpdated = this.WhenExecuted;
             return Task.FromResult(CommandResult.New(this.Number, robotType));
         }
     }
