@@ -16,7 +16,7 @@ import time
 MAX_MESSAGES = 128
 NAME = cyberpi.get_name()       # This lines means we don't need to hardcode the robot name
 SPEED = 15
-VERSION = '1.03'
+VERSION = '1.04'
 
 # Wifi settings - these will need to change to match the network
 SERVER_BASE_ADDRESSES = ['192.168.0.151', '192.168.0.152', '192.168.0.153', '192.168.0.154']
@@ -368,6 +368,12 @@ class Robot():
             UniqueActions(self),
         ]
 
+    def check_distances(self):
+        while True:
+            distance = cyberpi.ultrasonic2.get()
+            if (distance > 0) and (distance < 5) and self.is_running:
+                self.stop('Obstacle')
+
     def display(self, message, clear_screen = False):
         self.lines += 1
         if clear_screen or (self.lines > 6):
@@ -595,6 +601,7 @@ r = Robot()
 def on_start():
     cyberpi.speaker.set_vol(100)
     cyberpi.smart_camera.close_light()
+    cyberpi.broadcast('check_distances')
     if r.initialise():
         r.run()
 
@@ -616,6 +623,11 @@ def button_b_callback():
 @cyberpi.event.receive('reset')
 def reset_callback():
     r.run()
+    
+# Start checking for distances when message received - this is sent on startup
+@cyberpi.event.receive('check_distances')
+def check_distances():
+    r.check_distances()
 
 # Pushing the joystick up changes mode
 @cyberpi.event.is_press('up')
