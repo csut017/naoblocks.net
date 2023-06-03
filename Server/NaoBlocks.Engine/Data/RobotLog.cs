@@ -38,6 +38,6 @@
         /// <summary>
         /// Gets or sets the details about when this log was last synchronized.
         /// </summary>
-        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
+        public SynchronizationStatus Synchronization { get; set; } = new SynchronizationStatus();
     }
 }

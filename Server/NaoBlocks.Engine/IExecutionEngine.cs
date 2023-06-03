@@ -19,20 +19,12 @@ namespace NaoBlocks.Engine
         Task CommitAsync();
 
         /// <summary>
-        /// Dehydrates the command logs in a period of time for the specified target systems.
-        /// </summary>
-        /// <param name="fromTime">The starting date and time.</param>
-        /// <param name="toTime">The finishing date and time.</param>
-        /// <param name="targets">The sub-systems to include.</param>
-        /// <returns>A enumerable of strings containing the dehydrated command logs.</returns>
-        IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets);
-
-        /// <summary>
         /// Executes a command.
         /// </summary>
         /// <param name="command">The command to execute.</param>
+        /// <param name="source">The source of the command.</param>
         /// <returns>The result of executing the command.</returns>
-        Task<CommandResult> ExecuteAsync(CommandBase command);
+        Task<CommandResult> ExecuteAsync(CommandBase command, string? source = null);
 
         /// <summary>
         /// Retrieves a report generator.
@@ -41,6 +33,22 @@ namespace NaoBlocks.Engine
         /// <returns>An instance of the generator.</returns>
         TGenerator Generator<TGenerator>()
            where TGenerator : ReportGenerator, new();
+
+        /// <summary>
+        /// Hydrates a set of command logs.
+        /// </summary>
+        /// <param name="logs">The logs to hydrate.</param>
+        /// <returns>An enumerable containing the hydrated logs.</returns>
+        IEnumerable<CommandLog> HydrateCommandLogs(IEnumerable<string> logs);
+
+        /// <summary>
+        /// Dehydrates the command logs in a period of time for the specified target systems.
+        /// </summary>
+        /// <param name="fromTime">The starting date and time.</param>
+        /// <param name="toTime">The finishing date and time.</param>
+        /// <param name="targets">The sub-systems to include.</param>
+        /// <returns>A enumerable of strings containing the dehydrated command logs.</returns>
+        IAsyncEnumerable<string> ListDehydratedCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets);
 
         /// <summary>
         /// Retrieves a database query.

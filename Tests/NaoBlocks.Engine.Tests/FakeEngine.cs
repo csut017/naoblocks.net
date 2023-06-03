@@ -29,12 +29,7 @@ namespace NaoBlocks.Engine.Tests
             await this.DatabaseSession.SaveChangesAsync();
         }
 
-        public IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<CommandResult> ExecuteAsync(CommandBase command)
+        public async Task<CommandResult> ExecuteAsync(CommandBase command, string? source = null)
         {
             var result = await command.ExecuteAsync(this.DatabaseSession, this);
             return result;
@@ -42,6 +37,16 @@ namespace NaoBlocks.Engine.Tests
 
         public TGenerator Generator<TGenerator>()
             where TGenerator : ReportGenerator, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<CommandLog> HydrateCommandLogs(IEnumerable<string> logs)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncEnumerable<string> ListDehydratedCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
         {
             throw new NotImplementedException();
         }

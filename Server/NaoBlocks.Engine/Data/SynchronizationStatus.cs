@@ -3,7 +3,7 @@
     /// <summary>
     /// Contains the synchronization data for a record.
     /// </summary>
-    public class SynchronizationData
+    public class SynchronizationStatus
     {
         /// <summary>
         /// Gets or sets the source this record is from.

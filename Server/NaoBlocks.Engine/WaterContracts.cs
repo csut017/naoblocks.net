@@ -22,7 +22,8 @@ namespace NaoBlocks.Engine
             mappings.Add("MachineName", "mn");
             mappings.Add("Name", "n");
             mappings.Add("RobotTypeName", "rtn");
-            mappings.Add("Salt", "s");
+            mappings.Add("Source", "s");
+            mappings.Add("Salt", "sa");
             mappings.Add("SourceId", "si");
             mappings.Add("SourceMessageType", "smt");
             mappings.Add("SourceName", "sn");
@@ -61,7 +62,8 @@ namespace NaoBlocks.Engine
             mappings.Add("mn", "MachineName");
             mappings.Add("n", "Name");
             mappings.Add("rtn", "RobotTypeName");
-            mappings.Add("s", "Salt");
+            mappings.Add("s", "Source");
+            mappings.Add("sa", "Salt");
             mappings.Add("si", "SourceId");
             mappings.Add("smt", "SourceMessageType");
             mappings.Add("sn", "SourceName");

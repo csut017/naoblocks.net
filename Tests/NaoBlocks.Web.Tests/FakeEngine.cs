@@ -39,12 +39,7 @@ namespace NaoBlocks.Web.Tests
             return Task.CompletedTask;
         }
 
-        public IAsyncEnumerable<string> DehydrateCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<CommandResult> ExecuteAsync(CommandBase command)
+        public Task<CommandResult> ExecuteAsync(CommandBase command, string? source = null)
         {
             this.LastCommand = command;
             Assert.True(this.expectedCommands.Any(), "Unexpected command call");
@@ -74,6 +69,16 @@ namespace NaoBlocks.Web.Tests
         public IEnumerable<string> GetLogMessages()
         {
             return this.logger.Messages;
+        }
+
+        public IEnumerable<CommandLog> HydrateCommandLogs(IEnumerable<string> logs)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAsyncEnumerable<string> ListDehydratedCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
+        {
+            throw new NotImplementedException();
         }
 
         public TQuery Query<TQuery>()

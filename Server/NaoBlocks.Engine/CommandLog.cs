@@ -24,6 +24,11 @@ namespace NaoBlocks.Engine
         public CommandResult? Result { get; set; }
 
         /// <summary>
+        /// Gets or sets the source this log is from.
+        /// </summary>
+        public string Source { get; set; } = Environment.MachineName;
+
+        /// <summary>
         /// Gets or sets a human-readbale string that contains the name of the command.
         /// </summary>
         public string? Type { get; set; }

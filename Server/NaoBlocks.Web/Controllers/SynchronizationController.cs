@@ -106,7 +106,7 @@ namespace NaoBlocks.Web.Controllers
             to ??= DateTime.MaxValue;
             if ((to.Value - from).TotalDays > 90) to = from.AddDays(90);
             var results = new List<string>();
-            await foreach (var log in executionEngine.DehydrateCommandLogsAsync(from, to.Value, target))
+            await foreach (var log in executionEngine.ListDehydratedCommandLogsAsync(from, to.Value, target))
             {
                 results.Add(log);
             }
