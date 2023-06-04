@@ -16,9 +16,14 @@
         public string? Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the authentication token.
+        /// Gets or sets the authentication tokens.
         /// </summary>
-        public string? Token { get; set; }
+        public List<MachineToken>? Tokens { get; set; }
+
+        /// <summary>
+        /// Gets or sets when the source was added.
+        /// </summary>
+        public DateTime WhenAdded { get; set; }
 
         /// <summary>
         /// Gets or sets when this machine was last synchronized.

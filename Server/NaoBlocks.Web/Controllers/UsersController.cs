@@ -2,9 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
+using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+
 using Commands = NaoBlocks.Engine.Commands;
+
 using Data = NaoBlocks.Engine.Data;
 
 namespace NaoBlocks.Web.Controllers
@@ -18,8 +21,8 @@ namespace NaoBlocks.Web.Controllers
     [Produces("application/json")]
     public class UsersController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
         private readonly IExecutionEngine executionEngine;
+        private readonly ILogger<UsersController> logger;
 
         /// <summary>
         /// Initialises a new <see cref="UsersController"/> instance.
@@ -28,7 +31,7 @@ namespace NaoBlocks.Web.Controllers
         /// <param name="executionEngine">The execution engine for processing commands and queries.</param>
         public UsersController(ILogger<UsersController> logger, IExecutionEngine executionEngine)
         {
-            this._logger = logger;
+            this.logger = logger;
             this.executionEngine = executionEngine;
         }
 
@@ -40,12 +43,41 @@ namespace NaoBlocks.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ExecutionResult>> Delete(string id)
         {
-            this._logger.LogInformation($"Deleting user '{id}'");
+            this.logger.LogInformation($"Deleting user '{id}'");
             var command = new Commands.DeleteUser
             {
                 Name = id
             };
             return await this.executionEngine.ExecuteForHttp(command);
+        }
+
+        /// <summary>
+        /// Generates a login token for a user.
+        /// </summary>
+        /// <param name="name">The name of the user.</param>
+        /// <param name="force">Whether to generate a new token or not.</param>
+        /// <returns>Either a 404 (not found) or the user details.</returns>
+        [HttpGet("{name}/token")]
+        public async Task<ActionResult<Data.MachineToken>> GenerateLoginToken(string name, [FromQuery] string? force = null)
+        {
+            this.logger.LogInformation("Generating login token for {name}", name);
+            var command = new GenerateLoginToken
+            {
+                Name = name,
+                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
+            };
+
+            var result = await this.executionEngine.ExecuteForHttp<Data.User>(command);
+            if (result?.Value?.Successful != true)
+            {
+                return result?.Result ?? BadRequest();
+            }
+
+            var returnValue = new Data.MachineToken
+            {
+                Token = result!.Value!.Output!.LoginToken,
+            };
+            return returnValue;
         }
 
         /// <summary>
@@ -56,18 +88,18 @@ namespace NaoBlocks.Web.Controllers
         [HttpGet("{name}")]
         public async Task<ActionResult<Dtos.User>> Get(string name)
         {
-            this._logger.LogDebug($"Retrieving user: {name}");
+            this.logger.LogDebug($"Retrieving user: {name}");
             var user = await this.executionEngine
                 .Query<UserData>()
                 .RetrieveByNameAsync(name)
                 .ConfigureAwait(false);
             if (user == null)
             {
-                this._logger.LogDebug("User not found");
+                this.logger.LogDebug("User not found");
                 return NotFound();
             }
 
-            this._logger.LogDebug("Retrieved user");
+            this.logger.LogDebug("Retrieved user");
             return Dtos.User.FromModel(user, Dtos.DetailsType.Standard);
         }
 
@@ -82,14 +114,14 @@ namespace NaoBlocks.Web.Controllers
         {
             (int pageNum, int pageSize) = this.ValidatePageArguments(page, size);
 
-            this._logger.LogDebug($"Retrieving users: page {pageNum} with size {pageSize}");
+            this.logger.LogDebug($"Retrieving users: page {pageNum} with size {pageSize}");
 
             var dataPage = await this.executionEngine
                 .Query<UserData>()
                 .RetrievePageAsync(pageNum, pageSize)
                 .ConfigureAwait(false);
             var count = dataPage.Items?.Count() ?? 0;
-            this._logger.LogDebug($"Retrieved {count} users");
+            this.logger.LogDebug($"Retrieved {count} users");
 
             var result = new ListResult<Dtos.User>
             {
@@ -116,7 +148,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Adding new user '{user.Name}'");
+            this.logger.LogInformation($"Adding new user '{user.Name}'");
             if (!Enum.TryParse(user.Role, out Data.UserRole role))
             {
                 role = Data.UserRole.Unknown;
@@ -150,7 +182,7 @@ namespace NaoBlocks.Web.Controllers
                 });
             }
 
-            this._logger.LogInformation($"Updating user '{id}'");
+            this.logger.LogInformation($"Updating user '{id}'");
             if (!Enum.TryParse(user.Role, out Data.UserRole role))
             {
                 role = Data.UserRole.Unknown;

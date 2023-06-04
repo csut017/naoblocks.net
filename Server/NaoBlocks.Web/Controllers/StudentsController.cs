@@ -219,7 +219,7 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The format to generate.</param>
-        /// <param name="force">Whether to generate </param>
+        /// <param name="force">Whether to generate a new token or not.</param>
         /// <param name="view">The default view to use.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
         [HttpGet("{name}/qrcode")]

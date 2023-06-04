@@ -8,6 +8,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command for generating a login token.
     /// </summary>
+    [Transient]
     public class GenerateLoginToken
         : UserCommandBase
     {
