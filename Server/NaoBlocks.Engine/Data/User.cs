@@ -15,7 +15,7 @@ namespace NaoBlocks.Engine.Data
         /// <summary>
         /// Gets or sets the user's last login token.
         /// </summary>
-        public string? LoginToken { get; set; }
+        public Password? LoginToken { get; set; }
 
         /// <summary>
         /// Gets or sets the user's name.

@@ -2,6 +2,7 @@
 using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace NaoBlocks.Engine.Commands
 {
@@ -18,11 +19,6 @@ namespace NaoBlocks.Engine.Commands
         /// Gets or sets the name of the person logging in.
         /// </summary>
         public string? Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether any existing session should be overriden or not.
-        /// </summary>
-        public bool? OverrideExisting { get; set; }
 
         /// <summary>
         /// Gets or sets the security token.
@@ -52,24 +48,16 @@ namespace NaoBlocks.Engine.Commands
             var errors = new List<CommandError>();
             this.person = await this.ValidateAndRetrieveUser(session, this.Name, UserRole.User, errors);
 
-            this.OverrideExisting ??= false;
             if (!errors.Any() && (this.person != null))
             {
-                if (!this.OverrideExisting.Value && !string.IsNullOrEmpty(this.person.LoginToken))
+                var baseToken = this.person.Name + Guid.NewGuid().ToString("N");
+                byte[] salt = new byte[128 / 8];
+                using (var rng = RandomNumberGenerator.Create())
                 {
-                    this.SecurityToken = this.person.LoginToken;
+                    rng.GetBytes(salt);
                 }
-                else
-                {
-                    var baseToken = this.person.Name + Guid.NewGuid().ToString("N");
-                    byte[] salt = new byte[128 / 8];
-                    using (var rng = RandomNumberGenerator.Create())
-                    {
-                        rng.GetBytes(salt);
-                    }
-                    this.SecurityToken = Convert.ToBase64String(
-                            KeyDerivation.Pbkdf2(baseToken, salt, KeyDerivationPrf.HMACSHA256, 10000, 256 / 8));
-                }
+                this.SecurityToken = Convert.ToBase64String(
+                        KeyDerivation.Pbkdf2(baseToken, salt, KeyDerivationPrf.HMACSHA256, 10000, 256 / 8));
             }
 
             return errors.AsEnumerable();
@@ -84,7 +72,9 @@ namespace NaoBlocks.Engine.Commands
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.person);
-            this.person!.LoginToken = this.SecurityToken;
+            var userName = Convert.ToBase64String(Encoding.UTF8.GetBytes(this.Name!));
+            this.person!.PlainPassword = userName + ":" + this.SecurityToken;
+            this.person.LoginToken = Password.New(this.SecurityToken);
             var result = CommandResult.New(this.Number, this.person);
             return Task.FromResult(result);
         }

@@ -5,6 +5,8 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
+using System.Text;
+using System.Web;
 
 using Commands = NaoBlocks.Engine.Commands;
 
@@ -55,16 +57,14 @@ namespace NaoBlocks.Web.Controllers
         /// Generates a login token for a user.
         /// </summary>
         /// <param name="name">The name of the user.</param>
-        /// <param name="force">Whether to generate a new token or not.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
         [HttpGet("{name}/token")]
-        public async Task<ActionResult<Data.MachineToken>> GenerateLoginToken(string name, [FromQuery] string? force = null)
+        public async Task<ActionResult<Data.MachineToken>> GenerateLoginToken(string name)
         {
             this.logger.LogInformation("Generating login token for {name}", name);
             var command = new GenerateLoginToken
             {
                 Name = name,
-                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
             };
 
             var result = await this.executionEngine.ExecuteForHttp<Data.User>(command);
@@ -73,9 +73,12 @@ namespace NaoBlocks.Web.Controllers
                 return result?.Result ?? BadRequest();
             }
 
+            var user = result!.Value!.Output!;
+            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{user?.PlainPassword}"));
+            var fullToken = HttpUtility.UrlEncode(key);
             var returnValue = new Data.MachineToken
             {
-                Token = result!.Value!.Output!.LoginToken,
+                Token = fullToken,
             };
             return returnValue;
         }
