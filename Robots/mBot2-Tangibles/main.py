@@ -16,7 +16,7 @@ import time
 MAX_MESSAGES = 128
 NAME = cyberpi.get_name()       # This lines means we don't need to hardcode the robot name
 SPEED = 15
-VERSION = '1.03'
+VERSION = '1.04'
 
 # Wifi settings - these will need to change to match the network
 SERVER_BASE_ADDRESSES = ['192.168.0.151', '192.168.0.152', '192.168.0.153', '192.168.0.154']
@@ -42,6 +42,7 @@ ACTION_TURN_RIGHT = 4
 
 # Programs
 PROGRAM_ACTIONS = [ACTION_RECORD_A, ACTION_RECORD_B, ACTION_PLAY_A, ACTION_PLAY_B]
+MOVEMENT_ACTIONS = [ACTION_FORWARD, ACTION_BACKWARD, ACTION_TURN_LEFT, ACTION_TURN_RIGHT, ACTION_CURVE_LEFT, ACTION_CURVE_RIGHT]
 
 class Dispatcher():
     def __init__(self, executor, robot, prefix, can_repeat):
@@ -331,10 +332,75 @@ class RandomValueActions(DiscreteActions):
         self.code = 'RV'
 
     def can_perform(self, action):
+        if not action in MOVEMENT_ACTIONS:
+            return False
+
         self.speed = random.randint(1, 5) * 5
         self.distance = random.randint(1, 4)
         self.angle = random.randint(2, 6) * 10 + 5
         return super().can_perform(action)
+
+class RandomMappingActions(DiscreteActions):
+    def __init__(self, robot):
+        super().__init__(robot)
+
+        # Identification details
+        self.name = 'RandMap'
+        self.code = 'RM'
+
+        # Randomize actions
+        self.dispatcher = Dispatcher(DiscreteActions(robot), robot, '', False)
+        self.action_map = {}
+        allowed_actions = MOVEMENT_ACTIONS.copy()
+        for action in MOVEMENT_ACTIONS:
+            new_action = random.choice(allowed_actions)
+            self.action_map[action] = new_action
+            allowed_actions.remove(new_action)
+
+    def can_perform(self, action):
+        if not action in MOVEMENT_ACTIONS:
+            return False
+
+        return super().can_perform(action)
+
+    def backward(self):        
+        self.dispatcher.execute(ACTION_BACKWARD)
+
+    def can_perform(self, _):
+        return False
+
+    def curve_left(self):
+        pass
+
+    def curve_right(self):
+        pass
+
+    def forward(self):
+        pass
+
+    def play_a(self):
+        pass
+
+    def play_b(self):
+        pass
+
+    def record_a(self):
+        pass
+
+    def record_b(self):
+        pass
+
+    def repeat(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def turn_left(self):
+        pass
+
+    def turn_right(self):
+        pass
 
 class Robot():
     def __init__(self):
@@ -361,6 +427,7 @@ class Robot():
             DiscreteActions(self),
             RandomValueActions(self),
             UniqueActions(self),
+            RandomMappingActions(self),
         ]
 
     def display(self, message, clear_screen = False):
