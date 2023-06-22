@@ -26,17 +26,22 @@ WIFI_SSID= 'NaoBlocks'
 WIFI_PASSWORD= 'letmein1'
 
 # ACTIONS
+## WARNING: the following labels are mapped to each other when upside down
+## 4 <-> 10
+## 8 <-> 12
+## 2 <-> 6
+## All other labels are safe
 ACTION_NONE = -1
 ACTION_BACKWARD = 2
 ACTION_CURVE_LEFT = 5
-ACTION_CURVE_RIGHT = 6
+ACTION_CURVE_RIGHT = 13
 ACTION_FORWARD = 1
-ACTION_PLAY_A = 10
+ACTION_PLAY_A = 14
 ACTION_PLAY_B = 11
 ACTION_RECORD_A = 7
 ACTION_RECORD_B = 8
 ACTION_REPEAT = 9
-ACTION_STOP = 15
+ACTION_STOP = 15        # This label is identical when upsidedown
 ACTION_TURN_LEFT = 3
 ACTION_TURN_RIGHT = 4
 
@@ -430,6 +435,12 @@ class Robot():
             RandomMappingActions(self),
         ]
 
+    def check_distances(self):
+        while True:
+            distance = cyberpi.ultrasonic2.get()
+            if (distance > 0) and (distance < 5) and self.is_running:
+                self.stop('Obstacle')
+
     def display(self, message, clear_screen = False):
         self.lines += 1
         if clear_screen or (self.lines > 6):
@@ -657,6 +668,7 @@ r = Robot()
 def on_start():
     cyberpi.speaker.set_vol(100)
     cyberpi.smart_camera.close_light()
+    cyberpi.broadcast('check_distances')
     if r.initialise():
         r.run()
 
@@ -678,6 +690,11 @@ def button_b_callback():
 @cyberpi.event.receive('reset')
 def reset_callback():
     r.run()
+    
+# Start checking for distances when message received - this is sent on startup
+@cyberpi.event.receive('check_distances')
+def check_distances():
+    r.check_distances()
 
 # Pushing the joystick up changes mode
 @cyberpi.event.is_press('up')

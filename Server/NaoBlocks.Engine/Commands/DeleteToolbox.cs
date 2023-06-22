@@ -1,12 +1,12 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
-using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
     /// A command to delete a toolbox from a robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class DeleteToolbox
         : RobotTypeCommandBase
     {
@@ -73,6 +73,7 @@ namespace NaoBlocks.Engine.Commands
                 }
             }
 
+            this.robotType!.WhenLastUpdated = this.WhenExecuted;
             return Task.FromResult(CommandResult.New(this.Number, this.robotType));
         }
     }

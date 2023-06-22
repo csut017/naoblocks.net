@@ -1,4 +1,6 @@
-﻿namespace NaoBlocks.Common
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Common
 {
     /// <summary>
     /// Defines the type of an AST node.
@@ -7,6 +9,7 @@
     /// A NaoLang program is compiled into an Abstract Syntax Tree, which
     /// consists of a connected series of <see cref="AstNode"/> blocks.
     /// </remarks>
+    [JsonConverter(typeof(TolerantEnumConverter))]
     public enum AstNodeType
     {
         /// <summary>

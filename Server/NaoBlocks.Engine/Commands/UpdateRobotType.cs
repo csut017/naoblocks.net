@@ -6,6 +6,7 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command to update a robot type.
     /// </summary>
+    [CommandTarget(CommandTarget.RobotType)]
     public class UpdateRobotType
         : RobotTypeCommandBase
     {
@@ -72,7 +73,7 @@ namespace NaoBlocks.Engine.Commands
             ValidateExecutionState(this.robotType);
             if (!string.IsNullOrWhiteSpace(this.Name) && (this.Name != this.robotType!.Name)) this.robotType.Name = this.Name.Trim();
             if (this.AllowDirectLogging.HasValue) this.robotType!.AllowDirectLogging = this.AllowDirectLogging.Value;
-            this.robotType!.WhenLastUpdated = DateTime.UtcNow;
+            this.robotType!.WhenLastUpdated = this.WhenExecuted;
 
             return Task.FromResult(CommandResult.New(this.Number, this.robotType!));
         }

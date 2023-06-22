@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using NaoBlocks.Common;
+using Newtonsoft.Json;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine
 {
@@ -44,8 +46,9 @@ namespace NaoBlocks.Engine
         /// Executes a command and stores the resulting execution log.
         /// </summary>
         /// <param name="command">The command to execute.</param>
+        /// <param name="source">The source of the command.</param>
         /// <returns>The result of execution.</returns>
-        public async Task<CommandResult> ExecuteAsync(CommandBase command)
+        public async Task<CommandResult> ExecuteAsync(CommandBase command, string? source = null)
         {
             var name = command.GetType().Name;
             var result = await command.ExecuteAsync(this.session, this).ConfigureAwait(false);
@@ -62,6 +65,7 @@ namespace NaoBlocks.Engine
                 WhenApplied = command.WhenExecuted,
                 Command = command,
                 Result = result,
+                Source = source ?? Environment.MachineName,
                 Type = command.GetType().Name
             };
             if (log.Type.EndsWith("Command", StringComparison.InvariantCulture)) log.Type = log.Type[0..^7];
@@ -91,6 +95,63 @@ namespace NaoBlocks.Engine
             generator.InitialiseSession(this.session);
             this.generators.Add(typeof(TGenerator), generator);
             return (TGenerator)generator;
+        }
+
+        /// <summary>
+        /// Hydrates a set of command logs.
+        /// </summary>
+        /// <param name="logs">The logs to hydrate.</param>
+        /// <returns>An enumerable containing the hydrated logs.</returns>
+        public IEnumerable<CommandLog> HydrateCommandLogs(IEnumerable<string> logs)
+        {
+            var settings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                ContractResolver = new HydrationContractResolver(),
+            };
+
+            foreach (var log in logs)
+            {
+                var value = JsonConvert.DeserializeObject<CommandLog>(log, settings);
+                if (value == null) continue;
+                yield return value;
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Dehydrates the command logs in a period of time for the specified target systems.
+        /// </summary>
+        /// <param name="fromTime">The starting date and time.</param>
+        /// <param name="toTime">The finishing date and time.</param>
+        /// <param name="targets">The sub-systems to include.</param>
+        /// <returns>A enumerable of strings containing the dehydrated command logs.</returns>
+        public async IAsyncEnumerable<string> ListDehydratedCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
+        {
+            var logs = await session.Query<CommandLog>()
+                .Where(l => (l.WhenApplied >= fromTime) && (l.WhenApplied <= toTime))
+                .OrderBy(l => l.WhenApplied)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            var settings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                ContractResolver = new DehydrationContractResolver(),
+            };
+            foreach (var log in logs)
+            {
+                foreach (var target in targets)
+                {
+                    if (log?.Command?.CheckForTarget(target) == false) continue;
+
+                    var json = JsonConvert.SerializeObject(log, settings);
+                    yield return json;
+                    break;
+                }
+            }
+
+            yield break;
         }
 
         /// <summary>

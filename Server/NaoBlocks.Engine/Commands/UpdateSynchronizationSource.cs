@@ -1,34 +1,29 @@
 ﻿using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
+using Raven.Client.Documents;
 
 namespace NaoBlocks.Engine.Commands
 {
     /// <summary>
-    /// Clears data related to a robot type.
+    /// A command to update a synchronization source.
     /// </summary>
-    [CommandTarget(CommandTarget.RobotType)]
-    public class ClearRobotType
-        : RobotTypeCommandBase
+    public class UpdateSynchronizationSource
+        : CommandBase
     {
-        private RobotType? robotType;
+        private SynchronizationSource? source;
 
         /// <summary>
-        /// Gets or sets a flag indicating that custom values should be wiped.
+        /// Gets or sets the source's address.
         /// </summary>
-        public bool IncludeCustomValues { get; set; }
+        public string? Address { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating that logging templates should be wiped.
+        /// Gets or sets the source's current name.
         /// </summary>
-        public bool IncludeLoggingTemplates { get; set; }
+        public string? CurrentName { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating that toolboxes should be wiped.
-        /// </summary>
-        public bool IncludeToolboxes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the robot type.
+        /// Gets or sets the source's updated name.
         /// </summary>
         public string? Name { get; set; }
 
@@ -40,12 +35,14 @@ namespace NaoBlocks.Engine.Commands
         public override async Task<IEnumerable<CommandError>> RestoreAsync(IDatabaseSession session)
         {
             var errors = new List<CommandError>();
-            this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+            this.source = await session.Query<SynchronizationSource>()
+                .FirstOrDefaultAsync(s => s.Name == this.Name)
+                .ConfigureAwait(false);
             return errors.AsEnumerable();
         }
 
         /// <summary>
-        /// Attempts to retrieve the existing robot type and validates the changes.
+        /// Attempts to retrieve the existing synchronization source and validates the changes.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
@@ -53,21 +50,28 @@ namespace NaoBlocks.Engine.Commands
         public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
-            if (string.IsNullOrWhiteSpace(this.Name))
+
+            if (string.IsNullOrWhiteSpace(this.CurrentName))
             {
-                errors.Add(this.GenerateError($"Name is required"));
+                errors.Add(this.GenerateError($"Current name is required"));
             }
 
             if (!errors.Any())
             {
-                this.robotType = await this.ValidateAndRetrieveRobotType(session, this.Name, errors).ConfigureAwait(false);
+                this.source = await session.Query<SynchronizationSource>()
+                    .FirstOrDefaultAsync(s => s.Name == this.Name)
+                    .ConfigureAwait(false);
+                if (this.source == null)
+                {
+                    errors.Add(GenerateError($"Synchronization source '{this.Name}' does not exist"));
+                }
             }
 
             return errors.AsEnumerable();
         }
 
         /// <summary>
-        /// Updates the robot type in the database.
+        /// Updates the synchronization source in the database.
         /// </summary>
         /// <param name="session">The database session to use.</param>
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
@@ -75,12 +79,11 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="engine"></param>
         protected override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
-            ValidateExecutionState(this.robotType);
-            if (this.IncludeCustomValues) this.robotType!.CustomValues.Clear();
-            if (this.IncludeLoggingTemplates) this.robotType!.LoggingTemplates.Clear();
-            if (this.IncludeToolboxes) this.robotType!.Toolboxes.Clear();
-            this.robotType!.WhenLastUpdated = this.WhenExecuted;
-            return Task.FromResult(CommandResult.New(this.Number, this.robotType!));
+            ValidateExecutionState(this.source);
+            if (!string.IsNullOrWhiteSpace(this.Name) && (this.Name != this.source!.Name)) this.source.Name = this.Name.Trim();
+            if (!string.IsNullOrWhiteSpace(this.Address) && (this.Address != this.source!.Address)) this.source.Address = this.Address.Trim();
+
+            return Task.FromResult(CommandResult.New(this.Number, this.source!));
         }
     }
 }

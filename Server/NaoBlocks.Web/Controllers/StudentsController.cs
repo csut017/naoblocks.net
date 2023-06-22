@@ -219,18 +219,16 @@ namespace NaoBlocks.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the student.</param>
         /// <param name="format">The format to generate.</param>
-        /// <param name="force">Whether to generate </param>
         /// <param name="view">The default view to use.</param>
         /// <returns>Either a 404 (not found) or the user details.</returns>
         [HttpGet("{name}/qrcode")]
         [HttpGet("{name}/qrcode{format}")]
-        public async Task<ActionResult> GetStudentQRCode(string name, string? format = ".png", [FromQuery] string? force = null, [FromQuery] string? view = null)
+        public async Task<ActionResult> GetStudentQRCode(string name, string? format = ".png", [FromQuery] string? view = null)
         {
             this.logger.LogInformation("Generating login token for {name}", name);
             var command = new GenerateLoginToken
             {
                 Name = name,
-                OverrideExisting = string.Equals(force, "yes", StringComparison.OrdinalIgnoreCase)
             };
 
             var result = await this.executionEngine.ExecuteForHttp<Data.User>(command);
@@ -242,7 +240,7 @@ namespace NaoBlocks.Web.Controllers
             var student = result.Value.Output;
             this.logger.LogInformation("Login token generated for {name}", name);
             var address = ClientAddressList.RetrieveAddresses().First();
-            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{student?.LoginToken},view:{view}"));
+            var key = Convert.ToBase64String(Encoding.UTF8.GetBytes($"token:{student?.PlainPassword},view:{view}"));
             var fullAddress = $"https://{address}:{this.configuration.Value.HttpsPort}/login?key={HttpUtility.UrlEncode(key)}";
             this.logger.LogInformation("Loging URL is {url}", fullAddress);
 

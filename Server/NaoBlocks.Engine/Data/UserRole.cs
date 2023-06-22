@@ -1,8 +1,11 @@
-﻿namespace NaoBlocks.Engine.Data
+﻿using Newtonsoft.Json;
+
+namespace NaoBlocks.Engine.Data
 {
     /// <summary>
     /// Defines the available roles a user can have.
     /// </summary>
+    [JsonConverter(typeof(TolerantEnumConverter))]
     public enum UserRole
     {
         /// <summary>
