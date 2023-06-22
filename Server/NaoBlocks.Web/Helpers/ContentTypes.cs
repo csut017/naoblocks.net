@@ -8,7 +8,12 @@ namespace NaoBlocks.Web.Helpers
     public static class ContentTypes
     {
         /// <summary>
-        /// The file type for a png image.
+        /// The file type for a plain text file.
+        /// </summary>
+        public const string PlainText = "text/plain";
+
+        /// <summary>
+        /// The file type for a PNG image file.
         /// </summary>
         public const string Png = "image/png";
 

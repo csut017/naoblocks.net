@@ -7,7 +7,7 @@ using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 using System.Diagnostics;
-
+using System.Net.Http.Headers;
 using Dtos = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -106,6 +106,39 @@ namespace NaoBlocks.Web.Controllers
         }
 
         /// <summary>
+        /// Retrieves the logs for a robot in playback format.
+        /// </summary>
+        /// <param name="robotId">The identifier of the robot.</param>
+        /// <param name="id">The conversation id.</param>
+        /// <returns>Either a 404 (not found) or the page of logs for the robot.</returns>
+        [HttpGet("{id}/playback")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK, ContentTypes.PlainText)]
+        public async Task<ActionResult<string>> GetPlayback(string robotId, string id)
+        {
+            if (!long.TryParse(id, out long conversationId))
+            {
+                return BadRequest(new
+                {
+                    error = "Invalid id"
+                });
+            }
+
+            this.logger.LogDebug("Retrieving log: id {id} for robot {robotId}", id, robotId);
+            var log = await this.executionEngine
+                .Query<ConversationData>()
+                .RetrieveRobotLogAsync(conversationId, robotId);
+            if (log == null)
+            {
+                return NotFound();
+            }
+
+            this.logger.LogDebug("Retrieved robot log");
+            return Content("data", ContentTypes.PlainText);
+        }
+
+        /// <summary>
         /// Records a logging request.
         /// </summary>
         /// <param name="robotId">The identifier of the robot.</param>
@@ -113,6 +146,8 @@ namespace NaoBlocks.Web.Controllers
         /// <returns>A <see cref="Dtos.LogResult"/> containing the outcome of the operation.</returns>
         [HttpPost]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Dtos.LogResult), StatusCodes.Status200OK)]
         public async Task<ActionResult<Dtos.LogResult>> Post(string robotId, Dtos.LogRequest request)
         {
             this.logger.LogInformation("Retrieving robot: id {robotId}", robotId);
@@ -144,22 +179,6 @@ namespace NaoBlocks.Web.Controllers
                 default:
                     return new Dtos.LogResult { Error = $"Unknown action '{request.Action}'" };
             }
-        }
-
-        /// <summary>
-        /// Registers an unknown robot.
-        /// </summary>
-        /// <param name="robotId">The machine name of the robot.</param>
-        private async Task RegisterUnknownRobot(string robotId)
-        {
-            this.logger.LogInformation("Registering new robot '{robot}'", robotId);
-            var command = new RegisterRobot
-            {
-                MachineName = robotId
-            };
-
-            await this.executionEngine.ExecuteAsync(command);
-            await this.executionEngine.CommitAsync();
         }
 
         /// <summary>
@@ -310,6 +329,22 @@ namespace NaoBlocks.Web.Controllers
             }
 
             return result.Item1;
+        }
+
+        /// <summary>
+        /// Registers an unknown robot.
+        /// </summary>
+        /// <param name="robotId">The machine name of the robot.</param>
+        private async Task RegisterUnknownRobot(string robotId)
+        {
+            this.logger.LogInformation("Registering new robot '{robot}'", robotId);
+            var command = new RegisterRobot
+            {
+                MachineName = robotId
+            };
+
+            await this.executionEngine.ExecuteAsync(command);
+            await this.executionEngine.CommitAsync();
         }
     }
 }
