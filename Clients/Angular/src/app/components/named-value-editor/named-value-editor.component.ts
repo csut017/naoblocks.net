@@ -22,7 +22,7 @@ export class NamedValueEditorComponent {
      }
 
   doCancel(): void {
-    this.dialogRef.close(null);
+    this.dialogRef.close();
   }
 
   doSave() {
