@@ -2,7 +2,6 @@
 using NaoBlocks.Engine.Data;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
-using System.Text;
 
 namespace NaoBlocks.Engine.Commands
 {
@@ -13,18 +12,18 @@ namespace NaoBlocks.Engine.Commands
         : CommandBase
     {
         /// <summary>
+        /// Gets or sets the token to use.
+        /// </summary>
+        [JsonIgnore]
+        public string? Token { get; set; }
+
+        /// <summary>
         /// Gets or sets the user role.
         /// </summary>
         /// <remarks>
         /// This property is needed for reloading as the token may be invalid in the database.
         /// </remarks>
         public UserRole Role { get; set; } = UserRole.Student;
-
-        /// <summary>
-        /// Gets or sets the token to use.
-        /// </summary>
-        [JsonIgnore]
-        public string? Token { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
@@ -40,7 +39,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.Token))
@@ -50,27 +49,17 @@ namespace NaoBlocks.Engine.Commands
 
             if (!errors.Any())
             {
-                try
-                {
-                    var parts = this.Token!.Split(':');
-                    var userName = Encoding.UTF8.GetString(Convert.FromBase64String(parts[0]));
-                    var password = this.Token[(parts[0].Length + 1)..];
-                    var user = await session.Query<User>()
-                        .FirstOrDefaultAsync(u => u.Name == userName)
-                        .ConfigureAwait(false);
-                    if ((user == null) || (user.LoginToken?.Verify(password) != true))
-                    {
-                        errors.Add(this.GenerateError("Unknown or invalid user"));
-                    }
-                    else
-                    {
-                        this.UserId = user.Id;
-                        this.Role = user.Role;
-                    }
-                }
-                catch
+                var user = await session.Query<User>()
+                    .FirstOrDefaultAsync(u => u.LoginToken == this.Token)
+                    .ConfigureAwait(false);
+                if (user == null)
                 {
                     errors.Add(this.GenerateError("Unknown or invalid user"));
+                }
+                else
+                {
+                    this.UserId = user.Id;
+                    this.Role = user.Role;
                 }
             }
 
@@ -84,7 +73,7 @@ namespace NaoBlocks.Engine.Commands
         /// <returns>A <see cref="CommandResult"/> containing the results of execution.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the command has not been validated.</exception>
         /// <param name="engine"></param>
-        protected override async Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
+        protected async override Task<CommandResult> DoExecuteAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             ValidateExecutionState(this.UserId);
             var now = this.WhenExecuted;

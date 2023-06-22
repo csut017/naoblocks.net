@@ -1,6 +1,5 @@
 ﻿using NaoBlocks.Common;
 using Newtonsoft.Json;
-using System.Reflection;
 
 namespace NaoBlocks.Engine
 {
@@ -58,18 +57,6 @@ namespace NaoBlocks.Engine
         public virtual Task<bool> CheckCanRollbackAsync(IDatabaseSession session)
         {
             return Task.FromResult(false);
-        }
-
-        /// <summary>
-        /// Checks if this command is for a specified target subsystem.
-        /// </summary>
-        /// <param name="target">The target subsystem to check.</param>
-        /// <returns>True if the command is for a sub-system; false otherwise.</returns>
-        public virtual bool CheckForTarget(CommandTarget target)
-        {
-            var attributes = this.GetType().GetCustomAttributes<CommandTargetAttribute>(true);
-            var hasTarget = attributes.Any(a => a.Target == target);
-            return hasTarget;
         }
 
         /// <summary>

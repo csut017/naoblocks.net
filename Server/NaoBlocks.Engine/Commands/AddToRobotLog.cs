@@ -7,7 +7,6 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command for adding a line to a robot log.
     /// </summary>
-    [CommandTarget(CommandTarget.RobotLog)]
     public class AddToRobotLog
         : RobotCommandBase
     {

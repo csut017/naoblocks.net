@@ -7,7 +7,6 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command for adding a logging template to a robot type.
     /// </summary>
-    [CommandTarget(CommandTarget.RobotType)]
     public class AddLoggingTemplateToRobotType
         : CommandBase
     {
@@ -127,7 +126,6 @@ namespace NaoBlocks.Engine.Commands
                     MessageType = this.MessageType,
                     ValueNames = this.ValueNames!,
                 });
-            this.robotType.WhenLastUpdated = this.WhenExecuted;
             return Task.FromResult(
                 CommandResult.New(this.Number, this.robotType!));
         }

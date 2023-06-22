@@ -70,6 +70,6 @@ namespace NaoBlocks.Engine.Data
         /// <summary>
         /// Gets or sets the details about when this robot was last synchronized.
         /// </summary>
-        public SynchronizationStatus Synchronization { get; set; } = new SynchronizationStatus();
+        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
     }
 }

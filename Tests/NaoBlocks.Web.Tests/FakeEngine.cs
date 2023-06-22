@@ -17,21 +17,21 @@ namespace NaoBlocks.Web.Tests
 {
     public class FakeEngine : IExecutionEngine
     {
-        private readonly Queue<CommandCall> expectedCommands = new();
-        private readonly Dictionary<Type, ReportGenerator> generators = new();
         private readonly FakeLogger<FakeEngine> logger = new();
         private readonly Dictionary<Type, DataQuery> queries = new();
+        private readonly Dictionary<Type, ReportGenerator> generators = new();
+        private readonly Queue<CommandCall> expectedCommands = new();
 
-        public bool CommitCalled { get; set; }
-
-        public CommandBase? LastCommand { get; private set; }
+        public Func<CommandBase, IEnumerable<CommandError>>? OnValidate { get; set; }
 
         public ILogger Logger
         {
             get { return logger; }
         }
 
-        public Func<CommandBase, IEnumerable<CommandError>>? OnValidate { get; set; }
+        public bool CommitCalled { get; set; }
+
+        public CommandBase? LastCommand { get; private set; }
 
         public Task CommitAsync()
         {
@@ -39,13 +39,49 @@ namespace NaoBlocks.Web.Tests
             return Task.CompletedTask;
         }
 
-        public Task<CommandResult> ExecuteAsync(CommandBase command, string? source = null)
+        public Task<CommandResult> ExecuteAsync(CommandBase command)
         {
             this.LastCommand = command;
             Assert.True(this.expectedCommands.Any(), "Unexpected command call");
             var nextCommand = this.expectedCommands.Dequeue();
             Assert.Equal(nextCommand.Type, command.GetType());
             return Task.FromResult(nextCommand.Result);
+        }
+
+        public Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
+        {
+            return Task.FromResult(this.OnValidate == null 
+                ? Array.Empty<CommandError>().AsEnumerable()
+                : this.OnValidate(command));
+        }
+
+        public Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TQuery Query<TQuery>()
+            where TQuery : DataQuery, new()
+        {
+            return (TQuery)this.queries[typeof(TQuery)];
+        }
+
+        public TGenerator Generator<TGenerator>()
+            where TGenerator : ReportGenerator, new()
+        {
+            return (TGenerator)this.generators[typeof(TGenerator)];
+        }
+
+        public void RegisterQuery<T>(T query)
+            where T : DataQuery
+        {
+            queries.Add(typeof(T), query);
+        }
+
+        public void RegisterGenerator<T>(T genertor)
+            where T : ReportGenerator
+        {
+            generators.Add(typeof(T), genertor);
         }
 
         public void ExpectCommand<TCommand>()
@@ -60,60 +96,22 @@ namespace NaoBlocks.Web.Tests
             this.expectedCommands.Enqueue(new CommandCall(typeof(TCommand), result));
         }
 
-        public TGenerator Generator<TGenerator>()
-            where TGenerator : ReportGenerator, new()
-        {
-            return (TGenerator)this.generators[typeof(TGenerator)];
-        }
-
-        public IEnumerable<string> GetLogMessages()
-        {
-            return this.logger.Messages;
-        }
-
-        public IEnumerable<CommandLog> HydrateCommandLogs(IEnumerable<string> logs)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IAsyncEnumerable<string> ListDehydratedCommandLogsAsync(DateTime fromTime, DateTime toTime, params CommandTarget[] targets)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TQuery Query<TQuery>()
-            where TQuery : DataQuery, new()
-        {
-            return (TQuery)this.queries[typeof(TQuery)];
-        }
-
-        public void RegisterGenerator<T>(T genertor)
-            where T : ReportGenerator
-        {
-            generators.Add(typeof(T), genertor);
-        }
-
-        public void RegisterQuery<T>(T query)
-            where T : DataQuery
-        {
-            queries.Add(typeof(T), query);
-        }
-
-        public Task<IEnumerable<CommandError>> RestoreAsync(CommandBase command)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<CommandError>> ValidateAsync(CommandBase command)
-        {
-            return Task.FromResult(this.OnValidate == null
-                ? Array.Empty<CommandError>().AsEnumerable()
-                : this.OnValidate(command));
-        }
-
         public void Verify()
         {
             Assert.Empty(this.expectedCommands.Select(c => c.Type.Name).ToArray());
+        }
+
+        private class CommandCall
+        {
+            public CommandCall(Type type, CommandResult result)
+            {
+                this.Type = type;
+                this.Result = result;
+            }
+
+            public Type Type { get; private set; }
+
+            public CommandResult Result { get; private set; }
         }
 
         /// <summary>
@@ -153,17 +151,9 @@ namespace NaoBlocks.Web.Tests
             return (user, query);
         }
 
-        private class CommandCall
+        public IEnumerable<string> GetLogMessages()
         {
-            public CommandCall(Type type, CommandResult result)
-            {
-                this.Type = type;
-                this.Result = result;
-            }
-
-            public CommandResult Result { get; private set; }
-
-            public Type Type { get; private set; }
+            return this.logger.Messages;
         }
     }
 }

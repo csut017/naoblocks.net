@@ -4,7 +4,6 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Database;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
-using NaoBlocks.Web.Services;
 using Serilog;
 using Serilog.Events;
 using System.Reflection;
@@ -101,9 +100,6 @@ uiManager.Register<Tangibles.Definition>("tangibles", () => ResourceManager.Tang
 builder.Services.AddSingleton(uiManager);
 builder.Services.AddTransient<IEngineFactory, DefaultEngineFactory>();
 builder.Services.AddTransient<IMessageProcessor, MessageProcessor>();
-
-// Add the background services
-builder.Services.AddBackgroundService<SynchronizationService>();
 
 // Configure the application
 var app = builder.Build();

@@ -1,4 +1,5 @@
-﻿using NaoBlocks.Common;
+﻿
+using NaoBlocks.Common;
 using NaoBlocks.Engine.Data;
 using Raven.Client.Documents;
 
@@ -7,7 +8,6 @@ namespace NaoBlocks.Engine.Commands
     /// <summary>
     /// A command for registering an unknown robot.
     /// </summary>
-    [CommandTarget(CommandTarget.Robot)]
     public class RegisterRobot
         : CommandBase
     {
@@ -22,7 +22,7 @@ namespace NaoBlocks.Engine.Commands
         /// <param name="session">The database session to use.</param>
         /// <returns>Any errors that occurred during validation.</returns>
         /// <param name="engine"></param>
-        public override async Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
+        public async override Task<IEnumerable<CommandError>> ValidateAsync(IDatabaseSession session, IExecutionEngine engine)
         {
             var errors = new List<CommandError>();
             if (string.IsNullOrWhiteSpace(this.MachineName))
@@ -54,8 +54,7 @@ namespace NaoBlocks.Engine.Commands
                 MachineName = this.MachineName!,
                 FriendlyName = this.MachineName!,
                 IsInitialised = false,
-                WhenAdded = this.WhenExecuted,
-                WhenLastUpdated = this.WhenExecuted,
+                WhenAdded = this.WhenExecuted
             };
             await session.StoreAsync(robot).ConfigureAwait(false);
             return CommandResult.New(this.Number, robot);

@@ -53,6 +53,6 @@
         /// <summary>
         /// Gets or sets the details about when this robot type was last synchronized.
         /// </summary>
-        public SynchronizationStatus Synchronization { get; set; } = new SynchronizationStatus();
+        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
     }
 }

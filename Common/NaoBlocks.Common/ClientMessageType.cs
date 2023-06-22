@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
-
-namespace NaoBlocks.Common
+﻿namespace NaoBlocks.Common
 {
     /// <summary>
     /// Defines the type of the message.
     /// </summary>
-    [JsonConverter(typeof(TolerantEnumConverter))]
     public enum ClientMessageType
     {
         /// <summary>

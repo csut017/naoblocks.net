@@ -9,40 +9,86 @@ namespace NaoBlocks.Engine.Tests.Commands
     public class GenerateLoginTokenTests : DatabaseHelper
     {
         [Fact]
-        public async Task ExecuteChecksInitialState()
+        public async Task ValidationChecksInputs()
         {
-            var command = new GenerateLoginToken
-            {
-                Name = " Bob "
-            };
+            var command = new GenerateLoginToken();
             var engine = new FakeEngine();
-            var result = await engine.ExecuteAsync(command);
-            Assert.False(result.WasSuccessful);
-            Assert.Equal("Unexpected error: Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync", result.Error);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "User name is required" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
-        public async Task ExecuteSetsSessionToken()
+        public async Task ValidatePassesChecks()
+        {
+            var command = new GenerateLoginToken
+            {
+                Name = "Bob"
+            };
+            using var store = InitialiseDatabase( new User { Name = "Bob" });
+
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public async Task ValidateGeneratesToken()
+        {
+            var command = new GenerateLoginToken
+            {
+                Name = "Bob"
+            };
+            using var store = InitialiseDatabase(new User { Name = "Bob" });
+
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            await engine.ValidateAsync(command);
+            Assert.False(string.IsNullOrEmpty(command.SecurityToken));
+        }
+
+        [Fact]
+        public async Task ValidateReusesToken()
+        {
+            var command = new GenerateLoginToken
+            {
+                Name = "Bob"
+            };
+            using var store = InitialiseDatabase(new User { Name = "Bob", LoginToken = "OldToken" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            await engine.ValidateAsync(command);
+            Assert.Equal("OldToken", command.SecurityToken);
+        }
+
+        [Fact]
+        public async Task ValidateOverridesToken()
         {
             var command = new GenerateLoginToken
             {
                 Name = "Bob",
-                SecurityToken = "Testing"
+                SecurityToken = "OldToken",
+                OverrideExisting = true
             };
             using var store = InitialiseDatabase(new User { Name = "Bob" });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            await engine.ValidateAsync(command);
+            Assert.NotEqual("OldToken", command.SecurityToken);
+        }
 
-            using (var session = store.OpenAsyncSession())
+        [Fact]
+        public async Task ValidateChecksForExistingUser()
+        {
+            var command = new GenerateLoginToken
             {
-                var engine = new FakeEngine(session);
-                await engine.RestoreAsync(command);
-                var result = await engine.ExecuteAsync(command);
-                Assert.True(result.WasSuccessful);
-                await engine.CommitAsync();
-            }
-
-            using var verifySession = store.OpenSession();
-            var user = verifySession.Query<User>().First();
-            Assert.False(string.IsNullOrEmpty(user.LoginToken?.Hash));
+                Name = "Bob"
+            };
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
         }
 
         [Fact]
@@ -75,71 +121,40 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ValidateChecksForExistingUser()
-        {
-            var command = new GenerateLoginToken
-            {
-                Name = "Bob"
-            };
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidateGeneratesToken()
-        {
-            var command = new GenerateLoginToken
-            {
-                Name = "Bob"
-            };
-            using var store = InitialiseDatabase(new User { Name = "Bob" });
-
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            await engine.ValidateAsync(command);
-            Assert.False(string.IsNullOrEmpty(command.SecurityToken));
-        }
-
-        [Fact]
-        public async Task ValidateOverridesToken()
+        public async Task ExecuteSetsSessionToken()
         {
             var command = new GenerateLoginToken
             {
                 Name = "Bob",
-                SecurityToken = "OldToken",
+                SecurityToken = "Testing"
             };
             using var store = InitialiseDatabase(new User { Name = "Bob" });
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            await engine.ValidateAsync(command);
-            Assert.NotEqual("OldToken", command.SecurityToken);
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful);
+                await engine.CommitAsync();
+            }
+
+            using var verifySession = store.OpenSession();
+            var user = verifySession.Query<User>().First();
+            Assert.False(string.IsNullOrEmpty(user.LoginToken));
         }
 
         [Fact]
-        public async Task ValidatePassesChecks()
+        public async Task ExecuteChecksInitialState()
         {
             var command = new GenerateLoginToken
             {
-                Name = "Bob"
+                Name = " Bob "
             };
-            using var store = InitialiseDatabase(new User { Name = "Bob" });
-
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.ValidateAsync(command);
-            Assert.Empty(errors);
-        }
-
-        [Fact]
-        public async Task ValidationChecksInputs()
-        {
-            var command = new GenerateLoginToken();
             var engine = new FakeEngine();
-            var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "User name is required" }, FakeEngine.GetErrors(errors));
+            var result = await engine.ExecuteAsync(command);
+            Assert.False(result.WasSuccessful);
+            Assert.Equal("Unexpected error: Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync", result.Error);
         }
     }
 }

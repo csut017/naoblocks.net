@@ -166,30 +166,23 @@ namespace NaoBlocks.Web.Controllers
                 var parts = key.Split(',')
                     .Select(part => part.Split(':'))
                     .ToDictionary(part => part[0], part => part[1]);
-                if (!parts.TryGetValue("token", out var token)) return this.BadRequest(new
-                {
-                    Error = "Missing session details"
-                });
                 command = new StartUserSessionViaToken
                 {
-                    Token = token,
+                    Token = parts["token"]
                 };
-                if (parts.TryGetValue("view", out var view))
+                switch (parts["view"])
                 {
-                    switch (parts["view"])
-                    {
-                        case "blockly":
-                            defaultView = 0;
-                            break;
+                    case "blockly":
+                        defaultView = 0;
+                        break;
 
-                        case "tangibles":
-                            defaultView = 1;
-                            break;
+                    case "tangibles":
+                        defaultView = 1;
+                        break;
 
-                        case "home":
-                            defaultView = 2;
-                            break;
-                    }
+                    case "home":
+                        defaultView = 2;
+                        break;
                 }
             }
             else
