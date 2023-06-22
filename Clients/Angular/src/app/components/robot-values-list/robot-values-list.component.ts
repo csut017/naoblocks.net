@@ -20,7 +20,7 @@ export class RobotValuesListComponent {
   @Input() item?: Robot;
   @Output() closed = new EventEmitter<boolean>();
 
-  columns: string[] = ['select', 'name', 'value'];
+  columns: string[] = ['select', 'name', 'value', 'default'];
   dataSource: MatTableDataSource<NamedValue> = new MatTableDataSource();
   isLoading: boolean = true;
   selection = new SelectionModel<NamedValue>(true, []);
@@ -38,42 +38,21 @@ export class RobotValuesListComponent {
   private loadValues(): void {
     if (!this.item) return;
     this.isLoading = true;
-    this.robotService.get(this.item.id!)
+    this.robotService.get(this.item.id!, true)
       .subscribe(data => {
         if (!this.authenticationService.checkHttpResponse(data))
           return;
-        let values = data.output?.values || [];
-        this.dataSource = new MatTableDataSource(values);
+        let robotValues = data.output?.values || [];
+        let typeValues = data.output?.typeDetails?.customValues || [];
+        let mappings = {};
+        robotValues.forEach(v => mappings[v.name] = v.value);
+        typeValues.forEach(v => {
+          v.default = v.value;
+          v.value = mappings[v.name] ?? v.value;
+        });
+
+        this.dataSource = new MatTableDataSource(typeValues);
         this.isLoading = false;
-      });
-  }
-
-  add() {
-    console.groupCollapsed('[RobotValuesListComponent] Adding new value');
-    let settings = new NamedValueEdit('Add Value', new NamedValue('', ''));
-    this.editorService.show(settings)
-      .subscribe(result => {
-        if (!result) {
-          console.log('Cancelling');
-          console.groupEnd();
-          return;
-        }
-
-        console.log('Updating');
-        console.log(result);
-        let newValues = [...this.dataSource.data];
-        newValues.push(result);
-        this.robotService.updateValues(this.item!, newValues)
-          .subscribe(res => {
-            if (res.successful) {
-              this.dataSource = new MatTableDataSource(newValues);
-              this.snackBar.open(`Added value ${result.name}`);
-              this.selection.clear();
-            } else {
-              this.snackBar.open(`ERROR: Unable to add value ${result.name}`);
-            }
-            console.groupEnd();
-          });
       });
   }
 

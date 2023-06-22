@@ -40,6 +40,11 @@ namespace NaoBlocks.Web.Dtos
         public string? Type { get; set; }
 
         /// <summary>
+        /// Gets or sets the details of the robot type.
+        /// </summary>
+        public RobotType? TypeDetails { get; set; }
+
+        /// <summary>
         /// Gets the allowed custom values.
         /// </summary>
         public IList<NamedValue>? Values { get; private set; }

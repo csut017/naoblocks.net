@@ -1,6 +1,7 @@
 import { NamedValue } from './named-value';
 import { ParseResult } from './parse-result';
 import { RobotLog } from './robot-log';
+import { RobotType } from './robot-type';
 
 export class Robot {
     id?: string;
@@ -15,6 +16,7 @@ export class Robot {
     logs: RobotLog[] = [];
     filteredLogs: RobotLog[] = [];
 
+    typeDetails?: RobotType;
     parse?: ParseResult;
     values?: NamedValue[];
 

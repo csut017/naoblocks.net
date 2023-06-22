@@ -48,8 +48,9 @@ export class RobotService extends ClientService {
       );
   }
 
-  get(id: string): Observable<ExecutionResult<Robot>> {
-    const url = `${environment.apiURL}v1/robots/${id}`;
+  get(id: string, includeTypeDetails: boolean = false): Observable<ExecutionResult<Robot>> {
+    let url = `${environment.apiURL}v1/robots/${id}`;
+    if (includeTypeDetails) url += '?includeType=true';
     this.log(`Retrieving robot ${id}`);
     return this.http.get<Robot>(url)
       .pipe(

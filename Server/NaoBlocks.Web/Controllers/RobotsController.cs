@@ -131,9 +131,10 @@ namespace NaoBlocks.Web.Controllers
         /// Retrieves a robot by its machine name.
         /// </summary>
         /// <param name="name">The name of the robot.</param>
+        /// <param name="includeType">A flag indicating whether the type details should be included or not.</param>
         /// <returns>Either a 404 (not found) or the robot details.</returns>
         [HttpGet("{name}")]
-        public async Task<ActionResult<Transfer.Robot>> Get(string name)
+        public async Task<ActionResult<Transfer.Robot>> Get(string name, bool includeType = false)
         {
             this.logger.LogDebug("Retrieving robot: id {name}", name);
             var robot = await this.executionEngine
@@ -146,7 +147,26 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug("Retrieved robot");
-            return Transfer.Robot.FromModel(robot, DetailsType.Standard);
+            var dto = Transfer.Robot.FromModel(robot, DetailsType.Standard);
+
+            if (includeType)
+            {
+                var robotType = await this.executionEngine
+                    .Query<RobotTypeData>()
+                    .RetrieveByIdAsync(robot.RobotTypeId)
+                    .ConfigureAwait(false);
+
+                if (robotType == null)
+                {
+                    // We should never get here, but it is possible to manually delete a robot type without
+                    // deleting the actual robots
+                    return NotFound();
+                }
+                this.logger.LogDebug("Retrieved robot type");
+                dto.TypeDetails = Transfer.RobotType.FromModel(robotType, DetailsType.Standard);
+            }
+
+            return dto;
         }
 
         /// <summary>

@@ -15,7 +15,6 @@
             <div>
             </div>
             <div>
-                <button mat-raised-button color="accent" class="command-button" (click)="add()">Add Value</button>
             </div>
         </div>
     </div>
@@ -42,6 +41,10 @@
         <ng-container matColumnDef="value">
             <th mat-header-cell *matHeaderCellDef> Value </th>
             <td mat-cell *matCellDef="let record"> {{record.value}} </td>
+        </ng-container>
+        <ng-container matColumnDef="default">
+            <th mat-header-cell *matHeaderCellDef> Default Value </th>
+            <td mat-cell *matCellDef="let record"> {{record.default}} </td>
         </ng-container>
         <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
