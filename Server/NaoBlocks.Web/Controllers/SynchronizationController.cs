@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Queries;
-using NaoBlocks.Web.Authorization;
 using Transfer = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -52,7 +51,8 @@ namespace NaoBlocks.Web.Controllers
                 this._logger.LogInformation("Getting system synchronization status");
                 foreach (var subSystem in this.subSystems)
                 {
-                    var status = new Transfer.SynchronizationStatus {
+                    var status = new Transfer.SynchronizationStatus
+                    {
                         Name = subSystem.Key,
                         WhenLastUpdated = await subSystem.Value(),
                     };
@@ -79,11 +79,11 @@ namespace NaoBlocks.Web.Controllers
             return ListResult.New(results);
         }
 
-        private async Task<DateTime> RetrieveLastRobotUpdate()
+        private async Task<DateTime> RetrieveLastRobotLogUpdate()
         {
             var value = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveLastUpdatedAsync();
+                .RetrieveLastLogAsync();
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
 
@@ -95,11 +95,11 @@ namespace NaoBlocks.Web.Controllers
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
 
-        private async Task<DateTime> RetrieveLastRobotLogUpdate()
+        private async Task<DateTime> RetrieveLastRobotUpdate()
         {
             var value = await this.executionEngine
                 .Query<RobotData>()
-                .RetrieveLastLogAsync();
+                .RetrieveLastUpdatedAsync();
             return value?.WhenLastUpdated ?? DateTime.MinValue;
         }
     }

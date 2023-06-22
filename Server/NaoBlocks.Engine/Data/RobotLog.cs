@@ -26,6 +26,11 @@
         public string RobotId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the details about when this log was last synchronized.
+        /// </summary>
+        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
+
+        /// <summary>
         /// Gets or sets when this log was added.
         /// </summary>
         public DateTime WhenAdded { get; set; } = DateTime.UtcNow;
@@ -34,10 +39,5 @@
         /// Gets or sets when this log was last added to.
         /// </summary>
         public DateTime WhenLastUpdated { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the details about when this log was last synchronized.
-        /// </summary>
-        public SynchronizationData Synchronization { get; set; } = new SynchronizationData();
     }
 }
