@@ -15,6 +15,7 @@ using ResourceManager = NaoBlocks.Web.Resources.Manager;
 using Tangibles = NaoBlocks.Definitions.Tangibles;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseKestrel(opts => opts.AddServerHeader = false);
 builder.Services.AddCors();
 builder.Services.AddHealthChecks();
 builder.Logging.ClearProviders();
