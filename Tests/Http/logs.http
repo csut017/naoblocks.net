@@ -49,7 +49,7 @@ Content-Type: application/json; charset=utf-8
 
 ###
 
-GET {{baseURL}}/robots/tahi/logs/7/playback HTTP/1.1
+GET {{baseURL}}/robots/toru/logs/46/playback HTTP/1.1
 Content-Type: text/plain; charset=utf-8
 
 ###

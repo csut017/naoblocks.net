@@ -13,6 +13,11 @@ namespace NaoBlocks.Engine.Data
         public string Category { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the client action mappings.
+        /// </summary>
+        public List<NamedValue>? ClientActionMapping { get; set; }
+
+        /// <summary>
         /// Gets or sets the message type.
         /// </summary>
         public ClientMessageType MessageType { get; set; }

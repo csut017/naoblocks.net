@@ -8,6 +8,7 @@ using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text;
 using Dtos = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
@@ -126,16 +127,23 @@ namespace NaoBlocks.Web.Controllers
             }
 
             this.logger.LogDebug("Retrieving log: id {id} for robot {robotId}", id, robotId);
-            var log = await this.executionEngine
+            var conversation = await this.executionEngine
                 .Query<ConversationData>()
                 .RetrieveRobotLogAsync(conversationId, robotId);
-            if (log == null)
+            if (conversation == null)
             {
                 return NotFound();
             }
 
             this.logger.LogDebug("Retrieved robot log");
-            return Content("data", ContentTypes.PlainText);
+            var builder = new StringBuilder();
+            builder.AppendLine("<");
+            foreach (var log in conversation.Lines.Where(l => l.SourceMessageType == ClientMessageType.RobotAction).OrderBy(l => l.WhenAdded))
+            {
+                builder.AppendLine($"{log.Description}");
+            }
+            builder.AppendLine(">");
+            return Content(builder.ToString(), ContentTypes.PlainText);
         }
 
         /// <summary>
@@ -200,9 +208,8 @@ namespace NaoBlocks.Web.Controllers
             }
 
             logger.LogInformation("Adding {count} log(s) for robot {robot}", request.Messages.Length, robot.MachineName);
-            var templates = robot.Type?
-                .LoggingTemplates
-                .ToDictionary(t => t.Category.ToLowerInvariant()) ?? new Dictionary<string, LoggingTemplate>();
+            var templates = robot.Type?.LoggingTemplates.ToDictionary(t => t.Category.ToLowerInvariant(), t => new LoggingTemplateDetails(t))
+                ?? new Dictionary<string, LoggingTemplateDetails>();
             foreach (var message in request.Messages!)
             {
                 var addLog = new AddToRobotLog
@@ -221,14 +228,14 @@ namespace NaoBlocks.Web.Controllers
                     var key = parts[1].ToLowerInvariant();
                     if (templates.TryGetValue(key, out var template))
                     {
-                        addLog.Description = template.Text;
-                        addLog.SourceMessageType = template.MessageType;
-                        for (var loop = 0; loop < template.ValueNames.Length; loop++)
+                        addLog.Description = template.Template.Text;
+                        addLog.SourceMessageType = template.Template.MessageType;
+                        for (var loop = 0; loop < template.Template.ValueNames.Length; loop++)
                         {
                             var index = loop + 2;
                             addLog.Values.Add(
                                 NamedValue.New(
-                                    template.ValueNames[loop],
+                                    template.Template.ValueNames[loop],
                                     parts.Length > index ? parts[index] : string.Empty));
                         }
                     }
@@ -345,6 +352,19 @@ namespace NaoBlocks.Web.Controllers
 
             await this.executionEngine.ExecuteAsync(command);
             await this.executionEngine.CommitAsync();
+        }
+
+        private readonly struct LoggingTemplateDetails
+        {
+            public LoggingTemplateDetails(LoggingTemplate template)
+            {
+                Template = template;
+                ClientMapping = template.ClientActionMapping?.ToDictionary(cam => cam.Name, cam => cam.Value)
+                    ?? new Dictionary<string, string?>();
+            }
+
+            public Dictionary<string, string?> ClientMapping { get; }
+            public LoggingTemplate Template { get; }
         }
     }
 }
