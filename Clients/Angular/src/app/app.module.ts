@@ -61,6 +61,7 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { QRCodeReaderComponent } from './components/qrcode-reader/qrcode-reader.component';
 import { RobotQuickLinksComponent } from './components/robot-quick-links/robot-quick-links.component';
 import { MobileHomeComponent } from './components/mobile-home/mobile-home.component';
+import { YoloEditorComponent } from './components/yolo-editor/yolo-editor.component';
 
 @NgModule({
   declarations: [
@@ -96,6 +97,7 @@ import { MobileHomeComponent } from './components/mobile-home/mobile-home.compon
     ConfirmDialogComponent,
     ExecutionStatusComponent,
     TangibleEditorComponent,
+    YoloEditorComponent,
     SystemInitialisationComponent,
     ImportDialogComponent,
     UserInterfaceConfigurationComponent,

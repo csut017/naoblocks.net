@@ -39,6 +39,7 @@ export class StudentHomeComponent extends HomeBase implements OnInit {
   private editorDefinitions: EditorDefinition[] = [
     new EditorDefinition('blockly', 'Block Editor', true),
     new EditorDefinition('tangibles', 'Tangible Editor', false),
+    new EditorDefinition('yolo', 'Yolo Editor', true),
   ];
   private editors: { [index: string]: EditorDefinition } = {};
 

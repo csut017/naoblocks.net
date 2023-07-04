@@ -95,6 +95,12 @@
                     [controller]="controller"></app-blockly-editor>
                 <app-tangible-editor *ngSwitchCase="'tangibles'" [editorSettings]="editorSettings"
                     [controller]="controller"></app-tangible-editor>
+                <app-yolo-editor *ngSwitchCase="'yolo'" [editorSettings]="editorSettings"
+                    [controller]="controller"></app-yolo-editor>
+                
+                    
+
+
             </div>
             <app-settings-debug *ngSwitchCase="'debug-settings'" (closed)="onSettingsClosed($event)"
                 [settings]="runSettings"></app-settings-debug>
