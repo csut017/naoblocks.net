@@ -47,6 +47,7 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
   private context?: CanvasRenderingContext2D | null;
   private isInitialised: boolean = false;
 
+  @ViewChild('videoElement', { static: true }) videoElement?: ElementRef<HTMLVideoElement>;
   @ViewChild('videoCanvas', { static: true }) videoCanvas?: ElementRef<HTMLCanvasElement>;
 
   constructor(
@@ -185,41 +186,32 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
   }
 
   startCamera(): void {
-    if (!this.isInitialised) {
-      console.log('[TangibleEditor] Initialising callback');
-      this.isInitialised = true;
-      let me = this;
-      TopCodes.setVideoFrameCallback("video-canvas", function (jsonString: string) {
-        if (me.isExecuting || me.isProcessing) return;
-        let json = JSON.parse(jsonString);
-        me.highlightTags(json.topcodes);
-        let blocks = me.generateBlockList(json.topcodes);
-        if (me.isInFlippedMode) blocks.reverse();
-        me.blocks = blocks;
-      });
-    }
+    const videoElement = this.videoElement?.nativeElement;
 
-    if (this.cameraStarted) return;
-
-    console.log('[TangibleEditor] Starting camera');
-    try {
-      TopCodes.startStopVideoScan('video-canvas');
-      this.cameraStarted = true;
-    } catch {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && videoElement) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          videoElement.srcObject = stream;
+          videoElement.play();
+        })
+        .catch(error => {
+          console.error('Error accessing webcam:', error);
+          this.isCameraAvailable = false;
+        });
+    } else {
+      console.error('getUserMedia() is not supported');
       this.isCameraAvailable = false;
     }
   }
 
   stopCamera(): void {
-    if (!this.cameraStarted) return;
-
-    console.log('[TangibleEditor] Stopping camera');
-    this.cameraStarted = false;
-    TopCodes.startStopVideoScan('video-canvas');
-    setTimeout(() => {
-      this.context!.fillStyle = "#fff";
-      this.context!.fillRect(0, 0, 640, 480);
-    }, 100);
+    const videoElement = this.videoElement?.nativeElement;
+    if (videoElement && videoElement.srcObject) {
+      const stream = videoElement.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop());
+      videoElement.srcObject = null;
+    }
   }
 
   // TODO: Need to add accounting horrizontal
