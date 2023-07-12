@@ -3,7 +3,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": ["@tensorflow/tfjs-core"],
+    "skipLibCheck": true
   },
   "files": [
     "src/main.ts",
