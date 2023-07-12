@@ -1,4 +1,9 @@
 .yolo-editor-container {
-    padding: 16px;
+    display: flex;
     text-align: center;
+
+    .video-element {
+        margin: 0.5rem;
+        border: 1px solid #000;
+    }
 }

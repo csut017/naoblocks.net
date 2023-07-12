@@ -16,8 +16,21 @@ import { ScriptLoaderService } from 'src/app/services/script-loader.service';
 import { IServiceMessageUpdater, ServerMessageProcessorService } from 'src/app/services/server-message-processor.service';
 import { environment } from 'src/environments/environment';
 
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-backend-webgl';
+
 declare var Tangibles: any;
-declare var TopCodes: any;
+
+// TEMPORARY INTERFACES, EXTRACT LATER
+interface LoadingState {
+  loading: boolean;
+  progress: number;
+}
+
+interface ModelState {
+  net: tf.GraphModel | null;
+  inputShape: number[] | undefined;
+}
 
 @Component({
   selector: 'app-yolo-editor',
@@ -43,6 +56,12 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
   messageProcessor?: ServerMessageProcessorService;
   startupStatus: StartupStatusTracker = new StartupStatusTracker();
 
+  // YOLO variables
+  loading: LoadingState = { loading: true, progress: 0 };
+  model: ModelState = { net: null, inputShape: [1, 0, 0, 3] };
+  modelName: string = 'best';
+  classThreshold: number = 0.7;
+
   private tangiblesMapping: { [index: number]: TangibleDefinition } = {};
   private context?: CanvasRenderingContext2D | null;
   private isInitialised: boolean = false;
@@ -60,24 +79,24 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
     private confirm: ConfirmService) {
   }
 
-  @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.altKey && event.shiftKey) {
-      switch (event.key) {
-        case 'D':
-          this.showVideoInput = !this.showVideoInput;
-          console.log(`[TangibleEditor] ${this.showVideoInput ? 'Showing' : 'Hiding'} debug display`);
-          break;
-
-        case 'F':
-          this.isInFlippedMode = !this.isInFlippedMode;
-          console.log(`[TangibleEditor] ${this.isInFlippedMode ? 'Flipped' : 'Normal'} block order`);
-          break;
-      }
-    }
-  }
-
   ngOnInit(): void {
+    console.log('[TangibleEditor] Initialising YOLO algorithm');
+    tf.ready().then(async () => {
+      const yolov5 = await tf.loadGraphModel(`${window.location.href}/${this.modelName}_web_model/model.json`, {
+        onProgress: (fractions) => {
+          this.loading = { loading: true, progress: fractions };
+        },
+      });
+
+      const dummyInput = tf.ones(yolov5.inputs[0].shape || [1, 0, 0, 3]); // temporary add default value of [1, 0, 0, 3] to prevent typing error
+      const warmupResult = await yolov5.executeAsync(dummyInput);
+      tf.dispose(warmupResult);
+      tf.dispose(dummyInput);
+
+      this.loading = { loading: false, progress: 1 };
+      this.model = { net: yolov5, inputShape: yolov5.inputs[0].shape};
+    });
+
     console.log('[TangibleEditor] Retrieving block definitions');
     this.scriptLoader.loadScript(this.renderer, `${environment.apiURL}v1/ui/tangibles/all`)
       .subscribe(_ => {
@@ -117,7 +136,6 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
     this.controllerSubscription?.unsubscribe();
     this.stopCamera();
   }
-
 
   ngOnChanges(_: SimpleChanges): void {
     if (this.editorSettings) this.isLoading = !this.editorSettings.isLoaded;
@@ -189,7 +207,7 @@ export class YoloEditorComponent implements OnInit, OnChanges, AfterViewInit, IS
     const videoElement = this.videoElement?.nativeElement;
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && videoElement) {
-      navigator.mediaDevices.getUserMedia({ video: true })
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
         .then(stream => {
           videoElement.srcObject = stream;
           videoElement.play();
