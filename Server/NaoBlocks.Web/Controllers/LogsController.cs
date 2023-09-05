@@ -7,9 +7,7 @@ using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Helpers;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Text;
-using Dtos = NaoBlocks.Web.Dtos;
 
 namespace NaoBlocks.Web.Controllers
 {
