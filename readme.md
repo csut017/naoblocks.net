@@ -13,6 +13,7 @@ Some initial documentation:
 * [Available Robot Commands](Documentation/Commands.md)
 * [Research Publications](Documentation/Publications.md)
 * [Communications Protocols](Documentation/Protocols.md)
+* [Adding new commands](Documentation/NewCommands.md)
 
 Waipapa Taumata Rau - The University of Auckland specific documentation:
 * [Topographies](Documentation/Topography1.md)

@@ -2,6 +2,10 @@
 
 This page contains the instructions for how to add a new command to the system.
 
+Adding a new command is a two step process:
+1. Add the command to the robot
+1. Define the command on the server
+
 ## Robot
 
 The robot is responsible for executing the command. If the command is defined on the server, but not the robot, you will get an execution error (and crash the executing program!)
@@ -76,4 +80,54 @@ You will need to deploy the changes once you have modified [engine.py](../Robots
 
 ## Server
 
-TODO: add the documentation for how to add a new command via the server. This will require some screenshots.
+Now that the command is defined on the robot, we need to add the server configuration so a user can include it in their programs.
+
+### Command Definition File
+
+Currently, there are two formats for defining a command on the server. There is a robot-specific format and a unified, general format. Moving forward, we will only be using the unified format, so, I won't be including any details on the robot-specific format. If you want to see these, there are some examples in the Data folder.
+
+The unified data format uses JSON to define three components:
+* Blocks
+* Images
+* Converters
+
+**Blocks** are used to define the individual commands in the system. These will appear as blocks in the Angular/Blockly interface and defines the codes for the tangible interface. They map to the commands on the robot.
+
+Each block has the following attributes:
+* **name**: this is the internal name of the block. Each block must have a unique name.
+* **topCodes**: TopCodes specific attributes:
+  - **numbers**: an aray of integers for mapping the TopCodes icon to a block. These must be unique within each UI definition.
+* **generator**: generates the NaoLang code for the block. This is JavaScript that will be embedded directly into the application. ##PREFIX## us a special prefix that refers to the underlying application.
+
+TODO: include details on the other definition attributes
+
+**Images** are used to define the icons that appear in the tangible interface. These are data-encoded images that will be directly loaded into the interface. Currently, the only format that the UI handles is base-64 encoded PNG images.
+
+**Converters** are currently not used by the system. They are needed to handle the conversion from NaoLang code to a Blockly XML definition.
+
+### Uploading from Command-line
+
+There is a python script that will split the unified definition into the robot specific definitions. In addition, this script can be used for uploading the split scripts directly to a running NaoBlocks instance.
+
+This script requires Python 3.11 or later, and the requests package. Python can be downloaded from the [Python Downloads](https://www.python.org/downloads/) page. Once Python is installed, requests can be installed by running the following command:
+```
+py -3 -m pip install requests
+```
+
+The split and upload script is called generate_ui_definitions.py and can be found in the Utilities\Scripts folder. 
+
+To upload a blocks definition, open a new command prompt and navigate to this location. Then, run the following command:
+
+```
+py -3 generate_ui_definitions.py ../../Data/unified-all.json ../../Data/From_Unified --server http://localhost:5000 --user user:password
+```
+
+Where
+* *unified-all.json* is the name of the definition file to split and upload. You will need to replace this name with the name of your own file.
+* *http://localhost:5000* is the target web server to upload to. If you are running the server on the same machine, you can leave this unchanged.
+* *user:password* is the user name and password for an admin user on the server. You will need to change this before attempting to upload.
+
+
+### Uploading via the Web Interface
+
+TODO: How to use the web interface for uploading a command definition file
