@@ -288,6 +288,11 @@ class Engine(object):
             'leftArmOut': EngineFunction(self._generate_behaviour('leftArmOut', Movements.LEFT_ARM_OUT)),
             'rightArmOut': EngineFunction(self._generate_behaviour('rightArmOut', Movements.RIGHT_ARM_OUT)),
             'sprinkler': EngineFunction(self._generate_behaviour('sprinkler', Movements.SPRINKLER)),
+            'robot_armsOutDown': EngineFunction(self._generate_behaviour('robot_armsOutDown', Movements.ROBOT_ARMS_OUT_DOWN)),
+            'robot_rightUpLeftDown': EngineFunction(self._generate_behaviour('robot_rightUpLeftDown', Movements.ROBOT_RIGHT_UP_LEFT_DOWN)),
+            'robot_bothUp': EngineFunction(self._generate_behaviour('robot_bothUp', Movements.ROBOT_BOTH_UP)),
+            'robot_rightDownLeftUp': EngineFunction(self._generate_behaviour('robot_rightDownLeftUp', Movements.ROBOT_RIGHT_DOWN_LEFT_UP)),
+            'robot_completeRobot': EngineFunction(self._generate_behaviour('robot_completeRobot', Movements.ROBOT_COMPLETE_ROBOT)),
         }
 
     def _generate_register_block(self, block_name):

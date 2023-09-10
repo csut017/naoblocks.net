@@ -349,5 +349,9 @@ class Movements(object):
     REST="rest-d3384b/rest"
     LEFT_ARM_OUT="left_arm_out-3230ca/arms_out"
     RIGHT_ARM_OUT="right_arm_out-22de32/arms_out"
-    SPRINKLER="sprinkler-9fed02/sprinkler"
-    
+    SPRINKLER="sprinkler-9fed02/Sprinkler2"
+    ROBOT_ARMS_OUT_DOWN="therobotdance-03dbe4/ArmsOutDown"
+    ROBOT_RIGHT_UP_LEFT_DOWN="therobotdance-03dbe4/RightUpLeftDown"
+    ROBOT_BOTH_UP="therobotdance-03dbe4/BothUp"
+    ROBOT_RIGHT_DOWN_LEFT_UP="therobotdance-03dbe4/RightDownLeftUp"
+    ROBOT_COMPLETE_ROBOT="therobotdance-03dbe4/CompleteRobot"
