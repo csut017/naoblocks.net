@@ -300,6 +300,10 @@ class Engine(object):
             'macarena_crossWaist': EngineFunction(self._generate_behaviour('macarena_crossWaist', Movements.MACARENA_CROSS_WAIST)),
             'macarena_handsOnHips': EngineFunction(self._generate_behaviour('macarena_handsOnHips', Movements.MACARENA_HANDS_ON_HIPS)),
             'macarena_circle': EngineFunction(self._generate_behaviour('macarena_circle', Movements.MACARENA_CIRCLE)),
+            'headBop1': EngineFunction(self._generate_behaviour('headBop1', Movements.HEADBOP_1)),
+            'headBop2': EngineFunction(self._generate_behaviour('headBop2', Movements.HEADBOP_2)),
+            'headBop2': EngineFunction(self._generate_behaviour('headBop3', Movements.HEADBOP_3)),
+
         }
 
     def _generate_register_block(self, block_name):

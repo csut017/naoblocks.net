@@ -362,3 +362,7 @@ class Movements(object):
     MACARENA_CROSS_WAIST="macerena-98b782/CrossWaist"
     MACARENA_HANDS_ON_HIPS="macerena-98b782/HandsOnHips"
     MACARENA_CIRCLE="macerena-98b782/Circle"
+    HEADBOP_1="headbop-39955e/HeadBop"
+    HEADBOP_2="headbop-39955e/HeadBop2"
+    HEADBOP_3="headbop-39955e/HeadBop3"
+    
