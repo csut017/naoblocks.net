@@ -287,6 +287,7 @@ class Engine(object):
             'rest': EngineFunction(self._generate_behaviour('rest', Movements.REST)),
             'leftArmOut': EngineFunction(self._generate_behaviour('leftArmOut', Movements.LEFT_ARM_OUT)),
             'rightArmOut': EngineFunction(self._generate_behaviour('rightArmOut', Movements.RIGHT_ARM_OUT)),
+            'sprinkler': EngineFunction(self._generate_behaviour('sprinkler', Movements.SPRINKLER)),
         }
 
     def _generate_register_block(self, block_name):

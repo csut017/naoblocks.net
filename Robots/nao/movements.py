@@ -349,4 +349,5 @@ class Movements(object):
     REST="rest-d3384b/rest"
     LEFT_ARM_OUT="left_arm_out-3230ca/arms_out"
     RIGHT_ARM_OUT="right_arm_out-22de32/arms_out"
+    SPRINKLER="sprinkler-9fed02/sprinkler"
     
