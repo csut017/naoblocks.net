@@ -293,6 +293,13 @@ class Engine(object):
             'robot_bothUp': EngineFunction(self._generate_behaviour('robot_bothUp', Movements.ROBOT_BOTH_UP)),
             'robot_rightDownLeftUp': EngineFunction(self._generate_behaviour('robot_rightDownLeftUp', Movements.ROBOT_RIGHT_DOWN_LEFT_UP)),
             'robot_completeRobot': EngineFunction(self._generate_behaviour('robot_completeRobot', Movements.ROBOT_COMPLETE_ROBOT)),
+            'macarena_armsOut': EngineFunction(self._generate_behaviour('macarena_armsOutDown', Movements.MACARENA_ARMS_OUT)),
+            'macarena_palmsUp': EngineFunction(self._generate_behaviour('macarena_palmsUp', Movements.MACARENA_PALMS_UP)),
+            'macarena_crossChest': EngineFunction(self._generate_behaviour('macarena_crossChest', Movements.MACARENA_CROSS_CHEST)),
+            'macarena_handsBehindHead': EngineFunction(self._generate_behaviour('macarena_handsBehindHead', Movements.MACARENA_HANDS_BEHIND_HEAD)),
+            'macarena_crossWaist': EngineFunction(self._generate_behaviour('macarena_crossWaist', Movements.MACARENA_CROSS_WAIST)),
+            'macarena_handsOnHips': EngineFunction(self._generate_behaviour('macarena_handsOnHips', Movements.MACARENA_HANDS_ON_HIPS)),
+            'macarena_circle': EngineFunction(self._generate_behaviour('macarena_circle', Movements.MACARENA_CIRCLE)),
         }
 
     def _generate_register_block(self, block_name):
