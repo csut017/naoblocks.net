@@ -665,6 +665,262 @@
             "image": "->question",
             "text": "Up",
             "generator": "var code = 'up()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "HeadBop",
+            "name": "headBop1",
+            "topCodes": {
+                "numbers": [
+                    79
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "HeadBop",
+            "image": "->question",
+            "text": "headBop1",
+            "generator": "var code = 'headBop1()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "HeadBop",
+            "name": "headBop2",
+            "topCodes": {
+                "numbers": [
+                    117
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "HeadBop",
+            "image": "->question",
+            "text": "headBop2",
+            "generator": "var code = 'headBop2()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "HeadBop",
+            "name": "headBop3",
+            "topCodes": {
+                "numbers": [
+                    155
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "HeadBop",
+            "image": "->question",
+            "text": "headBop3",
+            "generator": "var code = 'headBop3()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_armsOut",
+            "topCodes": {
+                "numbers": [
+                    167
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_armsOut",
+            "generator": "var code = 'macarena_armsOut()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_palmsUp",
+            "topCodes": {
+                "numbers": [
+                    171
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_palmsUp",
+            "generator": "var code = 'macarena_palmsUp()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_crossChest",
+            "topCodes": {
+                "numbers": [
+                    227
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_crossChest",
+            "generator": "var code = 'macarena_crossChest()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_handsBehindHead",
+            "topCodes": {
+                "numbers": [
+                    229
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_handsBehindHead",
+            "generator": "var code = 'macarena_handsBehindHead()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_crossWaist",
+            "topCodes": {
+                "numbers": [
+                    233
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_crossWaist",
+            "generator": "var code = 'macarena_crossWaist()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_handsOnHips",
+            "topCodes": {
+                "numbers": [
+                    241
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_handsOnHips",
+            "generator": "var code = 'macarena_handsOnHips()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Macarena",
+            "name": "macarena_circle",
+            "topCodes": {
+                "numbers": [
+                    299
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Macarena",
+            "image": "->question",
+            "text": "macarena_circle",
+            "generator": "var code = 'macarena_circle()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "RobotDance",
+            "name": "robot_armsOutDown",
+            "topCodes": {
+                "numbers": [
+                    301
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "RobotDance",
+            "image": "->question",
+            "text": "robot_armsOutDown",
+            "generator": "var code = 'robot_armsOutDown()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "RobotDance",
+            "name": "robot_rightUpLeftDown",
+            "topCodes": {
+                "numbers": [
+                    307
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "RobotDance",
+            "image": "->question",
+            "text": "robot_rightUpLeftDown",
+            "generator": "var code = 'robot_rightUpLeftDown()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "RobotDance",
+            "name": "robot_bothUp",
+            "topCodes": {
+                "numbers": [
+                    309
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "RobotDance",
+            "image": "->question",
+            "text": "robot_bothUp",
+            "generator": "var code = 'robot_bothUp()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "RobotDance",
+            "name": "robot_rightDownLeftUp",
+            "topCodes": {
+                "numbers": [
+                    313
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "RobotDance",
+            "image": "->question",
+            "text": "robot_rightDownLeftUp",
+            "generator": "var code = 'robot_rightDownLeftUp()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "RobotDance",
+            "name": "robot_completeRobot",
+            "topCodes": {
+                "numbers": [
+                    331
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "RobotDance",
+            "image": "->question",
+            "text": "robot_completeRobot",
+            "generator": "var code = 'robot_completeRobot()\\n';return ##PREFIX##code;"
+        },
+        {
+            "group": "Sprinkler",
+            "name": "sprinkler",
+            "topCodes": {
+                "numbers": [
+                    341
+                ]
+            },
+            "angular": {
+                "definition": "{\"colour\":20,\"tooltip\":\"TODO.\"}"
+            },
+            "category": "Sprinkler",
+            "image": "->question",
+            "text": "sprinkler",
+            "generator": "var code = 'sprinkler()\\n';return ##PREFIX##code;"
         }
     ],
     "images": [
