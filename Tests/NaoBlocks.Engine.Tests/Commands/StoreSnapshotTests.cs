@@ -1,8 +1,7 @@
-﻿using NaoBlocks.Engine.Commands;
-using NaoBlocks.Engine.Data;
-using Raven.TestDriver;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using NaoBlocks.Engine.Commands;
+using NaoBlocks.Engine.Data;
 using Xunit;
 
 namespace NaoBlocks.Engine.Tests.Commands
@@ -10,98 +9,16 @@ namespace NaoBlocks.Engine.Tests.Commands
     public class StoreSnapshotTests : DatabaseHelper
     {
         [Fact]
-        public async Task ValidationChecksInputs()
+        public async Task ExecuteChecksInitialState()
         {
-            var command = new StoreSnapshot();
+            var command = new StoreSnapshot
+            {
+                UserName = "Bob"
+            };
             var engine = new FakeEngine();
-            var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "State is required", "Username is required" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task ValidatePassesChecks()
-        {
-            var command = new StoreSnapshot
-            {
-                UserName = "Bob",
-                State = "go{}"
-            };
-            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.ValidateAsync(command);
-            Assert.Empty(errors);
-        }
-
-        [Fact]
-        public async Task ValidateChecksForExistingUser()
-        {
-            var command = new StoreSnapshot
-            {
-                UserName = "Bob",
-                State = "go{}"
-            };
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.ValidateAsync(command);
-            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task RestoreFailsIfUserIsMissing()
-        {
-            var command = new StoreSnapshot
-            {
-                UserName = "Bob"
-            };
-            using var store = InitialiseDatabase();
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.RestoreAsync(command);
-            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
-        }
-
-        [Fact]
-        public async Task RestoreReloadsUser()
-        {
-            var command = new StoreSnapshot
-            {
-                UserName = "Bob"
-            };
-            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
-
-            using var session = store.OpenAsyncSession();
-            var engine = new FakeEngine(session);
-            var errors = await engine.RestoreAsync(command);
-            Assert.Empty(errors);
-        }
-
-        [Fact]
-        public async Task ExecuteSavesSnapshot()
-        {
-            var command = new StoreSnapshot
-            {
-                UserName = "Bob",
-                State = "go{}"
-            };
-            using var store = InitialiseDatabase(new User { Name = "Bob", Id = "Tahi" });
-
-            using (var session = store.OpenAsyncSession())
-            {
-                var engine = new FakeEngine(session);
-                await engine.RestoreAsync(command);
-                var result = await engine.ExecuteAsync(command);
-                Assert.True(result.WasSuccessful, "Command was not successful");
-                await engine.CommitAsync();
-                Assert.True(engine.DatabaseSession.StoreCalled, "An expected call to store was not made");
-            }
-
-            using var verifySession = store.OpenSession();
-            var snapshot = verifySession.Query<Snapshot>().FirstOrDefault();
-            Assert.NotNull(snapshot);
-            Assert.Equal("Tahi", snapshot!.UserId);
-            Assert.Equal("go{}", snapshot!.State);
+            var result = await engine.ExecuteAsync(command);
+            Assert.False(result.WasSuccessful);
+            Assert.Equal("Unexpected error: Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync", result.Error);
         }
 
         [Theory]
@@ -109,7 +26,7 @@ namespace NaoBlocks.Engine.Tests.Commands
         [InlineData("", "Unknown")]
         [InlineData(" ", "Unknown")]
         [InlineData("Application", "Application")]
-        public async Task ExecuteHandlesSource(string source, string expected)
+        public async Task ExecuteHandlesSource(string? source, string expected)
         {
             var command = new StoreSnapshot
             {
@@ -164,16 +81,98 @@ namespace NaoBlocks.Engine.Tests.Commands
         }
 
         [Fact]
-        public async Task ExecuteChecksInitialState()
+        public async Task ExecuteSavesSnapshot()
+        {
+            var command = new StoreSnapshot
+            {
+                UserName = "Bob",
+                State = "go{}"
+            };
+            using var store = InitialiseDatabase(new User { Name = "Bob", Id = "Tahi" });
+
+            using (var session = store.OpenAsyncSession())
+            {
+                var engine = new FakeEngine(session);
+                await engine.RestoreAsync(command);
+                var result = await engine.ExecuteAsync(command);
+                Assert.True(result.WasSuccessful, "Command was not successful");
+                await engine.CommitAsync();
+                Assert.True(engine.DatabaseSession.StoreCalled, "An expected call to store was not made");
+            }
+
+            using var verifySession = store.OpenSession();
+            var snapshot = verifySession.Query<Snapshot>().FirstOrDefault();
+            Assert.NotNull(snapshot);
+            Assert.Equal("Tahi", snapshot!.UserId);
+            Assert.Equal("go{}", snapshot!.State);
+        }
+
+        [Fact]
+        public async Task RestoreFailsIfUserIsMissing()
         {
             var command = new StoreSnapshot
             {
                 UserName = "Bob"
             };
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.RestoreAsync(command);
+            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task RestoreReloadsUser()
+        {
+            var command = new StoreSnapshot
+            {
+                UserName = "Bob"
+            };
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
+
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.RestoreAsync(command);
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public async Task ValidateChecksForExistingUser()
+        {
+            var command = new StoreSnapshot
+            {
+                UserName = "Bob",
+                State = "go{}"
+            };
+            using var store = InitialiseDatabase();
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "User Bob does not exist" }, FakeEngine.GetErrors(errors));
+        }
+
+        [Fact]
+        public async Task ValidatePassesChecks()
+        {
+            var command = new StoreSnapshot
+            {
+                UserName = "Bob",
+                State = "go{}"
+            };
+            using var store = InitialiseDatabase(new User { Name = "Bob", Role = UserRole.User });
+            using var session = store.OpenAsyncSession();
+            var engine = new FakeEngine(session);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public async Task ValidationChecksInputs()
+        {
+            var command = new StoreSnapshot();
             var engine = new FakeEngine();
-            var result = await engine.ExecuteAsync(command);
-            Assert.False(result.WasSuccessful);
-            Assert.Equal("Unexpected error: Command is not in a valid state. Need to call either ValidateAsync or RestoreAsync", result.Error);
+            var errors = await engine.ValidateAsync(command);
+            Assert.Equal(new[] { "State is required", "Username is required" }, FakeEngine.GetErrors(errors));
         }
     }
 }

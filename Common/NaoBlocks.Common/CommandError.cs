@@ -17,6 +17,11 @@
         }
 
         /// <summary>
+        /// Gets or sets the details of the error message.
+        /// </summary>
+        public string? Details { get; set; }
+
+        /// <summary>
         /// Gets or sets the error message.
         /// </summary>
         public string Error { get; set; }

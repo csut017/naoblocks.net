@@ -1,9 +1,8 @@
-﻿using Esprima;
+﻿using System.ComponentModel;
+using System.Text;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Data;
-using System.ComponentModel;
-using System.Text;
 
 namespace NaoBlocks.Definitions.Tangibles
 {
@@ -238,7 +237,7 @@ namespace NaoBlocks.Definitions.Tangibles
                 }
                 else
                 {
-                    string image = block.Image;
+                    var image = block.Image;
                     var isLink = image.StartsWith("->");
                     if (!(isLink || image.StartsWith("data:image/png;base64,")))
                     {
@@ -260,18 +259,9 @@ namespace NaoBlocks.Definitions.Tangibles
                 }
                 else
                 {
-                    try
-                    {
-                        var parser = new JavaScriptParser(block.Generator);
-                        var program = parser.ParseScript();
-                    }
-                    catch
-                    {
-                        errors.Add(
-                            new CommandError(
-                                0,
-                                $"Block {name} has an invalid language generator (generator): must be valid JavaScript"));
-                    }
+                    JavaScriptChecker.Check($"Block {name} has an invalid language generator (generator): must be valid JavaScript",
+                        block.Generator,
+                        errors);
                 }
             }
         }

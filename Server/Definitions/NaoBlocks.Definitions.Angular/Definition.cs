@@ -1,11 +1,10 @@
-﻿using Esprima;
+﻿using System.ComponentModel;
+using System.Text;
 using NaoBlocks.Common;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.ComponentModel;
-using System.Text;
 
 namespace NaoBlocks.Definitions.Angular
 {
@@ -224,18 +223,9 @@ namespace NaoBlocks.Definitions.Angular
                 }
                 else
                 {
-                    try
-                    {
-                        var parser = new JavaScriptParser(block.Generator);
-                        var program = parser.ParseScript();
-                    }
-                    catch
-                    {
-                        errors.Add(
-                            new CommandError(
-                                0,
-                                $"Block {name} has an invalid language generator (generator): must be valid JavaScript"));
-                    }
+                    JavaScriptChecker.Check($"Block {name} has an invalid language generator (generator): must be valid JavaScript",
+                        block.Generator,
+                        errors);
                 }
             }
         }
@@ -281,18 +271,9 @@ namespace NaoBlocks.Definitions.Angular
                 }
                 else
                 {
-                    try
-                    {
-                        var parser = new JavaScriptParser(node.Converter);
-                        var program = parser.ParseScript();
-                    }
-                    catch
-                    {
-                        errors.Add(
-                            new CommandError(
-                                0,
-                                $"Node {name} has an invalid converter (converter): must be valid JavaScript"));
-                    }
+                    JavaScriptChecker.Check($"Node {name} has an invalid converter (converter): must be valid JavaScript",
+                        node.Converter,
+                        errors);
                 }
             }
         }

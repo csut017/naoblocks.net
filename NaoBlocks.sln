@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Utility.LogParser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Communications.Tests", "Tests\NaoBlocks.Communications.Tests\NaoBlocks.Communications.Tests.csproj", "{157F5F49-2A7D-44D3-B091-C1EA88267921}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoBlocks.Utility.ProgramTraceGenerator", "Utilities\NaoBlocks.Utility.ProgramTraceGenerator\NaoBlocks.Utility.ProgramTraceGenerator.csproj", "{E0E4D6B9-C64A-4680-BEDE-67E561B13A7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoBlocks.Utility.ProgramTraceGenerator", "Utilities\NaoBlocks.Utility.ProgramTraceGenerator\NaoBlocks.Utility.ProgramTraceGenerator.csproj", "{E0E4D6B9-C64A-4680-BEDE-67E561B13A7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
