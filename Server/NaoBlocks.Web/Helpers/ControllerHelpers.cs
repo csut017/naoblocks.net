@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NaoBlocks.Engine;
 using NaoBlocks.Engine.Data;
 using NaoBlocks.Engine.Queries;
-using System.Reflection;
 
 namespace NaoBlocks.Web.Helpers
 {
@@ -11,7 +11,7 @@ namespace NaoBlocks.Web.Helpers
     /// </summary>
     public static class ControllerHelpers
     {
-        private static readonly Lazy<string> systemVersion = new Lazy<string>(() => LoadVersion());
+        private static readonly Lazy<string> systemVersion = new Lazy<string>(LoadVersion);
 
         /// <summary>
         /// Attempts to generate a report.
@@ -339,7 +339,9 @@ namespace NaoBlocks.Web.Helpers
             var version = Assembly.GetEntryAssembly()
                     !.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                     !.InformationalVersion;
-            return version ?? string.Empty;
+            var plusPos = version.IndexOf('+');
+            if (plusPos > 0) version = version[..plusPos];
+            return version;
         }
     }
 }

@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { filter } from 'rxjs';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { SystemVersion } from 'src/app/data/system-version';
-import { AuthenticationService, LoginResult } from 'src/app/services/authentication.service';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
@@ -13,30 +11,31 @@ import { SystemService } from 'src/app/services/system.service';
 })
 export class SystemInitialisationComponent implements OnInit {
 
-  form: UntypedFormGroup;
   initialisationFailed = false;
   version?: SystemVersion;
   initialising: boolean = false;
 
+  formGroup = this.formBuilder.group({
+    password: ['', Validators.required],
+    useDefaultUi: false,
+    addNaoRobot: false,
+  });
+
   constructor(private systemService: SystemService,
     private router: Router,
-    builder: UntypedFormBuilder) {
-    this.form = builder.group({
-      password: ['', Validators.required],
-      useDefaultUi: [true],
-      addNaoRobot: [true]
-    });
+    private formBuilder: FormBuilder) {
   }
 
   ngOnInit(): void {
     this.systemService.getVersion()
       .subscribe(v => this.version = v);
   }
-
-  onSubmit() {
-    const password = this.form.get('password')?.value;
-    const useDefaultUi = this.form.get('useDefaultUi')?.value || true;
-    const addNaoRobot = this.form.get('addNaoRobot')?.valid || true;
+  
+  onSubmit(formGroup: FormGroup) {
+    alert(JSON.stringify(formGroup.value, null, 2));
+    const password = formGroup.get('password')?.value;
+    const useDefaultUi = formGroup.get('useDefaultUi')?.value;
+    const addNaoRobot = formGroup.get('addNaoRobot')?.value;
     if (password) {
       console.log('Initialising system');
       this.initialising = true;

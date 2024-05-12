@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
+<form [formGroup]="formGroup" (ngSubmit)="onSubmit(formGroup)" ngNativeValidate>
     <mat-card appearance="outlined">
         <mat-card-header>
             <div mat-card-avatar class="app-icon"></div>
