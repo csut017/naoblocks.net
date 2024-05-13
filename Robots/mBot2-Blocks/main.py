@@ -22,6 +22,7 @@ PORT = 5002
 WIFI_SSID= 'robotics'
 WIFI_PASSWORD= 'letmein1'
 NAME = cyberpi.get_name()
+VERSION = '1.1'
 
 def debugMessage(source, msg):
     pass

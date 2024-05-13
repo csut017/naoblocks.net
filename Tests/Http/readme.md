@@ -1,0 +1,1 @@
+These commands can be run from Visual Studio Code using [Rest Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client).

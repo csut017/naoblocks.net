@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,6 @@ using NaoBlocks.Engine.Commands;
 using NaoBlocks.Engine.Queries;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
-using System.Text;
-
 using Data = NaoBlocks.Engine.Data;
 using Generators = NaoBlocks.Engine.Generators;
 using Transfer = NaoBlocks.Web.Dtos;
@@ -188,7 +187,7 @@ namespace NaoBlocks.Web.Controllers
                     ValidationErrors = new[] {
                         new CommandError(0, "System already initialised")
                     }
-                }); ;
+                });
             }
 
             CommandBase command = new AddUser
