@@ -19,13 +19,13 @@ SPEED = 15
 VERSION = '1.08'
 
 # Wifi settings - these will need to change to match the network
-SERVER_BASE_ADDRESSES = ['192.168.0.152']
+SERVER_BASE_ADDRESSES = ['192.168.0.100']
 LOGGING_URL_PREFIX = 'http://'
 LOGGING_URL_SUFFIX = ':5000/api/v1/robots/' + NAME + '/logs'
 WIFI_SSID= 'NaoBlocks'
 WIFI_PASSWORD= 'letmein1'
 
-# ACTIONS
+# ACTIONS (Travelling Activity)
 ACTION_NONE = -1
 ACTION_BACKWARD = 2
 ACTION_CURVE_LEFT = 5
@@ -40,9 +40,30 @@ ACTION_STOP = 15
 ACTION_TURN_LEFT = 3
 ACTION_TURN_RIGHT = 4
 
+# ACTIONS (Music Activity) 
+ACTION_PLAY_SONG = 1  # Overlaps with ACTION_FORWARD
+ACTION_SEQUENCE_A = 5  # Overlaps with ACTION_CURVE_LEFT
+ACTION_SEQUENCE_B = 13  # Overlaps with ACTION_CURVE_RIGHT
+ACTION_SEQUENCE_C = 3  # Overlaps with ACTION_TURN_LEFT
+ACTION_SEQUENCE_D = 4  # Overlaps with ACTION_TURN_RIGHT
+ACTION_SEQUENCE_E = 7  # Overlaps with ACTION_RECORD_A
+ACTION_CLEAR_SONG = 2  # Overlaps with ACTION_BACKWARD
+
+
 # Programs
 PROGRAM_ACTIONS = [ACTION_RECORD_A, ACTION_RECORD_B, ACTION_PLAY_A, ACTION_PLAY_B]
 MOVEMENT_ACTIONS = [ACTION_FORWARD, ACTION_BACKWARD, ACTION_TURN_LEFT, ACTION_TURN_RIGHT, ACTION_CURVE_LEFT, ACTION_CURVE_RIGHT]
+MUSIC_ACTIONS = [ACTION_PLAY_SONG, ACTION_SEQUENCE_A, ACTION_SEQUENCE_B, ACTION_SEQUENCE_C, ACTION_SEQUENCE_D, ACTION_SEQUENCE_E, 
+                 ACTION_CLEAR_SONG, ACTION_STOP]
+
+# Drum library with sequences
+DRUM_LIBRARY = {
+    "A": ['bass-drum', 'closed-hi-hat', 'bass-drum', 'closed-hi-hat', 'bass-drum', 'closed-hi-hat', 'bass-drum', 'closed-hi-hat'],
+    "B": ['snare', 'snare', 'closed-hi-hat', 'open-hi-hat', 'snare', 'snare', 'closed-hi-hat', 'open-hi-hat', 'snare', 'snare' , 'closed-hi-hat', 'open-hi-hat', 'snare', 'snare', 'closed-hi-hat', 'open-hi-hat'],
+    "C": ['bass-drum', 'snare', 'bass-drum', 'snare', 'bass-drum', 'snare', 'closed-hi-hat', 'snare', 'bass-drum', 'snare', 'bass-drum', 'snare', 'bass-drum', 'snare', 'closed-hi-hat', 'snare'],
+    "D": ['bass-drum', 'bass-drum', 'side-stick', 'snare', 'bass-drum', 'bass-drum', 'side-stick', 'snare', 'bass-drum', 'bass-drum', 'side-stick', 'snare', 'bass-drum'], 
+    "E": ['side-stick', 'side-stick', 'tambourine', 'snare', 'side-stick', 'side-stick', 'tambourine', 'snare', 'side-stick', 'side-stick', 'taambourine', 'snare', 'side-stick']
+}
 
 class Dispatcher():
     def __init__(self, executor, robot, prefix, can_repeat):
@@ -53,6 +74,10 @@ class Dispatcher():
         self.can_repeat = can_repeat
 
     def execute(self, action):
+        """
+        Execute action and log the action to the robot cyberpi console.
+        """
+
         if action == ACTION_BACKWARD:
             self.robot.display_and_log(self.prefix + 'Backward')
             self.executor.backward()
@@ -77,6 +102,8 @@ class Dispatcher():
         elif action == ACTION_PLAY_B:
             self.robot.display_and_log(self.prefix + 'Play B')
             self.executor.play_b()
+
+        # Can only repeat action if 'can_repeat' is True (used for all modes except Unique)
         elif self.can_repeat and action == ACTION_REPEAT:
             self.robot.display_and_log(self.prefix + 'Repeat')
             self.executor.repeat()
@@ -89,23 +116,31 @@ class Program():
         self.dispatcher = Dispatcher(executor, robot, ':', True)
 
     def add(self, action):
+        # Add an action to the action list 
         self.actions.append(action)
         cyberpi.led.play('meteor_green')
 
     def clear(self):
+        # Clear all actions from action list
         self.actions.clear()
 
     def play(self):
+        # Loop through all actions and execute them
         for action in self.actions:
             if self.robot.has_stopped:
                 break
-
+            
+            # Execute the action (from dispatcher class)
             self.dispatcher.execute(action)
 
     def stop(self):
         pass
 
 class Actions():
+    """
+    Base class for actions (super class extended by ContinuousActions and DiscreteActions).
+    Will be overridden by the specific action classes.
+    """
     def backward(self):        
         pass
 
@@ -145,7 +180,23 @@ class Actions():
     def turn_right(self):
         pass
 
+    def play_song(self):
+        pass
+
+    def play_sequence(self, key):
+        pass
+
+    def record_sequence(self, key):
+        pass
+
+    def clear_song(self):
+        pass
+    
+
 class ContinuousActions(Actions):
+    """
+    Continuous Mode
+    """
     def __init__(self, robot):
         # Identification details
         self.name = 'Continuous'
@@ -156,7 +207,7 @@ class ContinuousActions(Actions):
         self.speed = SPEED
 
         # Internal state
-        self.last_action = ACTION_NONE
+        self.last_action = ACTION_NONE # used to record the last action performed (to prevent repeating the same action)
 
     def backward(self):        
         cyberpi.mbot2.backward(self.speed)
@@ -164,15 +215,22 @@ class ContinuousActions(Actions):
 
     def can_perform(self, action):
         if action in PROGRAM_ACTIONS:
+            # Cannot perform program actions in continuous mode
             return False
 
+        # Cannot perform the same action twice in a row (e.g. will not be able to scan forward when it is already moving forward)
         return self.last_action != action
 
+    # Function signature: drive_power(left_wheel_speed, right_wheel_speed)
+    # Positive = forward, Negative = backward
+    
     def curve_left(self):
+        # left_power spins forward at "speed", right_power spins backward at "-speed * 2"
         cyberpi.mbot2.drive_power(self.speed, -self.speed * 2)
         self.last_action = ACTION_CURVE_LEFT
 
     def curve_right(self):
+        # left_power spins forward at "speed * 2", right_power spins backward at "-speed"
         cyberpi.mbot2.drive_power(self.speed * 2, -self.speed)
         self.last_action = ACTION_CURVE_RIGHT
 
@@ -192,6 +250,10 @@ class ContinuousActions(Actions):
         self.last_action = ACTION_TURN_RIGHT
 
 class DiscreteActions(Actions):
+    """
+    Discrete Mode
+    """
+
     def __init__(self, robot):
         # Identification details
         self.name = 'Discrete'
@@ -200,10 +262,11 @@ class DiscreteActions(Actions):
         # Configuration options
         self.robot = robot
         self.speed = SPEED
-        self.distance = 2
-        self.angle = 45
+        self.distance = 2 # preset distance 
+        self.angle = 45 # angle of the turns
 
         # Programs
+        # The recording program is used to record the actions for later playback
         self.recording_program = None
         self.recording_program_id = None
         self.playing = False
@@ -309,6 +372,10 @@ class DiscreteActions(Actions):
             self.last_action = ACTION_TURN_RIGHT
 
 class UniqueActions(DiscreteActions):
+    """
+    Unique Mode
+    """
+
     def __init__(self, robot):
         super().__init__(robot)
 
@@ -320,10 +387,15 @@ class UniqueActions(DiscreteActions):
         if action in PROGRAM_ACTIONS:
             return False
 
+        # Can only perform an action if it is not the same as the last action
         can_perform = self.last_action != action
         return can_perform and super().can_perform(action)
 
 class RandomValueActions(DiscreteActions):
+    """
+    Random Value Mode
+    """
+    
     def __init__(self, robot):
         super().__init__(robot)
 
@@ -335,11 +407,65 @@ class RandomValueActions(DiscreteActions):
         if not action in MOVEMENT_ACTIONS:
             return False
 
+        # Random values for speed, distance and angle
         self.speed = random.randint(1, 5) * 5
         self.distance = random.randint(1, 4)
         self.angle = random.randint(2, 6) * 10 + 5
         return super().can_perform(action)
 
+class DrumActions(Actions):
+    """
+    Music Mode
+    """
+
+    def __init__(self, robot):
+        self.robot = robot
+        self.stored_sequence_keys = []
+        self.drum_library = DRUM_LIBRARY
+
+        # Identification details
+        self.name = 'Music'
+        self.code = 'M'
+
+    def play_sequence(self, key):
+        if key in self.drum_library:
+            colors = ['r', 'y', 'g', 'b']
+            # play the individual drum sounds in the sequence
+            for i, drum in enumerate(self.drum_library[key]):
+                cyberpi.led.on(colors[i % len(colors)]) # set the LED color
+                cyberpi.audio.play_drum(drum, SPEED) # play the drum sound
+                
+    def record_sequence(self, key):
+        # append the key to the stored sequence keys
+        self.stored_sequence_keys.append(key)
+
+    def play_song(self):
+
+        # Spin the robot in a circle while playing the recorded sequences
+        cyberpi.mbot2.turn_right(-25)
+
+        # Play all stored sequences in order
+        for key in self.stored_sequence_keys:
+            self.play_sequence(key)
+
+            if cyberpi.smart_camera.detect_label(ACTION_STOP):
+                self.stop()
+                break
+        
+        cyberpi.mbot2.EM_stop('all')  # stop spinning
+
+    def clear_song(self):
+        # Clear the stored sequence keys
+        self.stored_sequence_keys.clear()
+        cyberpi.audio.play("prompt-tone") # sound to indicate song has been cleared
+
+    def stop(self):
+        cyberpi.audio.stop()
+        cyberpi.mbot2.EM_stop('all')  # stop spinning
+
+    def can_perform(self, action):
+        # Can only perform music actions
+        return action in MUSIC_ACTIONS      
 
 class Robot():
     def __init__(self):
@@ -366,9 +492,14 @@ class Robot():
             DiscreteActions(self),
             RandomValueActions(self),
             UniqueActions(self),
+            DrumActions(self)
         ]
 
     def display(self, message, clear_screen = False):
+        """
+        Display a message on the console and clear the screen if needed.
+        """
+
         self.lines += 1
         if clear_screen or (self.lines > 6):
             cyberpi.console.clear()
@@ -380,6 +511,10 @@ class Robot():
         cyberpi.console.print(message)
 
     def display_and_log(self, message, type='action', clear_screen = False):
+        """
+        Displays and logs a message with timestamp and type to the message buffer
+        """
+
         self.display(message, clear_screen)
 
         next_pos = self.write_pos + 1
@@ -387,6 +522,10 @@ class Robot():
         self.write_pos = next_pos
 
     def initialise(self):
+        """
+        Initialise the robot by connecting to Wi-Fi and the logging server.
+        """
+
         self.display('Version ' + VERSION)
         cyberpi.wifi.connect(WIFI_SSID, WIFI_PASSWORD)
         count = 20
@@ -452,6 +591,10 @@ class Robot():
         return True
 
     def run(self):
+        """
+        Run the robot by scanning for barcodes and executing the actions.
+        """
+
         cyberpi.smart_camera.open_light()
         cyberpi.led.play('flash_red')
 
@@ -459,80 +602,122 @@ class Robot():
 
         self.is_running = True
         self.has_stopped = True
+
+        # self.actions refers to the current mode (Continuous, Discrete, etc.)
+        # Each mode defines how actions behave and whether they can be performed
         while self.is_running:
-            if cyberpi.ultrasonic2.get() < 6:
-                self.stop()
-                cyberpi.ultrasonic2.led_show([0, 0, 0, 0, 0, 0, 0, 0])
-            else:
-                cyberpi.ultrasonic2.led_show([100, 100, 100, 100, 100, 100, 100, 100])
-                if cyberpi.smart_camera.detect_label(ACTION_STOP):
+
+            # In Travelling Mode
+            if not isinstance(self.actions, DrumActions):
+                if cyberpi.ultrasonic2.get() < 6:
                     self.stop()
-                
-                elif cyberpi.smart_camera.detect_label(ACTION_FORWARD):
-                    if self.actions.can_perform(ACTION_FORWARD):
-                        self.display_and_log('Forward')
-                        self.has_stopped = False
-                        self.actions.forward()
+                    cyberpi.ultrasonic2.led_show([0, 0, 0, 0, 0, 0, 0, 0])
+                else:
+                    cyberpi.ultrasonic2.led_show([100, 100, 100, 100, 100, 100, 100, 100])
+                    if cyberpi.smart_camera.detect_label(ACTION_STOP):
+                        self.stop()
+                    
+                    elif cyberpi.smart_camera.detect_label(ACTION_FORWARD):
+                        if self.actions.can_perform(ACTION_FORWARD):
+                            self.display_and_log('Forward')
+                            self.has_stopped = False
+                            self.actions.forward()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_BACKWARD):
+                        if self.actions.can_perform(ACTION_BACKWARD):
+                            self.display_and_log('Backward')
+                            self.has_stopped = False
+                            self.actions.backward()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_TURN_LEFT):
+                        if self.actions.can_perform(ACTION_TURN_LEFT):
+                            self.display_and_log('Left Turn')
+                            self.has_stopped = False
+                            self.actions.turn_left()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_TURN_RIGHT):
+                        if self.actions.can_perform(ACTION_TURN_RIGHT):
+                            self.display_and_log('Right Turn')
+                            self.has_stopped = False
+                            self.actions.turn_right()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_CURVE_LEFT):
+                        if self.actions.can_perform(ACTION_CURVE_LEFT):
+                            self.display_and_log('Left Curve')
+                            self.has_stopped = False
+                            self.actions.curve_left()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_CURVE_RIGHT):
+                        if self.actions.can_perform(ACTION_CURVE_RIGHT):
+                            self.display_and_log('Right Curve')
+                            self.has_stopped = False
+                            self.actions.curve_right()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_RECORD_A):
+                        if self.actions.can_perform(ACTION_RECORD_A):
+                            self.display_and_log('Record A')
+                            self.has_stopped = False
+                            self.actions.record_a()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_RECORD_B):
+                        if self.actions.can_perform(ACTION_RECORD_B):
+                            self.display_and_log('Record B')
+                            self.has_stopped = False
+                            self.actions.record_b()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_PLAY_A):
+                        if self.actions.can_perform(ACTION_PLAY_A):
+                            self.display_and_log('Play A')
+                            self.has_stopped = False
+                            self.actions.play_a()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_PLAY_B):
+                        if self.actions.can_perform(ACTION_PLAY_B):
+                            self.display_and_log('Play B')
+                            self.has_stopped = False
+                            self.actions.play_b()
+    
+                    elif cyberpi.smart_camera.detect_label(ACTION_REPEAT):
+                        if self.actions.can_perform(ACTION_REPEAT):
+                            self.display_and_log('Repeat')
+                            self.has_stopped = False
+                            self.actions.repeat()
 
-                elif cyberpi.smart_camera.detect_label(ACTION_BACKWARD):
-                    if self.actions.can_perform(ACTION_BACKWARD):
-                        self.display_and_log('Backward')
-                        self.has_stopped = False
-                        self.actions.backward()
+            # In Music Mode
+            if isinstance(self.actions, DrumActions):
+                if cyberpi.smart_camera.detect_label(ACTION_PLAY_SONG):
+                    self.display_and_log("Play Song")
+                    self.actions.play_song()
 
-                elif cyberpi.smart_camera.detect_label(ACTION_TURN_LEFT):
-                    if self.actions.can_perform(ACTION_TURN_LEFT):
-                        self.display_and_log('Left Turn')
-                        self.has_stopped = False
-                        self.actions.turn_left()
+                elif cyberpi.smart_camera.detect_label(ACTION_SEQUENCE_A):
+                    self.display_and_log("Seq A")
+                    self.actions.play_sequence('A')
+                    self.actions.record_sequence('A')
 
-                elif cyberpi.smart_camera.detect_label(ACTION_TURN_RIGHT):
-                    if self.actions.can_perform(ACTION_TURN_RIGHT):
-                        self.display_and_log('Right Turn')
-                        self.has_stopped = False
-                        self.actions.turn_right()
+                elif cyberpi.smart_camera.detect_label(ACTION_SEQUENCE_B):
+                    self.display_and_log("Seq B")
+                    self.actions.play_sequence('B')
+                    self.actions.record_sequence('B')
 
-                elif cyberpi.smart_camera.detect_label(ACTION_CURVE_LEFT):
-                    if self.actions.can_perform(ACTION_CURVE_LEFT):
-                        self.display_and_log('Left Curve')
-                        self.has_stopped = False
-                        self.actions.curve_left()
+                elif cyberpi.smart_camera.detect_label(ACTION_SEQUENCE_C):
+                    self.display_and_log("Seq C")
+                    self.actions.play_sequence('C')
+                    self.actions.record_sequence('C')
 
-                elif cyberpi.smart_camera.detect_label(ACTION_CURVE_RIGHT):
-                    if self.actions.can_perform(ACTION_CURVE_RIGHT):
-                        self.display_and_log('Right Curve')
-                        self.has_stopped = False
-                        self.actions.curve_right()
+                elif cyberpi.smart_camera.detect_label(ACTION_SEQUENCE_D):
+                    self.display_and_log("Seq D")
+                    self.actions.play_sequence('D')
+                    self.actions.record_sequence('D')
 
-                elif cyberpi.smart_camera.detect_label(ACTION_RECORD_A):
-                    if self.actions.can_perform(ACTION_RECORD_A):
-                        self.display_and_log('Record A')
-                        self.has_stopped = False
-                        self.actions.record_a()
+                elif cyberpi.smart_camera.detect_label(ACTION_SEQUENCE_E):
+                    self.display_and_log("Seq E")
+                    self.actions.play_sequence('E')
+                    self.actions.record_sequence('E')
 
-                elif cyberpi.smart_camera.detect_label(ACTION_RECORD_B):
-                    if self.actions.can_perform(ACTION_RECORD_B):
-                        self.display_and_log('Record B')
-                        self.has_stopped = False
-                        self.actions.record_b()
+                elif cyberpi.smart_camera.detect_label(ACTION_CLEAR_SONG):
+                    self.display_and_log("Clear Song")
+                    self.actions.clear_song()
 
-                elif cyberpi.smart_camera.detect_label(ACTION_PLAY_A):
-                    if self.actions.can_perform(ACTION_PLAY_A):
-                        self.display_and_log('Play A')
-                        self.has_stopped = False
-                        self.actions.play_a()
-
-                elif cyberpi.smart_camera.detect_label(ACTION_PLAY_B):
-                    if self.actions.can_perform(ACTION_PLAY_B):
-                        self.display_and_log('Play B')
-                        self.has_stopped = False
-                        self.actions.play_b()
-
-                elif cyberpi.smart_camera.detect_label(ACTION_REPEAT):
-                    if self.actions.can_perform(ACTION_REPEAT):
-                        self.display_and_log('Repeat')
-                        self.has_stopped = False
-                        self.actions.repeat()
 
     def send_to_server(self):
         # Check if we are sending: if the last send is still running we
@@ -581,6 +766,10 @@ class Robot():
             cyberpi.led.on('r')
 
     def toggle_mode(self, direction, is_change = True):
+        """
+        Toggle the mode of the robot. The direction can be 1 (next) or -1 (previous).
+        """
+        
         self.mode += direction
         if self.mode >= len(self.modes):
             self.mode = 0
@@ -600,8 +789,8 @@ r = Robot()
 def on_start():
     cyberpi.speaker.set_vol(100)
     cyberpi.smart_camera.close_light()
-    if r.initialise():
-        r.run()
+    if r.initialise(): # Try to connect to Wi-Fi and the logging server
+        r.run() # Start barcode scanning and action execution loop
 
 # Handle the stop (square) button
 @cyberpi.event.is_press('a')
@@ -613,7 +802,7 @@ def button_a_callback():
 @cyberpi.event.is_press('b')
 def button_b_callback():
     if r.is_running:
-        r.stop('Reset')
+        r.stop('Reset') 
     else:
         cyberpi.broadcast('reset')
 
