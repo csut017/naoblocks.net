@@ -22,6 +22,8 @@ public static class JavaScriptChecker
         try
         {
             var cleaned = javascript.Replace(@"\\", @"\");
+            cleaned = "function test(){" + cleaned + ";}";
+
             parser.Value.ParseScript(cleaned);
             return true;
         }

@@ -32,7 +32,6 @@ export class SystemInitialisationComponent implements OnInit {
   }
   
   onSubmit(formGroup: FormGroup) {
-    alert(JSON.stringify(formGroup.value, null, 2));
     const password = formGroup.get('password')?.value;
     const useDefaultUi = formGroup.get('useDefaultUi')?.value;
     const addNaoRobot = formGroup.get('addNaoRobot')?.value;
