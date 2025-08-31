@@ -1,7 +1,7 @@
 """ mBot2 Tangibles client
 
-This client runs directly on an mBot2 client. It scans for barcodes on paper cards
-and directly executes the commands. The details are then logged to the server.
+This client runs directly on an mBot2 client. It polls the server for commands
+and directly executes them. 
 
 This file needs to be deployed via mBlock. All the code must be in a single file,
 otherwise mBlock won't compile it correctly.

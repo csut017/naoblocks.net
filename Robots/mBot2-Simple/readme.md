@@ -31,3 +31,9 @@ The following codes are currently mapped:
 There are the following settings:
 * dur -> the duration of execution for each command (in ms), must be a number
 * del -> the delay between command execution (in ms), must be a number
+
+# Test scripts
+
+This folder also contains the following test scripts:
+* test_send.py: sends some commands to the server
+* test_receive.py: checks the server for any pending commands

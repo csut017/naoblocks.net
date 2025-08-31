@@ -1,3 +1,6 @@
+using System.Reflection;
+using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NaoBlocks.Engine;
@@ -6,9 +9,6 @@ using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
 using Serilog;
 using Serilog.Events;
-using System.Reflection;
-using System.Security.Claims;
-using System.Security.Principal;
 using Angular = NaoBlocks.Definitions.Angular;
 using Configuration = NaoBlocks.Web.Configuration;
 using ResourceManager = NaoBlocks.Web.Resources.Manager;
@@ -85,6 +85,7 @@ builder.Services.AddScoped(services =>
     var database = services.GetRequiredService<IDatabase>();
     return database.StartSession();
 });
+builder.Services.AddSingleton(new CommandCache());
 
 // Add security
 builder.Services.AddJwtSecurity(builder.Configuration);
