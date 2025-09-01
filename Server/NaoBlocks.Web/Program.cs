@@ -7,6 +7,7 @@ using NaoBlocks.Engine;
 using NaoBlocks.Engine.Database;
 using NaoBlocks.Web.Communications;
 using NaoBlocks.Web.Helpers;
+using NaoBlocks.Web.Services;
 using Serilog;
 using Serilog.Events;
 using Angular = NaoBlocks.Definitions.Angular;
@@ -75,10 +76,10 @@ builder.Services.AddSwaggerGen(opts =>
 // Define the database services
 builder.Services.AddSingleton(services =>
     {
-        var logger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
+        var thisLogger = services.GetRequiredService<ILogger<RavenDbDatabase>>();
         var config = services.GetService<IOptions<RavenDbConfiguration>>();
         var env = services.GetRequiredService<IWebHostEnvironment>();
-        return RavenDbDatabase.New(logger, config?.Value, env.ContentRootPath).Result;
+        return RavenDbDatabase.New(thisLogger, config?.Value, env.ContentRootPath).Result;
     });
 builder.Services.AddScoped(services =>
 {
@@ -86,6 +87,8 @@ builder.Services.AddScoped(services =>
     return database.StartSession();
 });
 builder.Services.AddSingleton(new CommandCache());
+builder.Services.AddSingleton<ILoggingChannel, LoggingChannel>();
+builder.Services.AddHostedService<LoggingService>();
 
 // Add security
 builder.Services.AddJwtSecurity(builder.Configuration);

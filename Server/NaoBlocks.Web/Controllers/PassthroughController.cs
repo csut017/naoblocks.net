@@ -16,16 +16,19 @@ public class PassThroughController
 {
     private readonly CommandCache commandCache;
     private readonly ILogger<PassThroughController> logger;
+    private readonly ILoggingChannel loggingChannel;
 
     /// <summary>
     /// Initialize a new <see cref="PassThroughController"/>.
     /// </summary>
     /// <param name="logger">The logger to use.</param>
     /// <param name="commandCache">The associated command cache.</param>
-    public PassThroughController(ILogger<PassThroughController> logger, CommandCache commandCache)
+    /// <param name="loggingChannel">The <see cref="ILoggingChannel"/> instance to use for logging.</param>
+    public PassThroughController(ILogger<PassThroughController> logger, CommandCache commandCache, ILoggingChannel loggingChannel)
     {
         this.logger = logger;
         this.commandCache = commandCache;
+        this.loggingChannel = loggingChannel;
     }
 
     /// <summary>
@@ -41,6 +44,7 @@ public class PassThroughController
 
         var count = commands.Clear();
         logger.LogInformation("Cleared {count} commands from {robot}", count, robot);
+        loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "clear", string.Empty, DateTime.UtcNow));
         return new NoContentResult();
     }
 
@@ -64,6 +68,7 @@ public class PassThroughController
 
         var commandString = string.Join(string.Empty, commands.Get(10));
         logger.LogInformation("Sending commands {commands} for {robot}", commandString, robot);
+        loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "send", commandString, DateTime.UtcNow));
         return new ContentResult
         {
             Content = commandString
@@ -146,10 +151,23 @@ public class PassThroughController
         var count = commands.Add(newCommands);
         var commandString = string.Concat(newCommands);
         logger.LogInformation("Added commands {commands} to {robot}, there are now {count} commands pending", commandString, robot, count);
+        loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "receive", commandString, DateTime.UtcNow));
         return ExecutionResult.New(new RobotCommandList
         {
             Count = count
         });
+    }
+
+    /// <summary>
+    /// Starts a robot session.
+    /// </summary>
+    /// <param name="robot">The robot to start the session for.</param>
+    /// <returns>An Ok result.</returns>
+    [HttpPost("{robot}/start")]
+    public ActionResult Start(string robot)
+    {
+        loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "start", string.Empty, DateTime.UtcNow));
+        return new OkResult();
     }
 
     private CommandCache.CommandSet RetrieveRobot(string robot)
