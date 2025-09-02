@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using NaoBlocks.Common;
 using NaoBlocks.Web.Communications;
 
@@ -13,7 +16,16 @@ namespace NaoBlocks.Web.Controllers;
 [AllowAnonymous]
 [Produces("application/json")]
 public class PassThroughController
+    : ControllerBase
 {
+    private static readonly ReadOnlyMemory<byte> DataEnd = new("\n"u8.ToArray());
+    private static readonly ReadOnlyMemory<byte> DataStart = new("data: "u8.ToArray());
+    private static readonly ReadOnlyMemory<byte> EmptyData = new("data: {}"u8.ToArray());
+    private static readonly ReadOnlyMemory<byte> EventSeparator = new("\n\n"u8.ToArray());
+    private static readonly ReadOnlyMemory<byte> MessageType = new("event: message\n"u8.ToArray());
+    private static readonly ReadOnlyMemory<byte> PingType = new("event: ping\n"u8.ToArray());
+    private static readonly object SubscriptionLock = new object();
+    private static readonly ConcurrentDictionary<string, List<ILoggingChannel>> Subscriptions = [];
     private readonly CommandCache commandCache;
     private readonly ILogger<PassThroughController> logger;
     private readonly ILoggingChannel loggingChannel;
@@ -68,7 +80,22 @@ public class PassThroughController
 
         var commandString = string.Join(string.Empty, commands.Get(10));
         logger.LogInformation("Sending commands {commands} for {robot}", commandString, robot);
-        loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "send", commandString, DateTime.UtcNow));
+        var message = new LoggingChannelMessage(robot, "send", commandString, DateTime.UtcNow);
+        loggingChannel.Writer.TryWrite(message);
+
+        // Send to the subscriptions
+        if (Subscriptions.TryGetValue(robot.ToLowerInvariant(), out var list))
+        {
+            logger.LogInformation("Sending to subscribers for {robot}", robot);
+            lock (SubscriptionLock)
+            {
+                foreach (var channel in list)
+                {
+                    channel.Writer.TryWrite(message);
+                }
+            }
+        }
+
         return new ContentResult
         {
             Content = commandString
@@ -168,6 +195,63 @@ public class PassThroughController
     {
         loggingChannel.Writer.TryWrite(new LoggingChannelMessage(robot, "start", string.Empty, DateTime.UtcNow));
         return new OkResult();
+    }
+
+    /// <summary>
+    /// Subscribe to notifications of when a robot changes.
+    /// </summary>
+    /// <param name="robot">The name of the robot.</param>
+    /// <param name="token">The cancellation token.</param>
+    [HttpGet("{robot}/subscribe")]
+    public async Task Subscribe(string robot, CancellationToken token)
+    {
+        logger.LogInformation("starting subscription for {robot}", robot);
+        Response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
+
+        var robotName = robot.ToLowerInvariant();
+        if (!Subscriptions.TryGetValue(robotName, out var list))
+        {
+            list = [];
+            if (!Subscriptions.TryAdd(robotName, list)) list = Subscriptions[robotName];
+        }
+        var channel = new LoggingChannel();
+        lock (SubscriptionLock)
+            list.Add(channel);
+
+        while (!HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            var timeout = Task.Delay(TimeSpan.FromSeconds(30), token);
+            var channelRead = channel.Reader.WaitToReadAsync(token).AsTask();
+            await Task.WhenAny(timeout, channelRead);
+            if (token.IsCancellationRequested) break;
+            if (timeout.IsCompleted)
+            {
+                await Response.Body.WriteAsync(PingType, token);
+                await Response.Body.WriteAsync(EmptyData, token);
+                await Response.Body.WriteAsync(EventSeparator, token);
+            }
+            else
+            {
+                while (channel.Reader.TryRead(out var message))
+                {
+                    foreach (var command in message.Data)
+                    {
+                        await Response.Body.WriteAsync(MessageType, token);
+                        await Response.Body.WriteAsync(DataStart, token);
+                        await JsonSerializer.SerializeAsync(Response.Body, new { command }, JsonSerializerOptions.Default, token);
+                        await Response.Body.WriteAsync(DataEnd, token);
+                        await Response.Body.WriteAsync(EventSeparator, token);
+                        await Response.Body.FlushAsync(token);
+                        await Task.Delay(TimeSpan.FromSeconds(1), token);
+                    }
+                }
+            }
+            await Response.Body.FlushAsync(token);
+        }
+
+        logger.LogInformation("Subscription finished for {robot}", robot);
+        lock (SubscriptionLock)
+            list.Remove(channel);
     }
 
     private CommandCache.CommandSet RetrieveRobot(string robot)

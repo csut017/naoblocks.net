@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Server-Sent Events Example</title>
+</head>
+<body>
+
+<canvas id="workspace" width="300" height="300" style="border: 1px solid black; background-color: white;"></canvas>
+
+<script>
+    if (typeof(EventSource) !== 'undefined') {
+        const source = new EventSource('http://127.0.0.1:5000/api/v1/passthrough/test/subscribe'); // Replace with your server-side script URL
+
+        const canvas = document.getElementById("workspace");
+        const context = canvas.getContext("2d");
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.fillStyle = 'blue';
+        context.fillRect(-10, -15, 20, 30);
+
+        source.onmessage = function(event) {
+            context.fillStyle = 'white';
+            context.fillRect(-10, -15, 20, 30);
+
+            let command = JSON.parse(event.data);
+            console.log(command);
+            switch (command.command) {
+                case 'A':
+                    context.translate(0, 10);
+                    break;
+
+                case 'B':
+                    context.translate(0, -10);
+                    break;
+
+                case 'C':
+                    context.rotate(-Math.PI / 2);
+                    break;
+
+                case 'D':
+                    context.rotate(Math.PI / 2);
+                    break;
+                }
+
+            context.fillStyle = 'blue';
+            context.fillRect(-10, -15, 20, 30);
+        };
+
+        source.onerror = function(error) {
+            console.error('EventSource error:', error);
+            source.close(); 
+        };
+
+    } else {
+        document.getElementById('messages').innerHTML = 'Sorry, your browser does not support Server-Sent Events.';
+    }
+</script>
+
+</body>
+</html>
