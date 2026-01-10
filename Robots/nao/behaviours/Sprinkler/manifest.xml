@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="sprinkler-9fed02" version="0.0.0" installOnlyAtStartup="false">
+ <names>
+  <name lang="en_US">Sprinkler</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="Sprinkler2">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

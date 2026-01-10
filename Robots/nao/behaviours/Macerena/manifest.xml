@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="macerena-98b782" version="0.0.0" installOnlyAtStartup="false">
+ <names>
+  <name lang="en_US">Macerena</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="ArmsOut">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="PalmsUp">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="CrossChest">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="HandsBehindHead">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="CrossWaist">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="HandsOnHips">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="Circle">
+   <nature>solitary</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>

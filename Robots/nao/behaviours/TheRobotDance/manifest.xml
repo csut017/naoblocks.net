@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package version="0.0.0" installOnlyAtStartup="false" uuid="therobotdance-03dbe4">
+ <names>
+  <name lang="en_US">TheRobotDance</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="ArmsOutDown">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="RightUpLeftDown">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="BothUp">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="RightDownLeftUp">
+   <nature>solitary</nature>
+   <autonomous/>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="CompleteRobot">
+   <nature>solitary</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>
